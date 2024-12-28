@@ -53,8 +53,9 @@ using namespace std::chrono_literals;
 #if defined(_MSC_VER) && defined(_DEBUG)
 // Enable leak detection for MSVC debug builds. _DEBUG is MSVC specific and
 // leak detection does not work when it is not defined.
-#include <Windows.h>
 #include <pcre.h>
+#include <sentry.h>
+#include <Windows.h>
 #endif // _MSC_VER && _DEBUG
 
 #if defined(Q_OS_WIN32)
@@ -207,6 +208,18 @@ int main(int argc, char* argv[])
     QApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
 #endif // INCLUDE_3DMAPPER
 #endif
+
+    sentry_options_t *options = sentry_options_new();
+    sentry_options_set_dsn(options, "https://362a6ffaa959436292d8d5eb35ff0aea@o1070874.ingest.us.sentry.io/6067272");
+    // This is also the default-path. For further information and recommendations:
+    // https://docs.sentry.io/platforms/native/configuration/options/#database-path
+    sentry_options_set_database_path(options, ".sentry-native");
+    sentry_options_set_release(options, "mudlet@" APP_VERSION);
+    sentry_options_set_debug(options, 1);
+    sentry_init(options);
+
+    // Make sure everything flushes
+    auto sentryClose = qScopeGuard([] { sentry_close(); });
 
     auto app = qobject_cast<QApplication*>(new QApplication(argc, argv));
 

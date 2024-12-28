@@ -487,6 +487,7 @@ find_package(PUGIXML REQUIRED)
 find_package(HUNSPELL REQUIRED)
 find_package(Boost 1.44)
 
+find_package(sentry CONFIG REQUIRED)
 
 # FreeBSD's sysinfo() call is done in a package, libsysinfo.
 # Find the library and include it appropriately.
@@ -627,6 +628,7 @@ target_link_libraries(
         PUGIXML::PUGIXML
         ZIP::ZIP
         ZLIB::ZLIB
+        sentry::sentry
 # PLACEMARKER: sample benchmarking code
 #       nanobench
         ${QT_LIBS})
