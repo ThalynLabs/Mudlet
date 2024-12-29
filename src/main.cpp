@@ -54,9 +54,12 @@ using namespace std::chrono_literals;
 // Enable leak detection for MSVC debug builds. _DEBUG is MSVC specific and
 // leak detection does not work when it is not defined.
 #include <pcre.h>
-#include <sentry.h>
 #include <Windows.h>
 #endif // _MSC_VER && _DEBUG
+
+#if defined(INCLUDE_SENTRY)
+#include "sentry.h"
+#endif
 
 #if defined(Q_OS_WIN32)
 bool runUpdate();

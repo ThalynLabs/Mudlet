@@ -487,7 +487,7 @@ find_package(PUGIXML REQUIRED)
 find_package(HUNSPELL REQUIRED)
 find_package(Boost 1.44)
 
-find_package(sentry CONFIG REQUIRED)
+# find_package(sentry CONFIG REQUIRED)
 
 # FreeBSD's sysinfo() call is done in a package, libsysinfo.
 # Find the library and include it appropriately.
@@ -653,6 +653,10 @@ endif()
 
 if(USE_VARIABLE_SPLASH_SCREEN)
   target_compile_definitions(mudlet PRIVATE INCLUDE_VARIABLE_SPLASH_SCREEN)
+endif()
+
+if (USE_SENTRY)
+  target_compile_definitions(mudlet PRIVATE INCLUDE_SENTRY)
 endif()
 
 if(WIN32)
