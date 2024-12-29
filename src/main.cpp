@@ -212,12 +212,17 @@ int main(int argc, char* argv[])
 #endif // INCLUDE_3DMAPPER
 #endif
 
+    auto app = qobject_cast<QApplication*>(new QApplication(argc, argv));
+
 #if defined(INCLUDE_SENTRY)
     sentry_options_t* options = sentry_options_new();
     sentry_options_set_dsn(options, "https://362a6ffaa959436292d8d5eb35ff0aea@o1070874.ingest.us.sentry.io/6067272");
-    // This is also the default-path. For further information and recommendations:
-    // https://docs.sentry.io/platforms/native/configuration/options/#database-path
-    sentry_options_set_database_path(options, ".sentry-native");
+
+    QString sentryPath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + qsl("/.sentry");
+    QString sentryCrashHandler = QCoreApplication::applicationDirPath() + qsl("/crashpad_handler");
+    qDebug() << "crashpad_handler path is: " << sentryCrashHandler;
+    sentry_options_set_database_path(options, sentryPath.toLocal8Bit().constData());
+    sentry_options_set_handler_path(options, sentryCrashHandler.toLocal8Bit().constData());
     sentry_options_set_release(options, "mudlet@" APP_VERSION);
     sentry_options_set_debug(options, 1);
     sentry_init(options);
@@ -231,8 +236,6 @@ int main(int argc, char* argv[])
             /* message */ "It works!"));
 
 #endif
-
-    auto app = qobject_cast<QApplication*>(new QApplication(argc, argv));
 
     QAccessible::installFactory(TAccessibleConsole::consoleFactory);
     QAccessible::installFactory(TAccessibleTextEdit::textEditFactory);

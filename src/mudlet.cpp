@@ -714,6 +714,12 @@ void mudlet::init()
         emit signal_adjustAccessibleNames();
     });
 
+   // emulate a sample crash
+    QTimer::singleShot(5000, this, [this]() {
+        int* nullPointer = nullptr;
+        *nullPointer = 42;
+    });
+
     // PLACEMARKER: sample benchmarking code
     // looking to benchmark old/new code? Use this example
     // full docs at https://nanobench.ankerl.com
