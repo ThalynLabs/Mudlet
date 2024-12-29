@@ -218,7 +218,7 @@ int main(int argc, char* argv[])
     sentry_options_t* options = sentry_options_new();
     sentry_options_set_dsn(options, "https://362a6ffaa959436292d8d5eb35ff0aea@o1070874.ingest.us.sentry.io/6067272");
 
-    QString sentryPath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + qsl("/.sentry");
+    QString sentryPath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + qsl("/sentry");
     QString sentryCrashHandler = QCoreApplication::applicationDirPath() + qsl("/crashpad_handler");
     qDebug() << "crashpad_handler path is: " << sentryCrashHandler;
     sentry_options_set_database_path(options, sentryPath.toLocal8Bit().constData());
