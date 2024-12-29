@@ -656,6 +656,7 @@ if(USE_VARIABLE_SPLASH_SCREEN)
 endif()
 
 if (USE_SENTRY)
+  target_link_libraries(mudlet sentry::sentry)
   target_compile_definitions(mudlet PRIVATE INCLUDE_SENTRY)
 endif()
 
