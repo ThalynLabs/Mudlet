@@ -230,11 +230,6 @@ int main(int argc, char* argv[])
     // Make sure everything flushes
     auto sentryClose = qScopeGuard([] { sentry_close(); });
 
-    sentry_capture_event(sentry_value_new_message_event(
-            /*   level */ SENTRY_LEVEL_INFO,
-            /*  logger */ "custom",
-            /* message */ "It works!"));
-
 #endif
 
     QAccessible::installFactory(TAccessibleConsole::consoleFactory);
