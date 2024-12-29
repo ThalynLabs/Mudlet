@@ -212,7 +212,8 @@ int main(int argc, char* argv[])
 #endif // INCLUDE_3DMAPPER
 #endif
 
-    sentry_options_t *options = sentry_options_new();
+#if defined(INCLUDE_SENTRY)
+    sentry_options_t* options = sentry_options_new();
     sentry_options_set_dsn(options, "https://362a6ffaa959436292d8d5eb35ff0aea@o1070874.ingest.us.sentry.io/6067272");
     // This is also the default-path. For further information and recommendations:
     // https://docs.sentry.io/platforms/native/configuration/options/#database-path
@@ -223,6 +224,13 @@ int main(int argc, char* argv[])
 
     // Make sure everything flushes
     auto sentryClose = qScopeGuard([] { sentry_close(); });
+
+    sentry_capture_event(sentry_value_new_message_event(
+            /*   level */ SENTRY_LEVEL_INFO,
+            /*  logger */ "custom",
+            /* message */ "It works!"));
+
+#endif
 
     auto app = qobject_cast<QApplication*>(new QApplication(argc, argv));
 
