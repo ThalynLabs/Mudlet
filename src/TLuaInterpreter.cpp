@@ -79,9 +79,6 @@ extern "C" {
 int luaopen_yajl(lua_State*);
 }
 
-// Used temporarily where we need to supply a name to constructor which we
-// cannot obtain until after the item has been constructed:
-static const QString scDummyName{qsl("a")};
 
 // No documentation available in wiki - internal function
 static bool isMain(const QString& name)
@@ -6070,14 +6067,13 @@ std::pair<int, QString> TLuaInterpreter::startPermAlias(const QString& name, con
     TAlias* pT;
 
     if (parent.isEmpty()) {
-        pT = new TAlias(name, mpHost);
+        pT = new TAlias("a", mpHost);
     } else {
         TAlias* pP = mpHost->getAliasUnit()->findFirstAlias(parent);
         if (!pP) {
             return {-1, qsl("parent '%1' not found").arg(parent)};
         }
         pT = new TAlias(pP, mpHost);
-        pT->setName(name);
     }
     pT->setRegexCode(regex);
     pT->setIsFolder((regex.isEmpty() && function.isEmpty()));
@@ -6085,6 +6081,7 @@ std::pair<int, QString> TLuaInterpreter::startPermAlias(const QString& name, con
     pT->setTemporary(false);
     pT->registerAlias();
     pT->setScript(function);
+    pT->setName(name);
     updateEditor();
     return {pT->getID(), QString()};
 }
@@ -6093,7 +6090,7 @@ std::pair<int, QString> TLuaInterpreter::startPermAlias(const QString& name, con
 int TLuaInterpreter::startTempAlias(const QString& regex, const QString& function)
 {
     TAlias* pT;
-    pT = new TAlias(scDummyName, mpHost);
+    pT = new TAlias("a", mpHost);
     pT->setRegexCode(regex);
     pT->setIsFolder(false);
     pT->setIsActive(true);
@@ -6113,14 +6110,13 @@ std::pair<int, QString> TLuaInterpreter::startPermKey(QString& name, QString& pa
     TKey* pT;
 
     if (parent.isEmpty()) {
-        pT = new TKey(name, mpHost);
+        pT = new TKey("a", mpHost); // The use of "a" seems a bit arbitrary...!
     } else {
         TKey* pP = mpHost->getKeyUnit()->findFirstKey(parent);
         if (!pP) {
             return {-1, qsl("parent '%1' not found").arg(parent)};
         }
         pT = new TKey(pP, mpHost);
-        pT->setName(name);
     }
     pT->setKeyCode(keycode);
     pT->setKeyModifiers(modifier);
@@ -6130,6 +6126,7 @@ std::pair<int, QString> TLuaInterpreter::startPermKey(QString& name, QString& pa
     pT->registerKey();
     // CHECK: The lua code in function could fail to compile - but there is no feedback here to the caller.
     pT->setScript(function);
+    pT->setName(name);
     updateEditor();
     return {pT->getID(), QString()};
 }
@@ -6138,7 +6135,7 @@ std::pair<int, QString> TLuaInterpreter::startPermKey(QString& name, QString& pa
 int TLuaInterpreter::startTempKey(int& modifier, int& keycode, const QString& function)
 {
     TKey* pT;
-    pT = new TKey(scDummyName, mpHost);
+    pT = new TKey("a", mpHost);
     pT->setKeyCode(keycode);
     pT->setKeyModifiers(modifier);
     pT->setIsFolder(false);
@@ -6159,7 +6156,7 @@ int TLuaInterpreter::startTempExactMatchTrigger(const QString& regex, const QStr
     TTrigger* pT = nullptr;
     const QStringList sList {regex};
     QList<int> const propertyList {REGEX_EXACT_MATCH};
-    pT = new TTrigger(scDummyName, sList, propertyList, mpHost);
+    pT = new TTrigger("a", sList, propertyList, false, mpHost);
     pT->setIsFolder(false);
     pT->setIsActive(true);
     pT->setTemporary(true);
@@ -6177,7 +6174,7 @@ int TLuaInterpreter::startTempBeginOfLineTrigger(const QString& regex, const QSt
     TTrigger* pT = nullptr;
     const QStringList sList {regex};
     QList<int> const propertyList {REGEX_BEGIN_OF_LINE_SUBSTRING};
-    pT = new TTrigger(scDummyName, sList, propertyList, mpHost);
+    pT = new TTrigger("a", sList, propertyList, false, mpHost);
     pT->setIsFolder(false);
     pT->setIsActive(true);
     pT->setTemporary(true);
@@ -6195,7 +6192,7 @@ int TLuaInterpreter::startTempTrigger(const QString& regex, const QString& funct
     TTrigger* pT = nullptr;
     const QStringList sList {regex};
     QList<int> const propertyList {REGEX_SUBSTRING};
-    pT = new TTrigger(scDummyName, sList, propertyList, mpHost);
+    pT = new TTrigger("a", sList, propertyList, false, mpHost);
     pT->setIsFolder(false);
     pT->setIsActive(true);
     pT->setTemporary(true);
@@ -6213,7 +6210,7 @@ int TLuaInterpreter::startTempPromptTrigger(const QString& function, int expiryC
     TTrigger* pT;
     const QStringList sList = {QString()};
     QList<int> const propertyList = {REGEX_PROMPT};
-    pT = new TTrigger(scDummyName, sList, propertyList, mpHost);
+    pT = new TTrigger("a", sList, propertyList, false, mpHost);
     pT->setIsFolder(false);
     pT->setIsActive(true);
     pT->setTemporary(true);
@@ -6232,7 +6229,7 @@ int TLuaInterpreter::startTempLineTrigger(int from, int howmany, const QString& 
     //    QStringList sList;
     //    QList<int> propertyList;
     //    propertyList << REGEX_SUBSTRING;// substring trigger is default
-    //    pT = new TTrigger(scDummyName, sList, propertyList, mpHost );
+    //    pT = new TTrigger("a", sList, propertyList, false, mpHost );
     pT = new TTrigger(nullptr, mpHost);
     pT->setIsFolder(false);
     pT->setIsActive(true);
@@ -6255,7 +6252,7 @@ int TLuaInterpreter::startTempColorTrigger(int fg, int bg, const QString& functi
     //    QStringList sList;
     //    QList<int> propertyList;
     //    propertyList << REGEX_SUBSTRING;// substring trigger is default
-    //    pT = new TTrigger(scDummyName, sList, propertyList, mpHost );
+    //    pT = new TTrigger("a", sList, propertyList, false, mpHost );
     pT = new TTrigger(nullptr, mpHost);
     pT->setIsFolder(false);
     pT->setIsActive(true);
@@ -6276,7 +6273,7 @@ int TLuaInterpreter::startTempRegexTrigger(const QString& regex, const QString& 
     TTrigger* pT = nullptr;
     const QStringList sList {regex};
     QList<int> const propertyList {REGEX_PERL};
-    pT = new TTrigger(scDummyName, sList, propertyList, mpHost);
+    pT = new TTrigger("a", sList, propertyList, false, mpHost);
     pT->setIsFolder(false);
     pT->setIsActive(true);
     pT->setTemporary(true);
@@ -6289,7 +6286,7 @@ int TLuaInterpreter::startTempRegexTrigger(const QString& regex, const QString& 
 }
 
 // No documentation available in wiki - internal function
-std::pair<int, QString> TLuaInterpreter::startPermRegexTrigger(const QString& name, const QString& parent, QStringList& patterns, const QString& function, const int multilineDelta)
+std::pair<int, QString> TLuaInterpreter::startPermRegexTrigger(const QString& name, const QString& parent, QStringList& patterns, const QString& function)
 {
     TTrigger* pT;
     QList<int> propertyList;
@@ -6297,30 +6294,27 @@ std::pair<int, QString> TLuaInterpreter::startPermRegexTrigger(const QString& na
         propertyList << REGEX_PERL;
     }
     if (parent.isEmpty()) {
-        pT = new TTrigger(name, patterns, propertyList, mpHost);
+        pT = new TTrigger("a", patterns, propertyList, (patterns.size() > 1), mpHost);
     } else {
         TTrigger* pP = mpHost->getTriggerUnit()->findTrigger(parent);
         if (!pP) {
             return std::pair(-1, qsl("parent '%1' not found").arg(parent));
         }
         pT = new TTrigger(pP, mpHost);
-        pT->setName(name);
         pT->setRegexCodeList(patterns, propertyList);
     }
     pT->setIsFolder(patterns.empty());
     pT->setIsActive(true);
     pT->setTemporary(false);
-    pT->setIsMultiline(multilineDelta >= 0);
-    pT->setConditionLineDelta(std::max(0, multilineDelta));
     pT->registerTrigger();
     pT->setScript(function);
-
+    pT->setName(name);
     updateEditor();
     return std::pair(pT->getID(), QString());
 }
 
 // No documentation available in wiki - internal function
-std::pair<int, QString> TLuaInterpreter::startPermBeginOfLineStringTrigger(const QString& name, const QString& parent, QStringList& patterns, const QString& function, const int multilineDelta)
+std::pair<int, QString> TLuaInterpreter::startPermBeginOfLineStringTrigger(const QString& name, const QString& parent, QStringList& patterns, const QString& function)
 {
     TTrigger* pT;
     QList<int> propertyList;
@@ -6328,30 +6322,27 @@ std::pair<int, QString> TLuaInterpreter::startPermBeginOfLineStringTrigger(const
         propertyList << REGEX_BEGIN_OF_LINE_SUBSTRING;
     }
     if (parent.isEmpty()) {
-        pT = new TTrigger(name, patterns, propertyList, mpHost);
+        pT = new TTrigger("a", patterns, propertyList, (patterns.size() > 1), mpHost);
     } else {
         TTrigger* pP = mpHost->getTriggerUnit()->findTrigger(parent);
         if (!pP) {
             return {-1, qsl("parent '%1' not found").arg(parent)};
         }
         pT = new TTrigger(pP, mpHost);
-        pT->setName(name);
         pT->setRegexCodeList(patterns, propertyList);
     }
     pT->setIsFolder(patterns.empty());
     pT->setIsActive(true);
     pT->setTemporary(false);
-    pT->setIsMultiline(multilineDelta >= 0);
-    pT->setConditionLineDelta(std::max(0, multilineDelta));
     pT->registerTrigger();
     pT->setScript(function);
-
+    pT->setName(name);
     updateEditor();
     return std::pair(pT->getID(), QString());
 }
 
 // No documentation available in wiki - internal function
-std::pair<int, QString> TLuaInterpreter::startPermSubstringTrigger(const QString& name, const QString& parent, const QStringList& patterns, const QString& function, const int multilineDelta)
+std::pair<int, QString> TLuaInterpreter::startPermSubstringTrigger(const QString& name, const QString& parent, const QStringList& patterns, const QString& function)
 {
     TTrigger* pT;
     QList<int> propertyList;
@@ -6359,24 +6350,21 @@ std::pair<int, QString> TLuaInterpreter::startPermSubstringTrigger(const QString
         propertyList << REGEX_SUBSTRING;
     }
     if (parent.isEmpty()) {
-        pT = new TTrigger(name, patterns, propertyList, mpHost);
+        pT = new TTrigger("a", patterns, propertyList, (patterns.size() > 1), mpHost);
     } else {
         TTrigger* pP = mpHost->getTriggerUnit()->findTrigger(parent);
         if (!pP) {
             return {-1, qsl("parent '%1' not found").arg(parent)};
         }
         pT = new TTrigger(pP, mpHost);
-        pT->setName(name);
         pT->setRegexCodeList(patterns, propertyList);
     }
     pT->setIsFolder(patterns.empty());
     pT->setIsActive(true);
     pT->setTemporary(false);
-    pT->setIsMultiline(multilineDelta >= 0);
-    pT->setConditionLineDelta(std::max(0, multilineDelta));
     pT->registerTrigger();
     pT->setScript(function);
-
+    pT->setName(name);
     updateEditor();
     return {pT->getID(), QString()};
 }
@@ -6389,14 +6377,13 @@ std::pair<int, QString> TLuaInterpreter::startPermPromptTrigger(const QString& n
     const QStringList patterns = {QString()};
 
     if (parent.isEmpty()) {
-        pT = new TTrigger(name, patterns, propertyList, mpHost);
+        pT = new TTrigger("a", patterns, propertyList, false, mpHost);
     } else {
         TTrigger* pP = mpHost->getTriggerUnit()->findTrigger(parent);
         if (!pP) {
             return {-1, qsl("parent '%1' not found").arg(parent)};
         }
         pT = new TTrigger(pP, mpHost);
-        pT->setName(name);
         pT->setRegexCodeList(patterns, propertyList);
     }
     pT->setIsFolder(false);
@@ -6404,6 +6391,7 @@ std::pair<int, QString> TLuaInterpreter::startPermPromptTrigger(const QString& n
     pT->setTemporary(false);
     pT->registerTrigger();
     pT->setScript(function);
+    pT->setName(name);
     updateEditor();
     return {pT->getID(), QString()};
 }
