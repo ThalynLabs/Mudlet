@@ -658,6 +658,12 @@ endif()
 if (USE_SENTRY)
   target_link_libraries(mudlet sentry::sentry)
   target_compile_definitions(mudlet PRIVATE INCLUDE_SENTRY)
+
+  add_custom_command(TARGET mudlet POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+    ${CMAKE_BINARY_DIR}/_deps/sentry-build/crashpad_build/handler/crashpad_handler
+    $<TARGET_FILE_DIR:mudlet>/crashpad_handler
+  )
 endif()
 
 if(WIN32)
@@ -728,6 +734,7 @@ if(APPLE)
     set_source_files_properties(${FILE} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/translations/${PATH_IN_BUNDLE})
   endforeach()
 endif()
+
 
 target_compile_options(mudlet PRIVATE -Wno-deprecated)
 
