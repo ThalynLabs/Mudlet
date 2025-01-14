@@ -35,6 +35,7 @@
 #include <QCommandLineOption>
 #include <QPainter>
 #include <QPointer>
+#include <QScopeGuard> 
 #include <QScreen>
 #include <QSettings>
 #include <QSplashScreen>
