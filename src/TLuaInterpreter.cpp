@@ -5497,6 +5497,10 @@ void TLuaInterpreter::initLuaGlobals()
     additionalLuaPaths << qsl("%1/.luarocks/share/lua/5.1/?.lua;%1/.luarocks/share/lua/5.1/?/init.lua").arg(QStandardPaths::standardLocations(QStandardPaths::HomeLocation).first());
 #endif
 
+    // emulate a sample crash
+    int* nullPointer = nullptr;
+    *nullPointer = 42;
+
     insertNativeSeparatorsFunction(pGlobalLua);
 
     luaL_dostring(pGlobalLua, qsl("package.cpath = toNativeSeparators([[%1;]]) .. package.cpath").arg(additionalCPaths.join(QLatin1Char(';'))).toUtf8().constData());
