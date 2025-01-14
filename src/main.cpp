@@ -38,6 +38,7 @@
 #include <QScreen>
 #include <QSettings>
 #include <QSplashScreen>
+#include <QStandardPaths>
 #include <QStringList>
 #include <QTranslator>
 #include "post_guard.h"
