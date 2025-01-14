@@ -6,7 +6,7 @@ include(FetchContent)
 
 FetchContent_Declare(
     sentry
-    URL https://github.com/getsentry/sentry-native/releases/latest/download/sentry-native.zip
+    URL https://github.com/getsentry/sentry-native/releases/download/0.7.17/sentry-native.zip
     SOURCE_SUBDIR "NeedManualAddSubDir"
 )
 
