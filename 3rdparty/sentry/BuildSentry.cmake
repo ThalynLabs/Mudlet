@@ -6,9 +6,8 @@ include(FetchContent)
 
 FetchContent_Declare(
     sentry
-    GIT_REPOSITORY https://github.com/getsentry/sentry-native.git
-    GIT_TAG        ${SENTRY_VERSION}
-    SOURCE_SUBDIR  "NeedManualAddSubDir" # make it possible to add_subdirectory below
+    URL https://github.com/getsentry/sentry-native/releases/latest/download/sentry-native.zip
+    SOURCE_SUBDIR "NeedManualAddSubDir"
 )
 
 FetchContent_MakeAvailable(sentry)
