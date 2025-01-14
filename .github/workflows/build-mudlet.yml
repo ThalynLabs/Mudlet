@@ -251,6 +251,10 @@ jobs:
         echo "LUA_PATH=$LUA_PATH" >> $GITHUB_ENV
         echo "LUA_CPATH=$LUA_CPATH" >> $GITHUB_ENV
 
+    - name: Enable sentry.io for releases
+      if: matrix.deploy == 'deploy'
+      run: echo "WITH_SENTRY=yes" >> $GITHUB_ENV
+
     - name: (Linux Clang) change compiler & disable optional components
       if: runner.os == 'Linux' && matrix.compiler == 'clang_64'
       run: |
