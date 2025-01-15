@@ -27,7 +27,7 @@ jobs:
             buildname: 'ubuntu / gcc / lua tests'
             triplet: x64-linux
             compiler: gcc_64
-            gcc_compiler_version: 10
+            gcc_compiler_version: 11
             qt: '6.8.1'
             deploy: 'deploy'
             run_tests: 'true'
@@ -212,6 +212,8 @@ jobs:
           libxkbcommon-x11-0 imagemagick -y
 
         # switch to GCC that supports C++20 while retaining support for older OS's
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+        sudo apt update
         sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{matrix.gcc_compiler_version}} ${{matrix.gcc_compiler_version}}
         sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-${{matrix.gcc_compiler_version}} ${{matrix.gcc_compiler_version}}
         sudo update-alternatives --set gcc /usr/bin/gcc-${{matrix.gcc_compiler_version}}
