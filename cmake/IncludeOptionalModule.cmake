@@ -32,18 +32,24 @@
 ###########################################################################
 
 macro(include_optional_module)
-
   # parse readable arguments
   set(OPTIONAL_MODULE_OPTIONS "") # not used
-  set(OPTIONAL_MODULE_ONE_VALUE_ARGS ENVIRONMENT_VARIABLE OPTION_VARIABLE
-                                     READABLE_NAME)
+  set(OPTIONAL_MODULE_ONE_VALUE_ARGS
+    ENVIRONMENT_VARIABLE
+    OPTION_VARIABLE
+    READABLE_NAME
+    DEFAULT_VALUE)
   set(OPTIONAL_MODULE_MULTI_VALUE_ARGS SUPPORTED_SYSTEMS)
   cmake_parse_arguments(
     OPTIONAL_MODULE "${OPTIONAL_MODULE_OPTIONS}"
     "${OPTIONAL_MODULE_ONE_VALUE_ARGS}" "${OPTIONAL_MODULE_MULTI_VALUE_ARGS}"
     ${ARGN})
 
-  # check arguments for existence
+  # Set default value to ON if not specified
+  if(NOT DEFINED OPTIONAL_MODULE_DEFAULT_VALUE)
+    set(OPTIONAL_MODULE_DEFAULT_VALUE ON)
+  endif()
+
   if(NOT OPTIONAL_MODULE_ENVIRONMENT_VARIABLE)
     message(
       FATAL_ERROR
@@ -86,9 +92,8 @@ macro(include_optional_module)
         )
       endif()
     else()
-      # An environmental variable not detected, apply platform default of "yes,
-      # include the module"
-      set(OPTIONAL_MODULE_OPTION_VALUE ON)
+      # An environmental variable not detected, apply platform default
+      set(OPTIONAL_MODULE_OPTION_VALUE ${OPTIONAL_MODULE_DEFAULT_VALUE})
       message(
         STATUS "Including optional ${OPTIONAL_MODULE_READABLE_NAME}")
     endif()

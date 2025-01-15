@@ -148,7 +148,8 @@ include_optional_module(ENVIRONMENT_VARIABLE WITH_QT6
                         READABLE_NAME "build with Qt6 (if installed)")
 include_optional_module(ENVIRONMENT_VARIABLE WITH_SENTRY
                         OPTION_VARIABLE USE_SENTRY
-                        READABLE_NAME "build with sentry.io")
+                        READABLE_NAME "build with sentry.io"
+                        DEFAULT_VALUE OFF)
 
 if(USE_QT6)
   find_package(
