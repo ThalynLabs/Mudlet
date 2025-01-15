@@ -202,7 +202,7 @@ jobs:
     - name: (Linux) Install non-vcpkg dependencies (2/2)
       if: runner.os == 'Linux'
       run: |
-         # Add the PPA for necessary GCC version
+        # Add the PPA for necessary GCC version
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test
         sudo apt-get update
 
