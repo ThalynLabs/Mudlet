@@ -360,6 +360,7 @@ jobs:
         SENTRY_AUTH_TOKEN: ${{secrets.SENTRY_AUTH_TOKEN}}
       run: |
         if [ -z "$SENTRY_AUTH_TOKEN" ]; then
+          echo "No SENTRY_AUTH_TOKEN available, skipping debug symbol upload"
           exit 0
         fi
 
