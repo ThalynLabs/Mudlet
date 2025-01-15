@@ -375,7 +375,7 @@ jobs:
         sentry-cli releases finalize $SENTRY_VERSION
 
         # upload debug symbols and source code to sentry
-        sentry-cli debug-files upload --include-sources --wait ${{runner.workspace}}/b/ninja/src/mudlet ~/.luarocks/**.so
+        sentry-cli debug-files upload --include-sources --wait ${{runner.workspace}}/b/ninja/src/mudlet $(find ~/.luarocks -name "*.so")
 
     - name: add ssh-agent for release uploads
       if: (runner.os == 'Linux' || runner.os == 'macOS') && matrix.deploy == 'deploy' && startsWith(github.ref, 'refs/tags/Mudlet-')
