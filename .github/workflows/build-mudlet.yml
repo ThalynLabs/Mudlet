@@ -202,6 +202,7 @@ jobs:
     - name: (Linux) Install non-vcpkg dependencies (2/2)
       if: runner.os == 'Linux'
       run: |
+         # Add the PPA for G++ ${{matrix.gcc_compiler_version}}
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test
         sudo apt-get update
 
@@ -209,8 +210,8 @@ jobs:
         # If not available, use other methods
         # imagemagick is for the desktop screenshot
         # libcurl4-openssl-dev to have curl support asynchDNS for fetching sentry.io
-        sudo apt-get install libcurl4-openssl-dev libsecret-1-dev ccache pkg-config pcregrep expect libzip-dev libglu1-mesa-dev libpulse-dev g++-${{matrix.gcc_compiler_version}} \
-          libxkbcommon-x11-0 imagemagick -y
+        sudo apt-get install libcurl4-openssl-dev libsecret-1-dev ccache pkg-config pcregrep expect libzip-dev \ 
+          libglu1-mesa-dev libpulse-dev g++-${{matrix.gcc_compiler_version}} libxkbcommon-x11-0 imagemagick -y
 
         # switch to GCC that supports C++20 while retaining support for older OS's
         sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{matrix.gcc_compiler_version}} ${{matrix.gcc_compiler_version}}
@@ -404,7 +405,9 @@ jobs:
     # we need to be in the right place for LuaGlobals.lua to load
     - name: (Linux) Prep binary for running tests
       if: matrix.run_tests == 'true' && runner.os =='Linux'
-      run: cp ${{runner.workspace}}/b/ninja/src/mudlet ${{github.workspace}}/src
+      run: |
+        cp ${{runner.workspace}}/b/ninja/src/mudlet ${{github.workspace}}/src
+        cp -f ${{runner.workspace}}/b/ninja/src/crashpad_handler ${{github.workspace}}/src
       shell: bash
 
     - name: (macOS) Prep binary for running tests
