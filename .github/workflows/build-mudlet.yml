@@ -349,10 +349,26 @@ jobs:
         if [ "${RUNNER_OS}" = "Linux" ]; then
           sudo apt-get install libgstreamer-plugins-base1.0-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-xinerama0 xvfb -y
         fi
+
+        # install sentry-cli to upload debug symbols and source code to sentry
+        python3 -m pip install --user sentry-cli
+        export SENTRY_ORG=mudlet
+        export SENTRY_PROJECT=mudlet
+        export SENTRY_VERSION=${{env.VERSION}}${{env.MUDLET_VERSION_BUILD}}
+
+        # setup version within sentry
+        sentry-cli releases new $SENTRY_VERSION
+        sentry-cli releases set-commits $SENTRY_VERSION --auto
+        sentry-cli releases finalize $SENTRY_VERSION
+
+        # upload debug symbols and source code to sentry
+        sentry-cli debug-files upload --include-sources --wait ${{runner.workspace}}/b/ninja/src/mudlet ~/.luarocks/**.so
+
       env:
         BUILD_FOLDER: ${{runner.workspace}}/b/ninja
         RUNNER_OS: ${{runner.os}}
         DEPLOY: ${{matrix.deploy}}
+        SENTRY_AUTH_TOKEN: ${{secrets.SENTRY_AUTH_TOKEN}}
 
     - name: add ssh-agent for release uploads
       if: (runner.os == 'Linux' || runner.os == 'macOS') && matrix.deploy == 'deploy' && startsWith(github.ref, 'refs/tags/Mudlet-')
