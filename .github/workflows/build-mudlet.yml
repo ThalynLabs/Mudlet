@@ -351,7 +351,7 @@ jobs:
         fi
 
         # install sentry-cli to upload debug symbols and source code to sentry
-        pip install --upgrade --user sentry-cli
+        sudo pip install --upgrade sentry-cli
         export SENTRY_ORG=mudlet
         export SENTRY_PROJECT=mudlet
         export SENTRY_VERSION=${{env.VERSION}}${{env.MUDLET_VERSION_BUILD}}
