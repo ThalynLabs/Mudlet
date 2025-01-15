@@ -355,10 +355,14 @@ jobs:
         DEPLOY: ${{matrix.deploy}}
 
     - name: Upload debug symbols and source to sentry.io
-      if: env.WITH_SENTRY == 'yes' && secrets.SENTRY_AUTH_TOKEN
+      if: env.WITH_SENTRY == 'yes'
       env:
         SENTRY_AUTH_TOKEN: ${{secrets.SENTRY_AUTH_TOKEN}}
       run: |
+        if [ -z "$SENTRY_AUTH_TOKEN" ]; then
+          exit 0
+        fi
+
         sudo pip install --upgrade sentry-cli
         export SENTRY_ORG=mudlet
         export SENTRY_PROJECT=mudlet
