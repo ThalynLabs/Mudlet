@@ -200,10 +200,8 @@ void TTimer::execute()
 
     if (isTemporary()) {
         if (mScript.isEmpty()) {
-            qDebug() << "Executing timer Lua function:" << this;
             mpHost->mLuaInterpreter.call_luafunction(this);
         } else {
-            qDebug() << "Executing timer script:" << this;
             mpHost->mLuaInterpreter.compileAndExecuteScript(mScript);
         }
 
