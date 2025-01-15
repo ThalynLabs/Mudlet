@@ -355,7 +355,7 @@ jobs:
         DEPLOY: ${{matrix.deploy}}
 
     - name: Upload debug symbols and source to sentry.io
-      if: env.WITH_SENTRY == 'yes'
+      if: env.WITH_SENTRY == 'yes' && secrets.SENTRY_AUTH_TOKEN
       env:
         SENTRY_AUTH_TOKEN: ${{secrets.SENTRY_AUTH_TOKEN}}
       run: |
