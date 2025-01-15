@@ -629,7 +629,6 @@ target_link_libraries(
         PUGIXML::PUGIXML
         ZIP::ZIP
         ZLIB::ZLIB
-        sentry::sentry
 # PLACEMARKER: sample benchmarking code
 #       nanobench
         ${QT_LIBS})
