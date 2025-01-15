@@ -1696,8 +1696,8 @@ void mudlet::slot_timerFires()
     if (Q_LIKELY(pTT)) {
 // commented out as it will be spammy in normal situations but saved as useful
 // during timer debugging... 8-)
-//        qDebug().nospace().noquote() << "mudlet::slot_timerFires() INFO - Host: \"" << hostName << "\" QTimer firing for TTimer Id:" << id;
-//        qDebug().nospace().noquote() << "    (objectName:\"" << pQT->objectName() << "\")";
+       qDebug().nospace().noquote() << "mudlet::slot_timerFires() INFO - Host: \"" << hostName << "\" QTimer firing for TTimer Id:" << id;
+       qDebug().nospace().noquote() << "    (objectName:\"" << pQT->objectName() << "\")";
         pTT->execute();
         if (pTT->checkRestart()) {
             pTT->start();
