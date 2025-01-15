@@ -95,7 +95,7 @@ macro(include_optional_module)
       # An environmental variable not detected, apply platform default
       set(OPTIONAL_MODULE_OPTION_VALUE ${OPTIONAL_MODULE_DEFAULT_VALUE})
       message(
-        STATUS "Including optional ${OPTIONAL_MODULE_READABLE_NAME}")
+        STATUS "Optional ${OPTIONAL_MODULE_READABLE_NAME} defaulting to: ${OPTIONAL_MODULE_OPTION_VALUE}")
     endif()
     option(${OPTIONAL_MODULE_OPTION_VARIABLE}
            "Include optional ${OPTIONAL_MODULE_READABLE_NAME}"
