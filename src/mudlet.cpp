@@ -3290,6 +3290,7 @@ void mudlet::slot_compactInputLine(const bool state)
 
 mudlet::~mudlet()
 {
+    qDebug() << "mudlet::~mudlet() INFO - called!";
     // There may be a corner case if a replay is running AND the application is
     // closing down AND the updater on a particular platform pauses the
     // application destruction...?
@@ -3314,6 +3315,7 @@ mudlet::~mudlet()
         }
     }
     mudlet::smpSelf = nullptr;
+    qDebug() << "mudlet::~mudlet() INFO - finished";
 }
 
 void mudlet::slot_toggleFullScreenView()
