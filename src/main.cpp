@@ -226,7 +226,7 @@ int main(int argc, char* argv[])
     sentry_options_set_database_path(options, sentryPath.toLocal8Bit().constData());
     sentry_options_set_handler_path(options, sentryCrashHandler.toLocal8Bit().constData());
     sentry_options_set_release(options, "mudlet@" APP_VERSION);
-    sentry_options_set_debug(options, 1);
+    sentry_options_set_debug(options, false);
     sentry_init(options);
 
     // Make sure everything flushes
