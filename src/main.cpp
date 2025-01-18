@@ -216,6 +216,14 @@ int main(int argc, char* argv[])
 
     auto app = qobject_cast<QApplication*>(new QApplication(argc, argv));
 
+    QFile gitShaFile(":/app-build.txt");
+    gitShaFile.open(QIODevice::ReadOnly | QIODevice::Text);
+    const QString appBuild = QString::fromUtf8(gitShaFile.readAll()).trimmed();
+
+    const bool releaseVersion = appBuild.isEmpty();
+    const bool publicTestVersion = appBuild.startsWith("-ptb");
+    const bool testingVersion = appBuild.startsWith("-testing");
+
 #if defined(INCLUDE_SENTRY)
     sentry_options_t* options = sentry_options_new();
     sentry_options_set_dsn(options, "https://362a6ffaa959436292d8d5eb35ff0aea@o1070874.ingest.us.sentry.io/6067272");
@@ -227,6 +235,16 @@ int main(int argc, char* argv[])
     sentry_options_set_handler_path(options, sentryCrashHandler.toLocal8Bit().constData());
     sentry_options_set_release(options, "mudlet@" APP_VERSION);
     sentry_options_set_debug(options, false);
+    if (releaseVersion) {
+        sentry_options_set_environment(options, "release");
+    } else if (publicTestVersion) {
+        sentry_options_set_environment(options, "public-test-build");
+    } else if (testingVersion) {
+        sentry_options_set_environment(options, "testing");
+    } else {
+        sentry_options_set_environment(options, "development");
+    }
+
     sentry_init(options);
 
     // Make sure everything flushes
@@ -260,13 +278,6 @@ int main(int argc, char* argv[])
     // activity even if the quiet, no splashscreen startup has been used
     app->setOverrideCursor(QCursor(Qt::WaitCursor));
     app->setOrganizationName(qsl("Mudlet"));
-
-    QFile gitShaFile(":/app-build.txt");
-    gitShaFile.open(QIODevice::ReadOnly | QIODevice::Text);
-    const QString appBuild = QString::fromUtf8(gitShaFile.readAll()).trimmed();
-
-    const bool releaseVersion = appBuild.isEmpty();
-    const bool publicTestVersion = appBuild.startsWith("-ptb");
 
     if (publicTestVersion) {
         app->setApplicationName(qsl("Mudlet Public Test Build"));
