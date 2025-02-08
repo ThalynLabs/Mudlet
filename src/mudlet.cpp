@@ -1745,6 +1745,11 @@ void mudlet::disableToolbarButtons()
     dactionModuleManager->setEnabled(false);
     dactionPackageExporter->setEnabled(false);
 
+    dactionToggleTimeStamp->setEnabled(false);
+    dactionToggleReplay->setEnabled(false);
+    dactionToggleLogging->setEnabled(false);
+    dactionToggleEmergencyStop->setEnabled(false);
+
     mpActionIRC->setEnabled(false);
     dactionIRC->setEnabled(false);
 
@@ -1801,6 +1806,11 @@ void mudlet::enableToolbarButtons()
     dactionPackageManager->setEnabled(true);
     dactionModuleManager->setEnabled(true);
     dactionPackageExporter->setEnabled(true);
+
+    dactionToggleTimeStamp->setEnabled(true);
+    dactionToggleReplay->setEnabled(true);
+    dactionToggleLogging->setEnabled(true);
+    dactionToggleEmergencyStop->setEnabled(true);
 
     mpActionIRC->setEnabled(true);
     dactionIRC->setEnabled(true);
@@ -5078,6 +5088,7 @@ void mudlet::setupPreInstallPackages(const QString& gameUrl)
         {qsl(":/echo.mpackage"),                          {qsl("*")}},
         {qsl(":/deleteOldProfiles.mpackage"),             {qsl("*")}},
         {qsl(":/enable-accessibility.mpackage"), {qsl("*")}},
+        {qsl(":/mpkg.mpackage"),                    {qsl("*")}},
         {qsl(":/mudlet-lua/lua/gui-drop/gui-drop.mpackage"), {qsl("*")}},
         {qsl(":/CF-loader.xml"),                     {qsl("carrionfields.net")}},
         {qsl(":/mg-loader.xml"),                     {qsl("mg.mud.de")}},

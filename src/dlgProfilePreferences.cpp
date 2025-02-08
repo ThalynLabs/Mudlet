@@ -778,8 +778,15 @@ void dlgProfilePreferences::initWithHost(Host* pHost)
     need_reconnect_for_data_protocol->hide();
 
     checkBox_announceIncomingText->setChecked(pHost->mAnnounceIncomingText);
-    checkBox_advertiseScreenReader->setChecked(pHost->mAdvertiseScreenReader);
+    checkBox_advertiseScreenReader->setChecked(pHost->mAdvertiseScreenReader); 
     connect(checkBox_advertiseScreenReader, &QCheckBox::toggled, this, &dlgProfilePreferences::slot_toggleAdvertiseScreenReader);
+
+    // Block signals before setting initial state to prevent toggled signal
+    checkBox_f3SearchEnabled->blockSignals(true);
+    checkBox_f3SearchEnabled->setChecked(pHost->getF3SearchEnabled());
+    checkBox_f3SearchEnabled->blockSignals(false);
+    // Now connect the signal
+    connect(checkBox_f3SearchEnabled, &QCheckBox::toggled, pHost, &Host::setF3SearchEnabled);
 
     // same with special connection warnings
     need_reconnect_for_specialoption->hide();
@@ -803,6 +810,7 @@ void dlgProfilePreferences::initWithHost(Host* pHost)
 
     wrap_at_spinBox->setValue(pHost->mWrapAt);
     indent_wrapped_spinBox->setValue(pHost->mWrapIndentCount);
+    hanging_indent_wrapped_spinBox->setValue(pHost->mWrapHangingIndentCount);
 
     show_sent_text_checkbox->setChecked(pHost->mPrintCommand);
     auto_clear_input_line_checkbox->setChecked(pHost->mAutoClearCommandLineAfterSend);
@@ -1274,9 +1282,8 @@ void dlgProfilePreferences::initWithHost(Host* pHost)
         shortcutsRow++;
         connect(sequenceEdit, &QKeySequenceEdit::editingFinished, this, [=]() {
             QKeySequence* newSequence = nullptr;
-            if (sequenceEdit->keySequence().isEmpty()) {
-                newSequence = sequence;
-            } else if (sequenceEdit->keySequence().matches(QKeySequence(Qt::Key_Escape))) {
+            if (sequenceEdit->keySequence().isEmpty()
+                    || sequenceEdit->keySequence().matches(QKeySequence(Qt::Key_Escape))) {
                 newSequence = new QKeySequence();
             } else {
                 newSequence = new QKeySequence(sequenceEdit->keySequence());
@@ -2890,6 +2897,7 @@ void dlgProfilePreferences::slot_saveAndClose()
 
         pHost->updateDisplayDimensions();
         pHost->mWrapIndentCount = indent_wrapped_spinBox->value();
+        pHost->mWrapHangingIndentCount = hanging_indent_wrapped_spinBox->value();
         pHost->mPrintCommand = show_sent_text_checkbox->isChecked();
         pHost->mAutoClearCommandLineAfterSend = auto_clear_input_line_checkbox->isChecked();
         pHost->mHighlightHistory = checkBox_highlightHistory->isChecked();
@@ -3143,7 +3151,6 @@ void dlgProfilePreferences::slot_saveAndClose()
         pHost->setMayRedefineColors(checkBox_allowServerToRedefineColors->isChecked());
         pHost->setDebugShowAllProblemCodepoints(checkBox_debugShowAllCodepointProblems->isChecked());
         pHost->mCaretShortcut = static_cast<Host::CaretShortcut>(comboBox_caretModeKey->currentIndex());
-
         if (widget_playerRoomStyle->isVisible()) {
             // Although the controls have been interactively modifying the
             // TMap cached values for these, they were not being committed to
