@@ -160,6 +160,7 @@ QTranslator* loadTranslationsForCommandLine()
     return pMudletTranslator;
 }
 
+#if defined(INCLUDE_SENTRY)
 struct VersionInfo {
     bool isRelease;
     bool isPublicTest;
@@ -184,6 +185,7 @@ sentry_value_t before_send(sentry_value_t event, void* hint, void* closure) {
     }
     return event;
 }
+#endif
 
 #ifdef Q_OS_WINDOWS
 void msys2QtMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg)
