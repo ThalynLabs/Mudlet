@@ -289,9 +289,13 @@ dlgProfilePreferences::dlgProfilePreferences(QWidget* pParentWidget, Host* pHost
     label_invalidFontError->hide();
     label_variableWidthFontWarning->hide();
 
+    checkBox_crashreportsOfficial->setChecked(mudlet::self()->smSendCrashesForReleases);
+        checkBox_crashreportsTesting->setChecked(mudlet::self()->smSendCrashesForTesting);
     // only show the "Crash reports" section for testing/PTB releases if we're on one,
     // otherwise don't add visual clutter
-    if (mudlet::self()->releaseVersion) {
+    if (!mudlet::self()->releaseVersion) {
+        checkBox_crashreportsTesting->show();
+    } else {
         checkBox_crashreportsTesting->hide();
     }
 
@@ -3181,6 +3185,9 @@ void dlgProfilePreferences::slot_saveAndClose()
             pHost->profileShortcuts.value(key)->swap(sequence);
         }
     }
+
+    mudlet::self()->smSendCrashesForReleases = checkBox_crashreportsOfficial->isChecked();
+    mudlet::self()->smSendCrashesForTesting = checkBox_crashreportsTesting->isChecked();
 
 #if defined(INCLUDE_UPDATER)
     if (mudlet::self()->releaseVersion || mudlet::self()->publicTestVersion || qEnvironmentVariableIsSet("DEV_UPDATER")) {
