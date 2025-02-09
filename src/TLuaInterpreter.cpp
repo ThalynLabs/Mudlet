@@ -4969,9 +4969,6 @@ void TLuaInterpreter::initLuaGlobals()
     pGlobalLua = newstate();
     storeHostInLua(pGlobalLua, mpHost);
 
-    // fake crash here for testing
-    *((int*)0xDEADBEEF) = 42;
-
     luaL_openlibs(pGlobalLua);
 
     lua_pushstring(pGlobalLua, "SESSION");
