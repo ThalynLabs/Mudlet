@@ -237,6 +237,17 @@ int main(int argc, char* argv[])
     sentry_options_set_handler_path(options, sentryCrashHandler.toLocal8Bit().constData());
     sentry_options_set_release(options, "mudlet@" APP_VERSION);
     sentry_options_set_debug(options, false);
+
+    sentry_options_set_before_send(options, [](sentry_event_t* event, void* hint, void* closure) -> sentry_event_t* {
+        if (releaseVersion && !mudlet::smSendCrashesForReleases) {
+            return nullptr;
+        }
+        if ((publicTestVersion || testingVersion) && !mudlet::smSendCrashesForTesting) {
+            return nullptr;
+        }
+        return event;
+    }, nullptr);
+
     if (releaseVersion) {
         sentry_options_set_environment(options, "release");
     } else if (publicTestVersion) {
@@ -251,7 +262,6 @@ int main(int argc, char* argv[])
 
     // Make sure everything flushes
     auto sentryClose = qScopeGuard([] { sentry_close(); });
-
 #endif
 
     QAccessible::installFactory(TAccessibleConsole::consoleFactory);
