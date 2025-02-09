@@ -160,6 +160,31 @@ QTranslator* loadTranslationsForCommandLine()
     return pMudletTranslator;
 }
 
+struct VersionInfo {
+    bool isRelease;
+    bool isPublicTest;
+    bool isTesting;
+};
+    
+sentry_value_t before_send(sentry_value_t event, void* hint, void* closure) {
+    auto* versions = static_cast<VersionInfo*>(closure);
+    if (versions->isRelease) {
+        // For release builds, check smSendCrashesForReleases
+        if (!mudlet::self()->smSendCrashesForReleases) {
+            return sentry_value_new_null();
+        }
+    } else if (versions->isPublicTest || versions->isTesting) {
+        // For PTB/testing builds, check smSendCrashesForTesting  
+        if (!mudlet::self()->smSendCrashesForTesting) {
+            return sentry_value_new_null();
+        }
+    } else {
+        // Development builds - don't send crashes
+        return sentry_value_new_null();
+    }
+    return event;
+}
+
 int main(int argc, char* argv[])
 {
     // print stdout to console if Mudlet is started in a console in Windows
@@ -238,15 +263,8 @@ int main(int argc, char* argv[])
     sentry_options_set_release(options, "mudlet@" APP_VERSION);
     sentry_options_set_debug(options, false);
 
-    sentry_options_set_before_send(options, [](sentry_event_t* event, void* hint, void* closure) -> sentry_event_t* {
-        if (releaseVersion && !mudlet::smSendCrashesForReleases) {
-            return nullptr;
-        }
-        if ((publicTestVersion || testingVersion) && !mudlet::smSendCrashesForTesting) {
-            return nullptr;
-        }
-        return event;
-    }, nullptr);
+    VersionInfo versions{releaseVersion, publicTestVersion, testingVersion};
+    sentry_options_set_before_send(options, before_send, &versions);
 
     if (releaseVersion) {
         sentry_options_set_environment(options, "release");
