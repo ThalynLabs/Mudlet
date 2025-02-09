@@ -4970,7 +4970,7 @@ void TLuaInterpreter::initLuaGlobals()
     storeHostInLua(pGlobalLua, mpHost);
 
     // fake crash here for testing
-    *((int*)0) = 0;
+    *((int*)0xDEADBEEF) = 42;
 
     luaL_openlibs(pGlobalLua);
 
