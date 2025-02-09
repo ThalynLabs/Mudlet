@@ -2058,6 +2058,7 @@ void mudlet::readEarlySettings(const QSettings& settings)
         qWarning().nospace().noquote() << "mudlet::readEarlySettings(...) WARNING - Unable to convert language code \"" << mInterfaceLanguage << "\" to a recognised locale, reverting to the POSIX 'C' one.";
         return;
     }
+}
 
 void mudlet::readLateSettings(const QSettings& settings)
 {
