@@ -214,6 +214,9 @@ public:
     inline static bool smSteamMode = false;
 
 
+    inline static bool smSendCrashesForReleases = false;  
+    inline static bool smSendCrashesForTesting = true;
+
     void showEvent(QShowEvent*) override;
     void hideEvent(QHideEvent*) override;
 
