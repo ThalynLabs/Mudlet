@@ -556,7 +556,7 @@ TConsole::TConsole(Host* pH, const QString& name, const ConsoleType type, QWidge
     // Need to delay doing this because it uses elements that may not have
     // been constructed yet:
     if (mType == MainConsole) {
-        QTimer::singleShot(0, this, [this]() { 
+        QTimer::singleShot(0, this, [this]() {
             setProxyForFocus(mpCommandLine);
         });
     }
@@ -1863,7 +1863,7 @@ void TConsole::slot_searchBufferUp()
         } while (searchX > -1);
 
         if (found) {
-            
+
             // Scroll to show the match
             scrollUp(buffer.mCursorY - searchY - 3);
             mUpperPane->forceUpdate();
@@ -1902,7 +1902,7 @@ void TConsole::slot_searchBufferDown()
         } while (searchX > -1);
 
         if (found) {
-            
+
             // Scroll to show the match
             scrollUp(buffer.mCursorY - searchY - 3);
             mUpperPane->forceUpdate();
@@ -1937,11 +1937,7 @@ void TConsole::dragEnterEvent(QDragEnterEvent* e)
         // Use ctrl key to decide if action is link or copy
         // CopyAction corresponds to installing dropped file as a package
         // LinkAction corresponds to installing dropped file as a module
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        Qt::KeyboardModifiers modifiers = e->keyboardModifiers();
-#else
         Qt::KeyboardModifiers modifiers = e->modifiers();
-#endif
         if (modifiers & Qt::ControlModifier) {
             e->setDropAction(Qt::LinkAction);
         } else {
@@ -1957,11 +1953,7 @@ void TConsole::dragMoveEvent(QDragMoveEvent* e)
         // Use ctrl key to decide if action is link or copy
         // CopyAction corresponds to installing dropped file as a package
         // LinkAction corresponds to installing dropped file as a module
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        Qt::KeyboardModifiers modifiers = e->keyboardModifiers();
-#else
         Qt::KeyboardModifiers modifiers = e->modifiers();
-#endif
         if (modifiers & Qt::ControlModifier) {
             e->setDropAction(Qt::LinkAction);
         } else {
@@ -1978,11 +1970,7 @@ void TConsole::dropEvent(QDropEvent* e)
         const QString fname = url.toLocalFile();
         const QFileInfo info(fname);
         if (info.exists()) {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            const QPoint pos = e->pos();
-#else
             QPoint pos = e->position().toPoint();
-#endif
             TEvent mudletEvent{};
             mudletEvent.mArgumentList.append(QLatin1String("sysDropEvent"));
             mudletEvent.mArgumentList.append(fname);
@@ -2001,11 +1989,7 @@ void TConsole::dropEvent(QDropEvent* e)
     }
     if (e->mimeData()->hasText()) {
         if (const QUrl url(e->mimeData()->text()); url.isValid()) {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            const QPoint pos = e->pos();
-#else
             QPoint pos = e->position().toPoint();
-#endif
             TEvent mudletEvent{};
             mudletEvent.mArgumentList.append(QLatin1String("sysDropUrlEvent"));
             mudletEvent.mArgumentList.append(url.toString());
@@ -2065,11 +2049,7 @@ void TConsole::raiseMudletMousePressOrReleaseEvent(QMouseEvent* event, const boo
     case Qt::ExtraButton24: mudletEvent.mArgumentList.append(QString::number(27));  break;
     default:                mudletEvent.mArgumentList.append(QString::number(0));
     }
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    const QPoint pos = event->pos();
-#else
     QPoint pos = event->position().toPoint();
-#endif
     mudletEvent.mArgumentList.append(QString::number(pos.x()));
     mudletEvent.mArgumentList.append(QString::number(pos.y()));
     mudletEvent.mArgumentList.append(mConsoleName);
