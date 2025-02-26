@@ -166,11 +166,6 @@ void mudlet::init()
         qApp->setAttribute(Qt::AA_DontShowIconsInMenus, (mShowIconsOnMenuCheckedState == Qt::Unchecked));
     }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    // 'AA_UseHighDpiPixmaps' is deprecated in Qt6: High-DPI pixmaps are always enabled.
-    qApp->setAttribute(Qt::AA_UseHighDpiPixmaps);
-#endif
-
     // We need to record this before we clobber it with our own substitute...
     mDefaultStyle = qApp->style()->objectName();
     // ... which is applied here:
@@ -497,10 +492,6 @@ void mudlet::init()
     connect(this, &mudlet::signal_windowStateChanged, this, &mudlet::slot_windowStateChanged);
 
     const QFont mainFont = QFont(qsl("Bitstream Vera Sans Mono"), 8, QFont::Normal);
-    #if defined(Q_OS_MACOS) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    // Add Apple Color Emoji fallback.
-    QFont::insertSubstitution(mainFont.family(), qsl("Apple Color Emoji"));
-    #endif
     mpWidget_profileContainer->setFont(mainFont);
     mpWidget_profileContainer->show();
 
@@ -545,7 +536,7 @@ void mudlet::init()
     connect(dactionDiscord, &QAction::triggered, this, &mudlet::slot_profileDiscord);
     connect(dactionMudletDiscord, &QAction::triggered, this, &mudlet::slot_mudletDiscord);
     connect(dactionLiveHelpChat, &QAction::triggered, this, &mudlet::slot_showHelpDialogIrc);
-    connect(dactionShowErrors, &QAction::triggered, this, [=]() {
+    connect(dactionShowErrors, &QAction::triggered, this, [=, this]() {
         auto host = getActiveHost();
         if (!host) {
             return;
@@ -825,10 +816,6 @@ void mudlet::setupConfig()
     qDebug() << "mudlet::setupConfig() INFO:" << "using config dir:" << confPath;
 
     mpSettings = new QSettings(qsl("%1/Mudlet.ini").arg(confPath), QSettings::IniFormat);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    // This will ensure compatibility going forward and backward
-    mpSettings->setIniCodec(QTextCodec::codecForName("UTF-8"));
-#endif
     migrateConfig(*mpSettings);
 }
 
@@ -2270,7 +2257,7 @@ void mudlet::slot_showConnectionDialog()
     QStringList packagesToInstall = mInstanceCoordinator->readPackageQueue();
     mpConnectionDialog->indicatePackagesInstallOnConnect(packagesToInstall);
 
-    connect(mpConnectionDialog, &QDialog::accepted, this, [=]() { enableToolbarButtons(); });
+    connect(mpConnectionDialog, &QDialog::accepted, this, [=, this]() { enableToolbarButtons(); });
     mpConnectionDialog->setAttribute(Qt::WA_DeleteOnClose);
     mpConnectionDialog->show();
 }
@@ -2422,7 +2409,7 @@ void mudlet::showOptionsDialog(const QString& tab)
         connect(dactionReconnect, &QAction::triggered, pPrefs->need_reconnect_for_data_protocol, &QWidget::hide);
         connect(mpActionReconnect.data(), &QAction::triggered, pPrefs->need_reconnect_for_specialoption, &QWidget::hide);
         connect(dactionReconnect, &QAction::triggered, pPrefs->need_reconnect_for_specialoption, &QWidget::hide);
-        connect(pPrefs, &dlgProfilePreferences::signal_preferencesSaved, this, [=]() {
+        connect(pPrefs, &dlgProfilePreferences::signal_preferencesSaved, this, [=, this]() {
             slot_assignShortcutsFromProfile(getActiveHost());
         });
         pPrefs->setAttribute(Qt::WA_DeleteOnClose);
@@ -2913,7 +2900,7 @@ void mudlet::startAutoLogin(const QStringList& cliProfiles)
     if (loadedProfiles == 0) {
         slot_showConnectionDialog();
     } else {
-        qDebug() << "All" << loadedProfiles << "profiles in" << timer.elapsed()/1000.0 << "seconds";
+        qDebug() << "All" << loadedProfiles << "profiles loaded in" << timer.elapsed()/1000.0 << "seconds";
     }
 }
 
@@ -3018,7 +3005,7 @@ void mudlet::doAutoLogin(const QString& profile_name)
         return;
     }
 
-    Host *pHost = loadProfile(profile_name, true);
+    loadProfile(profile_name, true);
 
     slot_connectionDialogueFinished(profile_name, true);
     enableToolbarButtons();
@@ -3100,6 +3087,10 @@ void mudlet::slot_connectionDialogueFinished(const QString& profile, bool connec
     TEvent event {};
     event.mArgumentList.append(QLatin1String("sysLoadEvent"));
     event.mArgumentTypeList.append(ARGUMENT_TYPE_STRING);
+    // A non-zero value is how we send a "true" value - which indicates that
+    // this is for a freshly loaded profile (and NOT one after a resetProfile()):
+    event.mArgumentList.append(QString::number(1));
+    event.mArgumentTypeList.append(ARGUMENT_TYPE_BOOLEAN);
     pHost->raiseEvent(event);
 
     // Now load the default (latest stored) map file:
@@ -3769,11 +3760,7 @@ QString mudlet::getMudletPath(const enums::mudletPathType mode, const QString& e
         // when saving/resyncing packages/modules - ends in a '/'
         return qsl("%1/moduleBackups/").arg(confPath);
     case enums::qtTranslationsPath:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        return QLibraryInfo::location(QLibraryInfo::TranslationsPath);
-#else
         return QLibraryInfo::path(QLibraryInfo::TranslationsPath);
-#endif
     case enums::hunspellDictionaryPath:
         // Added for 3.18.0 when user dictionary capability added
 #if defined(Q_OS_MACOS)
@@ -3970,7 +3957,7 @@ void mudlet::slot_updateInstalled()
     disconnect(dactionUpdate, &QAction::triggered, this, nullptr);
 
     // rejig to restart Mudlet instead
-    connect(dactionUpdate, &QAction::triggered, this, [=]() {
+    connect(dactionUpdate, &QAction::triggered, this, [=, this]() {
         forceClose();
         QProcess::startDetached(qApp->arguments()[0], qApp->arguments());
     });
@@ -4411,10 +4398,6 @@ bool mudlet::scanDictionaryFile(const QString& dictionaryPath, int& oldWC, QHash
     }
 
     QTextStream ds(&dict);
-    // In Qt6 the default encoding is UTF-8 instead
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    ds.setCodec(QTextCodec::codecForName("UTF-8"));
-#endif
     QString dictionaryLine;
     ds.readLineInto(&dictionaryLine);
 
@@ -4483,10 +4466,6 @@ bool mudlet::overwriteDictionaryFile(const QString& dictionaryPath, const QStrin
     }
 
     QTextStream ds(&dict);
-    // In Qt6 the default encoding is UTF-8
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    ds.setCodec(QTextCodec::codecForName("UTF-8"));
-#endif
     ds << qMax(0, wl.count());
     if (!wl.isEmpty()) {
       ds << QChar(QChar::LineFeed);
@@ -4512,10 +4491,6 @@ int mudlet::getDictionaryWordCount(const QString &dictionaryPath)
     }
 
     QTextStream ds(&dict);
-    // In Qt6 the default encoding is UTF-8
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    ds.setCodec(QTextCodec::codecForName("UTF-8"));
-#endif
     QString dictionaryLine;
     // Read the header line containing the word count:
     ds.readLineInto(&dictionaryLine);
@@ -4563,10 +4538,6 @@ bool mudlet::overwriteAffixFile(const QString& affixPath, const QHash<QString, u
     }
 
     QTextStream as(&aff);
-    // In Qt6 the default encoding is UTF-8
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    as.setCodec(QTextCodec::codecForName("UTF-8"));
-#endif
     as << affixLines.join(QChar::LineFeed).toUtf8();
     as << QChar(QChar::LineFeed);
     as.flush();
@@ -4844,11 +4815,8 @@ static QString getShortPathName(const QString& name)
     }
     QScopedArrayPointer<TCHAR> buffer(new TCHAR[length]);
     GetShortPathNameW(nameC, buffer.data(), length);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    const QString rc = QString::fromUtf16(reinterpret_cast<const ushort*>(buffer.data()), length - 1);
-#else
     const QString rc = QString::fromWCharArray(buffer.data(), length - 1);
-#endif
+
     return rc;
 }
 
@@ -5027,7 +4995,7 @@ void mudlet::setupTrayIcon()
     mTrayIcon.setIcon(windowIcon());
     auto menu = new QMenu(this);
     auto hideTrayAction = new QAction(tr("Hide tray icon"), this);
-    connect(hideTrayAction, &QAction::triggered, this, [=]() {
+    connect(hideTrayAction, &QAction::triggered, this, [=, this]() {
        mTrayIcon.hide();
     });
     menu->addAction(hideTrayAction);

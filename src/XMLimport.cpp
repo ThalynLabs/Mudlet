@@ -1161,14 +1161,10 @@ void XMLimport::readHost(Host* pHost)
 #endif
             } else if (name() == qsl("mDisplayFont")) {
                 pHost->setDisplayFontFromString(readElementText());
-#if defined(Q_OS_LINUX)
-                // On Linux ensure that emojis are displayed in colour even if
-                // this font doesn't support it:
+#if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
+                // On GNU/Linux and FreeBSD ensure that emojis are displayed in
+                // colour even if this font doesn't support it:
                 QFont::insertSubstitution(pHost->mDisplayFont.family(), qsl("Noto Color Emoji"));
-#endif
-#if defined(Q_OS_MACOS) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                // Add Apple Color Emoji fallback.
-                QFont::insertSubstitution(pHost->mDisplayFont.family(), qsl("Apple Color Emoji"));
 #endif
                 pHost->setDisplayFontFixedPitch(true);
             } else if (name() == qsl("mCommandLineFont")) {
