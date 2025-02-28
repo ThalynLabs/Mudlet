@@ -1441,12 +1441,6 @@ void dlgProfilePreferences::clearHostDetails()
     mFORCE_GA_OFF->setChecked(false);
     mAlertOnNewData->setChecked(false);
     mFORCE_SAVE_ON_EXIT->setChecked(false);
-    mEnableGMCP->setChecked(false);
-    mEnableMSSP->setChecked(false);
-    mEnableMSDP->setChecked(false);
-    mEnableMSP->setChecked(false);
-    mEnableMTTS->setChecked(false);
-    mEnableMNES->setChecked(false);
 
     pushButton_chooseProfiles->setEnabled(false);
     pushButton_copyMap->setEnabled(false);
