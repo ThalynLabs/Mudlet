@@ -3562,7 +3562,7 @@ you can use it but there could be issues with aligning columns of text</string>
          <property name="checked">
           <bool>false</bool>
          </property>
-         <layout class="QVBoxLayout" name="vBoxLayout_groupBox_proxy">
+         <layout class="QHBoxLayout" name="hBoxLayout_groupBox_proxy">
           <item>
            <widget class="QLineEdit" name="lineEdit_proxyAddress">
             <property name="text">
