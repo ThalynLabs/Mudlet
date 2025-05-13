@@ -110,6 +110,7 @@ public:
     bool purgeMediaCache();
     void muteMedia(const TMediaData::MediaProtocol mediaProtocol);
     void unmuteMedia(const TMediaData::MediaProtocol mediaProtocol);
+    void printClosedCaption(const TMediaData& mediaData, const QString& action) const;
 
 private slots:
     void slot_writeFile(QNetworkReply* reply);
@@ -162,6 +163,7 @@ private:
     static QString parseJSONByMediaKey(QJsonObject& json);
     static TMediaData::MediaFadeAway parseJSONByMediaFadeAway(QJsonObject& json);
     static TMediaData::MediaClose parseJSONByMediaClose(QJsonObject& json);
+    static QString parseJSONByMediaCaption(QJsonObject& json);
 
     void parseJSONForMediaDefault(QJsonObject& json);
     void parseJSONForMediaLoad(QJsonObject& json);

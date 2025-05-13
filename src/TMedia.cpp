@@ -329,6 +329,8 @@ void TMedia::stopMedia(TMediaData& mediaData)
             const int endDuration = fadeOut != TMediaData::MediaFadeNotSet ? std::min(remainingDuration, fadeOut) : std::min(remainingDuration, 5000);
             const int endPosition = currentPosition + endDuration;
 
+            printClosedCaption(pPlayer->mediaData(), tr("fades"));
+
             TMediaData updateMediaData = pPlayer->mediaData();
             updateMediaData.setMediaFadeOut(endDuration);
             updateMediaData.setMediaEnd(endPosition);
@@ -967,7 +969,7 @@ void TMedia::connectMediaPlayer(std::shared_ptr<TMediaPlayer>& player)
 
     // Media status changed connection
     disconnect(player->mediaPlayer(), &QMediaPlayer::mediaStatusChanged, nullptr, nullptr);
-    connect(player->mediaPlayer(), &QMediaPlayer::mediaStatusChanged, this, [weakPlayer](QMediaPlayer::MediaStatus mediaStatus) {
+    connect(player->mediaPlayer(), &QMediaPlayer::mediaStatusChanged, this, [this, weakPlayer](QMediaPlayer::MediaStatus mediaStatus) {
         if (auto lockedPlayer = weakPlayer.lock()) {
             if (mediaStatus == QMediaPlayer::EndOfMedia) {
                 if (lockedPlayer->playlist() && !lockedPlayer->playlist()->isEmpty()) {
@@ -997,7 +999,7 @@ void TMedia::connectMediaPlayer(std::shared_ptr<TMediaPlayer>& player)
 
     // Position changed connection (handles fade-in/fade-out effects)
     disconnect(player->mediaPlayer(), &QMediaPlayer::positionChanged, nullptr, nullptr);
-    connect(player->mediaPlayer(), &QMediaPlayer::positionChanged, this, [weakPlayer](qint64 progress) {
+    connect(player->mediaPlayer(), &QMediaPlayer::positionChanged, this, [this, weakPlayer](qint64 progress) {
         if (auto lockedPlayer = weakPlayer.lock()) { // Ensure the player is still valid
             const int volume = lockedPlayer->mediaData().mediaVolume();
             const int duration = lockedPlayer->mediaPlayer()->duration();
@@ -1258,6 +1260,42 @@ void TMedia::handlePlayerPlaybackStateChanged(QMediaPlayerPlaybackState playback
                 }
             }
         }
+
+        printClosedCaption(player->mediaData(), tr("stops"));
+        return;
+    } else if (playbackState == QMediaPlayer::PlayingState && player->mediaData().mediaVolume() != TMediaData::MediaVolumePreload) {
+        TEvent mediaStarted{};
+        mediaStarted.mArgumentList.append("sysMediaStarted");
+
+        const QUrl mediaUrl = player->mediaPlayer()->source();
+        mediaStarted.mArgumentList.append(mediaUrl.fileName());
+        mediaStarted.mArgumentList.append(mediaUrl.path());
+        mediaStarted.mArgumentTypeList.append(ARGUMENT_TYPE_STRING);
+        mediaStarted.mArgumentTypeList.append(ARGUMENT_TYPE_STRING);
+        mediaStarted.mArgumentTypeList.append(ARGUMENT_TYPE_STRING);
+
+        if (mpHost) {
+            mpHost->raiseEvent(mediaStarted);
+        }
+
+        printClosedCaption(player->mediaData(), tr("plays"));
+        return;
+    } else if (playbackState == QMediaPlayer::PausedState) {
+        TEvent mediaPaused{};
+        mediaPaused.mArgumentList.append("sysMediaPaused");
+
+        const QUrl mediaUrl = player->mediaPlayer()->source();
+        mediaPaused.mArgumentList.append(mediaUrl.fileName());
+        mediaPaused.mArgumentList.append(mediaUrl.path());
+        mediaPaused.mArgumentTypeList.append(ARGUMENT_TYPE_STRING);
+        mediaPaused.mArgumentTypeList.append(ARGUMENT_TYPE_STRING);
+        mediaPaused.mArgumentTypeList.append(ARGUMENT_TYPE_STRING);
+
+        if (mpHost) {
+            mpHost->raiseEvent(mediaPaused);
+        }
+
+        printClosedCaption(player->mediaData(), tr("pauses"));
     }
 }
 
@@ -1888,6 +1926,13 @@ TMediaData::MediaClose TMedia::parseJSONByMediaClose(QJsonObject& json)
     return mediaClose;
 }
 
+// Documentation: https://wiki.mudlet.org/w/Standards:MUD_Client_Media_Protocol#caption
+QString TMedia::parseJSONByMediaCaption(QJsonObject& json)
+{
+    // Returns the 'caption' field if present, else empty string
+    return json.contains("caption") && json["caption"].isString() ? json["caption"].toString() : QString();
+}
+
 // Documentation: https://wiki.mudlet.org/w/Manual:Scripting#Loading_Media
 void TMedia::parseJSONForMediaDefault(QJsonObject& json)
 {
@@ -1910,6 +1955,7 @@ void TMedia::parseJSONForMediaLoad(QJsonObject& json)
     mediaData.setMediaUrl(TMedia::parseJSONByMediaUrl(json));
     mediaData.setMediaTag(TMedia::parseJSONByMediaTag(json));
     mediaData.setMediaVolume(TMediaData::MediaVolumePreload);
+    mediaData.setMediaCaption(TMedia::parseJSONByMediaCaption(json));
 
     mediaData.setMediaFileName(mediaData.mediaFileName().replace(QLatin1Char('\\'), QLatin1Char('/')));
 
@@ -1955,6 +2001,7 @@ void TMedia::parseJSONForMediaPlay(QJsonObject& json)
     mediaData.setMediaPriority(TMedia::parseJSONByMediaPriority(json));
     mediaData.setMediaContinue(TMedia::parseJSONByMediaContinue(json));
     mediaData.setMediaClose(TMedia::parseJSONByMediaClose(json));
+    mediaData.setMediaCaption(TMedia::parseJSONByMediaCaption(json));
 
     TMedia::playMedia(mediaData);
 }
@@ -1989,5 +2036,29 @@ void TMedia::parseJSONForMediaStop(QJsonObject& json)
     mediaData.setMediaFadeOut(TMedia::parseJSONByMediaFadeOut(json));
 
     TMedia::stopMedia(mediaData);
+}
+
+void TMedia::printClosedCaption(const TMediaData& mediaData, const QString& action) const
+{
+    if (!mpHost || !mpHost->mEnableClosedCaption || !mpHost->mpConsole)
+        return;
+
+    QString message;
+
+    if (!mediaData.mediaCaption().isEmpty()) {
+        message = qsl("[%1 %2]\n").arg(mediaData.mediaCaption(), action);
+    } else {
+        const QString mediaType = mediaData.mediaType() == TMediaData::MediaTypeMusic ? tr("music") :
+                                  mediaData.mediaType() == TMediaData::MediaTypeVideo ? tr("video") : tr("sound");
+        const QString mediaKey = mediaData.mediaKey();
+        const QString mediaFileName = mediaData.mediaFileName();
+        if (mediaKey.isEmpty()) {
+            message = qsl("[%1 \"%2\" %3]\n").arg(mediaType, mediaFileName, action);
+        } else {
+            message = qsl("[%1 %2 \"%3\" %4]\n").arg(mediaType, mediaKey, mediaFileName, action);
+        }
+    }
+
+    mpHost->mpConsole->print(message);
 }
 // End Private
