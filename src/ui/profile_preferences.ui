@@ -735,32 +735,16 @@
          <property name="title">
           <string>Font</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_groupBox_font">
-          <item row="3" column="0" colspan="4">
-           <widget class="QLabel" name="label_variableWidthFontWarning">
-            <property name="font">
-             <font>
-              <pointsize>8</pointsize>
-             </font>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_30">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
             </property>
             <property name="text">
-             <string comment="Note that this text is split into two lines so that the message is not too wide in English, please do the same for other locales where the text is the same or longer">This font is not monospace, which may not be ideal for playing some text games:
-you can use it but there could be issues with aligning columns of text</string>
-            </property>
-            <property name="buddy">
-             <cstring>fontSize</cstring>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0" colspan="4">
-           <widget class="QLabel" name="label_invalidFontError">
-            <property name="font">
-             <font>
-              <pointsize>8</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>The selected font doesn't work with Mudlet, please pick another</string>
+             <string>Font:</string>
             </property>
            </widget>
           </item>
@@ -777,19 +761,6 @@ you can use it but there could be issues with aligning columns of text</string>
             </property>
            </widget>
           </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_30">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Font:</string>
-            </property>
-           </widget>
-          </item>
           <item row="0" column="3">
            <widget class="QCheckBox" name="mNoAntiAlias">
             <property name="toolTip">
@@ -797,6 +768,35 @@ you can use it but there could be issues with aligning columns of text</string>
             </property>
             <property name="text">
              <string>Enable anti-aliasing</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="4">
+           <widget class="QLabel" name="label_invalidFontError">
+            <property name="font">
+             <font>
+              <pointsize>8</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>The selected font doesn't work with Mudlet, please pick another</string>
+            </property>
+           </widget>
+          </item>
+         <layout class="QGridLayout" name="gridLayout_groupBox_font">
+          <item row="3" column="0" colspan="4">
+           <widget class="QLabel" name="label_variableWidthFontWarning">
+            <property name="font">
+             <font>
+              <pointsize>8</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string comment="Note that this text is split into two lines so that the message is not too wide in English, please do the same for other locales where the text is the same or longer">This font is not monospace, which may not be ideal for playing some text games:
+you can use it but there could be issues with aligning columns of text</string>
+            </property>
+            <property name="buddy">
+             <cstring>fontSize</cstring>
             </property>
            </widget>
           </item>
