@@ -366,7 +366,7 @@ void TTextEdit::showNewLines()
             return;
         }
 
-        mudlet::self()->announce(newLines);
+        mudlet::self()->announce(newLines, QString(), true);
     }
 }
 

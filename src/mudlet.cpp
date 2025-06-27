@@ -5132,9 +5132,15 @@ bool mudlet::desktopInDarkMode()
     return false;
 }
 
-void mudlet::announce(const QString& text, const QString& processing)
+void mudlet::announce(const QString& text, const QString& processing, bool isPlain)
 {
-    mpAnnouncer->announce(text, processing);
+    if (isPlain){
+        mpAnnouncer->announce(text, processing);
+    } else {
+        QTextDocument convertor;
+        convertor.setHtml(text);
+        mpAnnouncer->announce(convertor.toPlainText(), processing);
+    }
 }
 
 void mudlet::onlyShowProfiles(const QStringList& predefinedProfiles)

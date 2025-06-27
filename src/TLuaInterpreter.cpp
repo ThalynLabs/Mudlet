@@ -7512,7 +7512,7 @@ int TLuaInterpreter::announce(lua_State *L)
         }
     }
 
-    mudlet::self()->announce(text, processing);
+    mudlet::self()->announce(text, processing, true);
     return 0;
 }
 
