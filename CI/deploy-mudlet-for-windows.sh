@@ -210,8 +210,10 @@ else
       fi
   fi
 
-  echo "=== Installing Squirrel for Windows ==="
-  nuget install squirrel.windows -ExcludeVersion
+  echo "=== Installing Clowd.Squirrel for Windows ==="
+  # nuget install squirrel.windows -ExcludeVersion
+  # Although archived this is a replacement for the squirrel.windows original
+  nuget install Clowd.Squirrel -ExcludeVersion -NonInteractive
 
   echo "=== Setting up directories ==="
   SQUIRRELWIN="${GITHUB_WORKSPACE}/squirrel-packaging-prep"
