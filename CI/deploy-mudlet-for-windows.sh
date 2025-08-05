@@ -274,7 +274,7 @@ else
   echo "=== Creating installers from Nuget package ==="
   # ./squirrel.windows/tools/Squirrel
   # Need to call a different executable since we are using a different package:
-  ./Clowd.Squirrel/tools/Squirrel --releasify "${NUPKG_WINPATHFILE}" \
+  ./Clowd.Squirrel/tools/Squirrel releasify "${NUPKG_WINPATHFILE}" \
     --releaseDir "${RELEASE_WINPATH}" \
     --loadingGif "${LOADING_GIF}" \
     --no-delta \
