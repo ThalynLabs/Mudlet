@@ -1264,6 +1264,7 @@ void Host::updateDisplayDimensions()
 
 void Host::stopAllTriggers()
 {
+    mEmergencyStop = true;
     mTriggerUnit.stopAllTriggers();
     mAliasUnit.stopAllTriggers();
     mTimerUnit.stopAllTriggers();
@@ -1272,6 +1273,7 @@ void Host::stopAllTriggers()
 
 void Host::reenableAllTriggers()
 {
+    mEmergencyStop = false;
     mTriggerUnit.reenableAllTriggers();
     mAliasUnit.reenableAllTriggers();
     mTimerUnit.reenableAllTriggers();
@@ -1731,6 +1733,10 @@ void Host::unregisterEventHandler(const QString& name, TScript* pScript)
 // If a handler matches the event, the Lua stack will be cleared after this function
 void Host::raiseEvent(const TEvent& pE)
 {
+    if (Q_UNLIKELY(mEmergencyStop)) {
+        return;
+    }
+
     if (pE.mArgumentList.isEmpty()) {
         return;
     }
