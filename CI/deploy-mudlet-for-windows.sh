@@ -221,13 +221,18 @@ else
     ID="Mudlet_64_-PublicTestBuild"
     TITLE="Mudlet x64 (Public Test Build)"
     LOADING_GIF="$(cygpath -aw "${GITHUB_WORKSPACE}/installers/windows/splash-installing-ptb-2x.png")"
-    # Because the packaging tools use "Semantic Versioning 2.0" it makes sense
+    # Because the packaging tools use "Semantic Versioning" it makes sense
     # use the date in a number year-first form rather than the SHA1 as
     # that enables chonological ordering - although we do not seem to rely on it
     # https://learn.microsoft.com/en-us/nuget/concepts/package-versioning?tabs=semver20sort
-    # Typically would be:
-    #                 "4.19.1-ptb.20250101"
-    INSTALLER_VERSION="${VERSION}-ptb.$(date +%Y%m%d)"
+    # This suggested that "4.19.1-ptb.20250811" would work and be sorted.
+    # However it is rejected as invalid. This would seem to suggest that it is
+    # using the older:
+    # https://learn.microsoft.com/en-us/nuget/concepts/package-versioning?tabs=semver10sort
+    # which cannot handle dotted numbers. So revert to original methodology that
+    # appended the short commit SHA1 - and just not worry about any sort of
+    # sorting:
+    INSTALLER_VERSION="${VERSION}-ptb-${BUILD_COMMIT,,}"
     # The name we want to use for the installer;
     # Typically of form:                  "Mudlet-4.19.1-ptb-2025-01-01-012345678-windows-64.exe"
     INSTALLER_EXE_PATHFILE="${RELEASE_DIR}/Mudlet-${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT}-windows-64.exe"
