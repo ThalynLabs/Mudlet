@@ -38,6 +38,7 @@ if [ "${MSYSTEM}" = "MSYS" ]; then
   exit 2
 elif [ "${MSYSTEM}" = "MINGW64" ]; then
   export BUILDCOMPONENT="x86_64"
+  export ARCH="x86_64"
 else
   echo "This script is not set up to handle systems of type ${MSYSTEM}, only"
   echo "MINGW64 is currently supported. Please rerun this in a bash terminal of"
