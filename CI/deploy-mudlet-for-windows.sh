@@ -301,8 +301,7 @@ else
 
   if [[ "${GITHUB_SCHEDULED_BUILD}" == "true" ]]; then
     echo "=== Uploading public test build to make.mudlet.org ==="
-
-    UPLOAD_FILENAME="Mudlet-${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT}-windows-64-installer.exe"
+    UPLOAD_FILENAME="Mudlet-${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT}-windows-64.exe"
     echo "UPLOAD_FILENAME: ${UPLOAD_FILENAME}"
 
     # Installer named ${UPLOAD_FILENAME} should exist in ${PACKAGE_PATH} now, we're ok to proceed
