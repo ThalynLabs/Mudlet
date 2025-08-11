@@ -392,7 +392,8 @@ EOF
   echo "=== Generating a changelog ==="
   cd "${GITHUB_WORKSPACE}/CI" || exit 1
 
-  CHANGELOG=$(lua5.1 "${GITHUB_WORKSPACE}/CI/generate-changelog.lua" --mode "${CHANGELOG_MODE}" --releasefile "${DOWNLOADED_FEED}")
+  GENERATE_CHANGELOG_FILEPATH="$(cygpath -a "${GITHUB_WORKSPACE}/CI/generate-changelog.lua")"
+  CHANGELOG="$(lua5.1 "${GENERATE_CHANGELOG_FILEPATH}" --mode "${CHANGELOG_MODE}" --releasefile "${DOWNLOADED_FEED}")"
   # cd - seems to swap between the current and previous working directory!
   cd - || exit 1
   echo "=== Changelog ==="
@@ -400,8 +401,7 @@ EOF
   echo "=== End of Changelog ==="
 
   echo "=== Creating release in Dblsqd ==="
-
-  echo "DBLSQD_VERSION_STRING: ${DBLSQD_VERSION_STRING}"
+  echo "DBLSQD_VERSION_STRING=\"${DBLSQD_VERSION_STRING}\""
   export DBLSQD_VERSION_STRING
 
   # This may fail as a build from another architecture may have already registered a release with dblsqd,
@@ -433,10 +433,10 @@ echo "******************************************************"
 echo ""
 if [[ -z "${MUDLET_VERSION_BUILD}" ]]; then
   # A release build
-  echo "Finished building Mudlet ${VERSION}"
+  echo "Finished deploying Mudlet ${VERSION}"
 else
   # Not a release build so include the Git SHA1 in the message
-  echo "Finished building Mudlet ${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT}"
+  echo "Finished deploying Mudlet ${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT}"
 fi
 
 if [[ -n "${DEPLOY_URL}" ]]; then
