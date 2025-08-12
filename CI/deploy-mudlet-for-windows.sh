@@ -130,13 +130,13 @@ if [[ "${GITHUB_REPO_TAG}" != "true" ]] && [[ "${GITHUB_SCHEDULED_BUILD}" != "tr
   # THIS IS THE NAME GIVEN TO THE GHA "artifact" which is automagically made
   # as a zip archive file.
   ARTIFACT_NAME="Mudlet-${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT}-windows-64.zip"
-
+  ARTIFACT_PATHORFILE="$(cygpath -au "${PACKAGE_PATH}")/*"
   # Append these variables to the GITHUB_ENV to make them available in
   # subsequent steps, the fourth one being 0 means "don't unzip the archive when
   # it is uploaded to the Mudlet website":
   {
     echo "ARTIFACT_NAME=\"${ARTIFACT_NAME}\""
-    echo "ARTIFACT_PATHORFILE=\"$(cygpath -au \"${PACKAGE_PATH}\")/*\""
+    echo "ARTIFACT_PATHORFILE=\"${ARTIFACT_PATHORFILE}\""
     echo "ARTIFACT_COMPRESSION=9"
     echo "ARTIFACT_UNZIP=0"
   } >> "${GITHUB_ENV}"
@@ -311,9 +311,10 @@ else
     # Append these variables to the GITHUB_ENV to make them available in
     # subsequent steps, the fourth one being 1 means "unzip the archive when
     # it is uploaded to the Mudlet website":
+    ARTIFACT_PATHORFILE="$(cygpath -au "${RELEASE_DIR}/${INSTALLER_EXE}")"
     {
       echo "ARTIFACT_NAME=\"${INSTALLER_EXE}\""
-      echo "ARTIFACT_PATH=\"$(cygpath -au \"${RELEASE_DIR}/${INSTALLER_EXE}\")\""
+      echo "ARTIFACT_PATHORFILE=\"${ARTIFACT_PATHORFILE}\""
       echo "ARTIFACT_COMPRESSION=0"
       echo "ARTIFACT_UNZIP=1"
     } >> "${GITHUB_ENV}"
