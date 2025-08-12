@@ -117,13 +117,14 @@ fi
 
 # This will change to end in "-debug" if we ever do that type of build:
 PACKAGE_PATH="$(cygpath -au "${GITHUB_WORKSPACE}/package-${MSYSTEM}-release")"
+PACKAGE_WINPATH="$(cygpath -aw "${PACKAGE_PATH}")"
 cd "${PACKAGE_PATH}" || exit 1
 
 # Check if GITHUB_REPO_TAG and GITHUB_SCHEDULED_BUILD are not "true" for a snapshot build
 if [[ "${GITHUB_REPO_TAG}" != "true" ]] && [[ "${GITHUB_SCHEDULED_BUILD}" != "true" ]]; then
   echo "=== Creating a snapshot build ==="
-  PACKAGE_EXE_PATHFILE="${PACKAGE_PATH}/Mudlet.exe"
-  mv "${PACKAGE_PATH}/mudlet.exe" "${PACKAGE_EXE_PATHFILE}"
+  PACKAGE_EXE="Mudlet.exe"
+  mv "${PACKAGE_PATH}/mudlet.exe" "${PACKAGE_PATH}/${PACKAGE_EXE}"
 
   # Define the upload filename - MUDLET_VERSION_BUILD will at least be something
   # like "-testing" or "-testing-pr####" but NOT "-ptb-*"
@@ -160,14 +161,16 @@ else
 
     # Squirrel uses the name of the binary for the Start menu, so need to rename
     # it:
-    PACKAGE_EXE_PATHFILE="${PACKAGE_PATH}/Mudlet PTB.exe"
+    PACKAGE_EXE="Mudlet PTB.exe"
   else
     echo "=== Creating a release build ==="
-    PACKAGE_EXE_PATHFILE="${PACKAGE_PATH}/Mudlet.exe"
+    PACKAGE_EXE="Mudlet.exe"
   fi
 
-  mv "${PACKAGE_PATH}/mudlet.exe" "${PACKAGE_EXE_PATHFILE}"
-  echo "moved mudlet.exe to ${PACKAGE_EXE_PATHFILE}"
+  echo "Renaming mudlet.exe to ${PACKAGE_EXE}"
+  mv "${PACKAGE_PATH}/mudlet.exe" "${PACKAGE_PATH}/${PACKAGE_EXE}"
+  PACKAGE_EXE_PATHFILE="$(cygpath -au "${PACKAGE_PATH}/${PACKAGE_EXE}")"
+  PACKAGE_EXE_WINPATHFILE="$(cygpath -aw "${PACKAGE_EXE_PATHFILE}")"
 
   echo "=== Cloning installer project ==="
   git clone https://github.com/Mudlet/installers.git "${GITHUB_WORKSPACE}/installers"
@@ -183,14 +186,13 @@ else
   if [ -z "${AZURE_ACCESS_TOKEN}" ]; then
     echo "=== Code signing of Mudlet application and bundled libraries skipped - no Azure token provided ==="
   else
-    echo "=== Signing Mudlet and bundled libraries ==="
-    PACKAGE_EXE_WINPATHFILE="$(cygpath -aw "${PACKAGE_EXE_PATHFILE}")"
+    echo "=== Signing Mudlet executable and bundled libraries ==="
     java.exe -jar "${JAVA_JAR_WINPATHFILE}" \
       --storetype TRUSTEDSIGNING \
       --keystore eus.codesigning.azure.net \
       --storepass "${AZURE_ACCESS_TOKEN}" \
       --alias Mudlet/Mudlet \
-      "${PACKAGE_EXE_WINPATHFILE}" "${PACKAGE_PATH}/**/*.dll"
+      "${PACKAGE_EXE_WINPATHFILE}" "${PACKAGE_WINPATH}\\**\\*.dll"
   fi
 
   echo "=== Preparing an intermediate artifact of the (signed) code ==="
@@ -202,9 +204,10 @@ else
   fi
   # This intermediate will NOT be uploaded but will remain on the GH server as
   # an artifact for a default (90?) days
+  INTERMEDIATE_ARTIFACT_PATHORFILE="$(cygpath -au "${PACKAGE_PATH}")/*"
   {
     echo "INTERMEDIATE_ARTIFACT_NAME=\"${INTERMEDIATE_ARTIFACT_NAME}\""
-    echo "INTERMEDIATE_ARTIFACT_PATHORFILE=\"$(cygpath -au \"${PACKAGE_PATH}\")/*\""
+    echo "INTERMEDIATE_ARTIFACT_PATHORFILE=\"${INTERMEDIATE_ARTIFACT_PATHORFILE}\""
     echo "INTERMEDIATE_ARTIFACT_COMPRESSION=9"
   } >> "${GITHUB_ENV}"
 
