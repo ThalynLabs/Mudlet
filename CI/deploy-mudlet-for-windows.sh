@@ -132,7 +132,7 @@ if [[ "${GITHUB_REPO_TAG}" != "true" ]] && [[ "${GITHUB_SCHEDULED_BUILD}" != "tr
   # as a zip archive file.
   ARTIFACT_NAME="Mudlet-${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT}-windows-64.zip"
   ARTIFACT_PATHORFILE="$(cygpath -au "${PACKAGE_PATH}")/*"
-  ARTIFACT_WINPATHORFILE="$(cygpath -aw "${PACKAGE_PATH}")/*"
+  ARTIFACT_WINPATHORFILE="$(cygpath -aw "${PACKAGE_PATH}")\\*"
   # Append these variables to the GITHUB_ENV to make them available in
   # subsequent steps, the fourth one being 0 means "don't unzip the archive when
   # it is uploaded to the Mudlet website":
@@ -142,6 +142,9 @@ if [[ "${GITHUB_REPO_TAG}" != "true" ]] && [[ "${GITHUB_SCHEDULED_BUILD}" != "tr
     echo "ARTIFACT_COMPRESSION=9"
     echo "ARTIFACT_UNZIP=0"
   } >> "${GITHUB_ENV}"
+  echo '=== ls -l ${ARTIFACT_PATHORFILE} gives: ==='
+  ls -l "${ARTIFACT_PATHORFILE}"
+  echo '=== End of ls -l ==='
 
 else
   # A Public Test Build or a Release
@@ -206,12 +209,15 @@ else
   # This intermediate will NOT be uploaded but will remain on the GH server as
   # an artifact for a default (90?) days
   INTERMEDIATE_ARTIFACT_PATHORFILE="$(cygpath -au "${PACKAGE_PATH}")/*"
-  INTERMEDIATE_ARTIFACT_WINPATHORFILE="$(cygpath -aw "${PACKAGE_PATH}")/*"
+  INTERMEDIATE_ARTIFACT_WINPATHORFILE="$(cygpath -aw "${PACKAGE_PATH}")\\*"
   {
     echo "INTERMEDIATE_ARTIFACT_NAME=\"${INTERMEDIATE_ARTIFACT_NAME}\""
     echo "INTERMEDIATE_ARTIFACT_WINPATHORFILE=\"${INTERMEDIATE_ARTIFACT_WINPATHORFILE}\""
     echo "INTERMEDIATE_ARTIFACT_COMPRESSION=9"
   } >> "${GITHUB_ENV}"
+  echo '=== ls -l ${INTERMEDIATE_ARTIFACT_PATHORFILE} gives: ==='
+  ls -l "${INTERMEDIATE_ARTIFACT_PATHORFILE}"
+  echo '=== End of ls -l ==='
 
   echo "=== Installing Clowd.Squirrel for Windows ==="
   # Although archived this is a replacement for the squirrel.windows original
@@ -324,6 +330,9 @@ else
       echo "ARTIFACT_COMPRESSION=0"
       echo "ARTIFACT_UNZIP=1"
     } >> "${GITHUB_ENV}"
+    echo '=== ls -l ${ARTIFACT_PATHORFILE} gives: ==='
+    ls -l "${ARTIFACT_PATHORFILE}"
+    echo '=== End of ls -l ==='
 
     # This identifies the "channel" that the release applies to, currently
     # we have three defined: this one; "release" and (unused) "testing":
