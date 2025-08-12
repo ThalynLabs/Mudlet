@@ -132,12 +132,13 @@ if [[ "${GITHUB_REPO_TAG}" != "true" ]] && [[ "${GITHUB_SCHEDULED_BUILD}" != "tr
   # as a zip archive file.
   ARTIFACT_NAME="Mudlet-${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT}-windows-64.zip"
   ARTIFACT_PATHORFILE="$(cygpath -au "${PACKAGE_PATH}")/*"
+  ARTIFACT_WINPATHORFILE="$(cygpath -aw "${PACKAGE_PATH}")/*"
   # Append these variables to the GITHUB_ENV to make them available in
   # subsequent steps, the fourth one being 0 means "don't unzip the archive when
   # it is uploaded to the Mudlet website":
   {
     echo "ARTIFACT_NAME=\"${ARTIFACT_NAME}\""
-    echo "ARTIFACT_PATHORFILE=\"${ARTIFACT_PATHORFILE}\""
+    echo "ARTIFACT_WINPATHORFILE=\"${ARTIFACT_WINPATHORFILE}\""
     echo "ARTIFACT_COMPRESSION=9"
     echo "ARTIFACT_UNZIP=0"
   } >> "${GITHUB_ENV}"
@@ -205,9 +206,10 @@ else
   # This intermediate will NOT be uploaded but will remain on the GH server as
   # an artifact for a default (90?) days
   INTERMEDIATE_ARTIFACT_PATHORFILE="$(cygpath -au "${PACKAGE_PATH}")/*"
+  INTERMEDIATE_ARTIFACT_WINPATHORFILE="$(cygpath -aw "${PACKAGE_PATH}")/*"
   {
     echo "INTERMEDIATE_ARTIFACT_NAME=\"${INTERMEDIATE_ARTIFACT_NAME}\""
-    echo "INTERMEDIATE_ARTIFACT_PATHORFILE=\"${INTERMEDIATE_ARTIFACT_PATHORFILE}\""
+    echo "INTERMEDIATE_ARTIFACT_WINPATHORFILE=\"${INTERMEDIATE_ARTIFACT_WINPATHORFILE}\""
     echo "INTERMEDIATE_ARTIFACT_COMPRESSION=9"
   } >> "${GITHUB_ENV}"
 
@@ -315,9 +317,10 @@ else
     # subsequent steps, the fourth one being 1 means "unzip the archive when
     # it is uploaded to the Mudlet website":
     ARTIFACT_PATHORFILE="$(cygpath -au "${RELEASE_DIR}/${INSTALLER_EXE}")"
+    ARTIFACT_WINPATHORFILE="$(cygpath -aw "${RELEASE_DIR}/${INSTALLER_EXE}")"
     {
       echo "ARTIFACT_NAME=\"${INSTALLER_EXE}\""
-      echo "ARTIFACT_PATHORFILE=\"${ARTIFACT_PATHORFILE}\""
+      echo "ARTIFACT_WINPATHORFILE=\"${ARTIFACT_WINPATHORFILE}\""
       echo "ARTIFACT_COMPRESSION=0"
       echo "ARTIFACT_UNZIP=1"
     } >> "${GITHUB_ENV}"

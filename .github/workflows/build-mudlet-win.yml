@@ -135,19 +135,19 @@ jobs:
       if: env.INTERMEDIATE_ARTIFACT_NAME
       with:
         name: ${{env.INTERMEDIATE_ARTIFACT_NAME}}
-        path: ${{env.INTERMEDIATE_ARTIFACT_PATHORFILE}}
+        path: ${{env.INTERMEDIATE_ARTIFACT_WINPATHORFILE}}
         compression-level: ${{env.INTERMEDIATE_ARTIFACT_COMPRESSION}}
         if-no-files-found: ignore
 
     - name: Create artifact for later uploading
-      # Uploads the zipped contents of ARTIFACT_PATHORFILE as an "artifact" with
+      # Uploads the zipped contents of ARTIFACT_WINPATHORFILE as an "artifact" with
       # the given name - the Environmental variables are created by the
       # deploy-mudlet-for-windows.sh script:
       uses: actions/upload-artifact@v4
       if: env.ARTIFACT_NAME
       with:
         name: ${{env.ARTIFACT_NAME}}
-        path: ${{env.ARTIFACT_PATHORFILE}}
+        path: ${{env.ARTIFACT_WINPATHORFILE}}
         compression-level: ${{env.ARTIFACT_COMPRESSION}}
 
     - name: Upload artifact to make.mudlet.org
