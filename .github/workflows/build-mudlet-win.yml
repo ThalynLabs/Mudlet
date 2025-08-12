@@ -130,17 +130,31 @@ jobs:
         GITHUB_PULL_REQUEST_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       run: $GITHUB_WORKSPACE/CI/deploy-mudlet-for-windows.sh
 
-    - name: Upload packaged Mudlet
+    - name: Create intermediate artifact for debugging
       uses: actions/upload-artifact@v4
-      if: env.UPLOAD_FILENAME
+      if: env.INTERMEDIATE_ARTIFACT_NAME
       with:
-        name: ${{env.UPLOAD_FILENAME}}
-        path: ${{env.FOLDER_TO_UPLOAD}}
+        name: ${{env.INTERMEDIATE_ARTIFACT_NAME}}
+        path: ${{env.INTERMEDIATE_ARTIFACT_PATHORFILE}}
+        compression-level: ${{env.INTERMEDIATE_ARTIFACT_COMPRESSION}}
+        if-no-files-found: ignore
 
-    - name: Submit to make.mudlet.org
-      if: env.UPLOAD_FILENAME
+    - name: Create artifact for later uploading
+      # Uploads the zipped contents of ARTIFACT_PATHORFILE as an "artifact" with
+      # the given name - the Environmental variables are created by the
+      # deploy-mudlet-for-windows.sh script:
+      uses: actions/upload-artifact@v4
+      if: env.ARTIFACT_NAME
+      with:
+        name: ${{env.ARTIFACT_NAME}}
+        path: ${{env.ARTIFACT_PATHORFILE}}
+        compression-level: ${{env.ARTIFACT_COMPRESSION}}
+
+    - name: Upload artifact to make.mudlet.org
+      shell: pwsh
+      if: env.ARTIFACT_NAME
       run: |
-        $uri = "https://make.mudlet.org/snapshots/gha_queue.php?artifact_name=$($env:UPLOAD_FILENAME)&unzip=$($env:PARAM_UNZIP)"
+        $uri = "https://make.mudlet.org/snapshots/gha_queue.php?artifact_name=$($env:ARTIFACT_NAME)&unzip=$($env:ARTIFACT_UNZIP)"
         try {
           $response = Invoke-WebRequest -Uri $uri -Method Post -ErrorAction Stop
           Write-Output "Submission successful"
@@ -156,7 +170,6 @@ jobs:
             exit 1
           }
         }
-      shell: pwsh
 
     - name: Register PTB Release
       shell: msys2 {0}

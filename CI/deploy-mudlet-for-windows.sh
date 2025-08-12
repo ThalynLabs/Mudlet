@@ -62,6 +62,7 @@ if [[ "${GITHUB_REPO_TAG}" == "false" ]]; then
     MUDLET_VERSION_BUILD="-ptb"
   else
     MUDLET_VERSION_BUILD="-testing"
+    echo "=== GITHUB_SCHEDULED_BUILD is FALSE, this is NOT a PTB ==="
   fi
 
   # Check if this is a pull request
@@ -78,9 +79,12 @@ if [[ "${GITHUB_REPO_TAG}" == "false" ]]; then
       MUDLET_VERSION_BUILD="${MUDLET_VERSION_BUILD}-${CURRENT_DATE}"
     fi
   fi
+else
+  echo "=== GITHUB_REPO_TAG is TRUE ==="
 fi
 
 # Convert to lowercase, not all systems deal with uppercase ASCII characters
+# This will still be empty for a Release build
 export MUDLET_VERSION_BUILD="${MUDLET_VERSION_BUILD,,}"
 export BUILD_COMMIT="${BUILD_COMMIT,,}"
 
@@ -100,9 +104,9 @@ if [[ -z "${MUDLET_VERSION_BUILD}" ]]; then
   #    "BUILDING MUDLET 4.19.1
   echo "BUILDING MUDLET ${VERSION}"
 else
+  # Include Git SHA1 in the build information
   # Probably a PTB - so typical output could be:
   #    "BUILDING MUDLET 4.19.1-ptb-2025-01-01-012345678
-  # Include Git SHA1 in the build information
   echo "BUILDING MUDLET ${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT}"
 fi
 
@@ -113,35 +117,7 @@ fi
 
 # This will change to end in "-debug" if we ever do that type of build:
 PACKAGE_PATH="$(cygpath -au "${GITHUB_WORKSPACE}/package-${MSYSTEM}-release")"
-
 cd "${PACKAGE_PATH}" || exit 1
-
-# Helper function to move a packaged mudlet to the upload directory and set up an artifact upload
-# We require the files to be uploaded to already exist in the source location
-# AND for there to be no other files (we copy everything there)!
-# The use of the word function, and the variables being declared therein NOT
-# being local by default are both bashisms - but that IS the shell we are using!
-function copyToUploadDir () {
-  # $1 is now the source directory
-  # $2 is the destination filename
-  # $3 is an index used to place/classify the file in the right location in the web-page
-  echo "=== Setting up upload directory ==="
-  local UPLOAD_DIR
-  UPLOAD_DIR="$(cygpath -au "${GITHUB_WORKSPACE}/upload")"
-
-  # Make the upload directory (if it doesn't exist)
-  mkdir -p "${UPLOAD_DIR}"
-
-  echo "=== Copying files to upload directory ==="
-  rsync -avR "${1}"/./* "${UPLOAD_DIR}"
-
-  # Append these variables to the GITHUB_ENV to make them available in subsequent steps
-  {
-    echo "FOLDER_TO_UPLOAD=${UPLOAD_DIR}/"
-    echo "UPLOAD_FILENAME=${2}"
-    echo "PARAM_UNZIP=${3}"
-  } >> "${GITHUB_ENV}"
-}
 
 # Check if GITHUB_REPO_TAG and GITHUB_SCHEDULED_BUILD are not "true" for a snapshot build
 if [[ "${GITHUB_REPO_TAG}" != "true" ]] && [[ "${GITHUB_SCHEDULED_BUILD}" != "true" ]]; then
@@ -151,10 +127,20 @@ if [[ "${GITHUB_REPO_TAG}" != "true" ]] && [[ "${GITHUB_SCHEDULED_BUILD}" != "tr
 
   # Define the upload filename - MUDLET_VERSION_BUILD will at least be something
   # like "-testing" or "-testing-pr####" but NOT "-ptb-*"
-  UPLOAD_FILENAME="Mudlet-${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT}-windows-64"
+  # THIS IS THE NAME GIVEN TO THE GHA "artifact" which is automagically made
+  # as a zip archive file.
+  ARTIFACT_NAME="Mudlet-${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT}-windows-64.zip"
 
-  # Copy packaged files to the upload directory
-  copyToUploadDir "${PACKAGE_PATH}" "${UPLOAD_FILENAME}" 0
+  # Append these variables to the GITHUB_ENV to make them available in
+  # subsequent steps, the fourth one being 0 means "don't unzip the archive when
+  # it is uploaded to the Mudlet website":
+  {
+    echo "ARTIFACT_NAME=\"${ARTIFACT_NAME}\""
+    echo "ARTIFACT_PATHORFILE=\"$(cygpath -au \"${PACKAGE_PATH}\")/*\""
+    echo "ARTIFACT_COMPRESSION=9"
+    echo "ARTIFACT_UNZIP=0"
+  } >> "${GITHUB_ENV}"
+
 else
   # A Public Test Build or a Release
   # Check if it's a Public Test Build
@@ -168,10 +154,12 @@ else
     if [[ "${COMMIT_DATE}" < "${YESTERDAY_DATE}" ]]; then
       echo "=== No new commits, aborting public test build generation ==="
       exit 0
+    else
+      echo "=== New commits, continuing to create a public test build ==="
     fi
 
-    echo "=== Creating a public test build ==="
-    # Squirrel uses name of the binary for the Start menu, so need to rename it:
+    # Squirrel uses the name of the binary for the Start menu, so need to rename
+    # it:
     PACKAGE_EXE_PATHFILE="${PACKAGE_PATH}/Mudlet PTB.exe"
   else
     echo "=== Creating a release build ==="
@@ -190,17 +178,35 @@ else
   JAVA_HOME="$(cygpath -au "${JAVA_HOME_21_X64}")"
   export JAVA_HOME
   export PATH="${JAVA_HOME}/bin:${PATH}"
+  JAVA_JAR_WINPATHFILE="$(cygpath -aw "${GITHUB_WORKSPACE}/installers/windows/jsign-7.0-SNAPSHOT.jar")"
 
   if [ -z "${AZURE_ACCESS_TOKEN}" ]; then
-      echo "=== Code signing of Mudlet application and bundled libraries skipped - no Azure token provided ==="
+    echo "=== Code signing of Mudlet application and bundled libraries skipped - no Azure token provided ==="
   else
-      echo "=== Signing Mudlet and bundled libraries ==="
-      java.exe -jar "${GITHUB_WORKSPACE}/installers/windows/jsign-7.0-SNAPSHOT.jar" --storetype TRUSTEDSIGNING \
-          --keystore eus.codesigning.azure.net \
-          --storepass "${AZURE_ACCESS_TOKEN}" \
-          --alias Mudlet/Mudlet \
-          "${PACKAGE_EXE_PATHFILE}" "${PACKAGE_PATH}/**/*.dll"
+    echo "=== Signing Mudlet and bundled libraries ==="
+    PACKAGE_EXE_WINPATHFILE="$(cygpath -aw "${PACKAGE_EXE_PATHFILE}")"
+    java.exe -jar "${JAVA_JAR_WINPATHFILE}" \
+      --storetype TRUSTEDSIGNING \
+      --keystore eus.codesigning.azure.net \
+      --storepass "${AZURE_ACCESS_TOKEN}" \
+      --alias Mudlet/Mudlet \
+      "${PACKAGE_EXE_WINPATHFILE}" "${PACKAGE_PATH}/**/*.dll"
   fi
+
+  echo "=== Preparing an intermediate artifact of the (signed) code ==="
+  # What will it be called:
+  if [[ -z "${MUDLET_VERSION_BUILD}" ]]; then
+    INTERMEDIATE_ARTIFACT_NAME="Mudlet-${VERSION}-windows-64.zip"
+  else
+    INTERMEDIATE_ARTIFACT_NAME="Mudlet-${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT}-windows-64.zip"
+  fi
+  # This intermediate will NOT be uploaded but will remain on the GH server as
+  # an artifact for a default (90?) days
+  {
+    echo "INTERMEDIATE_ARTIFACT_NAME=\"${INTERMEDIATE_ARTIFACT_NAME}\""
+    echo "INTERMEDIATE_ARTIFACT_PATHORFILE=\"$(cygpath -au \"${PACKAGE_PATH}\")/*\""
+    echo "INTERMEDIATE_ARTIFACT_COMPRESSION=9"
+  } >> "${GITHUB_ENV}"
 
   echo "=== Installing Clowd.Squirrel for Windows ==="
   # Although archived this is a replacement for the squirrel.windows original
@@ -236,7 +242,7 @@ else
     INSTALLER_VERSION="${VERSION}-ptb-${BUILD_COMMIT,,}"
     # The name we want to use for the installer;
     # Typically of form:                  "Mudlet-4.19.1-ptb-2025-01-01-012345678-windows-64.exe"
-    INSTALLER_EXE_PATHFILE="${RELEASE_DIR}/Mudlet-${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT}-windows-64.exe"
+    INSTALLER_EXE="Mudlet-${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT}-windows-64.exe"
     DBLSQD_VERSION_STRING="${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT,,}"
   else
     NAME_SUFFIX="_64_"
@@ -247,7 +253,7 @@ else
     # Typically     "4.19.1"
     INSTALLER_VERSION="${VERSION}"
     # Typically of form:                  "Mudlet-4.19.1-windows-64-installer.exe"
-    INSTALLER_EXE_PATHFILE="${RELEASE_DIR}/Mudlet-${VERSION}-windows-64-installer.exe"
+    INSTALLER_EXE="Mudlet-${VERSION}-windows-64-installer.exe"
     DBLSQD_VERSION_STRING="${VERSION}"
   fi
   ./Clowd.Squirrel/tools/Squirrel.exe pack \
@@ -262,7 +268,8 @@ else
     --icon="${INSTALLER_ICON_WINFILE}" \
     --releaseDir="${RELEASE_WINDIR}"
 
-  # The above should produce, for both Release and PTBs "Mudlet${NAME_SUFFIX}Setup.exe" :
+  # The above should produce, for both Release and PTBs SEVERAL files including
+  # a "Mudlet${NAME_SUFFIX}Setup.exe" in the ${RELEASE_DIR}:
   # Check if the expected "setup" executable exists
   if [[ ! -f "${RELEASE_DIR}/Mudlet${NAME_SUFFIX}Setup.exe" ]]; then
     echo "=== ERROR: Clowd.Squirrel failed to generate the installer ${RELEASE_DIR}/Mudlet${NAME_SUFFIX}Setup.exe! ==="
@@ -282,30 +289,35 @@ else
   fi
 
   echo "=== Renaming installer ==="
-  INSTALLER_EXE_WINPATHFILE="$(cygpath -aw "${INSTALLER_EXE_PATHFILE}")"
-  echo "Renaming \"${RELEASE_DIR}/Mudlet${NAME_SUFFIX}Setup.exe\" to \"${INSTALLER_EXE_PATHFILE}\""
-  mv "${RELEASE_DIR}/Mudlet${NAME_SUFFIX}Setup.exe" "${INSTALLER_EXE_PATHFILE}"
+  INSTALLER_EXE_WINPATHFILE="$(cygpath -aw "${RELEASE_DIR}/${INSTALLER_EXE}")"
+  echo "Renaming \"Mudlet${NAME_SUFFIX}Setup.exe\" to \"${INSTALLER_EXE}\""
+  mv "${RELEASE_DIR}/Mudlet${NAME_SUFFIX}Setup.exe" "${RELEASE_DIR}/${INSTALLER_EXE}"
 
   # Sign the final installer
   if [ -z "${AZURE_ACCESS_TOKEN}" ]; then
     echo "=== Code signing of Mudlet installer skipped - no Azure token provided ==="
   else
     echo "=== Signing installer ==="
-    java.exe -jar "${GITHUB_WORKSPACE}/installers/windows/jsign-7.0-SNAPSHOT.jar" \
+    java.exe -jar "${JAVA_JAR_WINPATHFILE}" \
       --storetype TRUSTEDSIGNING \
       --keystore eus.codesigning.azure.net \
       --storepass "${AZURE_ACCESS_TOKEN}" \
       --alias Mudlet/Mudlet \
-      "${INSTALLER_EXE_PATHFILE}"
+      "${INSTALLER_EXE_WINPATHFILE}"
   fi
 
   if [[ "${GITHUB_SCHEDULED_BUILD}" == "true" ]]; then
-    echo "=== Uploading public test build to make.mudlet.org ==="
-    UPLOAD_FILENAME="Mudlet-${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT}-windows-64.exe"
-    echo "UPLOAD_FILENAME: ${UPLOAD_FILENAME}"
+    echo "=== Preparing artifact for PTB for upload to make.mudlet.org ==="
+    # Append these variables to the GITHUB_ENV to make them available in
+    # subsequent steps, the fourth one being 1 means "unzip the archive when
+    # it is uploaded to the Mudlet website":
+    {
+      echo "ARTIFACT_NAME=\"${INSTALLER_EXE}\""
+      echo "ARTIFACT_PATH=\"$(cygpath -au \"${RELEASE_DIR}/${INSTALLER_EXE}\")\""
+      echo "ARTIFACT_COMPRESSION=0"
+      echo "ARTIFACT_UNZIP=1"
+    } >> "${GITHUB_ENV}"
 
-    # Installer named ${UPLOAD_FILENAME} should exist in ${PACKAGE_PATH} now, we're ok to proceed
-    copyToUploadDir "${PACKAGE_PATH}" "${UPLOAD_FILENAME}" 1
     # This identifies the "channel" that the release applies to, currently
     # we have three defined: this one; "release" and (unused) "testing":
     DBLSQD_CHANNEL="public-test-build"
