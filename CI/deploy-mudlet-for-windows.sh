@@ -131,20 +131,18 @@ if [[ "${GITHUB_REPO_TAG}" != "true" ]] && [[ "${GITHUB_SCHEDULED_BUILD}" != "tr
   # THIS IS THE NAME GIVEN TO THE GHA "artifact" which is automagically made
   # as a zip archive file.
   ARTIFACT_NAME="Mudlet-${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT}-windows-64"
-  ARTIFACT_PATHORFILE="$(cygpath -au "${PACKAGE_PATH}")"
   ARTIFACT_WINPATHORFILE="$(cygpath -aw "${PACKAGE_PATH}")"
   # Append these variables to the GITHUB_ENV to make them available in
   # subsequent steps, the fourth one being 0 means "don't unzip the archive when
-  # it is uploaded to the Mudlet website":
+  # it is uploaded to the Mudlet website". In this place and further down when
+  # appending to the GH Actions environment DO NOT add escaped double-quotes
+  # around the string after the '=' such extra double quotes
   {
     echo "ARTIFACT_NAME=${ARTIFACT_NAME}"
     echo "ARTIFACT_WINPATHORFILE=${ARTIFACT_WINPATHORFILE}"
     echo "ARTIFACT_COMPRESSION=9"
     echo "ARTIFACT_UNZIP=0"
   } >> "${GITHUB_ENV}"
-  # echo "=== ls -l ${ARTIFACT_PATHORFILE} gives: ==="
-  # ls -l "${ARTIFACT_PATHORFILE}"
-  # echo "=== End of ls -l ==="
 
 else
   # A Public Test Build or a Release
@@ -208,16 +206,12 @@ else
   fi
   # This intermediate will NOT be uploaded but will remain on the GH server as
   # an artifact for a default (90?) days
-  INTERMEDIATE_ARTIFACT_PATHORFILE="$(cygpath -au "${PACKAGE_PATH}/")"
   INTERMEDIATE_ARTIFACT_WINPATHORFILE="$(cygpath -aw "${PACKAGE_PATH}\\")"
   {
     echo "INTERMEDIATE_ARTIFACT_NAME=${INTERMEDIATE_ARTIFACT_NAME}"
     echo "INTERMEDIATE_ARTIFACT_WINPATHORFILE=${INTERMEDIATE_ARTIFACT_WINPATHORFILE}"
     echo "INTERMEDIATE_ARTIFACT_COMPRESSION=9"
   } >> "${GITHUB_ENV}"
-  # echo "=== ls -l ${INTERMEDIATE_ARTIFACT_PATHORFILE} gives: ==="
-  # ls -l "${INTERMEDIATE_ARTIFACT_PATHORFILE}"
-  # echo "=== End of ls -l ==="
 
   echo "=== Installing Clowd.Squirrel for Windows ==="
   # Although archived this is a replacement for the squirrel.windows original
@@ -234,10 +228,10 @@ else
     # Allow public test builds to be installed side by side with the release
     # builds by renaming the app
     # No dots in the <id>: Guidelines by Squirrel
-    NAME_SUFFIX="_64_-PublicTestBuild"
-    INSTALLER_ICON_WINFILE="$(cygpath -aw "${GITHUB_WORKSPACE}/src/icons/mudlet_ptb.ico")"
-    ID="Mudlet_64_-PublicTestBuild"
-    TITLE="Mudlet x64 (Public Test Build)"
+    NAME_SUFFIX='_64_-PublicTestBuild'
+    INSTALLER_ICON_WINFILE=$(cygpath -aw "${GITHUB_WORKSPACE}/src/icons/mudlet_ptb.ico")
+    ID='Mudlet_64_-PublicTestBuild'
+    TITLE='Mudlet x64 (Public Test Build)'
     LOADING_GIF="$(cygpath -aw "${GITHUB_WORKSPACE}/installers/windows/splash-installing-ptb-2x.png")"
     # Because the packaging tools use "Semantic Versioning" it makes sense
     # use the date in a number year-first form rather than the SHA1 as
@@ -252,21 +246,21 @@ else
     # sorting:
     INSTALLER_VERSION="${VERSION}-ptb-${BUILD_COMMIT,,}"
     # The name we want to use for the installer;
-    # Typically of form:                  "Mudlet-4.19.1-ptb-2025-01-01-012345678-windows-64.exe"
+    # Typically of form: 'Mudlet-4.19.1-ptb-2025-01-01-012345678-windows-64.exe'
     INSTALLER_EXE="Mudlet-${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT}-windows-64.exe"
     DBLSQD_VERSION_STRING="${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT,,}"
     # The name that has to be passed as the artifact so that the Mudlet website
     # will accept it as a PTB:
-    ARTIFACT_NAME=""Mudlet-${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT}-windows-64-installer.exe"
+    ARTIFACT_NAME="Mudlet-${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT}-windows-64-installer.exe"
   else
-    NAME_SUFFIX="_64_"
-    INSTALLER_ICON_WINFILE="$(cygpath -aw "${GITHUB_WORKSPACE}/src/icons/mudlet.ico")"
-    ID="Mudlet_64_"
-    TITLE="Mudlet x64"
-    LOADING_GIF="$(cygpath -aw "${GITHUB_WORKSPACE}/installers/windows/splash-installing-2x.png")"
-    # Typically     "4.19.1"
+    NAME_SUFFIX='_64_'
+    INSTALLER_ICON_WINFILE=$(cygpath -aw "${GITHUB_WORKSPACE}/src/icons/mudlet.ico")
+    ID='Mudlet_64_'
+    TITLE='Mudlet x64'
+    LOADING_GIF=$(cygpath -aw "${GITHUB_WORKSPACE}/installers/windows/splash-installing-2x.png")
+    # Typically       '4.19.1'
     INSTALLER_VERSION="${VERSION}"
-    # Typically of form:                  "Mudlet-4.19.1-windows-64-installer.exe"
+    # Typically of form: 'Mudlet-4.19.1-windows-64-installer.exe'
     INSTALLER_EXE="Mudlet-${VERSION}-windows-64-installer.exe"
     DBLSQD_VERSION_STRING="${VERSION}"
   fi
@@ -275,7 +269,7 @@ else
     --noDelta \
     --packId="${ID}" \
     --packVersion="${INSTALLER_VERSION}" \
-    --packAuthors="Mudlet Makers" \
+    --packAuthors='Mudlet Makers' \
     --packTitle="${TITLE}" \
     --packDir="$(cygpath -aw "${PACKAGE_PATH}")" \
     --splashImage="${LOADING_GIF}" \
@@ -283,15 +277,16 @@ else
     --releaseDir="${RELEASE_WINDIR}"
 
   # The above should produce, for both Release and PTBs SEVERAL files including
-  # a "Mudlet${NAME_SUFFIX}Setup.exe" in the ${RELEASE_DIR}:
-  # Check if the expected "setup" executable exists
-  if [[ ! -f "${RELEASE_DIR}/Mudlet${NAME_SUFFIX}Setup.exe" ]]; then
+  # a 'Mudlet${NAME_SUFFIX}Setup.exe' in the ${RELEASE_DIR}:
+  # Check if the expected 'setup' executable exists
+  EXPECTED_SETUP_EXE="${RELEASE_DIR}/Mudlet${NAME_SUFFIX}Setup.exe"
+  if [[ ! -f ${EXPECTED_SETUP_EXE} ]]; then
     echo "=== ERROR: Clowd.Squirrel failed to generate the installer ${RELEASE_DIR}/Mudlet${NAME_SUFFIX}Setup.exe! ==="
-    echo "Build aborted. Squirrel log is:"
+    echo 'Build aborted. Squirrel log is:'
 
     # Check if the Squirrel.log exists and display its content
-    SQUIRREL_LOG_PATHFILE="$(cygpath -au "${LOCALAPPDATA}/SquirrelClowdTemp/Squirrel.log")"
-    if [[ -f "${SQUIRREL_LOG_PATHFILE}" ]]; then
+    SQUIRREL_LOG_PATHFILE=$(cygpath -au "${LOCALAPPDATA}/SquirrelClowdTemp/Squirrel.log")
+    if [[ -f ${SQUIRREL_LOG_PATHFILE} ]]; then
       echo "=== SquirrelSetup.log ==="
       cat "${SQUIRREL_LOG_PATHFILE}"
     else
@@ -325,7 +320,6 @@ else
     # Append these variables to the GITHUB_ENV to make them available in
     # subsequent steps, the fourth one being 1 means "unzip the archive when
     # it is uploaded to the Mudlet website":
-    ARTIFACT_PATHORFILE="$(cygpath -au "${RELEASE_DIR}/${INSTALLER_EXE}")"
     ARTIFACT_WINPATHORFILE="$(cygpath -aw "${RELEASE_DIR}/${INSTALLER_EXE}")"
     {
       echo "ARTIFACT_NAME=${ARTIFACT_NAME}"
@@ -333,9 +327,6 @@ else
       echo "ARTIFACT_COMPRESSION=0"
       echo "ARTIFACT_UNZIP=1"
     } >> "${GITHUB_ENV}"
-    # echo "=== ls -l ${ARTIFACT_PATHORFILE} gives: ==="
-    # ls -l "${ARTIFACT_PATHORFILE}"
-    # echo "=== End of ls -l ==="
 
     # This identifies the "channel" that the release applies to, currently
     # we have three defined: this one; "release" and (unused) "testing":
