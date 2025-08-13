@@ -543,6 +543,27 @@ int TLuaInterpreter::disableScrollBar(lua_State* L)
     return 0;
 }
 
+// Documentation: https://wiki.mudlet.org/w/Manual:Lua_Functions#disableTimeStamps
+int TLuaInterpreter::disableTimeStamps(lua_State* L)
+{
+    const QString windowName {WINDOW_NAME(L, 1)};
+    auto pConsole = CONSOLE(L, windowName);
+    // *pConsole can be the main console as well as any user one
+    if (!pConsole->showTimeStamps()) {
+        lua_pushnil(L);
+        if (windowName.isEmpty()) {
+            lua_pushstring(L, qsl("timestamps were not enabled for the main console").toUtf8().constData());
+        } else {
+            lua_pushstring(L, qsl("timestamps were not enabled for the \"%1\" console").arg(windowName).toUtf8().constData());
+        }
+        return 2;
+    }
+
+    pConsole->slot_toggleTimeStamps(false);
+    lua_pushboolean(L, true);
+    return 1;
+}
+
 // Documentation: https://wiki.mudlet.org/w/Manual:Lua_Functions#echoLink
 int TLuaInterpreter::echoLink(lua_State* L)
 {
@@ -717,6 +738,27 @@ int TLuaInterpreter::enableScrollBar(lua_State* L)
     return 0;
 }
 
+// Documentation: https://wiki.mudlet.org/w/Manual:Lua_Functions#enableTimeStamps
+int TLuaInterpreter::enableTimeStamps(lua_State* L)
+{
+    const QString windowName {WINDOW_NAME(L, 1)};
+    auto pConsole = CONSOLE(L, windowName);
+    // *pConsole can be the main console as well as any user one
+    if (pConsole->showTimeStamps()) {
+        lua_pushnil(L);
+        if (windowName.isEmpty()) {
+            lua_pushstring(L, qsl("timestamps were not enabled for the main console").toUtf8().constData());
+        } else {
+            lua_pushstring(L, qsl("timestamps were not enabled for the \"%1\" console").arg(windowName).toUtf8().constData());
+        }
+        return 2;
+    }
+
+    pConsole->slot_toggleTimeStamps(true);
+    lua_pushboolean(L, true);
+    return 1;
+}
+
 // Documentation: https://wiki.mudlet.org/w/Manual:Lua_Functions#getAvailableFonts
 int TLuaInterpreter::getAvailableFonts(lua_State* L)
 {
@@ -761,9 +803,9 @@ int TLuaInterpreter::getBackgroundColor(lua_State* L)
 // Documentation: https://wiki.mudlet.org/w/Manual:Lua_Functions#getBgColor
 int TLuaInterpreter::getBgColor(lua_State* L)
 {
-    std::string windowName = "main";
+    QString windowName = qsl("main");
     if (lua_gettop(L) > 0) {
-        windowName = getVerifiedString(L, __func__, 1, "window name", true).toStdString();
+        windowName = getVerifiedString(L, __func__, 1, "window name", true);
     }
 
     const Host& host = getHostFromLua(L);
@@ -875,9 +917,9 @@ int TLuaInterpreter::getCurrentLine(lua_State* L)
 // Documentation: https://wiki.mudlet.org/w/Manual:Lua_Functions#getFgColor
 int TLuaInterpreter::getFgColor(lua_State* L)
 {
-    std::string windowName = "main";
+    QString windowName = qsl("main");
     if (lua_gettop(L) > 0) {
-        windowName = getVerifiedString(L, __func__, 1, "window name", true).toStdString();
+        windowName = getVerifiedString(L, __func__, 1, "window name", true);
     }
 
     const Host& host = getHostFromLua(L);
@@ -892,26 +934,35 @@ int TLuaInterpreter::getFgColor(lua_State* L)
 int TLuaInterpreter::getFont(lua_State* L)
 {
     QString windowName = qsl("main");
-    QString font;
     windowName = WINDOW_NAME(L, 1);
     auto console = CONSOLE(L, windowName);
-    font = console->mUpperPane->fontInfo().family();
-    lua_pushstring(L, font.toUtf8().constData());
+    Host& host = getHostFromLua(L);
+
+    auto actualFontFamily = [](const QFont& font) -> QString {
+        return QFontInfo(font).family();
+    };
+
+    QString fontName;
+
+    if (console == host.mpConsole) {
+        fontName = actualFontFamily(host.getDisplayFont());
+    } else if (console->mUpperPane) {
+        fontName = actualFontFamily(console->mUpperPane->font());
+    } else {
+        fontName = actualFontFamily(console->font());
+    }
+
+    lua_pushstring(L, fontName.toUtf8().constData());
     return 1;
 }
 
 // Documentation: https://wiki.mudlet.org/w/Manual:Lua_Functions#getFontSize
 int TLuaInterpreter::getFontSize(lua_State* L)
 {
-    const Host& host = getHostFromLua(L);
     int rval = -1;
     const QString windowName {WINDOW_NAME(L, 1)};
     auto console = CONSOLE(L, windowName);
-    if (console == host.mpConsole) {
-        rval = host.getDisplayFont().pointSize();
-    } else {
-        rval = console->mUpperPane->mDisplayFont.pointSize();
-    }
+    rval = console->mUpperPane->font().pointSize();
 
     if (rval <= -1) {
         lua_pushnil(L);
@@ -1039,7 +1090,7 @@ int TLuaInterpreter::getLineNumber(lua_State* L)
 // Documentation: https://wiki.mudlet.org/w/Manual:Lua_Functions#getMainConsoleWidth
 int TLuaInterpreter::getMainConsoleWidth(lua_State* L)
 {
-    const Host& host = getHostFromLua(L);
+    Host& host = getHostFromLua(L);
     int fw = QFontMetrics(host.getDisplayFont()).averageCharWidth();
     fw *= host.mWrapAt + 1;
     lua_pushnumber(L, fw);
@@ -1175,41 +1226,66 @@ int TLuaInterpreter::getTextFormat(lua_State* L)
         windowName = getVerifiedString(L, __func__, 1, "window name", true);
     }
 
-    const Host& host = getHostFromLua(L);
-    QPair<quint8, TChar> const result = host.mpConsole->getTextAttributes(windowName);
-    if (result.first == 1) {
+    auto console = getHostFromLua(L).findConsole(windowName);
+
+    if (!console) {
         return warnArgumentValue(L, __func__, qsl("window '%1' not found").arg(windowName));
     }
+
+    QPair<quint8, TChar> const result = console->getTextAttributes();
 
     if (result.first == 2) {
         return warnArgumentValue(L, __func__, qsl("current selection invalid in window '%1'").arg(windowName));
     }
 
+    if (result.first != 0) {
+        return warnArgumentValue(L, __func__, qsl("no character under cursor or selection in window '%1'").arg(windowName));
+    }
+
     lua_newtable(L);
 
-    TChar::AttributeFlags const format = result.second.allDisplayAttributes();
     lua_pushstring(L, "bold");
-    lua_pushboolean(L, format & TChar::Bold);
+    lua_pushboolean(L, result.second.isBold());
     lua_settable(L, -3);
 
     lua_pushstring(L, "italic");
-    lua_pushboolean(L, format & TChar::Italic);
+    lua_pushboolean(L, result.second.isItalic());
     lua_settable(L, -3);
 
     lua_pushstring(L, "overline");
-    lua_pushboolean(L, format & TChar::Overline);
+    lua_pushboolean(L, result.second.isOverlined());
     lua_settable(L, -3);
 
     lua_pushstring(L, "reverse");
-    lua_pushboolean(L, format & TChar::Reverse);
+    lua_pushboolean(L, result.second.isReversed());
     lua_settable(L, -3);
 
     lua_pushstring(L, "strikeout");
-    lua_pushboolean(L, format & TChar::StrikeOut);
+    lua_pushboolean(L, result.second.isStruckOut());
     lua_settable(L, -3);
 
     lua_pushstring(L, "underline");
-    lua_pushboolean(L, format & TChar::Underline);
+    lua_pushboolean(L, result.second.isUnderlined());
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "blinking");
+    if (Q_UNLIKELY(result.second.isFastBlinking())) {
+        lua_pushstring(L, "fast");
+    } else {
+        if (Q_UNLIKELY(result.second.isBlinking())) {
+            lua_pushstring(L, "slow");
+        } else {
+            lua_pushstring(L, "none");
+        }
+    }
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "concealed");
+    lua_pushboolean(L, result.second.isConcealed());
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "alternateFont");
+    lua_pushinteger(L, result.second.alternateFont());
     lua_settable(L, -3);
 
     const QColor foreground(result.second.foreground());
@@ -1242,8 +1318,19 @@ int TLuaInterpreter::getTextFormat(lua_State* L)
     lua_pushnumber(L, 3);
     lua_pushnumber(L, background.blue());
     lua_settable(L, -3);
+
     lua_settable(L, -3);
 
+    return 1;
+}
+
+// Documentation: https://wiki.mudlet.org/w/Manual:Lua_Functions#timeStampsEnabled
+int TLuaInterpreter::timeStampsEnabled(lua_State* L)
+{
+    const QString windowName {WINDOW_NAME(L, 1)};
+    auto pConsole = CONSOLE(L, windowName);
+    // *pConsole can be the main console as well as any user one
+    lua_pushboolean(L, pConsole->showTimeStamps());
     return 1;
 }
 
@@ -1428,7 +1515,7 @@ int TLuaInterpreter::insertText(lua_State* L)
 // Documentation: https://wiki.mudlet.org/w/Manual:Lua_Functions#isAnsiBgColor
 int TLuaInterpreter::isAnsiBgColor(lua_State* L)
 {
-    std::string windowName = "main";
+    QString windowName = qsl("main");
     const int ansiBg = getVerifiedInt(L, __func__, 1, "ANSI color");
 
     std::list<int> result;
@@ -1522,7 +1609,7 @@ int TLuaInterpreter::isAnsiBgColor(lua_State* L)
 // Documentation: https://wiki.mudlet.org/w/Manual:Lua_Functions#isAnsiFgColor
 int TLuaInterpreter::isAnsiFgColor(lua_State* L)
 {
-    std::string windowName = "main";
+    QString windowName = "main";
     const int ansiFg = getVerifiedInt(L, __func__, 1, "ANSI color");
 
     std::list<int> result;
@@ -1983,6 +2070,34 @@ int TLuaInterpreter::selectString(lua_State* L)
     return 1;
 }
 
+int TLuaInterpreter::setActiveProfile(lua_State* L)
+{
+    auto& hostManager = mudlet::self()->getHostManager();
+    const QString profileName = getVerifiedString(L, __func__, 1, "profile name");
+
+    if (profileName.isEmpty()) {
+        lua_pushboolean(L, false);
+        lua_pushstring(L, "setActiveProfile: profile name cannot be empty");
+        return 2;
+    }
+
+    if (!mudlet::self()->profileExists(profileName)) {
+        lua_pushboolean(L, false);
+        lua_pushfstring(L, "setActiveProfile: profile '%s' does not exist", profileName.toUtf8().constData());
+        return 2;
+    }
+
+    if (!hostManager.hostLoaded(profileName)) {
+        lua_pushboolean(L, false);
+        lua_pushfstring(L, "setActiveProfile: profile '%s' is not loaded", profileName.toUtf8().constData());
+        return 2;
+    }
+
+    mudlet::self()->mpTabBar->setCurrentIndex(mudlet::self()->mpTabBar->tabIndex(profileName));
+    lua_pushboolean(L, true);
+    return 1;
+}
+
 // Documentation: https://wiki.mudlet.org/w/Manual:Lua_Functions#setAppStyleSheet
 int TLuaInterpreter::setAppStyleSheet(lua_State* L)
 {
@@ -2375,28 +2490,33 @@ int TLuaInterpreter::setFont(lua_State* L)
         windowName = WINDOW_NAME(L, s++);
     }
 
-    const QString font = getVerifiedString(L, __func__, s, "name");
+    const QString fontName = getVerifiedString(L, __func__, s, "name");
 
-    if (!mudlet::self()->getAvailableFonts().contains(font, Qt::CaseInsensitive)) {
-        return warnArgumentValue(L, __func__, qsl("font '%1' is not available").arg(font));
+    if (fontName.trimmed().isEmpty()) {
+        return warnArgumentValue(L, __func__, "font must not be empty");
+    }
+
+    if (!mudlet::self()->getAvailableFonts().contains(fontName, Qt::CaseInsensitive)) {
+        return warnArgumentValue(L, __func__, qsl("font '%1' is not available").arg(fontName));
     }
 
 #if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
     // On GNU/Linux or FreeBSD ensure that emojis are displayed in colour even
     // if this font doesn't support it:
-    QFont::insertSubstitution(font, qsl("Noto Color Emoji"));
+    QFont::insertSubstitution(fontName, qsl("Noto Color Emoji"));
     // TODO issue #4159: a nonexisting font breaks the console
 #endif
 
     auto console = CONSOLE(L, windowName);
     if (console == host.mpConsole) {
         // apply changes to main console and its while-scrolling component too.
-        auto result = host.setDisplayFont(QFont(font, host.getDisplayFont().pointSize()));
+        auto result = host.setDisplayFont(QFont(fontName, host.getDisplayFont().pointSize()));
         if (!result.first) {
             return warnArgumentValue(L, __func__, result.second);
         }
         console->refreshView();
     } else {
+        auto font = QFont(fontName, console->font().pointSize());
         console->setFont(font);
     }
     lua_pushboolean(L, true);
@@ -2621,12 +2741,12 @@ int TLuaInterpreter::setMiniConsoleFontSize(lua_State* L)
     const QString windowName = getVerifiedString(L, __func__, 1, "miniconsole name");
     const int size = getVerifiedInt(L, __func__, 2, "font size");
     auto console = CONSOLE(L, windowName);
-    if (console->setFontSize(size)) {
-        lua_pushboolean(L, true);
-    } else {
+    if (size < 1) {
         return warnArgumentValue(L, __func__, qsl("setting font size of '%1' failed").arg(windowName));
     }
-    return 0;
+    console->setFontSize(size);
+    lua_pushboolean(L, true);
+    return 1;
 }
 
 // Documentation: https://wiki.mudlet.org/w/Manual:Lua_Functions#setMovie
@@ -2959,6 +3079,16 @@ int TLuaInterpreter::setWindowWrapIndent(lua_State* L)
     return 0;
 }
 
+//Documentation: https://wiki.mudlet.org/w/Manual:Lua_Functions#setWindowWrapHangingIndent
+int TLuaInterpreter::setWindowWrapHangingIndent(lua_State* L)
+{
+    const QString windowName {WINDOW_NAME(L, 1)};
+    const int luaFrom = getVerifiedInt(L, __func__, 2, "wrapTo");
+    auto console = CONSOLE(L, windowName);
+    console->setHangingIndentCount(luaFrom);
+    return 0;
+}
+
 // Documentation: https://wiki.mudlet.org/w/Manual:Lua_Functions#showWindow
 int TLuaInterpreter::showWindow(lua_State* L)
 {
@@ -3174,9 +3304,9 @@ int TLuaInterpreter::windowType(lua_State* L)
 int TLuaInterpreter::wrapLine(lua_State* L)
 {
     int s = 1;
-    std::string windowName;
+    QString windowName = qsl("main");
     if (lua_gettop(L)) {
-        windowName = getVerifiedString(L, __func__, s++, "window name").toStdString();
+        windowName = getVerifiedString(L, __func__, s++, "window name");
     }
     const int lineNumber = getVerifiedInt(L, __func__, s, "line");
 

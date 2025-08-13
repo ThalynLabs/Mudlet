@@ -28,7 +28,19 @@
 #include "pre_guard.h"
 #include <QPainter>
 #include <QVariant>
+#include <QMouseEvent>
+#include <QDrag>
+#include <QMimeData>
+#include <QApplication>
+#include <QScreen>
+#include <QDateTime>
 #include "post_guard.h"
+
+// Constants for improved drag detection
+static const int DETACH_DISTANCE_THRESHOLD = 80;  // Pixels to drag before tab detaches
+static const int DETACH_PIXEL_BUFFER = 20;        // Drag tolerance buffer
+static const int VERTICAL_MOVEMENT_RATIO_THRESHOLD = 60;  // Percentage of movement that must be vertical
+static const int TAB_REORDER_DELAY_MS = 150;  // Delay before allowing tab detachment
 
 
 void TTabBar::setNamedTabState(const QString& tabName, const bool state, QSet<QString>& effect)
@@ -184,7 +196,7 @@ void TTabBar::applyPrefixToDisplayedText(int index, const QString& prefix)
 
 void TTabBar::paintEvent(QPaintEvent* event)
 {
-    Q_UNUSED(event);
+    Q_UNUSED(event)
     QStylePainter painter(this);
     QStyleOptionTab opt;
 
@@ -201,4 +213,112 @@ void TTabBar::paintEvent(QPaintEvent* event)
         painter.drawControl(QStyle::CE_TabBarTabLabel, opt);
         painter.restore();
     }
+}
+
+void TTabBar::mousePressEvent(QMouseEvent* event)
+{
+    if (event->button() == Qt::LeftButton) {
+        mDragStartPos = event->pos();
+        mDragIndex = tabAt(event->pos());
+        mDragStartTime = QDateTime::currentMSecsSinceEpoch();
+        mPendingDetach = false;
+    }
+    QTabBar::mousePressEvent(event);
+}
+
+void TTabBar::mouseMoveEvent(QMouseEvent* event)
+{
+    // Check if we should start a drag operation
+    if (!(event->buttons() & Qt::LeftButton) || mDragIndex == -1) {
+        QTabBar::mouseMoveEvent(event);
+        return;
+    }
+
+    // Calculate movement vectors
+    const QPoint movement = event->pos() - mDragStartPos;
+    const int totalDistance = movement.manhattanLength();
+    
+    // Only proceed if we've moved enough to start considering detachment
+    if (totalDistance >= QApplication::startDragDistance()) {
+        // Calculate directional components
+        const int horizontalDistance = qAbs(movement.x());
+        const int verticalDistance = qAbs(movement.y());
+        
+        // Ensure we have enough time for Qt's tab reordering to be attempted first
+        const qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
+        const qint64 timeSincePress = currentTime - mDragStartTime;
+        
+        // Only consider detachment after the reorder delay has passed
+        if (timeSincePress >= TAB_REORDER_DELAY_MS) {
+            // Improved directional detection: require predominantly vertical movement
+            // and sufficient distance from the tab bar
+            bool isVerticalMovement = false;
+
+            if (verticalDistance > 0) {
+                const int verticalPercentage = (verticalDistance * 100) / (horizontalDistance + verticalDistance);
+                isVerticalMovement = verticalPercentage >= VERTICAL_MOVEMENT_RATIO_THRESHOLD;
+            }
+            
+            // Check if we're significantly outside the tab bar area
+            const QPoint globalPos = mapToGlobal(event->pos());
+            const QRect tabBarGlobalRect = QRect(mapToGlobal(rect().topLeft()), rect().size());
+            
+            // Calculate distance from tab bar with enhanced threshold
+            if (!tabBarGlobalRect.contains(globalPos) && isVerticalMovement) {
+                const QPoint distanceFromBar = globalPos - tabBarGlobalRect.center();
+                const int distanceFromBarManhattan = distanceFromBar.manhattanLength();
+                
+                // Use the improved threshold and ensure it's primarily vertical movement
+                if (distanceFromBarManhattan > DETACH_DISTANCE_THRESHOLD) {
+                    emit tabDetachRequested(mDragIndex, globalPos);
+                    mDragIndex = -1; // Reset drag state
+                    return;
+                }
+            }
+        }
+    }
+
+    // Always call the parent implementation to allow normal tab reordering
+    QTabBar::mouseMoveEvent(event);
+}
+
+void TTabBar::dragEnterEvent(QDragEnterEvent* event)
+{
+    const QMimeData* mimeData = event->mimeData();
+
+    if (mimeData->hasFormat("application/x-mudlet-tab")) {
+        event->acceptProposedAction();
+    } else {
+        event->ignore();
+    }
+}
+
+void TTabBar::dragMoveEvent(QDragMoveEvent* event)
+{
+    const QMimeData* mimeData = event->mimeData();
+
+    if (mimeData->hasFormat("application/x-mudlet-tab")) {
+        event->acceptProposedAction();
+    } else {
+        event->ignore();
+    }
+}
+
+void TTabBar::dropEvent(QDropEvent* event)
+{
+    const QMimeData* mimeData = event->mimeData();
+
+    if (mimeData->hasFormat("application/x-mudlet-tab")) {
+        const QString tabName = QString::fromUtf8(mimeData->data("application/x-mudlet-tab"));
+        const int dropIndex = tabAt(event->position().toPoint());
+        emit tabReattachRequested(tabName, dropIndex);
+        event->acceptProposedAction();
+    }
+}
+
+void TTabBar::onDetachedTabReattach(const QString& tabName)
+{
+    // This slot can be connected to detached windows for reattachment
+    const int insertIndex = count(); // Insert at end by default
+    emit tabReattachRequested(tabName, insertIndex);
 }

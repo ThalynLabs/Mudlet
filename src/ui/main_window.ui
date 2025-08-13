@@ -115,6 +115,7 @@
     </property>
     <addaction name="dactionOptions"/>
     <addaction name="dactionMultiView"/>
+    <addaction name="dactionToggleFullScreen"/>
     <addaction name="separator"/>
     <addaction name="menuMute"/>
    </widget>
@@ -146,6 +147,15 @@
     <addaction name="dactionChangelog"/>
     <addaction name="dactionReportIssue"/>
    </widget>
+   <widget class="QMenu" name="menuWindow">
+    <property name="title">
+     <string>Window</string>
+    </property>
+    <addaction name="dactionReattachDetachedWindows"/>
+    <addaction name="separator"/>
+    <addaction name="dactionToggleAlwaysOnTop"/>
+    <addaction name="dactionMinimize"/>
+   </widget>
    <widget class="QMenu" name="menuGames">
     <property name="title">
      <string>Games</string>
@@ -156,13 +166,45 @@
     <addaction name="dactionReconnect"/>
     <addaction name="separator"/>
     <addaction name="dactionCloseProfile"/>
+    <addaction name="dactionCloseApplication"/>
    </widget>
    <addaction name="menuGames"/>
    <addaction name="menuEditor"/>
    <addaction name="menuOptions"/>
+   <addaction name="menuWindow"/>
    <addaction name="menuHelp"/>
    <addaction name="menuAbout"/>
   </widget>
+  <action name="dactionReattachDetachedWindows">
+   <property name="text">
+    <string>Reattach detached windows</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;p&gt;Reattach all detached profile windows back to the main Mudlet window.&lt;/p&gt;</string>
+   </property>
+  </action>
+  <action name="dactionToggleAlwaysOnTop">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Always on Top</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;p&gt;Keep the main Mudlet window always on top of other windows.&lt;/p&gt;</string>
+   </property>
+  </action>
+  <action name="dactionMinimize">
+   <property name="text">
+    <string>Minimize</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;p&gt;Minimize the main Mudlet window.&lt;/p&gt;</string>
+   </property>
+  </action>
   <action name="dactionConnect">
    <property name="text">
     <string>Play</string>
@@ -193,6 +235,9 @@
    </property>
    <property name="toolTip">
     <string>&lt;p&gt;Configure setting for the Mudlet application globally and for the current profile.&lt;/p&gt;</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::PreferencesRole</enum>
    </property>
   </action>
   <action name="dactionScriptEditor">
@@ -233,6 +278,9 @@
    </property>
    <property name="toolTip">
     <string comment="Tooltip for About Mudlet sub-menu item and main toolbar button (or menu item if an update has changed that control to have a popup menu instead) (Used in 3 places - please ensure all have the same translation).">&lt;p&gt;Inform yourself about this version of Mudlet, the people who made it and the licence under which you can share it.&lt;/p&gt;</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::AboutRole</enum>
    </property>
   </action>
   <action name="dactionIRC">
@@ -326,6 +374,17 @@
     <string comment="Same text is used in 2 places.">&lt;p&gt;Splits the Mudlet screen to show multiple profiles at once; disabled when less than two are loaded.&lt;/p&gt;</string>
    </property>
   </action>
+  <action name="dactionToggleFullScreen">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Full Screen</string>
+   </property>
+  </action>
   <action name="dactionMuteMedia">
    <property name="checkable">
     <bool>true</bool>
@@ -415,6 +474,14 @@
   <action name="dactionCloseProfile">
    <property name="text">
     <string>Close profile</string>
+   </property>
+  </action>
+  <action name="dactionCloseApplication">
+   <property name="text">
+    <string>Close Mudlet</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::QuitRole</enum>
    </property>
   </action>
   <action name="dactionChangelog">

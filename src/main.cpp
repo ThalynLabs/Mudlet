@@ -190,6 +190,7 @@ sentry_value_t before_send(sentry_value_t event, void* hint, void* closure) {
 #ifdef Q_OS_WINDOWS
 void msys2QtMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg)
 {
+    Q_UNUSED(context)
     switch (type) {
     case QtDebugMsg:
     case QtInfoMsg:
@@ -359,6 +360,9 @@ int main(int argc, char* argv[])
     const QCommandLineOption showSplashscreen(QStringList() << qsl("s") << qsl("splashscreen"), qsl("Show the splash screen when starting"));
     parser.addOption(showSplashscreen);
 
+    const QCommandLineOption startFullscreen(QStringList() << qsl("f") << qsl("fullscreen"), qsl("Start Mudlet in fullscreen mode"));
+    parser.addOption(startFullscreen);
+
     const QCommandLineOption mirrorToStdout(QStringList() << qsl("m") << qsl("mirror"), qsl("Mirror output of all consoles to STDOUT"));
     parser.addOption(mirrorToStdout);
 
@@ -408,6 +412,7 @@ int main(int argc, char* argv[])
                                                                   "                                    repeated."));
         texts << appendLF.arg(QCoreApplication::translate("main", "       -o, --only=<predefined>      make Mudlet only show the specific\n"
                                                                   "                                    predefined game, may be repeated."));
+        texts << appendLF.arg(QCoreApplication::translate("main", "       -f, --fullscreen             start Mudlet in fullscreen mode."));                                                                  
         texts << appendLF.arg(QCoreApplication::translate("main", "       --steammode                  adjusts Mudlet settings to match\n"
                                                                   "                                    Steam's requirements."));
         texts << appendLF.arg(QCoreApplication::translate("main", "There are other inherited options that arise from the Qt Libraries which are\n"
@@ -781,7 +786,13 @@ int main(int argc, char* argv[])
     if (!onlyProfiles.isEmpty()) {
         mudlet::self()->onlyShowProfiles(onlyProfiles);
     }
+
     mudlet::self()->show();
+    if (parser.isSet(startFullscreen)) {
+        QTimer::singleShot(0, [=]() {
+            mudlet::self()->showFullScreen();
+        });
+    }
 
     QTimer::singleShot(0, qApp, [cliProfiles]() {
         // ensure Mudlet singleton is initialised before calling profile loading

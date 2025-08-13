@@ -95,6 +95,7 @@ set(mudlet_SRCS
     HostManager.cpp
     ircmessageformatter.cpp
     KeyUnit.cpp
+    LlamaFileManager.cpp
     LuaInterface.cpp
     main.cpp
     mapInfoContributorManager.cpp
@@ -126,6 +127,7 @@ set(mudlet_SRCS
     TLinkStore.cpp
 
     TLuaInterpreter.cpp
+    TLuaInterpreterAI.cpp
     TLuaInterpreterDiscord.cpp
     TLuaInterpreterMapper.cpp
     TLuaInterpreterMedia.cpp
@@ -173,6 +175,7 @@ set(mudlet_SRCS
     TSplitterHandle.cpp
     TStringUtils.cpp
     TTabBar.cpp
+    TDetachedWindow.cpp
     TTextCodec.cpp
     TTextEdit.cpp
     TTimer.cpp
@@ -279,6 +282,7 @@ set(mudlet_HDRS
     HostManager.h
     ircmessageformatter.h
     KeyUnit.h
+    LlamaFileManager.h
     LuaInterface.h
     mapInfoContributorManager.h
     mudlet.h
@@ -355,6 +359,7 @@ set(mudlet_HDRS
     TSplitterHandle.h
     TStringUtils.h
     TTabBar.h
+    TDetachedWindow.h
     TTextCodec.h
     TTextEdit.h
     TTimer.h
@@ -550,6 +555,10 @@ target_compile_definitions(mudlet PRIVATE DEBUG_TELNET=1)
 # * Enable the features associated with reporting problems in processing Unicode
 #   codepoints that cannot be displayed on screen in a `TConsole`:
 # target_compile_definitions(mudlet PRIVATE DEBUG_CODEPOINT_PROBLEMS)
+#
+# * Produce qDebug() messages about window handling operations like dock widget
+#   transfers, profile switching, and detached window management:
+# target_compile_definitions(mudlet PRIVATE DEBUG_WINDOW_HANDLING)
 
 target_sources(mudlet PRIVATE "${mudlet_BINARY_DIR}/translations/translated/qm.qrc")
 
@@ -594,6 +603,7 @@ target_link_libraries(
         mudlet
         communi
         edbee-lib
+        QTagEdit
         Boost::boost
         HUNSPELL::HUNSPELL
         LUA51::LUA51

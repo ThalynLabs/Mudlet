@@ -570,8 +570,8 @@ void TLuaInterpreter::slot_pathChanged(const QString& path)
 // No documentation available in wiki - internal function
 void TLuaInterpreter::slot_deleteSender(int exitCode, QProcess::ExitStatus exitStatus)
 {
-    Q_UNUSED(exitCode);
-    Q_UNUSED(exitStatus);
+    Q_UNUSED(exitCode)
+    Q_UNUSED(exitStatus)
 
     objectsToDelete.append(sender());
 }
@@ -2667,6 +2667,7 @@ int TLuaInterpreter::installPackage(lua_State* L)
     if (auto [success, message] = host.installPackage(location, enums::PackageModuleType::Package); !success) {
         return warnArgumentValue(L, __func__, message);
     }
+    lua_pushboolean(L, true);
     return 1;
 }
 
@@ -2675,8 +2676,13 @@ int TLuaInterpreter::uninstallPackage(lua_State* L)
 {
     const QString packageName = getVerifiedString(L, __func__, 1, "package name");
     Host& host = getHostFromLua(L);
-    host.uninstallPackage(packageName, enums::PackageModuleType::Package);
-    return 0;
+    const bool result = host.uninstallPackage(packageName, enums::PackageModuleType::Package);
+    if (!result) {
+        lua_pushnil(L);
+    } else {
+        lua_pushboolean(L, result);
+    }
+    return 1;
 }
 
 // Documentation: https://wiki.mudlet.org/w/Manual:Lua_Functions#installModule
@@ -2954,6 +2960,16 @@ int TLuaInterpreter::expandAlias(lua_State* L)
     return 1;
 }
 
+// Documentation: https://wiki.mudlet.org/w/Manual:Lua_Functions#sendCmdLine
+int TLuaInterpreter::sendCmdLine(lua_State* L)
+{
+    const QString text = getVerifiedString(L, __func__, 1, "command");
+    Host& host = getHostFromLua(L);
+    host.sendCmdLine(text);
+    lua_pushboolean(L, true);
+    return 1;
+}
+
 // Documentation: https://wiki.mudlet.org/w/Manual:Lua_Functions#send
 // Note this is registered as send NOT sendRaw - see initLuaGlobals()
 // It converts the bytes in the command (the first argument) from Utf-8 to be
@@ -3164,6 +3180,14 @@ int TLuaInterpreter::getOS(lua_State* L)
     lua_pushstring(L, "unknown");
     return 2 + pushProcessor();
 #endif
+}
+
+// Documentation: https://wiki.mudlet.org/w/Manual:Lua_Functions#getProcessID
+int TLuaInterpreter::getProcessID(lua_State* L)
+{
+    int pid = QApplication::applicationPid();
+    lua_pushinteger(L, pid);
+    return 1;
 }
 
 // No documentation available in wiki - internal function
@@ -3411,7 +3435,8 @@ void TLuaInterpreter::setAtcpTable(const QString& var, const QString& arg)
 }
 
 // No documentation available in wiki - internal function
-void TLuaInterpreter::signalMXPEvent(const QString &type, const QMap<QString, QString> &attrs, const QStringList &actions) {
+void TLuaInterpreter::signalMXPEvent(const QString &type, const QMap<QString, QString> &attrs, const QStringList &actions)
+{
     lua_State *L = pGlobalLua;
     lua_getglobal(L, "mxp");
     if (!lua_istable(L, -1)) {
@@ -3626,69 +3651,46 @@ void TLuaInterpreter::parseJSON(QString& key, const QString& string_data, const 
     }
     // auto-detect IRE composer
     if (tokenList.size() == 3 && tokenList.at(0).toLower() == "ire" && tokenList.at(1).toLower() == "composer" && tokenList.at(2).toLower() == "edit") {
-        const QRegularExpression rx(qsl(R"lit(\{ ?"title": ?"(.*)", ?"text": ?"(.*)" ?\})lit"));
-        const QRegularExpressionMatch match = rx.match(string_data);
-
-        if (match.capturedStart() != -1) {
-            const QString title = match.captured(1);
-            QString initialText = match.captured(2);
-            const QRegularExpression codeRegex(qsl(R"lit(\\n|\\t|\\"|\\\\|\\u[0-9a-cA-C][0-9a-fA-F]{3}|\\u[dD][0-7][0-9a-fA-F]{2}|\\u[efEF][0-9a-fA-F]{3}|\\u[dD][89abAB][0-9a-fA-F]{2}\\u[dD][c-fC-F][0-9a-fA-F]{2})lit"));
-            // We are about to search for 8 escape code strings within the initial text that the game gave us, patterns are:
-            // \n  \t  \"  \\ - new line, tab, quote, backslash
-            // Then there are three patterns for \uXXXX where XXXX is a 4-digit hexadecimal value
-            //   Characters in ranges U+0000-U+D7FF and U+E000-U+FFFD are stored as a single unit.
-            //   0000-CFFF
-            //   D000-D7FF
-            //   D800-DFFF - are reserved for surrogate pairs; will not match a pattern
-            //   E000-FFFF - note that FFFE and FFFF match the pattern but are not valid, will skip those later
-            // Then one pattern for \uXXXX\uXXXX where each XXXX is a 4-digit hexadecimal value
-            //   These are 'surrogate pairs', (U+D800-U+DBFF) followed by (U+DC00-U+DFFF).
-            //   D800-DF00  DC00-DFFF
-            int j = 0;
-            while ((j = initialText.indexOf(codeRegex, j)) != -1) {
-                uint u;
-                switch (initialText.at(j+1).unicode()){
-                    case 'n' : initialText.replace(j, 2, '\n'); break;
-                    case 't' : initialText.replace(j, 2, '\t'); break;
-                    case '\"' : initialText.replace(j, 2, '\"'); break;
-                    case '\\' : initialText.replace(j, 2, '\\'); break;
-                    case 'u': // handle lone code or pair of codes together
-                        u = initialText.mid(j+2, 4).toUShort(0, 16);
-                        if(u > 0xFFFD){
-                            j += 5; // FFFE and FFFF are guaranteed to not be Unicode characters.  Skip it.
-                        }
-                        else if((u < 0xD800) || (0xDFFF < u)){
-                            // Characters in ranges U+0000-U+D7FF and U+E000-U+FFFD are stored as a single unit.
-                            initialText.replace(j, 6, QChar(u));
-                        }
-                        else if((0xD7FF < u) && (u < 0xDC00)){
-                            // Non-BMP characters (range U+10000-U+10FFFF) are stored as "surrogate pairs".
-                            // A 'high' surrogate (U+D800-U+DBFF) followed by 'low' surrogate (U+DC00-U+DFFF).
-                            // Surrogates are always written in pairs, a lone one is invalid.
-                            // The regex above should ensure second code is DCxx-DFxx
-                            QChar code[2];
-                            code[0] = QChar(u);
-                            code[1] = QChar(initialText.mid(j+8, 4).toUShort(0, 16));
-                            initialText.replace(j, 12, code, 2);
-                            j++; // in this case we are adding 2 code points for the character
-                        }
-                        // DC00-DFFF should be filtered out by the regex.
-                        break;
-                }
-                j++;
-            }
-            Host& host = getHostFromLua(L);
-            if (host.mTelnet.mpComposer) {
-                return;
-            }
-
-            host.mTelnet.mpComposer = new dlgComposer(&host);
-            host.mTelnet.mpComposer->init(title, initialText);
-            host.mTelnet.mpComposer->raise();
-            host.mTelnet.mpComposer->show();
-        }
+        handleIreComposerEdit(string_data);
     }
     lua_pop(L, lua_gettop(L));
+}
+
+void TLuaInterpreter::handleIreComposerEdit(const QString& jsonData)
+{
+    Host& host = getHostFromLua(pGlobalLua);
+    
+    QJsonParseError parseError;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData.toUtf8(), &parseError);
+    
+    if (parseError.error != QJsonParseError::NoError) {
+        qDebug() << "IRE Composer: JSON parse error:" << parseError.errorString();
+        return;
+    }
+    
+    if (!jsonDoc.isObject()) {
+        qDebug() << "IRE Composer: JSON is not an object";
+        return;
+    }
+    
+    QJsonObject jsonObj = jsonDoc.object();
+    
+    if (!jsonObj.contains("title") || !jsonObj.contains("text")) {
+        qDebug() << "IRE Composer: Missing required 'title' or 'text' fields";
+        return;
+    }
+    
+    const QString title = jsonObj["title"].toString();
+    const QString initialText = jsonObj["text"].toString();
+    
+    if (host.mTelnet.mpComposer) {
+        return;
+    }
+
+    host.mTelnet.mpComposer = new dlgComposer(&host);
+    host.mTelnet.mpComposer->init(title, initialText);
+    host.mTelnet.mpComposer->raise();
+    host.mTelnet.mpComposer->show();
 }
 
 // No documentation available in wiki - internal function
@@ -4389,6 +4391,13 @@ bool TLuaInterpreter::callAnonymousFunction(const int func, QString name)
 bool TLuaInterpreter::callCmdLineAction(const int func, QString text)
 {
     lua_State* L = pGlobalLua;
+    auto& host = getHostFromLua(L);
+
+    // Suppress command line actions if remote echo is active (e.g., during password entry)
+    if (host.isRemoteEchoingActive()) {
+        return false; // Do not invoke actions during password entry
+    }
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, func);
     lua_pushstring(L, text.toUtf8().constData());
     return callReference(L, qsl("cmdLineAction"), 1);
@@ -5063,6 +5072,7 @@ void TLuaInterpreter::initLuaGlobals()
     lua_register(pGlobalLua, "killTrigger", TLuaInterpreter::killTrigger);
     lua_register(pGlobalLua, "getLineCount", TLuaInterpreter::getLineCount);
     lua_register(pGlobalLua, "getColumnNumber", TLuaInterpreter::getColumnNumber);
+    lua_register(pGlobalLua, "sendCmdLine", TLuaInterpreter::sendCmdLine);
     lua_register(pGlobalLua, "send", TLuaInterpreter::sendRaw);
     lua_register(pGlobalLua, "selectCaptureGroup", TLuaInterpreter::selectCaptureGroup);
     lua_register(pGlobalLua, "tempLineTrigger", TLuaInterpreter::tempLineTrigger);
@@ -5078,6 +5088,7 @@ void TLuaInterpreter::initLuaGlobals()
     lua_register(pGlobalLua, "setWindowWrap", TLuaInterpreter::setWindowWrap);
     lua_register(pGlobalLua, "getWindowWrap", TLuaInterpreter::getWindowWrap);
     lua_register(pGlobalLua, "setWindowWrapIndent", TLuaInterpreter::setWindowWrapIndent);
+    lua_register(pGlobalLua, "setWindowWrapHangingIndent", TLuaInterpreter::setWindowWrapHangingIndent);
     lua_register(pGlobalLua, "resetFormat", TLuaInterpreter::resetFormat);
     lua_register(pGlobalLua, "moveCursorEnd", TLuaInterpreter::moveCursorEnd);
     lua_register(pGlobalLua, "getLastLineNumber", TLuaInterpreter::getLastLineNumber);
@@ -5449,6 +5460,7 @@ void TLuaInterpreter::initLuaGlobals()
     lua_register(pGlobalLua, "getColumnCount", TLuaInterpreter::getColumnCount);
     lua_register(pGlobalLua, "getRowCount", TLuaInterpreter::getRowCount);
     lua_register(pGlobalLua, "getOS", TLuaInterpreter::getOS);
+    lua_register(pGlobalLua, "getProcessID", TLuaInterpreter::getProcessID);
     lua_register(pGlobalLua, "getClipboardText", TLuaInterpreter::getClipboardText);
     lua_register(pGlobalLua, "setClipboardText", TLuaInterpreter::setClipboardText);
     lua_register(pGlobalLua, "getAvailableFonts", TLuaInterpreter::getAvailableFonts);
@@ -5542,6 +5554,13 @@ void TLuaInterpreter::initLuaGlobals()
     lua_register(pGlobalLua, "loadProfile", TLuaInterpreter::loadProfile);
     lua_register(pGlobalLua, "closeProfile", TLuaInterpreter::closeProfile);
     lua_register(pGlobalLua, "getCollisionLocationsInArea", TLuaInterpreter::getCollisionLocationsInArea);
+    lua_register(pGlobalLua, "disableTimeStamps", TLuaInterpreter::disableTimeStamps);
+    lua_register(pGlobalLua, "enableTimeStamps", TLuaInterpreter::enableTimeStamps);
+    lua_register(pGlobalLua, "timeStampsEnabled", TLuaInterpreter::timeStampsEnabled);
+    lua_register(pGlobalLua, "aiChat", TLuaInterpreter::aiChat);
+    lua_register(pGlobalLua, "aiPrompt", TLuaInterpreter::aiPrompt);
+    lua_register(pGlobalLua, "aiPromptStream", TLuaInterpreter::aiPromptStream);
+    lua_register(pGlobalLua, "setActiveProfile", TLuaInterpreter::setActiveProfile);
     // PLACEMARKER: End of main Lua interpreter functions registration
     // check new functions against https://www.linguistic-antipatterns.com when creating them
 
@@ -5650,7 +5669,8 @@ void TLuaInterpreter::initLuaGlobals()
 }
 
 // No documentation available in wiki - internal function
-lua_State* TLuaInterpreter::getLuaGlobalState() {
+lua_State* TLuaInterpreter::getLuaGlobalState()
+{
     return pGlobalLua;
 }
 
@@ -5875,7 +5895,10 @@ void TLuaInterpreter::loadGlobal()
         // and in a "src" subdirectory (to match the relative source file
         // location to that top-level project file) of the main project
         // "mudlet" directory:
-        QDir::toNativeSeparators(qsl("%1/../../../src/mudlet-lua/lua/LuaGlobal.lua").arg(executablePath))
+        QDir::toNativeSeparators(qsl("%1/../../../src/mudlet-lua/lua/LuaGlobal.lua").arg(executablePath)),
+
+        // CMake builds from Qt Creator on Windows 11 appear to use this directory:
+        QDir::toNativeSeparators(qsl("%1/../../../mudlet-lua/lua/LuaGlobal.lua").arg(executablePath))
     };
 
     // Although it is relatively easy to detect whether something is #define d
@@ -6510,7 +6533,8 @@ Host& getHostFromLua(lua_State* L)
 // No documentation available in wiki - internal function
 // Used to unref lua objects in the registry to avoid memory leaks
 // i.e. Unrefing tables passed into TLabel's event parameters.
-void TLuaInterpreter::freeLuaRegistryIndex(int index) {
+void TLuaInterpreter::freeLuaRegistryIndex(int index)
+{
     luaL_unref(pGlobalLua, LUA_REGISTRYINDEX, index);
 }
 
@@ -7178,6 +7202,7 @@ int TLuaInterpreter::showNotification(lua_State* L)
     } else {
         mudlet::self()->mTrayIcon.showMessage(title, text, mudlet::self()->mTrayIcon.icon());
     }
+    mudlet::self()->mTrayIcon.hide();
     lua_pushboolean(L, true);
     return 1;
 }
@@ -7303,8 +7328,30 @@ int TLuaInterpreter::setConfig(lua_State * L)
         host.mEnableMNES = getVerifiedBool(L, __func__, 2, "value");
         return success();
     }
+    if (key == qsl("specialForceMxpNegotiationOff")) {
+        // specialForceMxpNegotiationOff should not be used anymore, but we support it for compatibility
+        // it will be the inverse of enableMXP
+        host.mEnableMXP = !getVerifiedBool(L, __func__, 2, "value");
+        return success();
+    }
+    if (key == qsl("enableMXP")) {
+        host.mEnableMXP = getVerifiedBool(L, __func__, 2, "value");
+        return success();
+    }
     if (key == qsl("askTlsAvailable")) {
         host.mAskTlsAvailable = getVerifiedBool(L, __func__, 2, "value");
+        return success();
+    }
+    if (key == qsl("promptForMXPProcessorOn")) {
+        host.mPromptedForMXPProcessorOn = getVerifiedBool(L, __func__, 2, "value");
+        return success();
+    }
+    if (key == qsl("promptForVersionInTTYPE")) {
+        host.mPromptedForVersionInTTYPE = getVerifiedBool(L, __func__, 2, "value");
+        return success();
+    }
+    if (key == qsl("versionInTTYPE")) {
+        host.mVersionInTTYPE = getVerifiedBool(L, __func__, 2, "value");
         return success();
     }
     if (key == qsl("inputLineStrictUnixEndings")) {
@@ -7335,10 +7382,6 @@ int TLuaInterpreter::setConfig(lua_State * L)
         host.mFORCE_CHARSET_NEGOTIATION_OFF = getVerifiedBool(L, __func__, 2, "value");
         return success();
     }
-    if (key == qsl("specialForceMxpNegotiationOff")) {
-        host.mFORCE_MXP_NEGOTIATION_OFF = getVerifiedBool(L, __func__, 2, "value");
-        return success();
-    }
     if (key == qsl("forceNewEnvironNegotiationOff")) {
         host.mForceNewEnvironNegotiationOff = getVerifiedBool(L, __func__, 2, "value");
         return success();
@@ -7352,12 +7395,20 @@ int TLuaInterpreter::setConfig(lua_State * L)
 
         return success();
     }
+    if (key == qsl("editorAutoComplete")) {
+        host.mEditorAutoComplete = getVerifiedBool(L, __func__, 2, "value");
+        return success();
+    }
     if (key == qsl("announceIncomingText")) {
         host.mAnnounceIncomingText = getVerifiedBool(L, __func__, 2, "value");
         return success();
     }
     if (key == qsl("advertiseScreenReader")) {
         host.mAdvertiseScreenReader = getVerifiedBool(L, __func__, 2, "value");
+        return success();
+    }
+    if (key == qsl("enableClosedCaption")) {
+        host.mEnableClosedCaption = getVerifiedBool(L, __func__, 2, "value");
         return success();
     }
     if (key == qsl("blankLinesBehaviour")) {
@@ -7403,26 +7454,7 @@ int TLuaInterpreter::setConfig(lua_State * L)
         return success();
     }
     if (key == qsl("commandLineHistorySaveSize")) {
-        // This set of values needs to be the same as those put in the
-        // (QComboBox) dlgProfilePreferences::comboBox_commandLineHistorySaveSize
-        // widget:
-        static const QList<int> values{0, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000};
         const auto value = getVerifiedInt(L, __func__, 2, "value");
-        if (!values.contains(value)) {
-            static QStringList valuesAsStrings;
-            if (valuesAsStrings.isEmpty()) {
-                for (const auto& potentialValue : values) {
-                    valuesAsStrings << QString::number(potentialValue);
-                }
-            }
-            lua_pushnil(L);
-            // Use the original argument as a string, not what the
-            // getVerifiedInt(...) returns in case it is not a pure integer to
-            // start with:
-            lua_pushfstring(L, "invalid commandLineHistorySaveSize number %s, it should be one of %s",
-                            lua_tostring(L, 2), valuesAsStrings.join(qsl(", ")).toUtf8().constData());
-            return 2;
-        }
         host.setCommandLineHistorySaveSize(value);
         return success();
     }
@@ -7455,11 +7487,16 @@ int TLuaInterpreter::setConfig(lua_State * L)
         host.setF3SearchEnabled(value);
         return success();
     }
+    if (key == qsl("showTabConnectionIndicators")) {
+        mudlet::self()->setShowTabConnectionIndicators(getVerifiedBool(L, __func__, 2, "value"));
+        return success();
+    }
     return warnArgumentValue(L, __func__, qsl("'%1' isn't a valid configuration option").arg(key));
 }
 
 // Documentation: https://wiki.mudlet.org/w/Manual:Lua_Functions#announce
-int TLuaInterpreter::announce(lua_State *L) {
+int TLuaInterpreter::announce(lua_State *L)
+{
     const QString text = getVerifiedString(L, __func__, 1, "text to announce");
     static const QStringList processingKinds{"importantall", "importantmostrecent", "all", "mostrecent", "currentthenmostrecent"};
     QString processing;
@@ -7476,7 +7513,7 @@ int TLuaInterpreter::announce(lua_State *L) {
         }
     }
 
-    mudlet::self()->announce(text, processing);
+    mudlet::self()->announce(text, processing, true);
     return 0;
 }
 
@@ -7509,21 +7546,40 @@ int TLuaInterpreter::getConfig(lua_State *L)
         }},
         { qsl("mapperPanelVisible"), [&](){ lua_pushboolean(L, host.mShowPanel); } },
         { qsl("mapShowRoomBorders"), [&](){ lua_pushboolean(L, host.mMapperShowRoomBorders); } },
+        { qsl("editorAutoComplete"), [&](){ lua_pushboolean(L, host.mEditorAutoComplete); } },
         { qsl("enableGMCP"), [&](){ lua_pushboolean(L, host.mEnableGMCP); } },
         { qsl("enableMSSP"), [&](){ lua_pushboolean(L, host.mEnableMSSP); } },
         { qsl("enableMSDP"), [&](){ lua_pushboolean(L, host.mEnableMSDP); } },
         { qsl("enableMSP"), [&](){ lua_pushboolean(L, host.mEnableMSP); } },
         { qsl("enableMTTS"), [&](){ lua_pushboolean(L, host.mEnableMTTS); } },
         { qsl("enableMNES"), [&](){ lua_pushboolean(L, host.mEnableMNES); } },
-        { qsl("askTlsAvailable"), [&](){ lua_pushboolean(L, host.mAskTlsAvailable); } },
+        { qsl("enableMXP"), [&](){ lua_pushboolean(L, host.mEnableMXP); } },
+        { qsl("logDirectory"), [&](){
+            const auto logDir = host.mLogDir;
+
+            if (logDir == nullptr || logDir.isEmpty()) {
+                lua_pushstring(L, mudlet::getMudletPath(enums::profileReplayAndLogFilesPath, getHostFromLua(L).getName()).toUtf8().constData());
+            } else {
+                lua_pushstring(L, host.mLogDir.toUtf8().constData());
+            }
+        } },
+        { qsl("askTlsAvailable"), [&](){lua_pushboolean(L, host.mAskTlsAvailable); } },
+        { qsl("promptForMXPProcessorOn"), [&](){lua_pushboolean(L, host.mPromptedForMXPProcessorOn); } },
+        { qsl("specialForceMXPProcessorOn"), [&](){lua_pushboolean(L, host.getForceMXPProcessorOn()); } },
+        { qsl("promptForVersionInTTYPE"), [&](){lua_pushboolean(L, host.mPromptedForVersionInTTYPE); } },
+        { qsl("versionInTTYPE"), [&](){ lua_pushboolean(L, host.mVersionInTTYPE); } },
         { qsl("inputLineStrictUnixEndings"), [&](){ lua_pushboolean(L, host.mUSE_UNIX_EOL); } },
         { qsl("autoClearInputLine"), [&](){ lua_pushboolean(L, host.mAutoClearCommandLineAfterSend); } },
         { qsl("showSentText"), [&](){ lua_pushboolean(L, host.mPrintCommand); } },
         { qsl("fixUnnecessaryLinebreaks"), [&](){ lua_pushboolean(L, host.mUSE_IRE_DRIVER_BUGFIX); } },
         { qsl("specialForceCompressionOff"), [&](){ lua_pushboolean(L, host.mFORCE_NO_COMPRESSION); } },
         { qsl("specialForceGAOff"), [&](){ lua_pushboolean(L, host.mFORCE_GA_OFF); } },
+        { qsl("specialForceMxpNegotiationOff"), [&](){
+            // specialForceMxpNegotiationOff should not be used anymore, but we support it for compatibility
+            // it will be the inverse of enableMXP
+            lua_pushboolean(L, !host.mEnableMXP);
+        } },
         { qsl("specialForceCharsetNegotiationOff"), [&](){ lua_pushboolean(L, host.mFORCE_CHARSET_NEGOTIATION_OFF); } },
-        { qsl("specialForceMxpNegotiationOff"), [&](){ lua_pushboolean(L, host.mFORCE_MXP_NEGOTIATION_OFF); } },
         { qsl("forceNewEnvironNegotiationOff"), [&](){ lua_pushboolean(L, host.mForceNewEnvironNegotiationOff); } },
         { qsl("compactInputLine"), [&](){ lua_pushboolean(L, host.getCompactInputLine()); } },
         { qsl("announceIncomingText"), [&](){ lua_pushboolean(L, host.mAnnounceIncomingText); } },
@@ -7564,7 +7620,8 @@ int TLuaInterpreter::getConfig(lua_State *L)
             }
         } },
         { qsl("logInHTML"), [&](){ lua_pushboolean(L, host.mIsNextLogFileInHtmlFormat); } },
-        { qsl("f3SearchEnabled"), [&](){ lua_pushboolean(L, host.getF3SearchEnabled()); } } //, <- not needed until another one is added
+        { qsl("f3SearchEnabled"), [&](){ lua_pushboolean(L, host.getF3SearchEnabled()); } },
+        { qsl("showTabConnectionIndicators"), [&](){ lua_pushboolean(L, mudlet::self()->mShowTabConnectionIndicators); } },
     };
 
     auto it = configMap.find(key);
