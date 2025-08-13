@@ -142,9 +142,9 @@ if [[ "${GITHUB_REPO_TAG}" != "true" ]] && [[ "${GITHUB_SCHEDULED_BUILD}" != "tr
     echo "ARTIFACT_COMPRESSION=9"
     echo "ARTIFACT_UNZIP=0"
   } >> "${GITHUB_ENV}"
-  echo "=== ls -l ${ARTIFACT_PATHORFILE} gives: ==="
-  ls -l "${ARTIFACT_PATHORFILE}"
-  echo "=== End of ls -l ==="
+  # echo "=== ls -l ${ARTIFACT_PATHORFILE} gives: ==="
+  # ls -l "${ARTIFACT_PATHORFILE}"
+  # echo "=== End of ls -l ==="
 
 else
   # A Public Test Build or a Release
@@ -215,9 +215,9 @@ else
     echo "INTERMEDIATE_ARTIFACT_WINPATHORFILE=${INTERMEDIATE_ARTIFACT_WINPATHORFILE}"
     echo "INTERMEDIATE_ARTIFACT_COMPRESSION=9"
   } >> "${GITHUB_ENV}"
-  echo "=== ls -l ${INTERMEDIATE_ARTIFACT_PATHORFILE} gives: ==="
-  ls -l "${INTERMEDIATE_ARTIFACT_PATHORFILE}"
-  echo "=== End of ls -l ==="
+  # echo "=== ls -l ${INTERMEDIATE_ARTIFACT_PATHORFILE} gives: ==="
+  # ls -l "${INTERMEDIATE_ARTIFACT_PATHORFILE}"
+  # echo "=== End of ls -l ==="
 
   echo "=== Installing Clowd.Squirrel for Windows ==="
   # Although archived this is a replacement for the squirrel.windows original
@@ -255,6 +255,9 @@ else
     # Typically of form:                  "Mudlet-4.19.1-ptb-2025-01-01-012345678-windows-64.exe"
     INSTALLER_EXE="Mudlet-${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT}-windows-64.exe"
     DBLSQD_VERSION_STRING="${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT,,}"
+    # The name that has to be passed as the artifact so that the Mudlet website
+    # will accept it as a PTB:
+    ARTIFACT_NAME=""Mudlet-${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT}-windows-64-installer.exe"
   else
     NAME_SUFFIX="_64_"
     INSTALLER_ICON_WINFILE="$(cygpath -aw "${GITHUB_WORKSPACE}/src/icons/mudlet.ico")"
@@ -322,7 +325,6 @@ else
     # Append these variables to the GITHUB_ENV to make them available in
     # subsequent steps, the fourth one being 1 means "unzip the archive when
     # it is uploaded to the Mudlet website":
-    ARTIFACT_NAME="${INSTALLER_EXE}"
     ARTIFACT_PATHORFILE="$(cygpath -au "${RELEASE_DIR}/${INSTALLER_EXE}")"
     ARTIFACT_WINPATHORFILE="$(cygpath -aw "${RELEASE_DIR}/${INSTALLER_EXE}")"
     {
@@ -331,9 +333,9 @@ else
       echo "ARTIFACT_COMPRESSION=0"
       echo "ARTIFACT_UNZIP=1"
     } >> "${GITHUB_ENV}"
-    echo "=== ls -l ${ARTIFACT_PATHORFILE} gives: ==="
-    ls -l "${ARTIFACT_PATHORFILE}"
-    echo "=== End of ls -l ==="
+    # echo "=== ls -l ${ARTIFACT_PATHORFILE} gives: ==="
+    # ls -l "${ARTIFACT_PATHORFILE}"
+    # echo "=== End of ls -l ==="
 
     # This identifies the "channel" that the release applies to, currently
     # we have three defined: this one; "release" and (unused) "testing":
