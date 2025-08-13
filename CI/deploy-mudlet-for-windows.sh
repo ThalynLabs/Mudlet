@@ -299,8 +299,9 @@ else
 
   echo "=== Renaming installer ==="
   INSTALLER_EXE_WINPATHFILE="$(cygpath -aw "${RELEASE_DIR}/${INSTALLER_EXE}")"
+  INSTALLER_EXE_PATHFILE="$(cygpath -au "${RELEASE_DIR}/${INSTALLER_EXE}")"
   echo "Renaming \"Mudlet${NAME_SUFFIX}Setup.exe\" to \"${INSTALLER_EXE}\""
-  mv "${RELEASE_DIR}/Mudlet${NAME_SUFFIX}Setup.exe" "${RELEASE_DIR}/${INSTALLER_EXE}"
+  mv "${RELEASE_DIR}/Mudlet${NAME_SUFFIX}Setup.exe" "${INSTALLER_EXE_PATHFILE}"
 
   # Sign the final installer
   if [ -z "${AZURE_ACCESS_TOKEN}" ]; then
@@ -317,10 +318,14 @@ else
 
   if [[ "${GITHUB_SCHEDULED_BUILD}" == "true" ]]; then
     echo "=== Preparing artifact for PTB for upload to make.mudlet.org ==="
+    # Copy the signed installer to a separate directory - as ${RELEASE_WINDIR}
+    # will contain other files we do not want to upload:
+    mkdir -p "${GITHUB_WORKSPACE}/upload"
+    cp -vp "${INSTALLER_EXE_PATHFILE}" "${GITHUB_WORKSPACE}/upload"
     # Append these variables to the GITHUB_ENV to make them available in
     # subsequent steps, the fourth one being 1 means "unzip the archive when
     # it is uploaded to the Mudlet website":
-    ARTIFACT_WINPATHORFILE="$(cygpath -aw "${RELEASE_DIR}/${INSTALLER_EXE}")"
+    ARTIFACT_WINPATHORFILE="$(cygpath -aw "${GITHUB_WORKSPACE}/upload")"
     {
       echo "ARTIFACT_NAME=${ARTIFACT_NAME}"
       echo "ARTIFACT_WINPATHORFILE=${ARTIFACT_WINPATHORFILE}"
