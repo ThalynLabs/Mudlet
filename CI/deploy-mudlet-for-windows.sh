@@ -130,21 +130,21 @@ if [[ "${GITHUB_REPO_TAG}" != "true" ]] && [[ "${GITHUB_SCHEDULED_BUILD}" != "tr
   # like "-testing" or "-testing-pr####" but NOT "-ptb-*"
   # THIS IS THE NAME GIVEN TO THE GHA "artifact" which is automagically made
   # as a zip archive file.
-  ARTIFACT_NAME="Mudlet-${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT}-windows-64.zip"
+  ARTIFACT_NAME="Mudlet-${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT}-windows-64"
   ARTIFACT_PATHORFILE="$(cygpath -au "${PACKAGE_PATH}")"
   ARTIFACT_WINPATHORFILE="$(cygpath -aw "${PACKAGE_PATH}")"
   # Append these variables to the GITHUB_ENV to make them available in
   # subsequent steps, the fourth one being 0 means "don't unzip the archive when
   # it is uploaded to the Mudlet website":
   {
-    echo "ARTIFACT_NAME=\"${ARTIFACT_NAME}\""
-    echo "ARTIFACT_WINPATHORFILE=\"${ARTIFACT_WINPATHORFILE}\""
+    echo "ARTIFACT_NAME=${ARTIFACT_NAME}"
+    echo "ARTIFACT_WINPATHORFILE=${ARTIFACT_WINPATHORFILE}"
     echo "ARTIFACT_COMPRESSION=9"
     echo "ARTIFACT_UNZIP=0"
   } >> "${GITHUB_ENV}"
-  echo '=== ls -l ${ARTIFACT_PATHORFILE} gives: ==='
+  echo "=== ls -l ${ARTIFACT_PATHORFILE} gives: ==="
   ls -l "${ARTIFACT_PATHORFILE}"
-  echo '=== End of ls -l ==='
+  echo "=== End of ls -l ==="
 
 else
   # A Public Test Build or a Release
@@ -202,22 +202,22 @@ else
   echo "=== Preparing an intermediate artifact of the (signed) code ==="
   # What will it be called:
   if [[ -z "${MUDLET_VERSION_BUILD}" ]]; then
-    INTERMEDIATE_ARTIFACT_NAME="Mudlet-${VERSION}-windows-64.zip"
+    INTERMEDIATE_ARTIFACT_NAME="Mudlet-${VERSION}-windows-64"
   else
-    INTERMEDIATE_ARTIFACT_NAME="Mudlet-${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT}-windows-64.zip"
+    INTERMEDIATE_ARTIFACT_NAME="Mudlet-${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT}-windows-64"
   fi
   # This intermediate will NOT be uploaded but will remain on the GH server as
   # an artifact for a default (90?) days
   INTERMEDIATE_ARTIFACT_PATHORFILE="$(cygpath -au "${PACKAGE_PATH}/")"
   INTERMEDIATE_ARTIFACT_WINPATHORFILE="$(cygpath -aw "${PACKAGE_PATH}\\")"
   {
-    echo "INTERMEDIATE_ARTIFACT_NAME=\"${INTERMEDIATE_ARTIFACT_NAME}\""
-    echo "INTERMEDIATE_ARTIFACT_WINPATHORFILE=\"${INTERMEDIATE_ARTIFACT_WINPATHORFILE}\""
+    echo "INTERMEDIATE_ARTIFACT_NAME=${INTERMEDIATE_ARTIFACT_NAME}"
+    echo "INTERMEDIATE_ARTIFACT_WINPATHORFILE=${INTERMEDIATE_ARTIFACT_WINPATHORFILE}"
     echo "INTERMEDIATE_ARTIFACT_COMPRESSION=9"
   } >> "${GITHUB_ENV}"
-  echo '=== ls -l ${INTERMEDIATE_ARTIFACT_PATHORFILE} gives: ==='
+  echo "=== ls -l ${INTERMEDIATE_ARTIFACT_PATHORFILE} gives: ==="
   ls -l "${INTERMEDIATE_ARTIFACT_PATHORFILE}"
-  echo '=== End of ls -l ==='
+  echo "=== End of ls -l ==="
 
   echo "=== Installing Clowd.Squirrel for Windows ==="
   # Although archived this is a replacement for the squirrel.windows original
@@ -322,19 +322,18 @@ else
     # Append these variables to the GITHUB_ENV to make them available in
     # subsequent steps, the fourth one being 1 means "unzip the archive when
     # it is uploaded to the Mudlet website":
-    # The same as ${INSTALLER_EXE} but without the extension:
-    ARTIFACT_NAME="Mudlet-${VERSION}${MUDLET_VERSION_BUILD}-${BUILD_COMMIT}-windows-64"
+    ARTIFACT_NAME="${INSTALLER_EXE}"
     ARTIFACT_PATHORFILE="$(cygpath -au "${RELEASE_DIR}/${INSTALLER_EXE}")"
     ARTIFACT_WINPATHORFILE="$(cygpath -aw "${RELEASE_DIR}/${INSTALLER_EXE}")"
     {
-      echo "ARTIFACT_NAME=\"${ARTIFACT_NAME}\""
-      echo "ARTIFACT_WINPATHORFILE=\"${ARTIFACT_WINPATHORFILE}\""
+      echo "ARTIFACT_NAME=${ARTIFACT_NAME}"
+      echo "ARTIFACT_WINPATHORFILE=${ARTIFACT_WINPATHORFILE}"
       echo "ARTIFACT_COMPRESSION=0"
       echo "ARTIFACT_UNZIP=1"
     } >> "${GITHUB_ENV}"
-    echo '=== ls -l ${ARTIFACT_PATHORFILE} gives: ==='
+    echo "=== ls -l ${ARTIFACT_PATHORFILE} gives: ==="
     ls -l "${ARTIFACT_PATHORFILE}"
-    echo '=== End of ls -l ==='
+    echo "=== End of ls -l ==="
 
     # This identifies the "channel" that the release applies to, currently
     # we have three defined: this one; "release" and (unused) "testing":
