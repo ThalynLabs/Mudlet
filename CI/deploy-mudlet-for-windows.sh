@@ -320,12 +320,13 @@ else
     echo "=== Preparing artifact for PTB for upload to make.mudlet.org ==="
     # Copy the signed installer to a separate directory - as ${RELEASE_WINDIR}
     # will contain other files we do not want to upload:
-    mkdir -p "${GITHUB_WORKSPACE}/upload"
-    cp -vp "${INSTALLER_EXE_PATHFILE}" "${GITHUB_WORKSPACE}/upload"
+    UPLOAD_PATH=$(cygpath -au "${GITHUB_WORKSPACE}/upload")
+    mkdir -p "${UPLOAD_PATH}"
+    cp -vp "${INSTALLER_EXE_PATHFILE}" "${UPLOAD_PATH}"
     # Append these variables to the GITHUB_ENV to make them available in
     # subsequent steps, the fourth one being 1 means "unzip the archive when
     # it is uploaded to the Mudlet website":
-    ARTIFACT_WINPATHORFILE="$(cygpath -aw "${GITHUB_WORKSPACE}/upload")"
+    ARTIFACT_WINPATHORFILE="$(cygpath -aw "${UPLOAD_PATH}")"
     {
       echo "ARTIFACT_NAME=${ARTIFACT_NAME}"
       echo "ARTIFACT_WINPATHORFILE=${ARTIFACT_WINPATHORFILE}"

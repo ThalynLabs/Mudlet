@@ -151,25 +151,9 @@ jobs:
         compression-level: ${{env.ARTIFACT_COMPRESSION}}
 
     - name: Upload artifact to make.mudlet.org
-      shell: pwsh
+      shell: msys2 {0}
       if: env.ARTIFACT_NAME
-      run: |
-        $uri = "https://make.mudlet.org/snapshots/gha_queue.php?artifact_name=$($env:ARTIFACT_NAME)&unzip=$($env:ARTIFACT_UNZIP)"
-        try {
-          $response = Invoke-WebRequest -Uri $uri -Method Post -ErrorAction Stop
-          Write-Output "Submission successful"
-        }
-        catch {
-          $errorMessage = $_.Exception.Message
-          if ($errorMessage -like "*Artifact is not unique*") {
-            Write-Output "Info: Artifact was already submitted and is not unique. Continuing..."
-            exit 0
-          }
-          else {
-            Write-Error "An error occurred: $errorMessage"
-            exit 1
-          }
-        }
+        run: curl --retry 5 -X POST "https://make.mudlet.org/snapshots/gha_queue.php?artifact_name=${{env.ARTIFACT_NAME}}&unzip=${{env.ARTIFACT_UNZIP}}"
 
     - name: Register PTB Release
       shell: msys2 {0}
