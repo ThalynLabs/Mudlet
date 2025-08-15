@@ -138,32 +138,89 @@ QMAKE_EXTRA_ARGS=""
 if [ "${WITH_SENTRY}" = "yes" ]; then
   echo "  Building with Sentry support enabled"
   
+  # Debug current environment
+  echo "  Debug: Current directory: $(pwd)"
+  echo "  Debug: GITHUB_WORKSPACE: ${GITHUB_WORKSPACE}"
+  echo "  Debug: GITHUB_WORKSPACE_UNIX_PATH: ${GITHUB_WORKSPACE_UNIX_PATH}"
+  echo "  Debug: MSYSTEM: ${MSYSTEM}"
+  echo "  Debug: BUILD_CONFIG: ${BUILD_CONFIG}"
+  echo "  Debug: Contents of GITHUB_WORKSPACE:"
+  ls -la "${GITHUB_WORKSPACE_UNIX_PATH}/" || echo "  Failed to list GITHUB_WORKSPACE"
+  echo "  Debug: Looking for 3rdparty directory:"
+  ls -la "${GITHUB_WORKSPACE_UNIX_PATH}/3rdparty/" || echo "  3rdparty directory not found"
+  
   # Build Sentry Native SDK first
   echo "  Building Sentry Native SDK..."
-  cd "${GITHUB_WORKSPACE}" || exit 1
+  cd "${GITHUB_WORKSPACE_UNIX_PATH}" || exit 1
   
   # Create build directory for Sentry
   mkdir -p build-sentry
   cd build-sentry || exit 1
+  echo "  Debug: Created and entered build-sentry directory: $(pwd)"
+  
+  # Create a minimal CMakeLists.txt to build Sentry
+  cat > CMakeLists.txt << 'EOF'
+cmake_minimum_required(VERSION 3.10)
+project(SentryBuild)
+
+# Set Sentry version
+set(SENTRY_VERSION "0.10.0")
+
+# Build configuration
+set(CMAKE_BUILD_TYPE Release)
+set(SENTRY_BACKEND "crashpad" CACHE STRING "Use crashpad backend" FORCE)
+set(SENTRY_INTEGRATION_QT "ON" CACHE STRING "Enable Qt integration" FORCE)
+
+# Include the BuildSentry.cmake from the parent project
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/sentry ${CMAKE_MODULE_PATH})
+include(BuildSentry)
+EOF
+  
+  echo "  Debug: Created CMakeLists.txt for Sentry build"
+  echo "  Debug: Contents of CMakeLists.txt:"
+  cat CMakeLists.txt
   
   # Build Sentry using CMake with Crashpad backend
-  cmake ../3rdparty/sentry \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DSENTRY_BACKEND=crashpad \
-    -DSENTRY_INTEGRATION_QT=ON \
-    -DCMAKE_INSTALL_PREFIX="$(pwd)/install"
+  echo "  Debug: Running cmake configure..."
+  cmake . -DCMAKE_INSTALL_PREFIX="$(pwd)/install"
   
-  make -j "${NUMBER_OF_PROCESSORS:-1}"
-  make install
+  if [ $? -ne 0 ]; then
+    echo "  Error: CMake configure failed"
+    exit 1
+  fi
+  
+  echo "  Debug: Running build with mingw32-make..."
+  mingw32-make -j "${NUMBER_OF_PROCESSORS:-1}"
+  
+  if [ $? -ne 0 ]; then
+    echo "  Error: Sentry build failed"
+    exit 1
+  fi
+  
+  echo "  Debug: Running install..."
+  mingw32-make install
+  
+  if [ $? -ne 0 ]; then
+    echo "  Error: Sentry install failed"
+    exit 1
+  fi
   
   # Set environment variables for qmake to find Sentry
   SENTRY_INSTALL_DIR="$(pwd)/install"
   export SENTRY_INSTALL_DIR
   
+  echo "  Debug: Sentry install directory contents:"
+  find "${SENTRY_INSTALL_DIR}" -type f | head -20
+  
   QMAKE_EXTRA_ARGS="INCLUDEPATH+=${SENTRY_INSTALL_DIR}/include LIBS+=-L${SENTRY_INSTALL_DIR}/lib LIBS+=-lsentry DEFINES+=INCLUDE_SENTRY"
   echo "  Sentry Native SDK built and installed to: ${SENTRY_INSTALL_DIR}"
+  echo "  Debug: QMAKE_EXTRA_ARGS: ${QMAKE_EXTRA_ARGS}"
   
-  cd "${GITHUB_WORKSPACE_UNIX_PATH}/build-${MSYSTEM}/${BUILD_CONFIG}" || exit 1
+  # Return to the build directory
+  BUILD_DIR="${GITHUB_WORKSPACE_UNIX_PATH}/build-${MSYSTEM}/${BUILD_CONFIG}"
+  echo "  Debug: Changing to build directory: ${BUILD_DIR}"
+  cd "${BUILD_DIR}" || exit 1
+  echo "  Debug: Successfully changed to: $(pwd)"
 else
   echo "  Building without Sentry support"
 fi
@@ -202,11 +259,33 @@ echo ""
 # Copy crashpad_handler if Sentry is enabled
 if [ "${WITH_SENTRY}" = "yes" ] && [ -n "${SENTRY_INSTALL_DIR}" ]; then
   echo "Copying crashpad_handler.exe for Windows..."
-  if [ -f "${SENTRY_INSTALL_DIR}/bin/crashpad_handler.exe" ]; then
-    cp "${SENTRY_INSTALL_DIR}/bin/crashpad_handler.exe" .
-    echo "  crashpad_handler.exe copied to build directory"
-  else
-    echo "  Warning: crashpad_handler.exe not found at ${SENTRY_INSTALL_DIR}/bin/"
+  echo "  Debug: Looking for crashpad_handler.exe in Sentry install directory"
+  find "${SENTRY_INSTALL_DIR}" -name "crashpad_handler*" -type f || echo "  No crashpad_handler files found"
+  
+  # Try different possible locations for crashpad_handler
+  CRASHPAD_LOCATIONS=(
+    "${SENTRY_INSTALL_DIR}/bin/crashpad_handler.exe"
+    "${SENTRY_INSTALL_DIR}/lib/crashpad_handler.exe"
+    "${SENTRY_INSTALL_DIR}/crashpad_handler.exe"
+    "${GITHUB_WORKSPACE_UNIX_PATH}/build-sentry/_deps/sentry-build/crashpad_build/handler/crashpad_handler.exe"
+  )
+  
+  CRASHPAD_FOUND=false
+  for CRASHPAD_PATH in "${CRASHPAD_LOCATIONS[@]}"; do
+    if [ -f "$CRASHPAD_PATH" ]; then
+      cp "$CRASHPAD_PATH" .
+      echo "  crashpad_handler.exe copied from: $CRASHPAD_PATH"
+      CRASHPAD_FOUND=true
+      break
+    fi
+  done
+  
+  if [ "$CRASHPAD_FOUND" = false ]; then
+    echo "  Warning: crashpad_handler.exe not found in any expected locations"
+    echo "  Debug: Searched locations:"
+    for CRASHPAD_PATH in "${CRASHPAD_LOCATIONS[@]}"; do
+      echo "    - $CRASHPAD_PATH"
+    done
   fi
   echo ""
 fi
