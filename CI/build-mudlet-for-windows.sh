@@ -191,7 +191,7 @@ EOF
   fi
 
   echo "  Debug: Running build with cmake..."
-  cmake --build . --parallel "${NUMBER_OF_PROCESSORS:-1}"
+  cmake --build . --parallel "${NUMBER_OF_PROCESSORS:-1}" -DCMAKE_TOOLCHAIN_FILE=toolchains/msys2.cmake
 
   if [ $? -ne 0 ]; then
     echo "  Error: Sentry build failed"
