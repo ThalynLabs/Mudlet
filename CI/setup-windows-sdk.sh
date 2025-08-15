@@ -208,6 +208,34 @@ done
 echo ""
 echo "    ... luarocks installation completed"
 echo ""
+
+# Install Sentry dependencies if enabled
+if [ "${WITH_SENTRY}" = "yes" ]; then
+  echo "  Installing Sentry dependencies..."
+  echo ""
+  
+  # Install git if not present (needed for Sentry Native SDK)
+  if ! command -v git &> /dev/null; then
+    pacman -S --noconfirm git
+  fi
+  
+  # Install cmake if not present (needed for building Sentry Native SDK)
+  if ! command -v cmake &> /dev/null; then
+    pacman -S --noconfirm mingw-w64-x86_64-cmake
+  fi
+  
+  # Install curl (needed for downloading Sentry Native SDK)
+  if ! command -v curl &> /dev/null; then
+    pacman -S --noconfirm mingw-w64-x86_64-curl
+  fi
+  
+  echo "    ... Sentry dependencies installed"
+  echo ""
+else
+  echo "  Sentry not enabled, skipping Sentry dependencies"
+  echo ""
+fi
+
 if [ "${success}" = "true" ]; then
   echo "    ... Completed, all rocks installed."
   echo ""

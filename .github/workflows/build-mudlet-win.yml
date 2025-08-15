@@ -39,6 +39,10 @@ jobs:
         msystem: MINGW64
         update: true
 
+    - name: Enable sentry.io for Windows releases  
+      shell: msys2 {0}
+      run: echo "WITH_SENTRY=yes" >> $GITHUB_ENV
+
     - name: (Windows) Build Environment Setup
       shell: msys2 {0}
       env:
@@ -98,6 +102,43 @@ jobs:
     - name: (Windows) Package
       shell: msys2 {0}
       run: $GITHUB_WORKSPACE/CI/package-mudlet-for-windows.sh
+
+    - name: Upload debug symbols to sentry.io (Windows)
+      if: env.WITH_SENTRY == 'yes'
+      shell: msys2 {0}
+      env:
+        SENTRY_AUTH_TOKEN: ${{secrets.SENTRY_AUTH_TOKEN}}
+      run: |
+        if [ -z "$SENTRY_AUTH_TOKEN" ]; then
+          echo "No SENTRY_AUTH_TOKEN available, skipping debug symbol upload"
+          exit 0
+        fi
+
+        pip install --upgrade sentry-cli
+        export SENTRY_ORG=mudlet
+        export SENTRY_PROJECT=mudlet
+        export SENTRY_VERSION=${{env.VERSION}}${{env.MUDLET_VERSION_BUILD}}
+
+        # setup version within sentry
+        sentry-cli releases new $SENTRY_VERSION
+        sentry-cli releases set-commits $SENTRY_VERSION --auto
+        sentry-cli releases finalize $SENTRY_VERSION
+
+        # upload debug symbols and source code to sentry for Windows
+        MUDLET_BINARY="${GITHUB_WORKSPACE}/build-MINGW64/release/mudlet.exe"
+        if [ -f "$MUDLET_BINARY" ]; then
+          # Find Luarocks DLL files and debug symbols
+          LUAROCKS_DLLS=$(find ~/.luarocks-MINGW64 -name "*.dll" 2>/dev/null || echo "")
+          DEBUG_SYMBOLS=""
+          if [ -f "${GITHUB_WORKSPACE}/build-MINGW64/release/mudlet.exe.debug" ]; then
+            DEBUG_SYMBOLS="${GITHUB_WORKSPACE}/build-MINGW64/release/mudlet.exe.debug"
+          fi
+          
+          sentry-cli debug-files upload --include-sources --wait "$MUDLET_BINARY" $DEBUG_SYMBOLS $LUAROCKS_DLLS
+          echo "Windows debug symbols uploaded to Sentry"
+        else
+          echo "Warning: Mudlet binary not found at $MUDLET_BINARY"
+        fi
 
     - name: (Windows) Login to Azure
       uses: azure/login@v2

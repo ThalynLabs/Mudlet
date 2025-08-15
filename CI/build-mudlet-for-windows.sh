@@ -134,10 +134,44 @@ fi
 echo "Running qmake to make MAKEFILE ..."
 echo ""
 
-if [ "${MSYSTEM}" = "MINGW64" ]; then
-    qmake6 ../src/mudlet.pro -spec win32-g++ "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler"
+QMAKE_EXTRA_ARGS=""
+if [ "${WITH_SENTRY}" = "yes" ]; then
+  echo "  Building with Sentry support enabled"
+  
+  # Build Sentry Native SDK first
+  echo "  Building Sentry Native SDK..."
+  cd "${GITHUB_WORKSPACE}" || exit 1
+  
+  # Create build directory for Sentry
+  mkdir -p build-sentry
+  cd build-sentry || exit 1
+  
+  # Build Sentry using CMake with Crashpad backend
+  cmake ../3rdparty/sentry \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DSENTRY_BACKEND=crashpad \
+    -DSENTRY_INTEGRATION_QT=ON \
+    -DCMAKE_INSTALL_PREFIX="$(pwd)/install"
+  
+  make -j "${NUMBER_OF_PROCESSORS:-1}"
+  make install
+  
+  # Set environment variables for qmake to find Sentry
+  SENTRY_INSTALL_DIR="$(pwd)/install"
+  export SENTRY_INSTALL_DIR
+  
+  QMAKE_EXTRA_ARGS="INCLUDEPATH+=${SENTRY_INSTALL_DIR}/include LIBS+=-L${SENTRY_INSTALL_DIR}/lib LIBS+=-lsentry DEFINES+=INCLUDE_SENTRY"
+  echo "  Sentry Native SDK built and installed to: ${SENTRY_INSTALL_DIR}"
+  
+  cd "${GITHUB_WORKSPACE_UNIX_PATH}/build-${MSYSTEM}/${BUILD_CONFIG}" || exit 1
 else
-    qmake ../src/mudlet.pro -spec win32-g++ "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler"
+  echo "  Building without Sentry support"
+fi
+
+if [ "${MSYSTEM}" = "MINGW64" ]; then
+    qmake6 ../src/mudlet.pro -spec win32-g++ "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler" ${QMAKE_EXTRA_ARGS}
+else
+    qmake ../src/mudlet.pro -spec win32-g++ "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler" ${QMAKE_EXTRA_ARGS}
 fi
 
 echo " ... qmake done."
@@ -164,6 +198,18 @@ fi
 
 echo " ... make finished"
 echo ""
+
+# Copy crashpad_handler if Sentry is enabled
+if [ "${WITH_SENTRY}" = "yes" ] && [ -n "${SENTRY_INSTALL_DIR}" ]; then
+  echo "Copying crashpad_handler.exe for Windows..."
+  if [ -f "${SENTRY_INSTALL_DIR}/bin/crashpad_handler.exe" ]; then
+    cp "${SENTRY_INSTALL_DIR}/bin/crashpad_handler.exe" .
+    echo "  crashpad_handler.exe copied to build directory"
+  else
+    echo "  Warning: crashpad_handler.exe not found at ${SENTRY_INSTALL_DIR}/bin/"
+  fi
+  echo ""
+fi
 
 cd ~ || exit 1
 exit 0
