@@ -39,8 +39,7 @@ jobs:
         msystem: MINGW64
         update: true
 
-    - name: Enable sentry.io for Windows releases  
-      if: github.actor != 'dependabot[bot]' && (github.event_name == 'push' || github.event_name == 'schedule' || github.event.inputs.scheduled == 'true' || github.event.pull_request.head.repo.full_name == github.repository)
+    - name: Enable sentry.io for Windows releases
       shell: msys2 {0}
       run: echo "WITH_SENTRY=yes" >> $GITHUB_ENV
 
