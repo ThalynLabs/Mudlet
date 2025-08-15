@@ -228,7 +228,7 @@ add_subdirectory(src)
 add_subdirectory(test)
 
 if (USE_SENTRY)
-  set(SENTRY_VERSION 0.7.17)
+  set(SENTRY_VERSION 0.10.0)
   set(SENTRY_BACKEND "crashpad" CACHE STRING "Use crashpad backend" FORCE)
   set(SENTRY_INTEGRATION_QT "ON" CACHE STRING "Enable Qt integration" FORCE)
 
