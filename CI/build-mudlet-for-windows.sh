@@ -183,7 +183,7 @@ EOF
   
   # Build Sentry using CMake with Crashpad backend
   echo "  Debug: Running cmake configure..."
-  cmake . -DCMAKE_INSTALL_PREFIX="$(pwd)/install"
+  cmake . -DCMAKE_INSTALL_PREFIX="$(pwd)/install" -DCMAKE_TOOLCHAIN_FILE=toolchains/msys2.cmake
 
   if [ $? -ne 0 ]; then
     echo "  Error: CMake configure failed"
@@ -191,7 +191,7 @@ EOF
   fi
 
   echo "  Debug: Running build with cmake..."
-  cmake --build . --parallel "${NUMBER_OF_PROCESSORS:-1}" -DCMAKE_TOOLCHAIN_FILE=toolchains/msys2.cmake
+  cmake --build . --parallel "${NUMBER_OF_PROCESSORS:-1}"
 
   if [ $? -ne 0 ]; then
     echo "  Error: Sentry build failed"
