@@ -8,6 +8,7 @@ FetchContent_Declare(
     sentry
     URL https://github.com/getsentry/sentry-native/releases/download/0.10.0/sentry-native.zip
     SOURCE_SUBDIR "NeedManualAddSubDir"
+    URL_HASH SHA256=fe9c40e0f677405f61a8bae1bfdbb9760a84b9594665d92781ed4e18e4b1da1f
 )
 
 FetchContent_MakeAvailable(sentry)
