@@ -45,6 +45,7 @@
 # 3 - Unsupported build type
 # 4 - Directory to be used to assemble the package is NOT empty
 # 6 - No Mudlet.exe file found to work with
+# 7 - Sentry enabled but crashpad_handler.exe is missing
 
 if [ "${MSYSTEM}" = "MSYS" ]; then
   echo "Please run this script from a MINGW64 type bash terminal as the MSYS one"
@@ -106,10 +107,19 @@ if [ -f "${GITHUB_WORKSPACE_UNIX_PATH}/build-${MSYSTEM}/${BUILD_CONFIG}/mudlet.e
   cp "${GITHUB_WORKSPACE_UNIX_PATH}/build-${MSYSTEM}/${BUILD_CONFIG}/mudlet.exe.debug" "${PACKAGE_DIR}/"
 fi
 
-# Copy crashpad_handler.exe if present (Sentry crash reporting)
-if [ -f "${GITHUB_WORKSPACE_UNIX_PATH}/build-${MSYSTEM}/${BUILD_CONFIG}/crashpad_handler.exe" ]; then
-  cp "${GITHUB_WORKSPACE_UNIX_PATH}/build-${MSYSTEM}/${BUILD_CONFIG}/crashpad_handler.exe" "${PACKAGE_DIR}/"
-  echo "  crashpad_handler.exe copied to package directory"
+# Copy crashpad_handler.exe if Sentry is enabled
+if [ "${WITH_SENTRY}" = "yes" ]; then
+  CRASHPAD_HANDLER_PATH="${GITHUB_WORKSPACE_UNIX_PATH}/build-${MSYSTEM}/${BUILD_CONFIG}/crashpad_handler.exe"
+  if [ -f "${CRASHPAD_HANDLER_PATH}" ]; then
+    cp "${CRASHPAD_HANDLER_PATH}" "${PACKAGE_DIR}/"
+    echo "  crashpad_handler.exe copied for Sentry crash reporting"
+  else
+    echo "Warning: Sentry is enabled but crashpad_handler.exe was not found"
+    echo "         Expected location: ${CRASHPAD_HANDLER_PATH}"
+    echo "         Crash reporting may not work properly"
+    echo "         Check the Sentry build process in build-mudlet-for-windows.sh"
+    exit 7
+  fi
 fi
 
 # The location that windeployqt6 puts the Qt translation files by default is "./translations"
