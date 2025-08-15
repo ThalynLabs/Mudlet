@@ -169,14 +169,20 @@ struct VersionInfo {
     
 sentry_value_t before_send(sentry_value_t event, void* hint, void* closure) {
     auto* versions = static_cast<VersionInfo*>(closure);
+    
+    // Check if mudlet::self() is initialized to avoid crashes during early startup
+    auto* mudletInstance = mudlet::self();
+    if (!mudletInstance) {
+        // If mudlet is not initialized yet, don't send crashes
+        return sentry_value_new_null();
+    }
+    
     if (versions->isRelease) {
-        // For release builds, check smSendCrashesForReleases
-        if (!mudlet::self()->smSendCrashesForReleases) {
+        if (!mudletInstance->smSendCrashesForReleases) {
             return sentry_value_new_null();
         }
     } else if (versions->isPublicTest || versions->isTesting) {
-        // For PTB/testing builds, check smSendCrashesForTesting  
-        if (!mudlet::self()->smSendCrashesForTesting) {
+        if (!mudletInstance->smSendCrashesForTesting) {
             return sentry_value_new_null();
         }
     } else {
