@@ -184,27 +184,28 @@ EOF
   # Build Sentry using CMake with Crashpad backend
   echo "  Debug: Running cmake configure..."
   cmake . -DCMAKE_INSTALL_PREFIX="$(pwd)/install"
-  
+
   if [ $? -ne 0 ]; then
     echo "  Error: CMake configure failed"
     exit 1
   fi
-  
-  echo "  Debug: Running build with mingw32-make..."
-  mingw32-make -j "${NUMBER_OF_PROCESSORS:-1}"
-  
+
+  echo "  Debug: Running build with cmake..."
+  cmake --build . --parallel "${NUMBER_OF_PROCESSORS:-1}"
+
   if [ $? -ne 0 ]; then
     echo "  Error: Sentry build failed"
     exit 1
   fi
-  
+
   echo "  Debug: Running install..."
-  mingw32-make install
-  
+  cmake --install .
+
   if [ $? -ne 0 ]; then
     echo "  Error: Sentry install failed"
     exit 1
   fi
+
   
   # Set environment variables for qmake to find Sentry
   SENTRY_INSTALL_DIR="$(pwd)/install"
