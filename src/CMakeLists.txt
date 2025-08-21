@@ -387,8 +387,14 @@ if(USE_UPDATER)
 endif(USE_UPDATER)
 
 if(USE_3DMAPPER)
-  list(APPEND mudlet_SRCS glwidget.cpp)
-  list(APPEND mudlet_HDRS glwidget.h)
+  if(USE_MODERN_GLWIDGET)
+    list(APPEND mudlet_SRCS modern_glwidget.cpp)
+    list(APPEND mudlet_HDRS modern_glwidget.h)
+  else()
+    list(APPEND mudlet_SRCS glwidget.cpp)
+    list(APPEND mudlet_HDRS glwidget.h)
+  endif()
+  list(APPEND mudlet_HDRS glwidget_integration.h)
 endif(USE_3DMAPPER)
 
 # credit to https://github.com/heavyai/heavydb/blob/72c90bc290b79dd30240da41c103a00720f6b050/CMakeLists.txt#L119
@@ -634,6 +640,10 @@ endif(USE_UPDATER)
 if(USE_3DMAPPER)
   target_link_libraries(mudlet OpenGL::GLU)
   target_compile_definitions(mudlet PRIVATE INCLUDE_3DMAPPER)
+endif()
+
+if(USE_MODERN_GLWIDGET)
+  target_compile_definitions(mudlet PRIVATE USE_MODERN_GLWIDGET)
 endif()
 
 if(USE_VARIABLE_SPLASH_SCREEN)

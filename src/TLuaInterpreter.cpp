@@ -51,7 +51,7 @@
 #include "dlgTriggerEditor.h"
 #include "mudlet.h"
 #if defined(INCLUDE_3DMAPPER)
-#include "glwidget.h"
+#include "glwidget_integration.h"
 #endif
 
 #include <math.h>

@@ -34,7 +34,11 @@
 class Host;
 class TMap;
 #if defined(INCLUDE_3DMAPPER)
+#ifdef USE_MODERN_GLWIDGET
+class ModernGLWidget;
+#else
 class GLWidget;
+#endif
 #endif
 
 

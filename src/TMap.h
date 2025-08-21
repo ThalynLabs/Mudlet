@@ -26,7 +26,7 @@
 
 #include "TAstar.h"
 #if defined(INCLUDE_3DMAPPER)
-#include "glwidget.h"
+#include "glwidget_integration.h"
 #endif
 #include "utils.h"
 
@@ -64,7 +64,11 @@
 class dlgMapper;
 class Host;
 #if defined(INCLUDE_3DMAPPER)
+#ifdef USE_MODERN_GLWIDGET
+class ModernGLWidget;
+#else
 class GLWidget;
+#endif
 #endif
 class TArea;
 class TRoom;
