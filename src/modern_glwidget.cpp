@@ -160,6 +160,7 @@ bool ModernGLWidget::initializeShaders()
         qWarning() << "Failed to get MVP uniform location";
     }
     
+    qDebug() << "ModernGLWidget: Shaders initialized successfully. MVP uniform location:" << mUniformMVP;
     return true;
 }
 
@@ -191,12 +192,25 @@ void ModernGLWidget::updateMatrices()
     
     // Set up view matrix (camera)
     mViewMatrix.setToIdentity();
+    
+    // Translate camera away from the map center
+    mViewMatrix.translate(0.0f, 0.0f, -30.0f);
+    
+    // Apply rotations
     mViewMatrix.rotate(xRot, 1, 0, 0);
     mViewMatrix.rotate(yRot, 0, 1, 0);
     mViewMatrix.rotate(zRot, 0, 0, 1);
     
+    // Translate to center on the current map position
+    mViewMatrix.translate(-static_cast<float>(mMapCenterX), 
+                          -static_cast<float>(mMapCenterY), 
+                          -static_cast<float>(mMapCenterZ));
+    
     // Model matrix will be set per object during rendering
     mModelMatrix.setToIdentity();
+    
+    qDebug() << "ModernGLWidget: View matrix updated. Camera center:" << mMapCenterX << mMapCenterY << mMapCenterZ 
+             << "Rotation:" << xRot << yRot << zRot << "Scale:" << mScale;
 }
 
 void ModernGLWidget::resizeGL(int w, int h)
@@ -289,6 +303,9 @@ void ModernGLWidget::paintGL()
     // Use our shader program
     mShaderProgram->bind();
 
+    // Test rendering - draw a simple cube at origin
+    renderCube(0.0f, 0.0f, 0.0f, 2.0f, 1.0f, 0.0f, 1.0f, 1.0f); // Large magenta cube at origin
+    
     // Render the map
     renderRooms();
     
@@ -298,15 +315,18 @@ void ModernGLWidget::paintGL()
 void ModernGLWidget::renderRooms()
 {
     if (!mpMap || !mpMap->mpRoomDB) {
+        qDebug() << "ModernGLWidget: No map or room database";
         return;
     }
 
     TArea* pArea = mpMap->mpRoomDB->getArea(mAID);
     if (!pArea) {
+        qDebug() << "ModernGLWidget: No area found for ID:" << mAID;
         return;
     }
 
     float pz = static_cast<float>(mMapCenterZ);
+    qDebug() << "ModernGLWidget: Rendering area" << mAID << "with" << pArea->getAreaRooms().size() << "rooms";
     
     // Define room colors (simplified from original)
     constexpr float roomColors[][4] = {
@@ -351,6 +371,7 @@ void ModernGLWidget::renderRooms()
         
         if (isCurrentRoom) {
             // Render current room in red
+            qDebug() << "ModernGLWidget: Rendering current room at" << rx << ry << rz << "size" << (0.8f / scale);
             renderCube(rx, ry, rz, 0.8f / scale, 1.0f, 0.0f, 0.0f, 1.0f);
         } else {
             // Render normal room with level-based color
