@@ -185,16 +185,20 @@ void ModernGLWidget::setupBuffers()
 
 void ModernGLWidget::updateMatrices()
 {
-    // Set up projection matrix
+    // Set up projection matrix with fixed FOV
     mProjectionMatrix.setToIdentity();
     const float aspectRatio = static_cast<float>(width()) / static_cast<float>(height());
-    mProjectionMatrix.perspective(60.0f * mScale, aspectRatio, 0.0001f, 10000.0f);
+    // Keep FOV constant at 60 degrees, adjust camera distance with scale instead
+    mProjectionMatrix.perspective(60.0f, aspectRatio, 0.0001f, 10000.0f);
     
     // Set up view matrix (camera)
     mViewMatrix.setToIdentity();
     
+    // Use scale to control camera distance (inverse relationship for intuitive zoom)
+    const float cameraDistance = 30.0f / mScale;
+    
     // Translate camera away from the map center
-    mViewMatrix.translate(0.0f, 0.0f, -30.0f);
+    mViewMatrix.translate(0.0f, 0.0f, -cameraDistance);
     
     // Apply rotations
     mViewMatrix.rotate(xRot, 1, 0, 0);
@@ -209,8 +213,8 @@ void ModernGLWidget::updateMatrices()
     // Model matrix will be set per object during rendering
     mModelMatrix.setToIdentity();
     
-    qDebug() << "ModernGLWidget: View matrix updated. Camera center:" << mMapCenterX << mMapCenterY << mMapCenterZ 
-             << "Rotation:" << xRot << yRot << zRot << "Scale:" << mScale;
+    // qDebug() << "ModernGLWidget: View matrix updated. Camera distance:" << cameraDistance 
+    //          << "Scale:" << mScale << "Center:" << mMapCenterX << mMapCenterY << mMapCenterZ;
 }
 
 void ModernGLWidget::resizeGL(int w, int h)
@@ -303,9 +307,6 @@ void ModernGLWidget::paintGL()
     // Use our shader program
     mShaderProgram->bind();
 
-    // Test rendering - draw a simple cube at origin
-    renderCube(0.0f, 0.0f, 0.0f, 2.0f, 1.0f, 0.0f, 1.0f, 1.0f); // Large magenta cube at origin
-    
     // Render the map
     renderRooms();
     
@@ -326,7 +327,7 @@ void ModernGLWidget::renderRooms()
     }
 
     float pz = static_cast<float>(mMapCenterZ);
-    qDebug() << "ModernGLWidget: Rendering area" << mAID << "with" << pArea->getAreaRooms().size() << "rooms";
+    // qDebug() << "ModernGLWidget: Rendering area" << mAID << "with" << pArea->getAreaRooms().size() << "rooms";
     
     // Define room colors (simplified from original)
     constexpr float roomColors[][4] = {
@@ -371,7 +372,7 @@ void ModernGLWidget::renderRooms()
         
         if (isCurrentRoom) {
             // Render current room in red
-            qDebug() << "ModernGLWidget: Rendering current room at" << rx << ry << rz << "size" << (0.8f / scale);
+            // qDebug() << "ModernGLWidget: Rendering current room at" << rx << ry << rz << "size" << (0.8f / scale);
             renderCube(rx, ry, rz, 0.8f / scale, 1.0f, 0.0f, 0.0f, 1.0f);
         } else {
             // Render normal room with level-based color
@@ -603,6 +604,10 @@ void ModernGLWidget::wheelEvent(QWheelEvent* e)
     } else {
         mScale *= 0.9f;
     }
+    
+    // Clamp scale to reasonable bounds to prevent zoom issues
+    mScale = qBound(0.01f, mScale, 100.0f);
+    
     update();
 }
 
