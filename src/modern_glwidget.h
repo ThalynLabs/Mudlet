@@ -43,6 +43,7 @@
 
 class Host;
 class TMap;
+class TRoom;
 
 class ModernGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
@@ -151,6 +152,7 @@ private:
     void renderText(const QString& text, float x, float y);
     void setupBuffers();
     void cleanup();
+    QColor getRoomColor(TRoom* pRoom);
 };
 
 #endif // MUDLET_MODERN_GLWIDGET_H

@@ -25,8 +25,10 @@
 
 #include "mudlet.h"
 #include "TArea.h"
+#include "TRoom.h"
 #include "TRoomDB.h"
 #include "dlgMapper.h"
+#include "Host.h"
 
 #include "pre_guard.h"
 #include <QtEvents>
@@ -328,18 +330,6 @@ void ModernGLWidget::renderRooms()
 
     float pz = static_cast<float>(mMapCenterZ);
     // qDebug() << "ModernGLWidget: Rendering area" << mAID << "with" << pArea->getAreaRooms().size() << "rooms";
-    
-    // Define room colors (simplified from original)
-    constexpr float roomColors[][4] = {
-        {0.9f, 0.5f, 0.0f, 1.0f},
-        {0.165f, 0.102f, 0.167f, 1.0f},
-        {0.170f, 0.010f, 0.127f, 1.0f},
-        {0.203f, 0.135f, 0.101f, 1.0f},
-        {0.154f, 0.154f, 0.115f, 1.0f},
-        {0.107f, 0.154f, 0.100f, 1.0f}
-    };
-    
-    constexpr int numColors = sizeof(roomColors) / sizeof(roomColors[0]);
 
     QSetIterator<int> itRoom(pArea->getAreaRooms());
     while (itRoom.hasNext()) {
@@ -364,23 +354,22 @@ void ModernGLWidget::renderRooms()
             }
         }
 
-        // Choose color based on room position
-        const int colorIndex = abs(static_cast<int>(rz)) % numColors;
+        // Get room color using the same system as 2D map
+        QColor roomColor = getRoomColor(pR);
         
         // Check if this is the current room
         bool isCurrentRoom = (rz == pz) && (rx == static_cast<float>(mMapCenterX)) && (ry == static_cast<float>(mMapCenterY));
         
         if (isCurrentRoom) {
             // Render current room in red
-            // qDebug() << "ModernGLWidget: Rendering current room at" << rx << ry << rz << "size" << (0.8f / scale);
             renderCube(rx, ry, rz, 0.8f / scale, 1.0f, 0.0f, 0.0f, 1.0f);
         } else {
-            // Render normal room with level-based color
+            // Render normal room with proper environment color
             renderCube(rx, ry, rz, 0.8f / scale, 
-                      roomColors[colorIndex][0], 
-                      roomColors[colorIndex][1], 
-                      roomColors[colorIndex][2], 
-                      roomColors[colorIndex][3]);
+                      roomColor.redF(), 
+                      roomColor.greenF(), 
+                      roomColor.blueF(), 
+                      roomColor.alphaF());
         }
     }
 }
@@ -627,4 +616,65 @@ void ModernGLWidget::mouseReleaseEvent(QMouseEvent* event)
 {
     // Implement mouse handling (placeholder)
     QOpenGLWidget::mouseReleaseEvent(event);
+}
+
+QColor ModernGLWidget::getRoomColor(TRoom* pRoom)
+{
+    if (!pRoom || !mpMap || !mpHost) {
+        return QColor(128, 128, 128); // Default gray
+    }
+    
+    QColor roomColor;
+    int roomEnvironment = pRoom->environment;
+    
+    // Same logic as T2DMap.cpp
+    if (mpMap->mEnvColors.contains(roomEnvironment)) {
+        roomEnvironment = mpMap->mEnvColors[roomEnvironment];
+    } else {
+        if (!mpMap->mCustomEnvColors.contains(roomEnvironment)) {
+            roomEnvironment = 1;
+        }
+    }
+    
+    switch (roomEnvironment) {
+    case 1:     roomColor = mpHost->mRed_2;             break;
+    case 2:     roomColor = mpHost->mGreen_2;           break;
+    case 3:     roomColor = mpHost->mYellow_2;          break;
+    case 4:     roomColor = mpHost->mBlue_2;            break;
+    case 5:     roomColor = mpHost->mMagenta_2;         break;
+    case 6:     roomColor = mpHost->mCyan_2;            break;
+    case 7:     roomColor = mpHost->mWhite_2;           break;
+    case 8:     roomColor = mpHost->mBlack_2;           break;
+    case 9:     roomColor = mpHost->mLightRed_2;        break;
+    case 10:    roomColor = mpHost->mLightGreen_2;      break;
+    case 11:    roomColor = mpHost->mLightYellow_2;     break;
+    case 12:    roomColor = mpHost->mLightBlue_2;       break;
+    case 13:    roomColor = mpHost->mLightMagenta_2;    break;
+    case 14:    roomColor = mpHost->mLightCyan_2;       break;
+    case 15:    roomColor = mpHost->mLightWhite_2;      break;
+    case 16:    roomColor = mpHost->mLightBlack_2;      break;
+    default: // user defined room color
+        if (mpMap->mCustomEnvColors.contains(roomEnvironment)) {
+            roomColor = mpMap->mCustomEnvColors[roomEnvironment];
+        } else {
+            if (16 < roomEnvironment && roomEnvironment < 232) {
+                quint8 const base = roomEnvironment - 16;
+                quint8 r = base / 36;
+                quint8 g = (base - (r * 36)) / 6;
+                quint8 b = (base - (r * 36)) - (g * 6);
+
+                r = r == 0 ? 0 : (r - 1) * 40 + 95;
+                g = g == 0 ? 0 : (g - 1) * 40 + 95;
+                b = b == 0 ? 0 : (b - 1) * 40 + 95;
+                roomColor = QColor(r, g, b, 255);
+            } else if (231 < roomEnvironment && roomEnvironment < 256) {
+                quint8 const k = ((roomEnvironment - 232) * 10) + 8;
+                roomColor = QColor(k, k, k, 255);
+            } else {
+                roomColor = mpHost->mRed_2; // fallback
+            }
+        }
+    }
+    
+    return roomColor;
 }
