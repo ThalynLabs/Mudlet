@@ -442,8 +442,22 @@ void ModernGLWidget::renderRooms()
         } else {
             // Normal room: use planeColor logic based on z-level relationship
             QColor roomColor = getPlaneColor(static_cast<int>(rz), belowOrAtLevel);
-            renderCube(rx, ry, rz, 1.0f / scale, roomColor.redF(), roomColor.greenF(), roomColor.blueF(),
-                       1.0f); // Full alpha
+            float roomAlpha = belowOrAtLevel ? 1.0f : 0.2f; // 80% transparent (20% opacity) if above current level
+            
+            // Darken colors for rooms above current level to match old widget appearance
+            float redComponent = roomColor.redF();
+            float greenComponent = roomColor.greenF(); 
+            float blueComponent = roomColor.blueF();
+            
+            if (!belowOrAtLevel) {
+                // Drastically reduce brightness for rooms above current level - make them very dark and dim
+                const float darkenFactor = 0.25f; // Keep only 25% of original brightness
+                redComponent *= darkenFactor;
+                greenComponent *= darkenFactor;
+                blueComponent *= darkenFactor;
+            }
+            
+            renderCube(rx, ry, rz, 1.0f / scale, redComponent, greenComponent, blueComponent, roomAlpha);
         }
 
         // 2. Render thin environment color overlay on top
@@ -452,14 +466,29 @@ void ModernGLWidget::renderRooms()
 
         QColor envColor = getEnvironmentColor(pR);
         float overlayZ = rz + 0.25f; // Slightly above the main cube
+        float overlayAlpha = belowOrAtLevel ? 0.8f : 0.16f; // 84% transparent if above current level (0.2 * 0.8)
+        
+        // Darken environment overlay colors for rooms above current level
+        float envRed = envColor.redF();
+        float envGreen = envColor.greenF();
+        float envBlue = envColor.blueF();
+        
+        if (!belowOrAtLevel) {
+            // Drastically reduce brightness for environment overlays above current level
+            const float darkenFactor = 0.25f; // Keep only 25% of original brightness
+            envRed *= darkenFactor;
+            envGreen *= darkenFactor;
+            envBlue *= darkenFactor;
+        }
+        
         renderCube(rx,
                    ry,
                    overlayZ,
                    0.75f / scale, // Slightly smaller and thinner
-                   envColor.redF(),
-                   envColor.greenF(),
-                   envColor.blueF(),
-                   0.8f); // Semi-transparent overlay
+                   envRed,
+                   envGreen,
+                   envBlue,
+                   overlayAlpha);
 
         // 3. Render up/down exit indicators on the overlay
         renderUpDownIndicators(pR, rx, ry, overlayZ + 0.1f);
@@ -560,9 +589,13 @@ void ModernGLWidget::renderConnections()
                 lineVertices << rx << ry << rz; // Start point
                 lineVertices << ex << ey << ez; // End point
 
-                // Add colors for both vertices
-                lineColors << r << g << b << 1.0f; // Start color
-                lineColors << r << g << b << 1.0f; // End color
+                // Determine translucency based on destination room level
+                bool exitAboveCurrentLevel = (ez > pz);
+                float connectionAlpha = exitAboveCurrentLevel ? 0.2f : 1.0f;
+
+                // Add colors for both vertices with appropriate alpha
+                lineColors << r << g << b << connectionAlpha; // Start color
+                lineColors << r << g << b << connectionAlpha; // End color
 
             } else {
                 // Area exit - draw directional stub
@@ -599,25 +632,57 @@ void ModernGLWidget::renderConnections()
                 lineVertices << rx << ry << rz; // Start point
                 lineVertices << dx << dy << dz; // End point (offset)
 
-                // Use different color for area exits (greenish)
-                lineColors << 85.0f / 255.0f << 170.0f / 255.0f << 0.0f << 1.0f; // Start color
-                lineColors << 85.0f / 255.0f << 170.0f / 255.0f << 0.0f << 1.0f; // End color
+                // Determine translucency for area exits based on destination level
+                bool exitAboveCurrentLevel = (dz > pz);
+                float exitAlpha = exitAboveCurrentLevel ? 0.2f : 1.0f;
+                
+                // Darken area exit colors if above current level
+                float exitRed = 85.0f / 255.0f;
+                float exitGreen = 170.0f / 255.0f;
+                float exitBlue = 0.0f;
+                
+                if (exitAboveCurrentLevel) {
+                    // Drastically darken area exits above current level
+                    const float darkenFactor = 0.25f; // Keep only 25% of original brightness
+                    exitRed *= darkenFactor;
+                    exitGreen *= darkenFactor;
+                    exitBlue *= darkenFactor;
+                }
+                
+                // Use different color for area exits (greenish) with appropriate alpha and darkening
+                lineColors << exitRed << exitGreen << exitBlue << exitAlpha; // Start color
+                lineColors << exitRed << exitGreen << exitBlue << exitAlpha; // End color
 
-                // Render green area exit cube at the destination position (with lighting)
-                renderCube(dx, dy, dz, 1.0f / scale, 85.0f / 255.0f, 170.0f / 255.0f, 0.0f, 1.0f);
+                // Render green area exit cube at the destination position with translucency and darkening
+                renderCube(dx, dy, dz, 1.0f / scale, exitRed, exitGreen, exitBlue, exitAlpha);
 
-                // Render smaller environment overlay rectangle on top (like regular rooms)
+                // Render smaller environment overlay rectangle on top with translucency and darkening
                 glDisable(GL_DEPTH_TEST);
                 QColor envColor = getEnvironmentColor(pExit);
                 float overlayZ = dz + 0.25f;
+                float overlayAlpha = exitAboveCurrentLevel ? 0.16f : 0.8f; // 0.2 * 0.8 for above level
+                
+                // Darken area exit environment overlay if above current level
+                float exitEnvRed = envColor.redF();
+                float exitEnvGreen = envColor.greenF();
+                float exitEnvBlue = envColor.blueF();
+                
+                if (exitAboveCurrentLevel) {
+                    // Drastically darken area exit environment overlays above current level
+                    const float darkenFactor = 0.25f; // Keep only 25% of original brightness
+                    exitEnvRed *= darkenFactor;
+                    exitEnvGreen *= darkenFactor;
+                    exitEnvBlue *= darkenFactor;
+                }
+                
                 renderCube(dx,
                            dy,
                            overlayZ,
                            0.5f / scale, // Much smaller overlay
-                           envColor.redF(),
-                           envColor.greenF(),
-                           envColor.blueF(),
-                           0.8f);
+                           exitEnvRed,
+                           exitEnvGreen,
+                           exitEnvBlue,
+                           overlayAlpha);
                 glEnable(GL_DEPTH_TEST);
             }
         }
