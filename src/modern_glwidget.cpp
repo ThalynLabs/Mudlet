@@ -202,10 +202,12 @@ bool ModernGLWidget::initializeShaders()
     mUniformModel = mShaderProgram->uniformLocation("uModel");
     mUniformNormalMatrix = mShaderProgram->uniformLocation("uNormalMatrix");
 
-    if (mUniformMVP == -1 || mUniformModel == -1 || mUniformNormalMatrix == -1) {
-        qWarning() << "Failed to get uniform locations - MVP:" << mUniformMVP << "Model:" << mUniformModel << "Normal:" << mUniformNormalMatrix;
+    if (mUniformMVP == -1) {
+        qWarning() << "Failed to get MVP uniform location:" << mUniformMVP;
+        return false;
     }
 
+    // Note: uModel and uNormalMatrix may be -1 if optimized out by driver
     qDebug() << "ModernGLWidget: Shaders initialized successfully. Uniform locations - MVP:" << mUniformMVP << "Model:" << mUniformModel << "Normal:" << mUniformNormalMatrix;
     return true;
 }
