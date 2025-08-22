@@ -438,6 +438,9 @@ void ModernGLWidget::renderRooms()
         }
         
         // 2. Render thin environment color overlay on top
+        // Disable depth testing like the original to prevent clipping
+        glDisable(GL_DEPTH_TEST);
+        
         QColor envColor = getEnvironmentColor(pR);
         float overlayZ = rz + 0.25f; // Slightly above the main cube
         renderCube(rx, ry, overlayZ, 0.75f / scale, // Slightly smaller and thinner
@@ -448,6 +451,9 @@ void ModernGLWidget::renderRooms()
         
         // 3. Render up/down exit indicators on the overlay
         renderUpDownIndicators(pR, rx, ry, overlayZ + 0.1f);
+        
+        // Re-enable depth testing for subsequent rendering
+        glEnable(GL_DEPTH_TEST);
     }
 }
 
