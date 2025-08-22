@@ -36,19 +36,53 @@
 #include <QDebug>
 #include "post_guard.h"
 
-// Modern OpenGL vertex shader
+// Modern OpenGL vertex shader with lighting
 static const char* vertexShaderSource = R"(
 #version 330 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec4 aColor;
+layout (location = 2) in vec3 aNormal;
 
 uniform mat4 uMVP;
+uniform mat4 uModel;
+uniform mat3 uNormalMatrix;
+
+// Lighting uniforms (from original glwidget.cpp)
+uniform vec3 uLight0Pos = vec3(5000.0, 4000.0, 1000.0);
+uniform vec3 uLight1Pos = vec3(5000.0, 1000.0, 1000.0);
+uniform vec3 uLight0Diffuse = vec3(0.507, 0.507, 0.507);
+uniform vec3 uLight1Diffuse = vec3(0.501, 0.901, 0.501);
+uniform vec3 uLight0Ambient = vec3(0.403, 0.403, 0.403);
+uniform vec3 uLight1Ambient = vec3(0.4501, 0.4501, 0.4501);
+
 out vec4 vertexColor;
 
 void main()
 {
+    vec4 worldPos = uModel * vec4(aPos, 1.0);
+    vec3 worldNormal = normalize(uNormalMatrix * aNormal);
+    
+    // Calculate lighting (similar to original fixed-function pipeline)
+    vec3 ambient = uLight0Ambient + uLight1Ambient;
+    
+    // Light 0
+    vec3 lightDir0 = normalize(uLight0Pos);
+    float diff0 = max(dot(worldNormal, lightDir0), 0.0);
+    vec3 diffuse0 = diff0 * uLight0Diffuse;
+    
+    // Light 1  
+    vec3 lightDir1 = normalize(uLight1Pos);
+    float diff1 = max(dot(worldNormal, lightDir1), 0.0);
+    vec3 diffuse1 = diff1 * uLight1Diffuse;
+    
+    // Combine lighting
+    vec3 lighting = ambient + diffuse0 + diffuse1;
+    lighting = clamp(lighting, 0.0, 1.0);
+    
+    // Apply lighting to base color
+    vertexColor = vec4(aColor.rgb * lighting, aColor.a);
+    
     gl_Position = uMVP * vec4(aPos, 1.0);
-    vertexColor = aColor;
 }
 )";
 
@@ -68,6 +102,7 @@ ModernGLWidget::ModernGLWidget(TMap* pMap, Host* pHost, QWidget *parent)
 : QOpenGLWidget(parent)
 , mVertexBuffer(QOpenGLBuffer::VertexBuffer)
 , mColorBuffer(QOpenGLBuffer::VertexBuffer)
+, mNormalBuffer(QOpenGLBuffer::VertexBuffer)
 , mpMap(pMap)
 , mpHost(pHost)
 {
@@ -91,6 +126,7 @@ void ModernGLWidget::cleanup()
     mShaderProgram = nullptr;
     mVertexBuffer.destroy();
     mColorBuffer.destroy();
+    mNormalBuffer.destroy();
     mVAO.destroy();
     doneCurrent();
 }
@@ -158,11 +194,16 @@ bool ModernGLWidget::initializeShaders()
     
     // Get uniform locations
     mUniformMVP = mShaderProgram->uniformLocation("uMVP");
-    if (mUniformMVP == -1) {
-        qWarning() << "Failed to get MVP uniform location";
+    mUniformModel = mShaderProgram->uniformLocation("uModel");
+    mUniformNormalMatrix = mShaderProgram->uniformLocation("uNormalMatrix");
+    
+    if (mUniformMVP == -1 || mUniformModel == -1 || mUniformNormalMatrix == -1) {
+        qWarning() << "Failed to get uniform locations - MVP:" << mUniformMVP 
+                   << "Model:" << mUniformModel << "Normal:" << mUniformNormalMatrix;
     }
     
-    qDebug() << "ModernGLWidget: Shaders initialized successfully. MVP uniform location:" << mUniformMVP;
+    qDebug() << "ModernGLWidget: Shaders initialized successfully. Uniform locations - MVP:" 
+             << mUniformMVP << "Model:" << mUniformModel << "Normal:" << mUniformNormalMatrix;
     return true;
 }
 
@@ -181,6 +222,11 @@ void ModernGLWidget::setupBuffers()
     mColorBuffer.create();
     mColorBuffer.bind();
     mColorBuffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
+    
+    // Create normal buffer
+    mNormalBuffer.create();
+    mNormalBuffer.bind();
+    mNormalBuffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
     
     // Configure vertex attribute pointers (will be set during rendering)
 }
@@ -531,34 +577,61 @@ void ModernGLWidget::renderConnections()
 
 void ModernGLWidget::renderCube(float x, float y, float z, float size, float r, float g, float b, float a)
 {
-    // Cube vertices (simplified - just the 8 corners)
+    // Create cube vertices and normals matching original glwidget.cpp
+    // Using the exact same vertex order and normals as the original
     const float s = size;
-    QVector<float> vertices = {
-        // Front face
-        x-s, y-s, z+s,  x+s, y-s, z+s,  x+s, y+s, z+s,
-        x-s, y-s, z+s,  x+s, y+s, z+s,  x-s, y+s, z+s,
-        // Back face  
-        x-s, y-s, z-s,  x-s, y+s, z-s,  x+s, y+s, z-s,
-        x-s, y-s, z-s,  x+s, y+s, z-s,  x+s, y-s, z-s,
-        // Left face
-        x-s, y-s, z-s,  x-s, y-s, z+s,  x-s, y+s, z+s,
-        x-s, y-s, z-s,  x-s, y+s, z+s,  x-s, y+s, z-s,
-        // Right face
-        x+s, y-s, z-s,  x+s, y+s, z-s,  x+s, y+s, z+s,
-        x+s, y-s, z-s,  x+s, y+s, z+s,  x+s, y-s, z+s,
-        // Top face
-        x-s, y+s, z-s,  x-s, y+s, z+s,  x+s, y+s, z+s,
-        x-s, y+s, z-s,  x+s, y+s, z+s,  x+s, y+s, z-s,
-        // Bottom face
-        x-s, y-s, z-s,  x+s, y-s, z-s,  x+s, y-s, z+s,
-        x-s, y-s, z-s,  x+s, y-s, z+s,  x-s, y-s, z+s
-    };
-
-    // Create color data for all vertices
+    
+    QVector<float> vertices;
+    QVector<float> normals;
     QVector<float> colors;
-    for (int i = 0; i < vertices.size() / 3; ++i) {
-        colors << r << g << b << a;
-    }
+    
+    // Bottom face (glNormal3f(0.57735, -0.57735, 0.57735), etc.)
+    vertices << x+s << y-s << z+s;  normals << 0.57735f << -0.57735f << 0.57735f;   colors << r << g << b << a;
+    vertices << x-s << y-s << z+s;  normals << -0.57735f << -0.57735f << 0.57735f;  colors << r << g << b << a;
+    vertices << x-s << y-s << z-s;  normals << -0.57735f << -0.57735f << -0.57735f; colors << r << g << b << a;
+    vertices << x+s << y-s << z+s;  normals << 0.57735f << -0.57735f << 0.57735f;   colors << r << g << b << a;
+    vertices << x-s << y-s << z-s;  normals << -0.57735f << -0.57735f << -0.57735f; colors << r << g << b << a;
+    vertices << x+s << y-s << z-s;  normals << 0.57735f << -0.57735f << -0.57735f;  colors << r << g << b << a;
+
+    // Front face
+    vertices << x+s << y+s << z+s;  normals << 0.57735f << 0.57735f << 0.57735f;    colors << r << g << b << a;
+    vertices << x-s << y+s << z+s;  normals << -0.57735f << 0.57735f << 0.57735f;   colors << r << g << b << a;
+    vertices << x-s << y-s << z+s;  normals << -0.57735f << -0.57735f << 0.57735f;  colors << r << g << b << a;
+    vertices << x+s << y+s << z+s;  normals << 0.57735f << 0.57735f << 0.57735f;    colors << r << g << b << a;
+    vertices << x-s << y-s << z+s;  normals << -0.57735f << -0.57735f << 0.57735f;  colors << r << g << b << a;
+    vertices << x+s << y-s << z+s;  normals << 0.57735f << -0.57735f << 0.57735f;   colors << r << g << b << a;
+
+    // Back face
+    vertices << x-s << y+s << z-s;  normals << -0.57735f << 0.57735f << -0.57735f;  colors << r << g << b << a;
+    vertices << x+s << y+s << z-s;  normals << 0.57735f << 0.57735f << -0.57735f;   colors << r << g << b << a;
+    vertices << x+s << y-s << z-s;  normals << 0.57735f << -0.57735f << -0.57735f;  colors << r << g << b << a;
+    vertices << x-s << y+s << z-s;  normals << -0.57735f << 0.57735f << -0.57735f;  colors << r << g << b << a;
+    vertices << x+s << y-s << z-s;  normals << 0.57735f << -0.57735f << -0.57735f;  colors << r << g << b << a;
+    vertices << x-s << y-s << z-s;  normals << -0.57735f << -0.57735f << -0.57735f; colors << r << g << b << a;
+
+    // Right face
+    vertices << x+s << y+s << z-s;  normals << 0.57735f << 0.57735f << -0.57735f;   colors << r << g << b << a;
+    vertices << x+s << y+s << z+s;  normals << 0.57735f << 0.57735f << 0.57735f;    colors << r << g << b << a;
+    vertices << x+s << y-s << z+s;  normals << 0.57735f << -0.57735f << 0.57735f;   colors << r << g << b << a;
+    vertices << x+s << y+s << z-s;  normals << 0.57735f << 0.57735f << -0.57735f;   colors << r << g << b << a;
+    vertices << x+s << y-s << z+s;  normals << 0.57735f << -0.57735f << 0.57735f;   colors << r << g << b << a;
+    vertices << x+s << y-s << z-s;  normals << 0.57735f << -0.57735f << -0.57735f;  colors << r << g << b << a;
+
+    // Left face
+    vertices << x-s << y+s << z+s;  normals << -0.57735f << 0.57735f << 0.57735f;   colors << r << g << b << a;
+    vertices << x-s << y+s << z-s;  normals << -0.57735f << 0.57735f << -0.57735f;  colors << r << g << b << a;
+    vertices << x-s << y-s << z-s;  normals << -0.57735f << -0.57735f << -0.57735f; colors << r << g << b << a;
+    vertices << x-s << y+s << z+s;  normals << -0.57735f << 0.57735f << 0.57735f;   colors << r << g << b << a;
+    vertices << x-s << y-s << z-s;  normals << -0.57735f << -0.57735f << -0.57735f; colors << r << g << b << a;
+    vertices << x-s << y-s << z+s;  normals << -0.57735f << -0.57735f << 0.57735f;  colors << r << g << b << a;
+
+    // Top face
+    vertices << x+s << y+s << z-s;  normals << 0.57735f << 0.57735f << -0.57735f;   colors << r << g << b << a;
+    vertices << x-s << y+s << z-s;  normals << -0.57735f << 0.57735f << -0.57735f;  colors << r << g << b << a;
+    vertices << x-s << y+s << z+s;  normals << -0.57735f << 0.57735f << 0.57735f;   colors << r << g << b << a;
+    vertices << x+s << y+s << z-s;  normals << 0.57735f << 0.57735f << -0.57735f;   colors << r << g << b << a;
+    vertices << x-s << y+s << z+s;  normals << -0.57735f << 0.57735f << 0.57735f;   colors << r << g << b << a;
+    vertices << x+s << y+s << z+s;  normals << 0.57735f << 0.57735f << 0.57735f;    colors << r << g << b << a;
 
     QOpenGLVertexArrayObject::Binder vaoBinder(&mVAO);
 
@@ -573,10 +646,21 @@ void ModernGLWidget::renderCube(float x, float y, float z, float size, float r, 
     mColorBuffer.allocate(colors.data(), colors.size() * sizeof(float));
     glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
     glEnableVertexAttribArray(1);
+    
+    // Upload normal data
+    mNormalBuffer.bind();
+    mNormalBuffer.allocate(normals.data(), normals.size() * sizeof(float));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(2);
 
-    // Set MVP matrix uniform
+    // Set uniforms
     QMatrix4x4 mvp = mProjectionMatrix * mViewMatrix * mModelMatrix;
     mShaderProgram->setUniformValue(mUniformMVP, mvp);
+    mShaderProgram->setUniformValue(mUniformModel, mModelMatrix);
+    
+    // Normal matrix (inverse transpose of model matrix)
+    QMatrix3x3 normalMatrix = mModelMatrix.normalMatrix();
+    mShaderProgram->setUniformValue(mUniformNormalMatrix, normalMatrix);
 
     // Draw the cube
     glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 3);
@@ -779,33 +863,10 @@ void ModernGLWidget::renderLines(const QVector<float>& vertices, const QVector<f
         return;
     }
 
-    QOpenGLVertexArrayObject::Binder vaoBinder(&mVAO);
-
-    // Upload vertex data
-    mVertexBuffer.bind();
-    mVertexBuffer.allocate(vertices.data(), vertices.size() * sizeof(float));
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-    glEnableVertexAttribArray(0);
-
-    // Upload color data
-    mColorBuffer.bind();
-    mColorBuffer.allocate(colors.data(), colors.size() * sizeof(float));
-    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
-    glEnableVertexAttribArray(1);
-
-    // Set MVP matrix uniform
-    QMatrix4x4 mvp = mProjectionMatrix * mViewMatrix * mModelMatrix;
-    mShaderProgram->setUniformValue(mUniformMVP, mvp);
-
-    // Draw the lines
-    glDrawArrays(GL_LINES, 0, vertices.size() / 3);
-}
-
-void ModernGLWidget::renderTriangles(const QVector<float>& vertices, const QVector<float>& colors)
-{
-    if (vertices.size() != colors.size() || vertices.size() % 3 != 0) {
-        qDebug() << "ModernGLWidget::renderTriangles: Vertex and color array size mismatch or invalid size";
-        return;
+    // Create dummy normals for lines (pointing up)
+    QVector<float> normals;
+    for (int i = 0; i < vertices.size() / 3; ++i) {
+        normals << 0.0f << 0.0f << 1.0f;  // Up vector for all line vertices
     }
 
     QOpenGLVertexArrayObject::Binder vaoBinder(&mVAO);
@@ -821,10 +882,65 @@ void ModernGLWidget::renderTriangles(const QVector<float>& vertices, const QVect
     mColorBuffer.allocate(colors.data(), colors.size() * sizeof(float));
     glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
     glEnableVertexAttribArray(1);
+    
+    // Upload normal data
+    mNormalBuffer.bind();
+    mNormalBuffer.allocate(normals.data(), normals.size() * sizeof(float));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(2);
 
-    // Set MVP matrix uniform
+    // Set uniforms
     QMatrix4x4 mvp = mProjectionMatrix * mViewMatrix * mModelMatrix;
     mShaderProgram->setUniformValue(mUniformMVP, mvp);
+    mShaderProgram->setUniformValue(mUniformModel, mModelMatrix);
+    
+    QMatrix3x3 normalMatrix = mModelMatrix.normalMatrix();
+    mShaderProgram->setUniformValue(mUniformNormalMatrix, normalMatrix);
+
+    // Draw the lines
+    glDrawArrays(GL_LINES, 0, vertices.size() / 3);
+}
+
+void ModernGLWidget::renderTriangles(const QVector<float>& vertices, const QVector<float>& colors)
+{
+    if (vertices.size() != colors.size() || vertices.size() % 3 != 0) {
+        qDebug() << "ModernGLWidget::renderTriangles: Vertex and color array size mismatch or invalid size";
+        return;
+    }
+
+    // Create dummy normals for triangles (pointing up)
+    QVector<float> normals;
+    for (int i = 0; i < vertices.size() / 3; ++i) {
+        normals << 0.0f << 0.0f << 1.0f;  // Up vector for all triangle vertices
+    }
+
+    QOpenGLVertexArrayObject::Binder vaoBinder(&mVAO);
+
+    // Upload vertex data
+    mVertexBuffer.bind();
+    mVertexBuffer.allocate(vertices.data(), vertices.size() * sizeof(float));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(0);
+
+    // Upload color data
+    mColorBuffer.bind();
+    mColorBuffer.allocate(colors.data(), colors.size() * sizeof(float));
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(1);
+    
+    // Upload normal data
+    mNormalBuffer.bind();
+    mNormalBuffer.allocate(normals.data(), normals.size() * sizeof(float));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(2);
+
+    // Set uniforms
+    QMatrix4x4 mvp = mProjectionMatrix * mViewMatrix * mModelMatrix;
+    mShaderProgram->setUniformValue(mUniformMVP, mvp);
+    mShaderProgram->setUniformValue(mUniformModel, mModelMatrix);
+    
+    QMatrix3x3 normalMatrix = mModelMatrix.normalMatrix();
+    mShaderProgram->setUniformValue(mUniformNormalMatrix, normalMatrix);
 
     // Draw the triangles
     glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 3);

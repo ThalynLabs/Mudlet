@@ -97,10 +97,13 @@ private:
     QOpenGLShaderProgram* mShaderProgram = nullptr;
     QOpenGLBuffer mVertexBuffer;
     QOpenGLBuffer mColorBuffer;
+    QOpenGLBuffer mNormalBuffer;
     QOpenGLVertexArrayObject mVAO;
     
     // Uniform locations
     int mUniformMVP = -1;
+    int mUniformModel = -1;
+    int mUniformNormalMatrix = -1;
     int mUniformColor = -1;
     
     // Transformation matrices
