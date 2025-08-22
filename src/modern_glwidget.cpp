@@ -1192,8 +1192,7 @@ QColor ModernGLWidget::getPlaneColor(int zLevel, bool belowOrAtLevel)
     return QColor(static_cast<int>(color[0] * 255),
                   static_cast<int>(color[1] * 255),
                   static_cast<int>(color[2] * 255),
-                  255 // Use full alpha for room colors
-    );
+                  255); // Use full alpha for room colors
 }
 
 QColor ModernGLWidget::getEnvironmentColor(TRoom* pRoom)
