@@ -252,9 +252,6 @@ void ModernGLWidget::updateMatrices()
     // Set up view matrix (camera)
     mViewMatrix.setToIdentity();
     
-    // Use scale to control camera distance (inverse relationship for intuitive zoom)
-    const float cameraDistance = 30.0f / mScale;
-    
     // Original uses xRot, yRot, zRot as camera position offsets, not rotation angles
     // gluLookAt(px * 0.1 + xRot, py * 0.1 + yRot, pz * 0.1 + zRot, px * 0.1, py * 0.1, pz * 0.1, 0.0, 1.0, 0.0);
     
@@ -263,10 +260,12 @@ void ModernGLWidget::updateMatrices()
     const float py = static_cast<float>(mMapCenterY) * 0.1f;
     const float pz = static_cast<float>(mMapCenterZ) * 0.1f;
     
-    // Camera position with offsets
-    const float cameraX = px + xRot;
-    const float cameraY = py + yRot; 
-    const float cameraZ = pz + zRot;
+    // Camera position with offsets, scaled by mScale for zoom
+    // The original offsets are scaled by the zoom factor to maintain proper distance
+    const float scaleMultiplier = 1.0f / mScale;
+    const float cameraX = px + (xRot * scaleMultiplier);
+    const float cameraY = py + (yRot * scaleMultiplier); 
+    const float cameraZ = pz + (zRot * scaleMultiplier);
     
     // Target position (map center)
     const float targetX = px;
