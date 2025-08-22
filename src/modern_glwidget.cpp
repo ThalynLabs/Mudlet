@@ -375,6 +375,13 @@ void ModernGLWidget::paintGL()
     renderConnections();
 
     mShaderProgram->release();
+    
+    // Draw label to identify this as the modern OpenGL implementation
+    QPainter painter(this);
+    painter.setPen(QPen(QColor(255, 255, 255, 200))); // Semi-transparent white
+    painter.setFont(QFont("Arial", 12, QFont::Bold));
+    painter.drawText(10, height() - 20, "Modern OpenGL Mapper");
+    painter.end();
 }
 
 void ModernGLWidget::renderRooms()
