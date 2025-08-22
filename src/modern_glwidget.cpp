@@ -582,6 +582,21 @@ void ModernGLWidget::renderConnections()
                 // Use different color for area exits (greenish)
                 lineColors << 85.0f/255.0f << 170.0f/255.0f << 0.0f << 1.0f;  // Start color
                 lineColors << 85.0f/255.0f << 170.0f/255.0f << 0.0f << 1.0f;  // End color
+                
+                // Render green area exit cube at the destination position (with lighting)
+                renderCube(dx, dy, dz, 1.0f / scale, 
+                          85.0f/255.0f, 170.0f/255.0f, 0.0f, 1.0f);
+                
+                // Render smaller environment overlay rectangle on top (like regular rooms)
+                glDisable(GL_DEPTH_TEST);
+                QColor envColor = getEnvironmentColor(pExit);
+                float overlayZ = dz + 0.25f;
+                renderCube(dx, dy, overlayZ, 0.5f / scale, // Much smaller overlay
+                          envColor.redF(), 
+                          envColor.greenF(), 
+                          envColor.blueF(), 
+                          0.8f);
+                glEnable(GL_DEPTH_TEST);
             }
         }
     }
