@@ -2,10 +2,10 @@
 #define MUDLET_GLWIDGET_INTEGRATION_H
 
 /***************************************************************************
- *   Copyright (C) 2024 by Mudlet Development Team                        *
+ *   Copyright (C) 2025 by Vadim Peretokin - vadim.peretokin@mudlet.org    *
  *                                                                         *
- *   Integration header for modernized GLWidget                           *
- *   This header allows for a gradual transition to the modern OpenGL     *
+ *   Integration header for modernized GLWidget                            *
+ *   This header allows for a gradual transition to the modern OpenGL      *
  *   implementation while maintaining compatibility with existing code.    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -18,11 +18,11 @@
 // #define USE_MODERN_GLWIDGET
 
 #ifdef USE_MODERN_GLWIDGET
-    #include "modern_glwidget.h"
-    using GLWidget = ModernGLWidget;
+#include "modern_glwidget.h"
+using GLWidget = ModernGLWidget;
 #else
-    #include "glwidget.h"
-    // Keep using the original GLWidget
+#include "glwidget.h"
+// Keep using the original GLWidget
 #endif
 
 #endif // MUDLET_GLWIDGET_INTEGRATION_H

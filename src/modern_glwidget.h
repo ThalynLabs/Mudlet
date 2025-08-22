@@ -6,7 +6,7 @@
  *   Copyright (C) 2014 by Ahmed Charles - acharles@outlook.com            *
  *   Copyright (C) 2016, 2020-2021 by Stephen Lyons                        *
  *                                               - slysven@virginmedia.com *
- *   Copyright (C) 2024 by Mudlet Development Team                        *
+ *   Copyright (C) 2025 by Vadim Peretokin - vadim.peretokin@mudlet.org    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -32,12 +32,12 @@
 #endif
 
 #include "pre_guard.h"
-#include <QOpenGLWidget>
-#include <QOpenGLBuffer>
-#include <QOpenGLVertexArrayObject>
-#include <QOpenGLShaderProgram>
-#include <QOpenGLFunctions>
 #include <QMatrix4x4>
+#include <QOpenGLBuffer>
+#include <QOpenGLFunctions>
+#include <QOpenGLShaderProgram>
+#include <QOpenGLVertexArrayObject>
+#include <QOpenGLWidget>
 #include <QPointer>
 #include "post_guard.h"
 
@@ -99,13 +99,13 @@ private:
     QOpenGLBuffer mColorBuffer;
     QOpenGLBuffer mNormalBuffer;
     QOpenGLVertexArrayObject mVAO;
-    
+
     // Uniform locations
     int mUniformMVP = -1;
     int mUniformModel = -1;
     int mUniformNormalMatrix = -1;
     int mUniformColor = -1;
-    
+
     // Transformation matrices
     QMatrix4x4 mProjectionMatrix;
     QMatrix4x4 mViewMatrix;
@@ -113,7 +113,7 @@ private:
 
     // Host reference
     QPointer<Host> mpHost;
-    
+
     // View state
     bool is2DView = false;
     bool mPanMode = false;
@@ -134,7 +134,7 @@ private:
     float xRot = 1.0;
     float yRot = 5.0;
     float zRot = 10.0;
-    
+
     // Scales the size of rooms compared to the space between them - currently
     // hard coded to be a quarter (would be equivalent to a 2D room size setting
     // of "2.5"):
