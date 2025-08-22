@@ -332,11 +332,13 @@ void ModernGLWidget::renderRooms()
     }
 
     float pz = static_cast<float>(mMapCenterZ);
-    // qDebug() << "ModernGLWidget: Rendering area" << mAID << "with" << pArea->getAreaRooms().size() << "rooms";
+    float px = static_cast<float>(mMapCenterX);
+    float py = static_cast<float>(mMapCenterY);
 
     QSetIterator<int> itRoom(pArea->getAreaRooms());
     while (itRoom.hasNext()) {
-        TRoom* pR = mpMap->mpRoomDB->getRoom(itRoom.next());
+        int currentRoomId = itRoom.next();
+        TRoom* pR = mpMap->mpRoomDB->getRoom(currentRoomId);
         if (!pR) {
             continue;
         }
@@ -357,23 +359,38 @@ void ModernGLWidget::renderRooms()
             }
         }
 
-        // Get room color using the same system as 2D map
-        QColor roomColor = getRoomColor(pR);
+        // Check special room states
+        bool isCurrentRoom = (rz == pz) && (rx == px) && (ry == py);
+        bool isTargetRoom = (currentRoomId == mTargetRoomId);
         
-        // Check if this is the current room
-        bool isCurrentRoom = (rz == pz) && (rx == static_cast<float>(mMapCenterX)) && (ry == static_cast<float>(mMapCenterY));
-        
+        // 1. Render main room cube using planeColor
         if (isCurrentRoom) {
-            // Render current room in red
-            renderCube(rx, ry, rz, 0.8f / scale, 1.0f, 0.0f, 0.0f, 1.0f);
+            // Current room: red
+            renderCube(rx, ry, rz, 1.0f / scale, 1.0f, 0.0f, 0.0f, 1.0f);
+        } else if (isTargetRoom) {
+            // Target room: green
+            renderCube(rx, ry, rz, 1.0f / scale, 0.0f, 1.0f, 0.0f, 1.0f);
         } else {
-            // Render normal room with proper environment color
-            renderCube(rx, ry, rz, 0.8f / scale, 
-                      roomColor.redF(), 
-                      roomColor.greenF(), 
-                      roomColor.blueF(), 
-                      roomColor.alphaF());
+            // Normal room: use planeColor based on z-level
+            QColor planeColor = getPlaneColor(static_cast<int>(rz));
+            renderCube(rx, ry, rz, 1.0f / scale, 
+                      planeColor.redF(), 
+                      planeColor.greenF(), 
+                      planeColor.blueF(), 
+                      planeColor.alphaF());
         }
+        
+        // 2. Render thin environment color overlay on top
+        QColor envColor = getEnvironmentColor(pR);
+        float overlayZ = rz + 0.25f; // Slightly above the main cube
+        renderCube(rx, ry, overlayZ, 0.75f / scale, // Slightly smaller and thinner
+                  envColor.redF(), 
+                  envColor.greenF(), 
+                  envColor.blueF(), 
+                  0.8f); // Semi-transparent overlay
+        
+        // 3. Render up/down exit indicators on the overlay
+        renderUpDownIndicators(pR, rx, ry, overlayZ + 0.1f);
     }
 }
 
@@ -784,7 +801,127 @@ void ModernGLWidget::renderLines(const QVector<float>& vertices, const QVector<f
     glDrawArrays(GL_LINES, 0, vertices.size() / 3);
 }
 
-QColor ModernGLWidget::getRoomColor(TRoom* pRoom)
+void ModernGLWidget::renderTriangles(const QVector<float>& vertices, const QVector<float>& colors)
+{
+    if (vertices.size() != colors.size() || vertices.size() % 3 != 0) {
+        qDebug() << "ModernGLWidget::renderTriangles: Vertex and color array size mismatch or invalid size";
+        return;
+    }
+
+    QOpenGLVertexArrayObject::Binder vaoBinder(&mVAO);
+
+    // Upload vertex data
+    mVertexBuffer.bind();
+    mVertexBuffer.allocate(vertices.data(), vertices.size() * sizeof(float));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(0);
+
+    // Upload color data
+    mColorBuffer.bind();
+    mColorBuffer.allocate(colors.data(), colors.size() * sizeof(float));
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(1);
+
+    // Set MVP matrix uniform
+    QMatrix4x4 mvp = mProjectionMatrix * mViewMatrix * mModelMatrix;
+    mShaderProgram->setUniformValue(mUniformMVP, mvp);
+
+    // Draw the triangles
+    glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 3);
+}
+
+void ModernGLWidget::renderUpDownIndicators(TRoom* pRoom, float x, float y, float z)
+{
+    if (!pRoom) {
+        return;
+    }
+    
+    QVector<float> triangleVertices;
+    QVector<float> triangleColors;
+    
+    // Gray color for indicators (same as original)
+    float gray[] = {128.0f / 255.0f, 128.0f / 255.0f, 128.0f / 255.0f, 1.0f};
+    
+    // Triangle size (from original: ±0.95/scale for points, ±0.25/scale for base)
+    float pointSize = 0.95f / scale;
+    float baseSize = 0.25f / scale;
+    
+    // Down arrow (if room has down exit)
+    if (pRoom->getDown() > -1) {
+        // Triangle pointing down: top-left, top-right, bottom-center
+        triangleVertices << (x - pointSize) << (y - baseSize) << z;  // Top-left
+        triangleVertices << (x + pointSize) << (y - baseSize) << z;  // Top-right  
+        triangleVertices << x << (y - pointSize) << z;              // Bottom-center
+        
+        // Add gray color for all three vertices
+        for (int i = 0; i < 3; ++i) {
+            triangleColors << gray[0] << gray[1] << gray[2] << gray[3];
+        }
+    }
+    
+    // Up arrow (if room has up exit)
+    if (pRoom->getUp() > -1) {
+        // Triangle pointing up: bottom-left, bottom-right, top-center
+        triangleVertices << (x - pointSize) << (y + baseSize) << z;  // Bottom-left
+        triangleVertices << (x + pointSize) << (y + baseSize) << z;  // Bottom-right
+        triangleVertices << x << (y + pointSize) << z;              // Top-center
+        
+        // Add gray color for all three vertices
+        for (int i = 0; i < 3; ++i) {
+            triangleColors << gray[0] << gray[1] << gray[2] << gray[3];
+        }
+    }
+    
+    // Render the triangles if we have any
+    if (!triangleVertices.isEmpty()) {
+        renderTriangles(triangleVertices, triangleColors);
+    }
+}
+
+QColor ModernGLWidget::getPlaneColor(int zLevel)
+{
+    // Colors from original glwidget.cpp planeColor2 array
+    static const float planeColor2[][4] = {
+        {0.9f, 0.5f, 0.0f, 1.0f},
+        {165.0f / 255.0f, 102.0f / 255.0f, 167.0f / 255.0f, 1.0f},
+        {170.0f / 255.0f, 10.0f / 255.0f, 127.0f / 255.0f, 1.0f},
+        {203.0f / 255.0f, 135.0f / 255.0f, 101.0f / 255.0f, 1.0f},
+        {154.0f / 255.0f, 154.0f / 255.0f, 115.0f / 255.0f, 1.0f},
+        {107.0f / 255.0f, 154.0f / 255.0f, 100.0f / 255.0f, 1.0f},
+        {154.0f / 255.0f, 184.0f / 255.0f, 111.0f / 255.0f, 1.0f},
+        {67.0f / 255.0f, 154.0f / 255.0f, 148.0f / 255.0f, 1.0f},
+        {154.0f / 255.0f, 118.0f / 255.0f, 151.0f / 255.0f, 1.0f},
+        {208.0f / 255.0f, 213.0f / 255.0f, 164.0f / 255.0f, 1.0f},
+        {213.0f / 255.0f, 169.0f / 255.0f, 158.0f / 255.0f, 1.0f},
+        {139.0f / 255.0f, 209.0f / 255.0f, 0.0f, 1.0f},
+        {163.0f / 255.0f, 209.0f / 255.0f, 202.0f / 255.0f, 1.0f},
+        {158.0f / 255.0f, 156.0f / 255.0f, 209.0f / 255.0f, 1.0f},
+        {209.0f / 255.0f, 144.0f / 255.0f, 162.0f / 255.0f, 1.0f},
+        {209.0f / 255.0f, 183.0f / 255.0f, 78.0f / 255.0f, 1.0f},
+        {111.0f / 255.0f, 209.0f / 255.0f, 88.0f / 255.0f, 1.0f},
+        {95.0f / 255.0f, 120.0f / 255.0f, 209.0f / 255.0f, 1.0f},
+        {31.0f / 255.0f, 209.0f / 255.0f, 126.0f / 255.0f, 1.0f},
+        {1.0f, 170.0f / 255.0f, 1.0f, 1.0f},
+        {158.0f / 255.0f, 105.0f / 255.0f, 158.0f / 255.0f, 1.0f},
+        {68.0f / 255.0f, 189.0f / 255.0f, 189.0f / 255.0f, 1.0f},
+        {0.1f, 0.69f, 0.49f, 1.0f},
+        {0.0f, 0.15f, 1.0f, 1.0f},
+        {0.12f, 0.02f, 0.20f, 1.0f},
+        {0.0f, 0.3f, 0.1f, 1.0f}
+    };
+    
+    int ef = abs(zLevel % 26);
+    const float* color = planeColor2[ef];
+    
+    return QColor(
+        static_cast<int>(color[0] * 255),
+        static_cast<int>(color[1] * 255),
+        static_cast<int>(color[2] * 255),
+        static_cast<int>(color[3] * 255)
+    );
+}
+
+QColor ModernGLWidget::getEnvironmentColor(TRoom* pRoom)
 {
     if (!pRoom || !mpMap || !mpHost) {
         return QColor(128, 128, 128); // Default gray
