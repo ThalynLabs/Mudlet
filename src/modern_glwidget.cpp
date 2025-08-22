@@ -255,18 +255,31 @@ void ModernGLWidget::updateMatrices()
     // Use scale to control camera distance (inverse relationship for intuitive zoom)
     const float cameraDistance = 30.0f / mScale;
     
-    // Translate camera away from the map center
-    mViewMatrix.translate(0.0f, 0.0f, -cameraDistance);
+    // Original uses xRot, yRot, zRot as camera position offsets, not rotation angles
+    // gluLookAt(px * 0.1 + xRot, py * 0.1 + yRot, pz * 0.1 + zRot, px * 0.1, py * 0.1, pz * 0.1, 0.0, 1.0, 0.0);
     
-    // Apply rotations
-    mViewMatrix.rotate(xRot, 1, 0, 0);
-    mViewMatrix.rotate(yRot, 0, 1, 0);
-    mViewMatrix.rotate(zRot, 0, 0, 1);
+    // Calculate camera position with offsets (scale appropriately for our coordinate system)
+    const float px = static_cast<float>(mMapCenterX) * 0.1f;
+    const float py = static_cast<float>(mMapCenterY) * 0.1f;
+    const float pz = static_cast<float>(mMapCenterZ) * 0.1f;
     
-    // Translate to center on the current map position
-    mViewMatrix.translate(-static_cast<float>(mMapCenterX), 
-                          -static_cast<float>(mMapCenterY), 
-                          -static_cast<float>(mMapCenterZ));
+    // Camera position with offsets
+    const float cameraX = px + xRot;
+    const float cameraY = py + yRot; 
+    const float cameraZ = pz + zRot;
+    
+    // Target position (map center)
+    const float targetX = px;
+    const float targetY = py;
+    const float targetZ = pz;
+    
+    // Create view matrix to look at target from camera position
+    mViewMatrix.lookAt(QVector3D(cameraX, cameraY, cameraZ),
+                       QVector3D(targetX, targetY, targetZ), 
+                       QVector3D(0.0f, 1.0f, 0.0f));
+    
+    // Scale the world to match original rendering
+    mViewMatrix.scale(0.1f, 0.1f, 0.1f);
     
     // Model matrix will be set per object during rendering
     mModelMatrix.setToIdentity();
