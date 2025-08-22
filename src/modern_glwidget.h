@@ -148,7 +148,7 @@ private:
     void renderRooms();
     void renderConnections();
     void renderCube(float x, float y, float z, float size, float r, float g, float b, float a);
-    void renderLine(const QVector3D& start, const QVector3D& end);
+    void renderLines(const QVector<float>& vertices, const QVector<float>& colors);
     void renderText(const QString& text, float x, float y);
     void setupBuffers();
     void cleanup();

@@ -312,6 +312,9 @@ void ModernGLWidget::paintGL()
     // Render the map
     renderRooms();
     
+    // Render connections between rooms
+    renderConnections();
+    
     mShaderProgram->release();
 }
 
@@ -371,6 +374,141 @@ void ModernGLWidget::renderRooms()
                       roomColor.blueF(), 
                       roomColor.alphaF());
         }
+    }
+}
+
+void ModernGLWidget::renderConnections()
+{
+    if (!mpMap || !mpMap->mpRoomDB) {
+        return;
+    }
+
+    TArea* pArea = mpMap->mpRoomDB->getArea(mAID);
+    if (!pArea) {
+        return;
+    }
+
+    float pz = static_cast<float>(mMapCenterZ);
+    
+    // Collect all lines to draw
+    QVector<float> lineVertices;
+    QVector<float> lineColors;
+    
+    QSetIterator<int> itRoom(pArea->getAreaRooms());
+    while (itRoom.hasNext()) {
+        TRoom* pR = mpMap->mpRoomDB->getRoom(itRoom.next());
+        if (!pR) {
+            continue;
+        }
+        
+        auto rx = static_cast<float>(pR->x());
+        auto ry = static_cast<float>(pR->y());
+        auto rz = static_cast<float>(pR->z());
+        
+        // Level filtering logic (same as rooms)
+        if (rz > pz) {
+            if (abs(rz - pz) > mShowTopLevels) {
+                continue;
+            }
+        }
+        if (rz < pz) {
+            if (abs(rz - pz) > mShowBottomLevels) {
+                continue;
+            }
+        }
+
+        // Get all exits for this room
+        QList<int> exitList;
+        exitList.push_back(pR->getNorth());
+        exitList.push_back(pR->getNortheast());
+        exitList.push_back(pR->getEast());
+        exitList.push_back(pR->getSoutheast());
+        exitList.push_back(pR->getSouth());
+        exitList.push_back(pR->getSouthwest());
+        exitList.push_back(pR->getWest());
+        exitList.push_back(pR->getNorthwest());
+        exitList.push_back(pR->getUp());
+        exitList.push_back(pR->getDown());
+
+        // Check if this is the current room
+        bool isCurrentRoom = (rz == pz) && (rx == static_cast<float>(mMapCenterX)) && (ry == static_cast<float>(mMapCenterY));
+        
+        // Color for connections: red if current room, gray otherwise
+        float r, g, b;
+        if (isCurrentRoom) {
+            r = 1.0f; g = 0.0f; b = 0.0f; // Red
+        } else {
+            r = 0.3f; g = 0.3f; b = 0.3f; // Gray
+        }
+
+        for (int i = 0; i < exitList.size(); ++i) {
+            int k = exitList[i];
+            if (k == -1) {
+                continue;
+            }
+            
+            TRoom* pExit = mpMap->mpRoomDB->getRoom(k);
+            if (!pExit) {
+                continue;
+            }
+            
+            bool areaExit = (pExit->getArea() != mAID);
+            
+            if (!areaExit) {
+                // Normal connection within same area
+                auto ex = static_cast<float>(pExit->x());
+                auto ey = static_cast<float>(pExit->y());
+                auto ez = static_cast<float>(pExit->z());
+                
+                // Add line from current room to exit room
+                lineVertices << rx << ry << rz;  // Start point
+                lineVertices << ex << ey << ez;  // End point
+                
+                // Add colors for both vertices
+                lineColors << r << g << b << 1.0f;  // Start color
+                lineColors << r << g << b << 1.0f;  // End color
+                
+            } else {
+                // Area exit - draw directional stub
+                float dx = rx, dy = ry, dz = rz;
+                
+                // Calculate direction offset based on exit type
+                if (i == 0) { // North
+                    dy += 1.0f;
+                } else if (i == 1) { // Northeast
+                    dx += 1.0f; dy += 1.0f;
+                } else if (i == 2) { // East
+                    dx += 1.0f;
+                } else if (i == 3) { // Southeast
+                    dx += 1.0f; dy -= 1.0f;
+                } else if (i == 4) { // South
+                    dy -= 1.0f;
+                } else if (i == 5) { // Southwest
+                    dx -= 1.0f; dy -= 1.0f;
+                } else if (i == 6) { // West
+                    dx -= 1.0f;
+                } else if (i == 7) { // Northwest
+                    dx -= 1.0f; dy += 1.0f;
+                } else if (i == 8) { // Up
+                    dz += 1.0f;
+                } else if (i == 9) { // Down
+                    dz -= 1.0f;
+                }
+                
+                // Add line from current room to direction offset
+                lineVertices << rx << ry << rz;  // Start point
+                lineVertices << dx << dy << dz;  // End point (offset)
+                
+                // Use different color for area exits (greenish)
+                lineColors << 85.0f/255.0f << 170.0f/255.0f << 0.0f << 1.0f;  // Start color
+                lineColors << 85.0f/255.0f << 170.0f/255.0f << 0.0f << 1.0f;  // End color
+            }
+        }
+    }
+    
+    // Render all collected lines
+    if (!lineVertices.isEmpty()) {
+        renderLines(lineVertices, lineColors);
     }
 }
 
@@ -616,6 +754,34 @@ void ModernGLWidget::mouseReleaseEvent(QMouseEvent* event)
 {
     // Implement mouse handling (placeholder)
     QOpenGLWidget::mouseReleaseEvent(event);
+}
+
+void ModernGLWidget::renderLines(const QVector<float>& vertices, const QVector<float>& colors)
+{
+    if (vertices.isEmpty() || colors.isEmpty()) {
+        return;
+    }
+
+    QOpenGLVertexArrayObject::Binder vaoBinder(&mVAO);
+
+    // Upload vertex data
+    mVertexBuffer.bind();
+    mVertexBuffer.allocate(vertices.data(), vertices.size() * sizeof(float));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(0);
+
+    // Upload color data
+    mColorBuffer.bind();
+    mColorBuffer.allocate(colors.data(), colors.size() * sizeof(float));
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(1);
+
+    // Set MVP matrix uniform
+    QMatrix4x4 mvp = mProjectionMatrix * mViewMatrix * mModelMatrix;
+    mShaderProgram->setUniformValue(mUniformMVP, mvp);
+
+    // Draw the lines
+    glDrawArrays(GL_LINES, 0, vertices.size() / 3);
 }
 
 QColor ModernGLWidget::getRoomColor(TRoom* pRoom)
