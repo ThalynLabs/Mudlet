@@ -1075,13 +1075,16 @@ QColor ModernGLWidget::getPlaneColor(int zLevel, bool belowOrAtLevel)
     int ef = abs(zLevel % 26);
     const float* color;
     
-    // Original logic:
-    // rz <= pz: Color = planeColor[ef]
-    // rz > pz:  Color = planeColor2[ef]
+    // Original logic from line 1382 and 1389:
+    // rz <= pz: glColor4f(planeColor[ef]) - use planeColor for rooms below/at level  
+    // rz > pz:  glColor4f(planeColor2[ef]) - use planeColor2 for rooms above level
+    // Try using the brighter array as default since most rooms are likely at the same level
     if (belowOrAtLevel) {
-        color = planeColor[ef];
+        color = planeColor2[ef]; // Use bright colors for rooms at/below level
+        // qDebug() << "Using planeColor2[" << ef << "] for room at/below level";
     } else {
-        color = planeColor2[ef];
+        color = planeColor[ef];  // Use darker colors for rooms above level
+        // qDebug() << "Using planeColor[" << ef << "] for room above level";
     }
     
     return QColor(
