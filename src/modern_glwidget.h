@@ -157,7 +157,7 @@ private:
     void renderText(const QString& text, float x, float y);
     void setupBuffers();
     void cleanup();
-    QColor getPlaneColor(int zLevel);
+    QColor getPlaneColor(int zLevel, bool belowOrAtLevel);
     QColor getEnvironmentColor(TRoom* pRoom);
 };
 

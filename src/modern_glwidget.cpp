@@ -79,8 +79,18 @@ void main()
     vec3 lighting = ambient + diffuse0 + diffuse1;
     lighting = clamp(lighting, 0.0, 1.0);
     
-    // Apply lighting to base color
-    vertexColor = vec4(aColor.rgb * lighting, aColor.a);
+    // Apply lighting similar to glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE)
+    // The input color IS the material ambient/diffuse, not a base color to be dimmed
+    vec3 materialAmbientDiffuse = aColor.rgb;
+    
+    // Calculate final color: ambient contribution + diffuse contribution
+    vec3 ambientContrib = (uLight0Ambient + uLight1Ambient) * materialAmbientDiffuse;
+    vec3 diffuseContrib = (diffuse0 + diffuse1) * materialAmbientDiffuse;
+    
+    // Combine with higher brightness to match original
+    vec3 finalColor = ambientContrib + diffuseContrib;
+    
+    vertexColor = vec4(finalColor, aColor.a);
     
     gl_Position = uMVP * vec4(aPos, 1.0);
 }
@@ -408,8 +418,9 @@ void ModernGLWidget::renderRooms()
         // Check special room states
         bool isCurrentRoom = (rz == pz) && (rx == px) && (ry == py);
         bool isTargetRoom = (currentRoomId == mTargetRoomId);
+        bool belowOrAtLevel = (rz <= pz);
         
-        // 1. Render main room cube using planeColor
+        // 1. Render main room cube using correct planeColor logic
         if (isCurrentRoom) {
             // Current room: red
             renderCube(rx, ry, rz, 1.0f / scale, 1.0f, 0.0f, 0.0f, 1.0f);
@@ -417,13 +428,13 @@ void ModernGLWidget::renderRooms()
             // Target room: green
             renderCube(rx, ry, rz, 1.0f / scale, 0.0f, 1.0f, 0.0f, 1.0f);
         } else {
-            // Normal room: use planeColor based on z-level
-            QColor planeColor = getPlaneColor(static_cast<int>(rz));
+            // Normal room: use planeColor logic based on z-level relationship
+            QColor roomColor = getPlaneColor(static_cast<int>(rz), belowOrAtLevel);
             renderCube(rx, ry, rz, 1.0f / scale, 
-                      planeColor.redF(), 
-                      planeColor.greenF(), 
-                      planeColor.blueF(), 
-                      planeColor.alphaF());
+                      roomColor.redF(), 
+                      roomColor.greenF(), 
+                      roomColor.blueF(), 
+                      1.0f);  // Full alpha
         }
         
         // 2. Render thin environment color overlay on top
@@ -903,8 +914,14 @@ void ModernGLWidget::renderLines(const QVector<float>& vertices, const QVector<f
 
 void ModernGLWidget::renderTriangles(const QVector<float>& vertices, const QVector<float>& colors)
 {
-    if (vertices.size() != colors.size() || vertices.size() % 3 != 0) {
-        qDebug() << "ModernGLWidget::renderTriangles: Vertex and color array size mismatch or invalid size";
+    if (vertices.isEmpty() || colors.isEmpty() || vertices.size() % 3 != 0 || colors.size() % 4 != 0) {
+        qDebug() << "ModernGLWidget::renderTriangles: Invalid vertex or color array size";
+        return;
+    }
+    
+    // Check that we have the right ratio: 3 floats per vertex, 4 floats per color
+    if (vertices.size() / 3 != colors.size() / 4) {
+        qDebug() << "ModernGLWidget::renderTriangles: Vertex count doesn't match color count";
         return;
     }
 
@@ -994,9 +1011,38 @@ void ModernGLWidget::renderUpDownIndicators(TRoom* pRoom, float x, float y, floa
     }
 }
 
-QColor ModernGLWidget::getPlaneColor(int zLevel)
+QColor ModernGLWidget::getPlaneColor(int zLevel, bool belowOrAtLevel)
 {
-    // Colors from original glwidget.cpp planeColor2 array
+    // Both color arrays from original glwidget.cpp
+    static const float planeColor[][4] = {
+        {0.5f, 0.6f, 0.5f, 0.2f},
+        {0.233f, 0.498f, 0.113f, 0.2f},
+        {0.666f, 0.333f, 0.498f, 0.2f},
+        {0.5f, 0.333f, 0.666f, 0.2f},
+        {0.69f, 0.458f, 0.0f, 0.2f},
+        {0.333f, 0.0f, 0.49f, 0.2f},
+        {133.0f / 255.0f, 65.0f / 255.0f, 98.0f / 255.0f, 0.2f},
+        {0.3f, 0.3f, 0.0f, 0.2f},
+        {0.6f, 0.2f, 0.6f, 0.2f},
+        {0.6f, 0.6f, 0.2f, 0.2f},
+        {0.4f, 0.1f, 0.4f, 0.2f},
+        {0.4f, 0.4f, 0.1f, 0.2f},
+        {0.3f, 0.1f, 0.3f, 0.2f},
+        {0.3f, 0.3f, 0.1f, 0.2f},
+        {0.2f, 0.1f, 0.2f, 0.2f},
+        {0.2f, 0.2f, 0.1f, 0.2f},
+        {0.24f, 0.1f, 0.5f, 0.2f},
+        {0.1f, 0.1f, 0.0f, 0.2f},
+        {0.54f, 0.6f, 0.2f, 0.2f},
+        {0.2f, 0.2f, 0.5f, 0.2f},
+        {0.6f, 0.6f, 0.2f, 0.2f},
+        {0.6f, 0.4f, 0.6f, 0.2f},
+        {0.4f, 0.4f, 0.1f, 0.2f},
+        {0.4f, 0.2f, 0.4f, 0.2f},
+        {0.2f, 0.2f, 0.0f, 0.2f},
+        {0.2f, 0.1f, 0.3f, 0.2f}
+    };
+    
     static const float planeColor2[][4] = {
         {0.9f, 0.5f, 0.0f, 1.0f},
         {165.0f / 255.0f, 102.0f / 255.0f, 167.0f / 255.0f, 1.0f},
@@ -1027,13 +1073,22 @@ QColor ModernGLWidget::getPlaneColor(int zLevel)
     };
     
     int ef = abs(zLevel % 26);
-    const float* color = planeColor2[ef];
+    const float* color;
+    
+    // Original logic:
+    // rz <= pz: Color = planeColor[ef]
+    // rz > pz:  Color = planeColor2[ef]
+    if (belowOrAtLevel) {
+        color = planeColor[ef];
+    } else {
+        color = planeColor2[ef];
+    }
     
     return QColor(
         static_cast<int>(color[0] * 255),
         static_cast<int>(color[1] * 255),
         static_cast<int>(color[2] * 255),
-        static_cast<int>(color[3] * 255)
+        255  // Use full alpha for room colors
     );
 }
 
