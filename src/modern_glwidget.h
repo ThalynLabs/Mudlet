@@ -32,6 +32,7 @@
 #endif
 
 #include "pre_guard.h"
+#include <QElapsedTimer>
 #include <QMatrix4x4>
 #include <QOpenGLBuffer>
 #include <QOpenGLFunctions>
@@ -144,6 +145,11 @@ private:
     int mShowTopLevels = 999999;
     int mShowBottomLevels = 999999;
     int mTargetRoomId = 0;
+    
+    // Frame timing for benchmarking
+    QElapsedTimer mFrameTimer;
+    QList<qint64> mFrameTimes;
+    static constexpr int MAX_FRAME_SAMPLES = 60;
 
     // Private methods for modern OpenGL
     void updateMatrices();
