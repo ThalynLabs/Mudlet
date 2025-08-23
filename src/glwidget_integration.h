@@ -22,9 +22,9 @@ class Host;
 class QWidget;
 
 namespace GLWidgetFactory {
-    QOpenGLWidget* createGLWidget(TMap* pMap, Host* pHost, QWidget* parent = nullptr);
-    bool isCorrectWidgetType(QOpenGLWidget* widget, Host* pHost);
-    QString getWidgetTypeName(QOpenGLWidget* widget);
+QOpenGLWidget* createGLWidget(TMap* pMap, Host* pHost, QWidget* parent = nullptr);
+bool isCorrectWidgetType(QOpenGLWidget* widget, Host* pHost);
+QString getWidgetTypeName(QOpenGLWidget* widget);
 }
 
 // Factory functions provide runtime widget creation
