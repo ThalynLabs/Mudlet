@@ -250,7 +250,7 @@ public:
         {DIR_OUT, DIR_IN}};
 
 #if defined(INCLUDE_3DMAPPER)
-    QPointer<GLWidget> mpM;
+    QPointer<QOpenGLWidget> mpM;
 #endif
     QPointer<dlgMapper> mpMapper;
     QMap<int, int> roomidToIndex;

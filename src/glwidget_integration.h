@@ -5,8 +5,8 @@
  *   Copyright (C) 2025 by Vadim Peretokin - vadim.peretokin@mudlet.org    *
  *                                                                         *
  *   Integration header for modernized GLWidget                            *
- *   This header allows for a gradual transition to the modern OpenGL      *
- *   implementation while maintaining compatibility with existing code.    *
+ *   This header allows for runtime selection between GLWidget             *
+ *   implementations while maintaining compatibility with existing code.   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -14,15 +14,20 @@
  *   (at your option) any later version.                                   *
  ***************************************************************************/
 
-// To enable the modern GLWidget implementation, define this macro:
-// #define USE_MODERN_GLWIDGET
-
-#ifdef USE_MODERN_GLWIDGET
-#include "modern_glwidget.h"
-using GLWidget = ModernGLWidget;
-#else
 #include "glwidget.h"
-// Keep using the original GLWidget
-#endif
+#include "modern_glwidget.h"
+
+class TMap;
+class Host;
+class QWidget;
+
+namespace GLWidgetFactory {
+    QOpenGLWidget* createGLWidget(TMap* pMap, Host* pHost, QWidget* parent = nullptr);
+    bool isCorrectWidgetType(QOpenGLWidget* widget, Host* pHost);
+    QString getWidgetTypeName(QOpenGLWidget* widget);
+}
+
+// Factory functions provide runtime widget creation
+// Legacy GLWidget class name remains available for existing code
 
 #endif // MUDLET_GLWIDGET_INTEGRATION_H

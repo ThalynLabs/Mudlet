@@ -214,6 +214,8 @@ public:
     ControlCharacterMode  getControlCharacterMode() const { return mControlCharacter; }
     bool            getLargeAreaExitArrows() const { return mLargeAreaExitArrows; }
     void            setLargeAreaExitArrows(const bool);
+    bool            getUseModern3DMapper() const { return mUseModern3DMapper; }
+    void            setUseModern3DMapper(const bool);
 
     void            forceClose();
     bool            isClosingDown() const { return mIsClosingDown; }
@@ -709,6 +711,7 @@ public:
     QColor mCommandLineBgColor;
     bool mMapperUseAntiAlias;
     bool mMapperShowRoomBorders;
+    bool mUseModern3DMapper = false;
     bool mFORCE_CHARSET_NEGOTIATION_OFF;
     bool mForceNewEnvironNegotiationOff = false;
     bool mVersionInTTYPE = false;

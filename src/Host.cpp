@@ -4574,3 +4574,8 @@ QFont Host::getAndClearTempDisplayFont()
     mTempDisplayFontAttributes.reset();
     return tempFont;
 }
+
+void Host::setUseModern3DMapper(const bool enabled)
+{
+    mUseModern3DMapper = enabled;
+}

@@ -7295,6 +7295,13 @@ int TLuaInterpreter::setConfig(lua_State * L)
             host.mpMap->mpMapper->slot_toggle3DView(getVerifiedBool(L, __func__, 2, "value"));
             return success();
         }
+        if (key == qsl("useModern3DMapper")) {
+            host.setUseModern3DMapper(getVerifiedBool(L, __func__, 2, "value"));
+            if (host.mpMap && host.mpMap->mpMapper) {
+                host.mpMap->mpMapper->recreate3DWidget();
+            }
+            return success();
+        }
 #endif
         if (key == qsl("mapperPanelVisible")) {
             host.mpMap->mpMapper->slot_setMapperPanelVisible(getVerifiedBool(L, __func__, 2, "value"));
@@ -7597,6 +7604,13 @@ int TLuaInterpreter::getConfig(lua_State *L)
             }
 #endif
             lua_pushboolean(L, false);
+        }},
+        { qsl("useModern3DMapper"), [&](){
+#if defined(INCLUDE_3DMAPPER)
+            lua_pushboolean(L, host.getUseModern3DMapper());
+#else
+            lua_pushboolean(L, false);
+#endif
         }},
         { qsl("mapperPanelVisible"), [&](){ lua_pushboolean(L, host.mShowPanel); } },
         { qsl("mapShowRoomBorders"), [&](){ lua_pushboolean(L, host.mMapperShowRoomBorders); } },
