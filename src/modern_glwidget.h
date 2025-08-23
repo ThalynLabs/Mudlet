@@ -42,6 +42,7 @@
 #include "post_guard.h"
 
 #include "GeometryManager.h"
+#include "RenderCommandQueue.h"
 
 class Host;
 class TMap;
@@ -104,6 +105,9 @@ private:
     
     // Geometry management
     GeometryManager mGeometryManager;
+    
+    // Render command queue
+    RenderCommandQueue mRenderCommandQueue;
 
     // Uniform locations
     int mUniformMVP = -1;

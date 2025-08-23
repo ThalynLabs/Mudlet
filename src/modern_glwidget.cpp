@@ -127,6 +127,7 @@ ModernGLWidget::~ModernGLWidget()
 void ModernGLWidget::cleanup()
 {
     makeCurrent();
+    mRenderCommandQueue.cleanup();
     mGeometryManager.cleanup();
     delete mShaderProgram;
     mShaderProgram = nullptr;
@@ -177,6 +178,9 @@ void ModernGLWidget::initializeGL()
     
     // Initialize geometry manager
     mGeometryManager.initialize();
+    
+    // Initialize render command queue
+    mRenderCommandQueue.initialize();
 }
 
 bool ModernGLWidget::initializeShaders()
@@ -374,11 +378,12 @@ void ModernGLWidget::paintGL()
     // Use our shader program
     mShaderProgram->bind();
 
-    // Render the map
+    // Build up render commands
     renderRooms();
-
-    // Render connections between rooms
     renderConnections();
+
+    // Execute all queued commands
+    mRenderCommandQueue.executeAll(mShaderProgram, &mGeometryManager, mVAO, mVertexBuffer, mColorBuffer, mNormalBuffer);
 
     mShaderProgram->release();
     
@@ -466,7 +471,8 @@ void ModernGLWidget::renderRooms()
 
         // 2. Render thin environment color overlay on top
         // Disable depth testing like the original to prevent clipping
-        glDisable(GL_DEPTH_TEST);
+        auto disableDepthCommand = std::make_unique<GLStateCommand>(GLStateCommand::DISABLE_DEPTH_TEST);
+        mRenderCommandQueue.addCommand(std::move(disableDepthCommand));
 
         QColor envColor = getEnvironmentColor(pR);
         float overlayZ = rz + 0.25f; // Slightly above the main cube
@@ -498,7 +504,8 @@ void ModernGLWidget::renderRooms()
         renderUpDownIndicators(pR, rx, ry, overlayZ + 0.1f);
 
         // Re-enable depth testing for subsequent rendering
-        glEnable(GL_DEPTH_TEST);
+        auto enableDepthCommand = std::make_unique<GLStateCommand>(GLStateCommand::ENABLE_DEPTH_TEST);
+        mRenderCommandQueue.addCommand(std::move(enableDepthCommand));
     }
 }
 
@@ -661,7 +668,8 @@ void ModernGLWidget::renderConnections()
                 renderCube(dx, dy, dz, 1.0f / scale, exitRed, exitGreen, exitBlue, exitAlpha);
 
                 // Render smaller environment overlay rectangle on top with translucency and darkening
-                glDisable(GL_DEPTH_TEST);
+                auto disableDepthCommand2 = std::make_unique<GLStateCommand>(GLStateCommand::DISABLE_DEPTH_TEST);
+                mRenderCommandQueue.addCommand(std::move(disableDepthCommand2));
                 QColor envColor = getEnvironmentColor(pExit);
                 float overlayZ = dz + 0.25f;
                 float overlayAlpha = exitAboveCurrentLevel ? 0.16f : 0.8f; // 0.2 * 0.8 for above level
@@ -687,7 +695,8 @@ void ModernGLWidget::renderConnections()
                            exitEnvGreen,
                            exitEnvBlue,
                            overlayAlpha);
-                glEnable(GL_DEPTH_TEST);
+                auto enableDepthCommand2 = std::make_unique<GLStateCommand>(GLStateCommand::ENABLE_DEPTH_TEST);
+                mRenderCommandQueue.addCommand(std::move(enableDepthCommand2));
             }
         }
     }
@@ -700,20 +709,10 @@ void ModernGLWidget::renderConnections()
 
 void ModernGLWidget::renderCube(float x, float y, float z, float size, float r, float g, float b, float a)
 {
-    // Generate cube geometry using GeometryManager
-    GeometryData cubeGeometry = mGeometryManager.generateCubeGeometry(x, y, z, size, r, g, b, a);
-    
-    // Set uniforms
-    QMatrix4x4 mvp = mProjectionMatrix * mViewMatrix * mModelMatrix;
-    mShaderProgram->setUniformValue(mUniformMVP, mvp);
-    mShaderProgram->setUniformValue(mUniformModel, mModelMatrix);
-
-    // Normal matrix (inverse transpose of model matrix)
-    QMatrix3x3 normalMatrix = mModelMatrix.normalMatrix();
-    mShaderProgram->setUniformValue(mUniformNormalMatrix, normalMatrix);
-    
-    // Render the geometry
-    mGeometryManager.renderGeometry(cubeGeometry, mVAO, mVertexBuffer, mColorBuffer, mNormalBuffer, GL_TRIANGLES);
+    // Create render command and queue it
+    auto command = std::make_unique<RenderCubeCommand>(x, y, z, size, r, g, b, a, 
+                                                      mProjectionMatrix, mViewMatrix, mModelMatrix);
+    mRenderCommandQueue.addCommand(std::move(command));
 }
 
 // Implement slot methods (same interface as original)
@@ -909,44 +908,26 @@ void ModernGLWidget::mouseReleaseEvent(QMouseEvent* event)
 
 void ModernGLWidget::renderLines(const QVector<float>& vertices, const QVector<float>& colors)
 {
-    // Generate line geometry using GeometryManager
-    GeometryData lineGeometry = mGeometryManager.generateLineGeometry(vertices, colors);
-    
-    if (lineGeometry.isEmpty()) {
+    if (vertices.isEmpty() || colors.isEmpty()) {
         return;
     }
     
-    // Set uniforms
-    QMatrix4x4 mvp = mProjectionMatrix * mViewMatrix * mModelMatrix;
-    mShaderProgram->setUniformValue(mUniformMVP, mvp);
-    mShaderProgram->setUniformValue(mUniformModel, mModelMatrix);
-
-    QMatrix3x3 normalMatrix = mModelMatrix.normalMatrix();
-    mShaderProgram->setUniformValue(mUniformNormalMatrix, normalMatrix);
-    
-    // Render the geometry
-    mGeometryManager.renderGeometry(lineGeometry, mVAO, mVertexBuffer, mColorBuffer, mNormalBuffer, GL_LINES);
+    // Create render command and queue it
+    auto command = std::make_unique<RenderLinesCommand>(vertices, colors, 
+                                                       mProjectionMatrix, mViewMatrix, mModelMatrix);
+    mRenderCommandQueue.addCommand(std::move(command));
 }
 
 void ModernGLWidget::renderTriangles(const QVector<float>& vertices, const QVector<float>& colors)
 {
-    // Generate triangle geometry using GeometryManager
-    GeometryData triangleGeometry = mGeometryManager.generateTriangleGeometry(vertices, colors);
-    
-    if (triangleGeometry.isEmpty()) {
+    if (vertices.isEmpty() || colors.isEmpty()) {
         return;
     }
     
-    // Set uniforms
-    QMatrix4x4 mvp = mProjectionMatrix * mViewMatrix * mModelMatrix;
-    mShaderProgram->setUniformValue(mUniformMVP, mvp);
-    mShaderProgram->setUniformValue(mUniformModel, mModelMatrix);
-
-    QMatrix3x3 normalMatrix = mModelMatrix.normalMatrix();
-    mShaderProgram->setUniformValue(mUniformNormalMatrix, normalMatrix);
-    
-    // Render the geometry
-    mGeometryManager.renderGeometry(triangleGeometry, mVAO, mVertexBuffer, mColorBuffer, mNormalBuffer, GL_TRIANGLES);
+    // Create render command and queue it
+    auto command = std::make_unique<RenderTrianglesCommand>(vertices, colors, 
+                                                           mProjectionMatrix, mViewMatrix, mModelMatrix);
+    mRenderCommandQueue.addCommand(std::move(command));
 }
 
 void ModernGLWidget::renderUpDownIndicators(TRoom* pRoom, float x, float y, float z)
