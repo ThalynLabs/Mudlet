@@ -84,10 +84,7 @@ void ModernGLWidget::initializeGL()
     const QColor color(mpHost->mBgColor_2);
     glClearColor(color.redF(), color.greenF(), color.blueF(), color.alphaF());
 
-    // Initialize default view parameters
-    xRot = 1;
-    yRot = 5;
-    zRot = 10;
+    // Camera controller will initialize with default view parameters
 
     // Enable features
     glEnable(GL_DEPTH_TEST);
@@ -151,46 +148,10 @@ void ModernGLWidget::setupBuffers()
 
 void ModernGLWidget::updateMatrices()
 {
-    // Set up projection matrix with fixed FOV
-    mProjectionMatrix.setToIdentity();
-    const float aspectRatio = static_cast<float>(width()) / static_cast<float>(height());
-    // Keep FOV constant at 60 degrees, adjust camera distance with scale instead
-    mProjectionMatrix.perspective(60.0f, aspectRatio, 0.0001f, 10000.0f);
-
-    // Set up view matrix (camera)
-    mViewMatrix.setToIdentity();
-
-    // Original uses xRot, yRot, zRot as camera position offsets, not rotation angles
-    // gluLookAt(px * 0.1 + xRot, py * 0.1 + yRot, pz * 0.1 + zRot, px * 0.1, py * 0.1, pz * 0.1, 0.0, 1.0, 0.0);
-
-    // Calculate camera position with offsets (scale appropriately for our coordinate system)
-    const float px = static_cast<float>(mMapCenterX) * 0.1f;
-    const float py = static_cast<float>(mMapCenterY) * 0.1f;
-    const float pz = static_cast<float>(mMapCenterZ) * 0.1f;
-
-    // Camera position with offsets, scaled by mScale for zoom
-    // The original offsets are scaled by the zoom factor to maintain proper distance
-    const float scaleMultiplier = 1.0f / mScale;
-    const float cameraX = px + (xRot * scaleMultiplier);
-    const float cameraY = py + (yRot * scaleMultiplier);
-    const float cameraZ = pz + (zRot * scaleMultiplier);
-
-    // Target position (map center)
-    const float targetX = px;
-    const float targetY = py;
-    const float targetZ = pz;
-
-    // Create view matrix to look at target from camera position
-    mViewMatrix.lookAt(QVector3D(cameraX, cameraY, cameraZ), QVector3D(targetX, targetY, targetZ), QVector3D(0.0f, 1.0f, 0.0f));
-
-    // Scale the world to match original rendering
-    mViewMatrix.scale(0.1f, 0.1f, 0.1f);
-
-    // Model matrix will be set per object during rendering
-    mModelMatrix.setToIdentity();
-
-    // qDebug() << "ModernGLWidget: View matrix updated. Camera distance:" << cameraDistance
-    //          << "Scale:" << mScale << "Center:" << mMapCenterX << mMapCenterY << mMapCenterZ;
+    // Update camera controller with current state
+    mCameraController.setPosition(mMapCenterX, mMapCenterY, mMapCenterZ);
+    mCameraController.setViewportSize(width(), height());
+    mCameraController.updateMatrices();
 }
 
 void ModernGLWidget::resizeGL(int w, int h)
@@ -269,9 +230,7 @@ void ModernGLWidget::paintGL()
     }
 
     if (pArea->gridMode) {
-        xRot = 0.0;
-        yRot = 0.0;
-        zRot = 15.0;
+        mCameraController.setGridMode(true);
     }
 
     zmax = static_cast<float>(pArea->max_z);
@@ -621,7 +580,9 @@ void ModernGLWidget::renderCube(float x, float y, float z, float size, float r, 
 {
     // Create render command and queue it
     auto command = std::make_unique<RenderCubeCommand>(x, y, z, size, r, g, b, a, 
-                                                      mProjectionMatrix, mViewMatrix, mModelMatrix);
+                                                      mCameraController.getProjectionMatrix(), 
+                                                      mCameraController.getViewMatrix(), 
+                                                      mCameraController.getModelMatrix());
     mRenderCommandQueue.addCommand(std::move(command));
 }
 
@@ -714,44 +675,38 @@ void ModernGLWidget::slot_showLessLowerLevels()
 
 void ModernGLWidget::slot_defaultView()
 {
-    xRot = 1.0;
-    yRot = 5.0;
-    zRot = 10.0;
-    mScale = 1.0;
+    mCameraController.setDefaultView();
     is2DView = false;
     update();
 }
 
 void ModernGLWidget::slot_sideView()
 {
-    xRot = 7.0;
-    yRot = -10.0;
-    zRot = 0.0;
-    mScale = 1.0;
+    mCameraController.setSideView();
     is2DView = false;
     update();
 }
 
 void ModernGLWidget::slot_topView()
 {
-    xRot = 0.0;
-    yRot = 0.0;
-    zRot = 15.0;
-    mScale = 1.0;
+    mCameraController.setTopView();
     is2DView = true;
     update();
 }
 
 void ModernGLWidget::slot_setScale(int angle)
 {
-    mScale = 150 / (static_cast<float>(angle) + 300.0f);
+    float scale = 150 / (static_cast<float>(angle) + 300.0f);
+    mCameraController.setScale(scale);
     update();
 }
 
 void ModernGLWidget::slot_setCameraPositionX(int angle)
 {
     angle /= 10; // qNormalizeAngle equivalent
-    xRot = angle;
+    float currentY = mCameraController.getYRot();
+    float currentZ = mCameraController.getZRot();
+    mCameraController.setRotation(angle, currentY, currentZ);
     is2DView = false;
     update();
 }
@@ -759,7 +714,9 @@ void ModernGLWidget::slot_setCameraPositionX(int angle)
 void ModernGLWidget::slot_setCameraPositionY(int angle)
 {
     angle /= 10; // qNormalizeAngle equivalent
-    yRot = angle;
+    float currentX = mCameraController.getXRot();
+    float currentZ = mCameraController.getZRot();
+    mCameraController.setRotation(currentX, angle, currentZ);
     is2DView = false;
     update();
 }
@@ -767,7 +724,9 @@ void ModernGLWidget::slot_setCameraPositionY(int angle)
 void ModernGLWidget::slot_setCameraPositionZ(int angle)
 {
     angle /= 10; // qNormalizeAngle equivalent
-    zRot = angle;
+    float currentX = mCameraController.getXRot();
+    float currentY = mCameraController.getYRot();
+    mCameraController.setRotation(currentX, currentY, angle);
     is2DView = false;
     update();
 }
@@ -779,6 +738,7 @@ void ModernGLWidget::setViewCenter(int areaId, int xPos, int yPos, int zPos)
     mMapCenterX = xPos;
     mMapCenterY = yPos;
     mMapCenterZ = zPos;
+    mCameraController.setViewCenter(xPos, yPos, zPos);
     update();
 }
 
@@ -786,15 +746,13 @@ void ModernGLWidget::wheelEvent(QWheelEvent* e)
 {
     // Implement wheel event handling similar to original
     const int delta = e->angleDelta().y();
+    float currentScale = mCameraController.getScale();
     if (delta > 0) {
-        mScale *= 1.1f;
+        currentScale *= 1.1f;
     } else {
-        mScale *= 0.9f;
+        currentScale *= 0.9f;
     }
-
-    // Clamp scale to reasonable bounds to prevent zoom issues
-    mScale = qBound(0.01f, mScale, 100.0f);
-
+    mCameraController.setScale(currentScale);
     update();
 }
 
@@ -824,7 +782,9 @@ void ModernGLWidget::renderLines(const QVector<float>& vertices, const QVector<f
     
     // Create render command and queue it
     auto command = std::make_unique<RenderLinesCommand>(vertices, colors, 
-                                                       mProjectionMatrix, mViewMatrix, mModelMatrix);
+                                                       mCameraController.getProjectionMatrix(), 
+                                                       mCameraController.getViewMatrix(), 
+                                                       mCameraController.getModelMatrix());
     mRenderCommandQueue.addCommand(std::move(command));
 }
 
@@ -836,7 +796,9 @@ void ModernGLWidget::renderTriangles(const QVector<float>& vertices, const QVect
     
     // Create render command and queue it
     auto command = std::make_unique<RenderTrianglesCommand>(vertices, colors, 
-                                                           mProjectionMatrix, mViewMatrix, mModelMatrix);
+                                                           mCameraController.getProjectionMatrix(), 
+                                                           mCameraController.getViewMatrix(), 
+                                                           mCameraController.getModelMatrix());
     mRenderCommandQueue.addCommand(std::move(command));
 }
 

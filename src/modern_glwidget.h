@@ -45,6 +45,7 @@
 #include "RenderCommandQueue.h"
 #include "ResourceManager.h"
 #include "ShaderManager.h"
+#include "CameraController.h"
 
 class Host;
 class TMap;
@@ -113,11 +114,9 @@ private:
     
     // Resource management
     ResourceManager mResourceManager;
-
-    // Transformation matrices
-    QMatrix4x4 mProjectionMatrix;
-    QMatrix4x4 mViewMatrix;
-    QMatrix4x4 mModelMatrix;
+    
+    // Camera management
+    CameraController mCameraController;
 
     // Host reference
     QPointer<Host> mpHost;
@@ -138,19 +137,12 @@ private:
     int mMapCenterZ = 0;
     bool mShiftMode = false;
 
-    // Camera rotation
-    float xRot = 1.0;
-    float yRot = 5.0;
-    float zRot = 10.0;
-
     // Scales the size of rooms compared to the space between them - currently
     // hard coded to be a quarter (would be equivalent to a 2D room size setting
     // of "2.5"):
     float scale = 4;
     int mShowTopLevels = 999999;
     int mShowBottomLevels = 999999;
-
-    float mScale = 1.0;
     int mTargetRoomId = 0;
 
     // Private methods for modern OpenGL
