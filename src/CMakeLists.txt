@@ -609,7 +609,7 @@ if(USE_OWN_QTKEYCHAIN)
 endif()
 
 # Define shader hot-reloading if enabled
-if(USE_SHADER_HOT_RELOAD AND USE_3DMAPPER AND USE_MODERN_GLWIDGET)
+if(USE_SHADER_HOT_RELOAD AND USE_3DMAPPER)
   target_compile_definitions(mudlet PRIVATE MUDLET_SHADER_HOT_RELOAD=1)
 endif()
 
@@ -658,9 +658,6 @@ if(USE_3DMAPPER)
   target_compile_definitions(mudlet PRIVATE INCLUDE_3DMAPPER)
 endif()
 
-if(USE_MODERN_GLWIDGET)
-  target_compile_definitions(mudlet PRIVATE USE_MODERN_GLWIDGET)
-endif()
 
 if(USE_VARIABLE_SPLASH_SCREEN)
   target_compile_definitions(mudlet PRIVATE INCLUDE_VARIABLE_SPLASH_SCREEN)

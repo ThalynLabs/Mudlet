@@ -974,41 +974,33 @@ linux|macx|win32 {
 
 
 contains( DEFINES, INCLUDE_3DMAPPER ) {
-    # Use modern shader-based GLWidget implementation by default
-    !contains( DEFINES, USE_LEGACY_GLWIDGET ) {
-        DEFINES += USE_MODERN_GLWIDGET
-        HEADERS += modern_glwidget.h \
-                   glwidget_integration.h \
-                   CameraController.h \
-                   GeometryManager.h \
-                   RenderCommand.h \
-                   RenderCommandQueue.h \
-                   ResourceManager.h \
-                   ShaderManager.h
-        SOURCES += modern_glwidget.cpp \
-                   CameraController.cpp \
-                   GeometryManager.cpp \
-                   RenderCommand.cpp \
-                   RenderCommandQueue.cpp \
-                   ResourceManager.cpp \
-                   ShaderManager.cpp
-        
-        # Enable shader hot-reloading when both USE_SHADER_HOT_RELOAD and USE_MODERN_GLWIDGET are defined
-        contains( DEFINES, USE_SHADER_HOT_RELOAD ) {
-            DEFINES += MUDLET_SHADER_HOT_RELOAD=1
-        }
-        
-        !build_pass{
-            message("The 3D mapper code with modern OpenGL implementation is included in this configuration")
-        }
-    } else {
-        HEADERS += glwidget.h \
-                   glwidget_integration.h
-        SOURCES += glwidget.cpp
-        
-        !build_pass{
-            message("The 3D mapper code with legacy OpenGL implementation is included in this configuration")
-        }
+    # Always compile both widget implementations for runtime selection
+    HEADERS += glwidget.h \
+               modern_glwidget.h \
+               glwidget_integration.h \
+               CameraController.h \
+               GeometryManager.h \
+               RenderCommand.h \
+               RenderCommandQueue.h \
+               ResourceManager.h \
+               ShaderManager.h
+    SOURCES += glwidget.cpp \
+               modern_glwidget.cpp \
+               glwidget_integration.cpp \
+               CameraController.cpp \
+               GeometryManager.cpp \
+               RenderCommand.cpp \
+               RenderCommandQueue.cpp \
+               ResourceManager.cpp \
+               ShaderManager.cpp
+    
+    # Enable shader hot-reloading when USE_SHADER_HOT_RELOAD is defined
+    contains( DEFINES, USE_SHADER_HOT_RELOAD ) {
+        DEFINES += MUDLET_SHADER_HOT_RELOAD=1
+    }
+    
+    !build_pass{
+        message("The 3D mapper code with both OpenGL implementations is included in this configuration for runtime selection")
     }
     
     QT += opengl

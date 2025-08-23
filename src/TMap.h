@@ -64,11 +64,7 @@
 class dlgMapper;
 class Host;
 #if defined(INCLUDE_3DMAPPER)
-#ifdef USE_MODERN_GLWIDGET
-class ModernGLWidget;
-#else
-class GLWidget;
-#endif
+class QOpenGLWidget;
 #endif
 class TArea;
 class TRoom;
