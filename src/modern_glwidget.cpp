@@ -36,77 +36,6 @@
 #include <QPainter>
 #include "post_guard.h"
 
-// Modern OpenGL vertex shader with lighting
-static const char* vertexShaderSource = R"(
-#version 330 core
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec4 aColor;
-layout (location = 2) in vec3 aNormal;
-
-uniform mat4 uMVP;
-uniform mat4 uModel;
-uniform mat3 uNormalMatrix;
-
-// Lighting uniforms (from original glwidget.cpp)
-uniform vec3 uLight0Pos = vec3(5000.0, 4000.0, 1000.0);
-uniform vec3 uLight1Pos = vec3(5000.0, 1000.0, 1000.0);
-uniform vec3 uLight0Diffuse = vec3(0.507, 0.507, 0.507);
-uniform vec3 uLight1Diffuse = vec3(0.501, 0.901, 0.501);
-uniform vec3 uLight0Ambient = vec3(0.403, 0.403, 0.403);
-uniform vec3 uLight1Ambient = vec3(0.4501, 0.4501, 0.4501);
-
-out vec4 vertexColor;
-
-void main()
-{
-    vec4 worldPos = uModel * vec4(aPos, 1.0);
-    vec3 worldNormal = normalize(uNormalMatrix * aNormal);
-    
-    // Calculate lighting (similar to original fixed-function pipeline)
-    vec3 ambient = uLight0Ambient + uLight1Ambient;
-    
-    // Light 0
-    vec3 lightDir0 = normalize(uLight0Pos);
-    float diff0 = max(dot(worldNormal, lightDir0), 0.0);
-    vec3 diffuse0 = diff0 * uLight0Diffuse;
-    
-    // Light 1  
-    vec3 lightDir1 = normalize(uLight1Pos);
-    float diff1 = max(dot(worldNormal, lightDir1), 0.0);
-    vec3 diffuse1 = diff1 * uLight1Diffuse;
-    
-    // Combine lighting
-    vec3 lighting = ambient + diffuse0 + diffuse1;
-    lighting = clamp(lighting, 0.0, 1.0);
-    
-    // Apply lighting similar to glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE)
-    // The input color IS the material ambient/diffuse, not a base color to be dimmed
-    vec3 materialAmbientDiffuse = aColor.rgb;
-    
-    // Calculate final color: ambient contribution + diffuse contribution
-    vec3 ambientContrib = (uLight0Ambient + uLight1Ambient) * materialAmbientDiffuse;
-    vec3 diffuseContrib = (diffuse0 + diffuse1) * materialAmbientDiffuse;
-    
-    // Combine with higher brightness to match original
-    vec3 finalColor = ambientContrib + diffuseContrib;
-    
-    vertexColor = vec4(finalColor, aColor.a);
-    
-    gl_Position = uMVP * vec4(aPos, 1.0);
-}
-)";
-
-// Modern OpenGL fragment shader
-static const char* fragmentShaderSource = R"(
-#version 330 core
-in vec4 vertexColor;
-out vec4 FragColor;
-
-void main()
-{
-    FragColor = vertexColor;
-}
-)";
 
 ModernGLWidget::ModernGLWidget(TMap* pMap, Host* pHost, QWidget* parent)
 : QOpenGLWidget(parent), mVertexBuffer(QOpenGLBuffer::VertexBuffer), mColorBuffer(QOpenGLBuffer::VertexBuffer), mNormalBuffer(QOpenGLBuffer::VertexBuffer), mpMap(pMap), mpHost(pHost)
@@ -130,8 +59,7 @@ void ModernGLWidget::cleanup()
     mResourceManager.cleanup();
     mRenderCommandQueue.cleanup();
     mGeometryManager.cleanup();
-    delete mShaderProgram;
-    mShaderProgram = nullptr;
+    mShaderManager.cleanup();
     mVertexBuffer.destroy();
     mColorBuffer.destroy();
     mNormalBuffer.destroy();
@@ -169,11 +97,12 @@ void ModernGLWidget::initializeGL()
 
     is2DView = false;
 
-    // Initialize shaders and buffers
-    if (!initializeShaders()) {
-        qWarning() << "Failed to initialize shaders";
+    if (!mShaderManager.initialize()) {
+        qWarning() << "Failed to initialize ShaderManager";
         return;
     }
+    
+    connect(&mShaderManager, &ShaderManager::shadersReloaded, this, QOverload<>::of(&QWidget::update));
 
     setupBuffers();
     
@@ -187,43 +116,6 @@ void ModernGLWidget::initializeGL()
     mResourceManager.initialize();
 }
 
-bool ModernGLWidget::initializeShaders()
-{
-    mShaderProgram = new QOpenGLShaderProgram(this);
-    mResourceManager.onShaderCreated();
-
-    // Add vertex shader
-    if (!mShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource)) {
-        qWarning() << "Failed to compile vertex shader:" << mShaderProgram->log();
-        return false;
-    }
-
-    // Add fragment shader
-    if (!mShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource)) {
-        qWarning() << "Failed to compile fragment shader:" << mShaderProgram->log();
-        return false;
-    }
-
-    // Link shader program
-    if (!mShaderProgram->link()) {
-        qWarning() << "Failed to link shader program:" << mShaderProgram->log();
-        return false;
-    }
-
-    // Get uniform locations
-    mUniformMVP = mShaderProgram->uniformLocation("uMVP");
-    mUniformModel = mShaderProgram->uniformLocation("uModel");
-    mUniformNormalMatrix = mShaderProgram->uniformLocation("uNormalMatrix");
-
-    if (mUniformMVP == -1) {
-        qWarning() << "Failed to get MVP uniform location:" << mUniformMVP;
-        return false;
-    }
-
-    // Note: uModel and uNormalMatrix may be -1 if optimized out by driver
-    qDebug() << "ModernGLWidget: Shaders initialized successfully. Uniform locations - MVP:" << mUniformMVP << "Model:" << mUniformModel << "Normal:" << mUniformNormalMatrix;
-    return true;
-}
 
 void ModernGLWidget::setupBuffers()
 {
@@ -309,7 +201,12 @@ void ModernGLWidget::resizeGL(int w, int h)
 
 void ModernGLWidget::paintGL()
 {
-    if (!mpMap || !mShaderProgram) {
+    if (!mpMap) {
+        return;
+    }
+
+    QOpenGLShaderProgram* shaderProgram = mShaderManager.getMainShaderProgram();
+    if (!shaderProgram) {
         return;
     }
 
@@ -389,16 +286,16 @@ void ModernGLWidget::paintGL()
     updateMatrices();
 
     // Use our shader program
-    mShaderProgram->bind();
+    shaderProgram->bind();
 
     // Build up render commands
     renderRooms();
     renderConnections();
 
     // Execute all queued commands
-    mRenderCommandQueue.executeAll(mShaderProgram, &mGeometryManager, &mResourceManager, mVAO, mVertexBuffer, mColorBuffer, mNormalBuffer);
+    mRenderCommandQueue.executeAll(shaderProgram, &mGeometryManager, &mResourceManager, mVAO, mVertexBuffer, mColorBuffer, mNormalBuffer);
 
-    mShaderProgram->release();
+    shaderProgram->release();
     
     // Draw label to identify this as the modern OpenGL implementation
     QPainter painter(this);

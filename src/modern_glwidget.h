@@ -44,6 +44,7 @@
 #include "GeometryManager.h"
 #include "RenderCommandQueue.h"
 #include "ResourceManager.h"
+#include "ShaderManager.h"
 
 class Host;
 class TMap;
@@ -98,7 +99,7 @@ public:
 
 private:
     // Shader and rendering resources
-    QOpenGLShaderProgram* mShaderProgram = nullptr;
+    ShaderManager mShaderManager;
     QOpenGLBuffer mVertexBuffer;
     QOpenGLBuffer mColorBuffer;
     QOpenGLBuffer mNormalBuffer;
@@ -112,12 +113,6 @@ private:
     
     // Resource management
     ResourceManager mResourceManager;
-
-    // Uniform locations
-    int mUniformMVP = -1;
-    int mUniformModel = -1;
-    int mUniformNormalMatrix = -1;
-    int mUniformColor = -1;
 
     // Transformation matrices
     QMatrix4x4 mProjectionMatrix;
@@ -159,7 +154,6 @@ private:
     int mTargetRoomId = 0;
 
     // Private methods for modern OpenGL
-    bool initializeShaders();
     void updateMatrices();
     void renderRooms();
     void renderConnections();

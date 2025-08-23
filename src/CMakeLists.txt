@@ -398,6 +398,8 @@ if(USE_3DMAPPER)
     list(APPEND mudlet_HDRS RenderCommandQueue.h)
     list(APPEND mudlet_SRCS ResourceManager.cpp)
     list(APPEND mudlet_HDRS ResourceManager.h)
+    list(APPEND mudlet_SRCS ShaderManager.cpp)
+    list(APPEND mudlet_HDRS ShaderManager.h)
   else()
     list(APPEND mudlet_SRCS glwidget.cpp)
     list(APPEND mudlet_HDRS glwidget.h)
@@ -603,6 +605,11 @@ target_compile_definitions(mudlet
 
 if(USE_OWN_QTKEYCHAIN)
     target_compile_definitions(mudlet PRIVATE INCLUDE_OWN_QT6_KEYCHAIN QTKEYCHAIN_NO_EXPORT)
+endif()
+
+# Define shader hot-reloading if enabled
+if(USE_SHADER_HOT_RELOAD AND USE_3DMAPPER AND USE_MODERN_GLWIDGET)
+  target_compile_definitions(mudlet PRIVATE MUDLET_SHADER_HOT_RELOAD=1)
 endif()
 
 # Used to force an include of winsock2.h BEFORE Qt tries to include winsock.h
