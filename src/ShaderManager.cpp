@@ -18,6 +18,7 @@
  ***************************************************************************/
 
 #include "ShaderManager.h"
+#include "ResourceManager.h"
 
 #include "pre_guard.h"
 #include <QDebug>
@@ -30,7 +31,7 @@
 
 #include "utils.h"
 
-ShaderManager::ShaderManager(QObject* parent)
+ShaderManager::ShaderManager(ResourceManager* resourceManager, QObject* parent)
     : QObject(parent)
     , mFileWatcher(nullptr)
     , mReloadTimer(nullptr)
@@ -39,6 +40,7 @@ ShaderManager::ShaderManager(QObject* parent)
     , mUniformMVP(-1)
     , mUniformModel(-1)
     , mUniformNormalMatrix(-1)
+    , mResourceManager(resourceManager)
 {
     mReloadTimer = new QTimer(this);
     mReloadTimer->setSingleShot(true);
@@ -217,10 +219,20 @@ bool ShaderManager::createShaderProgram()
         qWarning() << "ShaderManager: Failed to compile vertex shader:" << mShaderProgram->log();
         return false;
     }
+    
+    // Track vertex shader creation
+    if (mResourceManager) {
+        mResourceManager->onShaderCreated();
+    }
 
     if (!mShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentSource)) {
         qWarning() << "ShaderManager: Failed to compile fragment shader:" << mShaderProgram->log();
         return false;
+    }
+    
+    // Track fragment shader creation
+    if (mResourceManager) {
+        mResourceManager->onShaderCreated();
     }
 
     if (!mShaderProgram->link()) {

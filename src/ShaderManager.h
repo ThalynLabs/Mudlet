@@ -28,12 +28,14 @@
 #include <memory>
 #include "post_guard.h"
 
+class ResourceManager;
+
 class ShaderManager : public QObject, protected QOpenGLFunctions
 {
     Q_OBJECT
 
 public:
-    explicit ShaderManager(QObject* parent = nullptr);
+    explicit ShaderManager(ResourceManager* resourceManager = nullptr, QObject* parent = nullptr);
     ~ShaderManager();
 
     bool initialize();
@@ -73,6 +75,8 @@ private:
     
     QString mVertexShaderPath;
     QString mFragmentShaderPath;
+    
+    ResourceManager* mResourceManager;
 };
 
 #endif // SHADERMANAGER_H

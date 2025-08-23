@@ -38,7 +38,7 @@
 
 
 ModernGLWidget::ModernGLWidget(TMap* pMap, Host* pHost, QWidget* parent)
-: QOpenGLWidget(parent), mVertexBuffer(QOpenGLBuffer::VertexBuffer), mColorBuffer(QOpenGLBuffer::VertexBuffer), mNormalBuffer(QOpenGLBuffer::VertexBuffer), mpMap(pMap), mpHost(pHost)
+: QOpenGLWidget(parent), mShaderManager(&mResourceManager, this), mVertexBuffer(QOpenGLBuffer::VertexBuffer), mColorBuffer(QOpenGLBuffer::VertexBuffer), mNormalBuffer(QOpenGLBuffer::VertexBuffer), mpMap(pMap), mpHost(pHost)
 {
     if (mpHost->mBgColor_2.alpha() < 255) {
         setAttribute(Qt::WA_OpaquePaintEvent, false);
