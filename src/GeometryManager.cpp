@@ -18,6 +18,7 @@
  ***************************************************************************/
 
 #include "GeometryManager.h"
+#include "ResourceManager.h"
 
 #include "pre_guard.h"
 #include <QDebug>
@@ -250,4 +251,25 @@ void GeometryManager::renderGeometry(const GeometryData& geometry,
     
     // Draw the geometry
     glDrawArrays(drawMode, 0, geometry.vertexCount());
+}
+
+void GeometryManager::renderGeometry(const GeometryData& geometry,
+                                   QOpenGLVertexArrayObject& vao,
+                                   QOpenGLBuffer& vertexBuffer,
+                                   QOpenGLBuffer& colorBuffer,
+                                   QOpenGLBuffer& normalBuffer,
+                                   ResourceManager* resourceManager,
+                                   GLenum drawMode)
+{
+    if (geometry.isEmpty()) {
+        return;
+    }
+    
+    // Call the original render method
+    renderGeometry(geometry, vao, vertexBuffer, colorBuffer, normalBuffer, drawMode);
+    
+    // Track draw call statistics
+    if (resourceManager) {
+        resourceManager->onDrawCall(geometry.vertexCount());
+    }
 }

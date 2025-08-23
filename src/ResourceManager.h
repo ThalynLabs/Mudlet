@@ -1,5 +1,5 @@
-#ifndef MUDLET_RENDER_COMMAND_QUEUE_H
-#define MUDLET_RENDER_COMMAND_QUEUE_H
+#ifndef MUDLET_RESOURCE_MANAGER_H
+#define MUDLET_RESOURCE_MANAGER_H
 
 /***************************************************************************
  *   Copyright (C) 2025 by Vadim Peretokin - vadim.peretokin@mudlet.org    *
@@ -21,55 +21,57 @@
  ***************************************************************************/
 
 #include "pre_guard.h"
-#include <vector>
-#include <memory>
-#include <QOpenGLBuffer>
-#include <QOpenGLVertexArrayObject>
-#include <QOpenGLShaderProgram>
 #include <QOpenGLFunctions>
+#include <QDebug>
 #include "post_guard.h"
 
-#include "RenderCommand.h"
-#include "GeometryManager.h"
-
-class RenderCommandQueue : protected QOpenGLFunctions
+// Resource manager for OpenGL error checking and monitoring
+class ResourceManager : protected QOpenGLFunctions
 {
 public:
-    RenderCommandQueue();
-    ~RenderCommandQueue();
+    ResourceManager();
+    ~ResourceManager();
 
     void initialize();
     void cleanup();
     
-    // Add commands to the queue
-    void addCommand(std::unique_ptr<RenderCommand> command);
+    // OpenGL error checking
+    bool checkGLError(const QString& operation) const;
+    void enableErrorChecking(bool enable) { mErrorCheckingEnabled = enable; }
     
-    // Execute all queued commands
-    void executeAll(QOpenGLShaderProgram* shader,
-                   GeometryManager* geometryManager,
-                   ResourceManager* resourceManager,
-                   QOpenGLVertexArrayObject& vao,
-                   QOpenGLBuffer& vertexBuffer,
-                   QOpenGLBuffer& colorBuffer,
-                   QOpenGLBuffer& normalBuffer);
+    // Resource usage statistics
+    struct ResourceStats {
+        size_t totalBuffersCreated = 0;
+        size_t totalVAOsCreated = 0;
+        size_t totalShadersCreated = 0;
+        size_t totalDrawCalls = 0;
+        size_t totalVerticesRendered = 0;
+        size_t currentFrameDrawCalls = 0;
+        size_t currentFrameVertices = 0;
+    };
     
-    // Clear the command queue
-    void clear();
+    ResourceStats getStats() const { return mStats; }
+    void printStats() const;
+    void resetFrameStats();
     
-    // Get queue statistics
-    size_t getCommandCount() const;
-    void printStatistics() const;
+    // Resource tracking for statistics
+    void onBufferCreated() { mStats.totalBuffersCreated++; }
+    void onVAOCreated() { mStats.totalVAOsCreated++; }
+    void onShaderCreated() { mStats.totalShadersCreated++; }
+    void onDrawCall(size_t vertexCount) { 
+        mStats.totalDrawCalls++; 
+        mStats.totalVerticesRendered += vertexCount;
+        mStats.currentFrameDrawCalls++;
+        mStats.currentFrameVertices += vertexCount;
+    }
+
+    // Context validation
+    bool isContextValid() const;
 
 private:
-    std::vector<std::unique_ptr<RenderCommand>> mCommands;
     bool mInitialized = false;
-    
-    // Statistics
-    mutable size_t mTotalCommandsExecuted = 0;
-    mutable size_t mCubeCommandsExecuted = 0;
-    mutable size_t mLineCommandsExecuted = 0;
-    mutable size_t mTriangleCommandsExecuted = 0;
-    mutable size_t mStateCommandsExecuted = 0;
+    bool mErrorCheckingEnabled = false; // Disable by default for performance
+    mutable ResourceStats mStats;
 };
 
-#endif // MUDLET_RENDER_COMMAND_QUEUE_H
+#endif // MUDLET_RESOURCE_MANAGER_H

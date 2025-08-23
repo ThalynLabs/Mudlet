@@ -127,6 +127,7 @@ ModernGLWidget::~ModernGLWidget()
 void ModernGLWidget::cleanup()
 {
     makeCurrent();
+    mResourceManager.cleanup();
     mRenderCommandQueue.cleanup();
     mGeometryManager.cleanup();
     delete mShaderProgram;
@@ -181,11 +182,15 @@ void ModernGLWidget::initializeGL()
     
     // Initialize render command queue
     mRenderCommandQueue.initialize();
+    
+    // Initialize resource manager
+    mResourceManager.initialize();
 }
 
 bool ModernGLWidget::initializeShaders()
 {
     mShaderProgram = new QOpenGLShaderProgram(this);
+    mResourceManager.onShaderCreated();
 
     // Add vertex shader
     if (!mShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource)) {
@@ -224,22 +229,30 @@ void ModernGLWidget::setupBuffers()
 {
     // Create VAO
     mVAO.create();
+    mResourceManager.onVAOCreated();
+    mResourceManager.checkGLError(qsl("VAO creation"));
     QOpenGLVertexArrayObject::Binder vaoBinder(&mVAO);
 
     // Create vertex buffer
     mVertexBuffer.create();
+    mResourceManager.onBufferCreated();
     mVertexBuffer.bind();
     mVertexBuffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
+    mResourceManager.checkGLError(qsl("Vertex buffer creation"));
 
     // Create color buffer
     mColorBuffer.create();
+    mResourceManager.onBufferCreated();
     mColorBuffer.bind();
     mColorBuffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
+    mResourceManager.checkGLError(qsl("Color buffer creation"));
 
     // Create normal buffer
     mNormalBuffer.create();
+    mResourceManager.onBufferCreated();
     mNormalBuffer.bind();
     mNormalBuffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
+    mResourceManager.checkGLError(qsl("Normal buffer creation"));
 
     // Configure vertex attribute pointers (will be set during rendering)
 }
@@ -383,7 +396,7 @@ void ModernGLWidget::paintGL()
     renderConnections();
 
     // Execute all queued commands
-    mRenderCommandQueue.executeAll(mShaderProgram, &mGeometryManager, mVAO, mVertexBuffer, mColorBuffer, mNormalBuffer);
+    mRenderCommandQueue.executeAll(mShaderProgram, &mGeometryManager, &mResourceManager, mVAO, mVertexBuffer, mColorBuffer, mNormalBuffer);
 
     mShaderProgram->release();
     

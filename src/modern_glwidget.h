@@ -43,6 +43,7 @@
 
 #include "GeometryManager.h"
 #include "RenderCommandQueue.h"
+#include "ResourceManager.h"
 
 class Host;
 class TMap;
@@ -108,6 +109,9 @@ private:
     
     // Render command queue
     RenderCommandQueue mRenderCommandQueue;
+    
+    // Resource management
+    ResourceManager mResourceManager;
 
     // Uniform locations
     int mUniformMVP = -1;

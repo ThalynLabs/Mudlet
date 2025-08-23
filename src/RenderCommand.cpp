@@ -34,6 +34,7 @@ RenderCubeCommand::RenderCubeCommand(float x, float y, float z, float size, floa
 void RenderCubeCommand::execute(QOpenGLFunctions* gl,
                                QOpenGLShaderProgram* shader,
                                GeometryManager* geometryManager,
+                               ResourceManager* resourceManager,
                                QOpenGLVertexArrayObject& vao,
                                QOpenGLBuffer& vertexBuffer,
                                QOpenGLBuffer& colorBuffer,
@@ -51,8 +52,7 @@ void RenderCubeCommand::execute(QOpenGLFunctions* gl,
     QMatrix3x3 normalMatrix = mModelMatrix.normalMatrix();
     shader->setUniformValue("uNormalMatrix", normalMatrix);
     
-    // Render the geometry
-    geometryManager->renderGeometry(cubeGeometry, vao, vertexBuffer, colorBuffer, normalBuffer, GL_TRIANGLES);
+    geometryManager->renderGeometry(cubeGeometry, vao, vertexBuffer, colorBuffer, normalBuffer, resourceManager, GL_TRIANGLES);
 }
 
 // RenderLinesCommand implementation
@@ -66,6 +66,7 @@ RenderLinesCommand::RenderLinesCommand(const QVector<float>& vertices, const QVe
 void RenderLinesCommand::execute(QOpenGLFunctions* gl,
                                 QOpenGLShaderProgram* shader,
                                 GeometryManager* geometryManager,
+                                ResourceManager* resourceManager,
                                 QOpenGLVertexArrayObject& vao,
                                 QOpenGLBuffer& vertexBuffer,
                                 QOpenGLBuffer& colorBuffer,
@@ -86,8 +87,7 @@ void RenderLinesCommand::execute(QOpenGLFunctions* gl,
     QMatrix3x3 normalMatrix = mModelMatrix.normalMatrix();
     shader->setUniformValue("uNormalMatrix", normalMatrix);
     
-    // Render the geometry
-    geometryManager->renderGeometry(lineGeometry, vao, vertexBuffer, colorBuffer, normalBuffer, GL_LINES);
+    geometryManager->renderGeometry(lineGeometry, vao, vertexBuffer, colorBuffer, normalBuffer, resourceManager, GL_LINES);
 }
 
 // RenderTrianglesCommand implementation
@@ -101,6 +101,7 @@ RenderTrianglesCommand::RenderTrianglesCommand(const QVector<float>& vertices, c
 void RenderTrianglesCommand::execute(QOpenGLFunctions* gl,
                                     QOpenGLShaderProgram* shader,
                                     GeometryManager* geometryManager,
+                                    ResourceManager* resourceManager,
                                     QOpenGLVertexArrayObject& vao,
                                     QOpenGLBuffer& vertexBuffer,
                                     QOpenGLBuffer& colorBuffer,
@@ -121,8 +122,7 @@ void RenderTrianglesCommand::execute(QOpenGLFunctions* gl,
     QMatrix3x3 normalMatrix = mModelMatrix.normalMatrix();
     shader->setUniformValue("uNormalMatrix", normalMatrix);
     
-    // Render the geometry
-    geometryManager->renderGeometry(triangleGeometry, vao, vertexBuffer, colorBuffer, normalBuffer, GL_TRIANGLES);
+    geometryManager->renderGeometry(triangleGeometry, vao, vertexBuffer, colorBuffer, normalBuffer, resourceManager, GL_TRIANGLES);
 }
 
 // GLStateCommand implementation
@@ -134,6 +134,7 @@ GLStateCommand::GLStateCommand(StateType stateType)
 void GLStateCommand::execute(QOpenGLFunctions* gl,
                             QOpenGLShaderProgram* shader,
                             GeometryManager* geometryManager,
+                            ResourceManager* resourceManager,
                             QOpenGLVertexArrayObject& vao,
                             QOpenGLBuffer& vertexBuffer,
                             QOpenGLBuffer& colorBuffer,

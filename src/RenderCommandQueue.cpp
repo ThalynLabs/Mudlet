@@ -58,19 +58,32 @@ void RenderCommandQueue::addCommand(std::unique_ptr<RenderCommand> command)
 
 void RenderCommandQueue::executeAll(QOpenGLShaderProgram* shader,
                                    GeometryManager* geometryManager,
+                                   ResourceManager* resourceManager,
                                    QOpenGLVertexArrayObject& vao,
                                    QOpenGLBuffer& vertexBuffer,
                                    QOpenGLBuffer& colorBuffer,
                                    QOpenGLBuffer& normalBuffer)
 {
-    if (!mInitialized || !shader || !geometryManager) {
-        qWarning() << "RenderCommandQueue: Cannot execute commands - not properly initialized";
+    if (!mInitialized) {
+        qWarning() << "RenderCommandQueue: Not initialized";
+        return;
+    }
+    if (!shader) {
+        qWarning() << "RenderCommandQueue: No shader program provided";
+        return;
+    }
+    if (!geometryManager) {
+        qWarning() << "RenderCommandQueue: No geometry manager provided";
+        return;
+    }
+    if (!resourceManager) {
+        qWarning() << "RenderCommandQueue: No resource manager provided";
         return;
     }
     
     for (const auto& command : mCommands) {
         if (command) {
-            command->execute(this, shader, geometryManager, vao, vertexBuffer, colorBuffer, normalBuffer);
+            command->execute(this, shader, geometryManager, resourceManager, vao, vertexBuffer, colorBuffer, normalBuffer);
             
             // Update statistics
             mTotalCommandsExecuted++;

@@ -68,6 +68,15 @@ public:
                        QOpenGLBuffer& colorBuffer,
                        QOpenGLBuffer& normalBuffer,
                        GLenum drawMode = GL_TRIANGLES);
+                       
+    // Render geometry with resource tracking
+    void renderGeometry(const GeometryData& geometry, 
+                       QOpenGLVertexArrayObject& vao,
+                       QOpenGLBuffer& vertexBuffer,
+                       QOpenGLBuffer& colorBuffer,
+                       QOpenGLBuffer& normalBuffer,
+                       class ResourceManager* resourceManager,
+                       GLenum drawMode = GL_TRIANGLES);
 
 private:
     bool mInitialized = false;

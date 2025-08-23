@@ -33,6 +33,7 @@
 
 // Forward declarations
 class GeometryManager;
+class ResourceManager;
 
 // Base class for all render commands
 class RenderCommand
@@ -42,6 +43,7 @@ public:
     virtual void execute(QOpenGLFunctions* gl, 
                         QOpenGLShaderProgram* shader,
                         GeometryManager* geometryManager,
+                        ResourceManager* resourceManager,
                         QOpenGLVertexArrayObject& vao,
                         QOpenGLBuffer& vertexBuffer,
                         QOpenGLBuffer& colorBuffer, 
@@ -60,6 +62,7 @@ public:
     void execute(QOpenGLFunctions* gl,
                 QOpenGLShaderProgram* shader,
                 GeometryManager* geometryManager,
+                ResourceManager* resourceManager,
                 QOpenGLVertexArrayObject& vao,
                 QOpenGLBuffer& vertexBuffer,
                 QOpenGLBuffer& colorBuffer,
@@ -85,6 +88,7 @@ public:
     void execute(QOpenGLFunctions* gl,
                 QOpenGLShaderProgram* shader,
                 GeometryManager* geometryManager,
+                ResourceManager* resourceManager,
                 QOpenGLVertexArrayObject& vao,
                 QOpenGLBuffer& vertexBuffer,
                 QOpenGLBuffer& colorBuffer,
@@ -110,6 +114,7 @@ public:
     void execute(QOpenGLFunctions* gl,
                 QOpenGLShaderProgram* shader,
                 GeometryManager* geometryManager,
+                ResourceManager* resourceManager,
                 QOpenGLVertexArrayObject& vao,
                 QOpenGLBuffer& vertexBuffer,
                 QOpenGLBuffer& colorBuffer,
@@ -142,6 +147,7 @@ public:
     void execute(QOpenGLFunctions* gl,
                 QOpenGLShaderProgram* shader,
                 GeometryManager* geometryManager,
+                ResourceManager* resourceManager,
                 QOpenGLVertexArrayObject& vao,
                 QOpenGLBuffer& vertexBuffer,
                 QOpenGLBuffer& colorBuffer,
