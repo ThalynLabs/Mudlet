@@ -41,6 +41,8 @@
 #include <QPointer>
 #include "post_guard.h"
 
+#include "GeometryManager.h"
+
 class Host;
 class TMap;
 class TRoom;
@@ -99,6 +101,9 @@ private:
     QOpenGLBuffer mColorBuffer;
     QOpenGLBuffer mNormalBuffer;
     QOpenGLVertexArrayObject mVAO;
+    
+    // Geometry management
+    GeometryManager mGeometryManager;
 
     // Uniform locations
     int mUniformMVP = -1;
