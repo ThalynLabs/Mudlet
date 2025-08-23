@@ -142,7 +142,7 @@ public:
         CLEAR_BUFFERS
     };
     
-    GLStateCommand(StateType stateType);
+    explicit GLStateCommand(StateType stateType);
     
     void execute(QOpenGLFunctions* gl,
                 QOpenGLShaderProgram* shader,
