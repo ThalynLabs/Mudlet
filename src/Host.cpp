@@ -4618,6 +4618,13 @@ std::pair<bool, QString> Host::setExperimentEnabled(const QString& experimentKey
         mExperiments[experimentKey] = false;
     }
     
+    // Refresh 3D map if rendering experiments changed
+    if (experimentKey.startsWith(qsl("experiment.rendering."))) {
+        if (mpMap && mpMap->mpM) {
+            mpMap->mpM->update();
+        }
+    }
+    
     return {true, QString()};
 }
 
