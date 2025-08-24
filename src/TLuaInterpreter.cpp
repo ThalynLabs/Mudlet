@@ -7546,6 +7546,16 @@ int TLuaInterpreter::setConfig(lua_State * L)
         }
         return success();
     }
+    
+    // Handle experiment keys
+    if (key.startsWith(qsl("experiment."))) {
+        auto [result, errorMessage] = host.setExperimentEnabled(key, getVerifiedBool(L, __func__, 2, "value"));
+        if (!result) {
+            return warnArgumentValue(L, __func__, errorMessage);
+        }
+        return success();
+    }
+    
     return warnArgumentValue(L, __func__, qsl("'%1' isn't a valid configuration option").arg(key));
 }
 
@@ -7735,6 +7745,37 @@ int TLuaInterpreter::getConfig(lua_State *L)
     auto it = configMap.find(key);
     if (it != configMap.end()) {
         it->second();
+        return 1;
+    }
+    
+    // Handle experiment keys
+    if (key.startsWith(qsl("experiment."))) {
+        if (key == qsl("experiment.list")) {
+            // Special case: return list of all valid experiments
+            QStringList validExperiments = host.getValidExperiments();
+            lua_createtable(L, validExperiments.size(), 0);
+            for (int i = 0; i < validExperiments.size(); ++i) {
+                lua_pushstring(L, validExperiments.at(i).toUtf8().constData());
+                lua_rawseti(L, -2, i + 1);
+            }
+        } else if (key.endsWith(qsl(".active"))) {
+            // Handle special case: experiment.<group>.active returns active experiment name
+            QString group = key.left(key.length() - 7); // Remove ".active"
+            QString activeExperiment = host.getActiveExperimentInGroup(group);
+            if (activeExperiment.isEmpty()) {
+                lua_pushnil(L);
+            } else {
+                lua_pushstring(L, activeExperiment.toUtf8().constData());
+            }
+        } else {
+            // Regular experiment key - but only if it's valid
+            QStringList validExperiments = host.getValidExperiments();
+            if (validExperiments.contains(key)) {
+                lua_pushboolean(L, host.isExperimentEnabled(key));
+            } else {
+                lua_pushboolean(L, false);  // Invalid experiments are always false
+            }
+        }
         return 1;
     }
 
