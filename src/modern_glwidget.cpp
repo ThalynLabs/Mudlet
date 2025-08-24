@@ -338,7 +338,7 @@ void ModernGLWidget::renderRooms()
             if (mpHost->isExperimentEnabled("experiment.rendering.more-transparent")) {
                 // Progressive transparency based on level distance from player
                 int levelDistance = abs(static_cast<int>(rz - pz));
-                float progressiveFactor = std::min(1.0f, levelDistance * 0.3f); // Cap at 1.0, scale by distance
+                float progressiveFactor = std::min(1.0f, levelDistance * 0.5f); // Faster falloff - cap at 1.0, scale by distance
                 
                 if (rz > pz) {
                     // Above player: lighter + more transparent
@@ -346,14 +346,14 @@ void ModernGLWidget::renderRooms()
                     redComponent = std::min(1.0f, redComponent * lightenFactor);
                     greenComponent = std::min(1.0f, greenComponent * lightenFactor);
                     blueComponent = std::min(1.0f, blueComponent * lightenFactor);
-                    roomAlpha = 1.0f - (progressiveFactor * 0.7f); // Up to 30% opacity
+                    roomAlpha = 1.0f - (progressiveFactor * 0.95f); // Down to 5% opacity - nearly invisible
                 } else if (rz < pz) {
                     // Below player: darker + more transparent
-                    float darkenFactor = 1.0f - (progressiveFactor * 0.6f); // Up to 40% brightness
+                    float darkenFactor = 1.0f - (progressiveFactor * 0.85f); // Down to 15% brightness - nearly black
                     redComponent *= darkenFactor;
                     greenComponent *= darkenFactor;
                     blueComponent *= darkenFactor;
-                    roomAlpha = 1.0f - (progressiveFactor * 0.7f); // Up to 30% opacity
+                    roomAlpha = 1.0f - (progressiveFactor * 0.95f); // Down to 5% opacity - nearly invisible
                 }
                 // At player level (rz == pz): no changes, normal rendering
             } else {
@@ -386,9 +386,9 @@ void ModernGLWidget::renderRooms()
         
         // Apply same progressive transparency logic to environment overlay
         if (mpHost->isExperimentEnabled("experiment.rendering.more-transparent")) {
-            // Use same progressive calculation as main room rendering
+            // Use same aggressive progressive calculation as main room rendering
             int levelDistance = abs(static_cast<int>(rz - pz));
-            float progressiveFactor = std::min(1.0f, levelDistance * 0.3f); // Cap at 1.0, scale by distance
+            float progressiveFactor = std::min(1.0f, levelDistance * 0.5f); // Faster falloff - cap at 1.0, scale by distance
             
             if (rz > pz) {
                 // Above player: lighter + more transparent
@@ -396,14 +396,14 @@ void ModernGLWidget::renderRooms()
                 envRed = std::min(1.0f, envRed * lightenFactor);
                 envGreen = std::min(1.0f, envGreen * lightenFactor);
                 envBlue = std::min(1.0f, envBlue * lightenFactor);
-                overlayAlpha = 0.8f * (1.0f - (progressiveFactor * 0.7f)); // Progressive transparency
+                overlayAlpha = 0.8f * (1.0f - (progressiveFactor * 0.95f)); // Down to ~4% opacity - nearly invisible
             } else if (rz < pz) {
                 // Below player: darker + more transparent
-                float darkenFactor = 1.0f - (progressiveFactor * 0.6f); // Up to 40% brightness
+                float darkenFactor = 1.0f - (progressiveFactor * 0.85f); // Down to 15% brightness - nearly black
                 envRed *= darkenFactor;
                 envGreen *= darkenFactor;
                 envBlue *= darkenFactor;
-                overlayAlpha = 0.8f * (1.0f - (progressiveFactor * 0.7f)); // Progressive transparency
+                overlayAlpha = 0.8f * (1.0f - (progressiveFactor * 0.95f)); // Down to ~4% opacity - nearly invisible
             }
             // At player level (rz == pz): normal overlay rendering
         } else {
