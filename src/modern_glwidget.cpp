@@ -336,26 +336,14 @@ void ModernGLWidget::renderRooms()
             
             // Check for more-transparent experiment
             if (mpHost->isExperimentEnabled("experiment.rendering.more-transparent")) {
-                // Progressive transparency based on level distance from player
-                int levelDistance = abs(static_cast<int>(rz - pz));
-                float progressiveFactor = std::min(1.0f, levelDistance * 0.5f); // Faster falloff - cap at 1.0, scale by distance
-                
-                if (rz > pz) {
-                    // Above player: lighter + more transparent
-                    float lightenFactor = 1.0f + (progressiveFactor * 0.5f); // Up to 1.5x brighter
-                    redComponent = std::min(1.0f, redComponent * lightenFactor);
-                    greenComponent = std::min(1.0f, greenComponent * lightenFactor);
-                    blueComponent = std::min(1.0f, blueComponent * lightenFactor);
-                    roomAlpha = 1.0f - (progressiveFactor * 0.95f); // Down to 5% opacity - nearly invisible
-                } else if (rz < pz) {
-                    // Below player: darker + more transparent
-                    float darkenFactor = 1.0f - (progressiveFactor * 0.85f); // Down to 15% brightness - nearly black
-                    redComponent *= darkenFactor;
-                    greenComponent *= darkenFactor;
-                    blueComponent *= darkenFactor;
-                    roomAlpha = 1.0f - (progressiveFactor * 0.95f); // Down to 5% opacity - nearly invisible
+                static bool debugOnce = false;
+                if (!debugOnce) {
+                    qDebug() << "[Experiment Debug] More-transparent experiment is ENABLED - FULLY TRANSPARENT TEST";
+                    debugOnce = true;
                 }
-                // At player level (rz == pz): no changes, normal rendering
+                // EXPERIMENT: Make ALL rooms 99% transparent (alpha = 0.01) - barely visible
+                roomAlpha = 0.01f;
+                qDebug() << "[99% Transparency Test] Room at Z:" << rz << "Player Z:" << pz << "Alpha set to:" << roomAlpha;
             } else {
                 // Original rendering: rooms above are dark and transparent
                 roomAlpha = belowOrAtLevel ? 1.0f : 0.2f; // 80% transparent (20% opacity) if above current level
@@ -384,28 +372,10 @@ void ModernGLWidget::renderRooms()
         float envBlue = envColor.blueF();
         float overlayAlpha = 0.8f; // Default overlay transparency
         
-        // Apply same progressive transparency logic to environment overlay
+        // Apply same full transparency to environment overlay
         if (mpHost->isExperimentEnabled("experiment.rendering.more-transparent")) {
-            // Use same aggressive progressive calculation as main room rendering
-            int levelDistance = abs(static_cast<int>(rz - pz));
-            float progressiveFactor = std::min(1.0f, levelDistance * 0.5f); // Faster falloff - cap at 1.0, scale by distance
-            
-            if (rz > pz) {
-                // Above player: lighter + more transparent
-                float lightenFactor = 1.0f + (progressiveFactor * 0.5f); // Up to 1.5x brighter
-                envRed = std::min(1.0f, envRed * lightenFactor);
-                envGreen = std::min(1.0f, envGreen * lightenFactor);
-                envBlue = std::min(1.0f, envBlue * lightenFactor);
-                overlayAlpha = 0.8f * (1.0f - (progressiveFactor * 0.95f)); // Down to ~4% opacity - nearly invisible
-            } else if (rz < pz) {
-                // Below player: darker + more transparent
-                float darkenFactor = 1.0f - (progressiveFactor * 0.85f); // Down to 15% brightness - nearly black
-                envRed *= darkenFactor;
-                envGreen *= darkenFactor;
-                envBlue *= darkenFactor;
-                overlayAlpha = 0.8f * (1.0f - (progressiveFactor * 0.95f)); // Down to ~4% opacity - nearly invisible
-            }
-            // At player level (rz == pz): normal overlay rendering
+            // EXPERIMENT: Make environment overlay 99% transparent too
+            overlayAlpha = 0.01f;
         } else {
             // Original rendering: darken overlays above player level
             overlayAlpha = belowOrAtLevel ? 0.8f : 0.16f; // 84% transparent if above current level (0.2 * 0.8)

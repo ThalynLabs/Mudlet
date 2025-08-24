@@ -40,6 +40,11 @@ void RenderCubeCommand::execute(QOpenGLFunctions* gl,
                                QOpenGLBuffer& colorBuffer,
                                QOpenGLBuffer& normalBuffer)
 {
+    // Skip rendering if fully transparent
+    if (mA <= 0.0f) {
+        return;
+    }
+    
     // Generate cube geometry
     GeometryData cubeGeometry = geometryManager->generateCubeGeometry(mX, mY, mZ, mSize, mR, mG, mB, mA);
     
