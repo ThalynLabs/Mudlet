@@ -148,8 +148,6 @@ private:
     
     // Frame timing for benchmarking
     QElapsedTimer mFrameTimer;
-    QList<qint64> mFrameTimes;
-    static constexpr int MAX_FRAME_SAMPLES = 60;
 
     // Private methods for modern OpenGL
     void updateMatrices();

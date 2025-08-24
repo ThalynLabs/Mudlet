@@ -2040,21 +2040,9 @@ void GLWidget::paintGL()
     glFlush();
     
     // End frame timing and store result
+    // Display instant frame time
     qint64 frameTime = mFrameTimer.elapsed();
-    mFrameTimes.append(frameTime);
-    if (mFrameTimes.size() > MAX_FRAME_SAMPLES) {
-        mFrameTimes.removeFirst();
-    }
-    
-    // Calculate and display average frame time every 60 frames
-    if (mFrameTimes.size() == MAX_FRAME_SAMPLES) {
-        qint64 totalTime = 0;
-        for (qint64 time : mFrameTimes) {
-            totalTime += time;
-        }
-        double avgFrameTime = static_cast<double>(totalTime) / MAX_FRAME_SAMPLES;
-        qDebug() << "[Legacy GLWidget] Average frame time:" << avgFrameTime << "ms";
-    }
+    qDebug() << "[Legacy GLWidget] Frame time:" << frameTime << "ms";
 }
 
 void GLWidget::resizeGL(int w, int h)

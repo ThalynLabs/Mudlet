@@ -118,8 +118,6 @@ private:
     
     // Frame timing for benchmarking
     QElapsedTimer mFrameTimer;
-    QList<qint64> mFrameTimes;
-    static constexpr int MAX_FRAME_SAMPLES = 60;
 };
 
 #endif // MUDLET_GLWIDGET_H
