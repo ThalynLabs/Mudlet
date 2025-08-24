@@ -174,6 +174,8 @@ void ModernGLWidget::paintGL()
         return;
     }
 
+    glEnable(GL_MULTISAMPLE);
+    
     float px, py, pz;
     if (mRID != mpMap->mRoomIdHash.value(mpMap->mProfileName) && mShiftMode) {
         mShiftMode = false;
