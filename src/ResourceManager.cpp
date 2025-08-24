@@ -41,10 +41,8 @@ void ResourceManager::initialize()
     
     initializeOpenGLFunctions();
     
-#ifdef MUDLET_3D_MAPPER_DEBUG
-    // Enable error checking in debug builds
+    // Always enable error checking now that we have debug context
     mErrorCheckingEnabled = true;
-#endif
 
     mInitialized = true;
     qDebug() << "ResourceManager: Initialized with error checking" 

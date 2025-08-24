@@ -167,7 +167,7 @@ private:
     float mCurrentAnimationY = 0.0f;
     float mCurrentAnimationZ = 0.0f;
     qreal mAnimationProgress = 0.0;
-    int mAnimationDuration = 50; // 50ms animation duration for smooth movement
+    int mAnimationDuration = 100; // 100ms animation duration for smooth movement
     QEasingCurve mEasingCurve;
     bool mCameraSmoothAnimating = false; // Dedicated flag for smooth camera animation
     int mPreviousRID = 0; // Track previous room ID to detect changes

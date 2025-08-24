@@ -49,7 +49,7 @@ ModernGLWidget::ModernGLWidget(TMap* pMap, Host* pHost, QWidget* parent)
     
     // Initialize smooth camera animation
     mCameraAnimationTimer = new QTimer(this);
-    mCameraAnimationTimer->setInterval(8); // ~120fps updates for smoother animation
+    mCameraAnimationTimer->setInterval(17); // ~60fps updates for smoother animation
     connect(mCameraAnimationTimer, &QTimer::timeout, this, &ModernGLWidget::onCameraAnimationTick);
     mEasingCurve.setType(QEasingCurve::OutQuart); // Natural deceleration
 }
@@ -86,6 +86,16 @@ QSize ModernGLWidget::sizeHint() const
 void ModernGLWidget::initializeGL()
 {
     initializeOpenGLFunctions();
+    
+    // Debug: Check which OpenGL profile is being used
+    QOpenGLContext* context = QOpenGLContext::currentContext();
+    if (context) {
+        QSurfaceFormat format = context->format();
+        qDebug() << "OpenGL Version:" << format.majorVersion() << "." << format.minorVersion();
+        qDebug() << "OpenGL Profile:" << (format.profile() == QSurfaceFormat::CoreProfile ? "Core" : 
+                                         format.profile() == QSurfaceFormat::CompatibilityProfile ? "Compatibility" : "NoProfile");
+        qDebug() << "Debug Context:" << (format.testOption(QSurfaceFormat::DebugContext) ? "Enabled" : "Disabled");
+    }
 
     const QColor color(mpHost->mBgColor_2);
     glClearColor(color.redF(), color.greenF(), color.blueF(), color.alphaF());
