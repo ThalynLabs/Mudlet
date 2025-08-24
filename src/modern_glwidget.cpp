@@ -1166,10 +1166,6 @@ QColor ModernGLWidget::getEnvironmentColor(TRoom* pRoom)
 
 void ModernGLWidget::startSmoothTransition(int targetAID, int targetX, int targetY, int targetZ)
 {
-    qDebug() << "[Smooth Camera] Starting smooth transition - timer interval:" << mCameraAnimationTimer->interval() 
-             << "ms, duration:" << mAnimationDuration << "ms";
-    qDebug() << "[Smooth Camera] Start position: (" << mMapCenterX << "," << mMapCenterY << "," << mMapCenterZ << ")"
-             << "Target position: (" << targetX << "," << targetY << "," << targetZ << ")";
     
     // Set up animation parameters
     mTargetAID = targetAID;
@@ -1203,9 +1199,6 @@ void ModernGLWidget::onCameraAnimationTick()
     // Update animation progress
     mAnimationProgress += static_cast<qreal>(mCameraAnimationTimer->interval()) / mAnimationDuration;
     
-    qDebug() << "[Smooth Camera] Animation tick - progress:" << mAnimationProgress << 
-                "integer pos: (" << mMapCenterX << "," << mMapCenterY << "," << mMapCenterZ << ")" <<
-                "camera pos: (" << mCameraController.getCenterX() << "," << mCameraController.getCenterY() << "," << mCameraController.getCenterZ() << ")";
     
     if (mAnimationProgress >= 1.0) {
         // Animation complete - set final position and stop
@@ -1225,7 +1218,6 @@ void ModernGLWidget::onCameraAnimationTick()
         // Clear animation flag to resume normal camera tracking
         mCameraSmoothAnimating = false;
         
-        qDebug() << "[Smooth Camera] Animation COMPLETED - final position: (" << mCurrentAnimationX << "," << mCurrentAnimationY << "," << mCurrentAnimationZ << ")";
     } else {
         // Interpolate between start and target positions using floating-point
         qreal easedProgress = mEasingCurve.valueForProgress(mAnimationProgress);
@@ -1234,8 +1226,6 @@ void ModernGLWidget::onCameraAnimationTick()
         mCurrentAnimationY = mStartMapCenterY + (mTargetMapCenterY - mStartMapCenterY) * easedProgress;
         mCurrentAnimationZ = mStartMapCenterZ + (mTargetMapCenterZ - mStartMapCenterZ) * easedProgress;
         
-        qDebug() << "[Smooth Camera] Interpolating - eased progress:" << easedProgress << 
-                    "new float pos: (" << mCurrentAnimationX << "," << mCurrentAnimationY << "," << mCurrentAnimationZ << ")";
     }
     
     // Update camera controller with current floating-point position

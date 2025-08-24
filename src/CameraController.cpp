@@ -48,7 +48,6 @@ void CameraController::setPosition(float centerX, float centerY, float centerZ)
     mCenterX = centerX;
     mCenterY = centerY;
     mCenterZ = centerZ;
-    qDebug() << "[CameraController] setPosition updated to: (" << mCenterX << "," << mCenterY << "," << mCenterZ << ")";
 }
 
 void CameraController::setScale(float scale)
@@ -107,7 +106,6 @@ void CameraController::updateMatrices()
 
 void CameraController::setViewCenter(float x, float y, float z)
 {
-    qDebug() << "[CameraController] setViewCenter called with: (" << x << "," << y << "," << z << ")";
     setPosition(x, y, z);
 }
 
