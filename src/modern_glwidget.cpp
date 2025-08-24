@@ -46,6 +46,12 @@ ModernGLWidget::ModernGLWidget(TMap* pMap, Host* pHost, QWidget* parent)
     } else {
         setAttribute(Qt::WA_OpaquePaintEvent);
     }
+    
+    // Initialize smooth camera animation
+    mCameraAnimationTimer = new QTimer(this);
+    mCameraAnimationTimer->setInterval(8); // ~120fps updates for smoother animation
+    connect(mCameraAnimationTimer, &QTimer::timeout, this, &ModernGLWidget::onCameraAnimationTick);
+    mEasingCurve.setType(QEasingCurve::OutQuart); // Natural deceleration
 }
 
 ModernGLWidget::~ModernGLWidget()
@@ -148,8 +154,10 @@ void ModernGLWidget::setupBuffers()
 
 void ModernGLWidget::updateMatrices()
 {
-    // Update camera controller with current state
-    mCameraController.setPosition(mMapCenterX, mMapCenterY, mMapCenterZ);
+    // Update camera controller with current state, but skip position updates during smooth animation
+    if (!mCameraSmoothAnimating) {
+        mCameraController.setPosition(static_cast<float>(mMapCenterX), static_cast<float>(mMapCenterY), static_cast<float>(mMapCenterZ));
+    }
     mCameraController.setViewportSize(width(), height());
     mCameraController.updateMatrices();
 }
@@ -182,7 +190,7 @@ void ModernGLWidget::paintGL()
     }
 
     int ox, oy, oz;
-    if (!mShiftMode) {
+    if (!mShiftMode && !mCameraSmoothAnimating) {
         mRID = mpMap->mRoomIdHash.value(mpMap->mProfileName);
         TRoom* pRID = mpMap->mpRoomDB->getRoom(mRID);
         if (!pRID) {
@@ -211,13 +219,41 @@ void ModernGLWidget::paintGL()
 
             return;
         }
-        mAID = pRID->getArea();
-        ox = pRID->x();
-        oy = pRID->y();
-        oz = pRID->z();
-        mMapCenterX = ox;
-        mMapCenterY = oy;
-        mMapCenterZ = oz;
+        
+        // Check if room ID changed and smooth camera experiment is enabled
+        if (mRID != mPreviousRID && mpHost && mpHost->isExperimentEnabled("experiment.rendering.smooth-camera")) {
+            // Room changed - start smooth transition
+            int targetAID = pRID->getArea();
+            int targetX = pRID->x();
+            int targetY = pRID->y();
+            int targetZ = pRID->z();
+            
+            qDebug() << "[Smooth Camera] Room ID changed from" << mPreviousRID << "to" << mRID 
+                     << "- starting smooth transition from (" << mMapCenterX << "," << mMapCenterY << "," << mMapCenterZ << ")"
+                     << "to (" << targetX << "," << targetY << "," << targetZ << ")";
+            
+            startSmoothTransition(targetAID, targetX, targetY, targetZ);
+            mPreviousRID = mRID; // Update tracking
+            
+            // Use current position for this frame while animation starts
+            ox = mMapCenterX;
+            oy = mMapCenterY;  
+            oz = mMapCenterZ;
+        } else {
+            // No room change or experiment disabled - use instant positioning
+            mAID = pRID->getArea();
+            ox = pRID->x();
+            oy = pRID->y();
+            oz = pRID->z();
+            mMapCenterX = ox;
+            mMapCenterY = oy;
+            mMapCenterZ = oz;
+            mPreviousRID = mRID; // Update tracking
+            
+            if (mRID != mPreviousRID) {
+                qDebug() << "[Smooth Camera] Room ID changed but experiment disabled or not available";
+            }
+        }
 
     } else {
         ox = mMapCenterX;
@@ -660,43 +696,79 @@ void ModernGLWidget::slot_showAllLevels()
 void ModernGLWidget::slot_shiftDown()
 {
     mShiftMode = true;
-    mMapCenterY--;
-    update();
+    
+    // Check if smooth camera experiment is enabled
+    if (mpHost && mpHost->isExperimentEnabled("experiment.rendering.smooth-camera")) {
+        startSmoothTransition(mAID, mMapCenterX, mMapCenterY - 1, mMapCenterZ);
+    } else {
+        mMapCenterY--;
+        update();
+    }
 }
 
 void ModernGLWidget::slot_shiftUp()
 {
     mShiftMode = true;
-    mMapCenterY++;
-    update();
+    
+    // Check if smooth camera experiment is enabled
+    if (mpHost && mpHost->isExperimentEnabled("experiment.rendering.smooth-camera")) {
+        startSmoothTransition(mAID, mMapCenterX, mMapCenterY + 1, mMapCenterZ);
+    } else {
+        mMapCenterY++;
+        update();
+    }
 }
 
 void ModernGLWidget::slot_shiftLeft()
 {
     mShiftMode = true;
-    mMapCenterX--;
-    update();
+    
+    // Check if smooth camera experiment is enabled
+    if (mpHost && mpHost->isExperimentEnabled("experiment.rendering.smooth-camera")) {
+        startSmoothTransition(mAID, mMapCenterX - 1, mMapCenterY, mMapCenterZ);
+    } else {
+        mMapCenterX--;
+        update();
+    }
 }
 
 void ModernGLWidget::slot_shiftRight()
 {
     mShiftMode = true;
-    mMapCenterX++;
-    update();
+    
+    // Check if smooth camera experiment is enabled
+    if (mpHost && mpHost->isExperimentEnabled("experiment.rendering.smooth-camera")) {
+        startSmoothTransition(mAID, mMapCenterX + 1, mMapCenterY, mMapCenterZ);
+    } else {
+        mMapCenterX++;
+        update();
+    }
 }
 
 void ModernGLWidget::slot_shiftZup()
 {
     mShiftMode = true;
-    mMapCenterZ++;
-    update();
+    
+    // Check if smooth camera experiment is enabled
+    if (mpHost && mpHost->isExperimentEnabled("experiment.rendering.smooth-camera")) {
+        startSmoothTransition(mAID, mMapCenterX, mMapCenterY, mMapCenterZ + 1);
+    } else {
+        mMapCenterZ++;
+        update();
+    }
 }
 
 void ModernGLWidget::slot_shiftZdown()
 {
     mShiftMode = true;
-    mMapCenterZ--;
-    update();
+    
+    // Check if smooth camera experiment is enabled
+    if (mpHost && mpHost->isExperimentEnabled("experiment.rendering.smooth-camera")) {
+        startSmoothTransition(mAID, mMapCenterX, mMapCenterY, mMapCenterZ - 1);
+    } else {
+        mMapCenterZ--;
+        update();
+    }
 }
 
 void ModernGLWidget::slot_singleLevelView()
@@ -796,13 +868,21 @@ void ModernGLWidget::slot_setCameraPositionZ(int angle)
 
 void ModernGLWidget::setViewCenter(int areaId, int xPos, int yPos, int zPos)
 {
-    mAID = areaId;
     mShiftMode = true;
-    mMapCenterX = xPos;
-    mMapCenterY = yPos;
-    mMapCenterZ = zPos;
-    mCameraController.setViewCenter(xPos, yPos, zPos);
-    update();
+    
+    // Check if smooth camera experiment is enabled
+    if (mpHost && mpHost->isExperimentEnabled("experiment.rendering.smooth-camera")) {
+        // Use smooth transition
+        startSmoothTransition(areaId, xPos, yPos, zPos);
+    } else {
+        // Original instant movement
+        mAID = areaId;
+        mMapCenterX = xPos;
+        mMapCenterY = yPos;
+        mMapCenterZ = zPos;
+        mCameraController.setViewCenter(xPos, yPos, zPos);
+        update();
+    }
 }
 
 void ModernGLWidget::wheelEvent(QWheelEvent* e)
@@ -1082,4 +1162,85 @@ QColor ModernGLWidget::getEnvironmentColor(TRoom* pRoom)
     }
 
     return roomColor;
+}
+
+void ModernGLWidget::startSmoothTransition(int targetAID, int targetX, int targetY, int targetZ)
+{
+    qDebug() << "[Smooth Camera] Starting smooth transition - timer interval:" << mCameraAnimationTimer->interval() 
+             << "ms, duration:" << mAnimationDuration << "ms";
+    qDebug() << "[Smooth Camera] Start position: (" << mMapCenterX << "," << mMapCenterY << "," << mMapCenterZ << ")"
+             << "Target position: (" << targetX << "," << targetY << "," << targetZ << ")";
+    
+    // Set up animation parameters
+    mTargetAID = targetAID;
+    mTargetMapCenterX = static_cast<float>(targetX);
+    mTargetMapCenterY = static_cast<float>(targetY);
+    mTargetMapCenterZ = static_cast<float>(targetZ);
+    
+    // Store current position as start position
+    mStartMapCenterX = static_cast<float>(mMapCenterX);
+    mStartMapCenterY = static_cast<float>(mMapCenterY);
+    mStartMapCenterZ = static_cast<float>(mMapCenterZ);
+    
+    // Initialize current animation position
+    mCurrentAnimationX = mStartMapCenterX;
+    mCurrentAnimationY = mStartMapCenterY;
+    mCurrentAnimationZ = mStartMapCenterZ;
+    
+    // Reset animation progress
+    mAnimationProgress = 0.0;
+    
+    // Set animation flag to prevent interference
+    mCameraSmoothAnimating = true;
+    
+    // Start animation timer
+    mCameraAnimationTimer->start();
+    qDebug() << "[Smooth Camera] Timer started, animating flag set to true";
+}
+
+void ModernGLWidget::onCameraAnimationTick()
+{
+    // Update animation progress
+    mAnimationProgress += static_cast<qreal>(mCameraAnimationTimer->interval()) / mAnimationDuration;
+    
+    qDebug() << "[Smooth Camera] Animation tick - progress:" << mAnimationProgress << 
+                "integer pos: (" << mMapCenterX << "," << mMapCenterY << "," << mMapCenterZ << ")" <<
+                "camera pos: (" << mCameraController.getCenterX() << "," << mCameraController.getCenterY() << "," << mCameraController.getCenterZ() << ")";
+    
+    if (mAnimationProgress >= 1.0) {
+        // Animation complete - set final position and stop
+        mAnimationProgress = 1.0;
+        mCameraAnimationTimer->stop();
+        
+        mAID = mTargetAID;
+        mMapCenterX = static_cast<int>(mTargetMapCenterX);
+        mMapCenterY = static_cast<int>(mTargetMapCenterY);
+        mMapCenterZ = static_cast<int>(mTargetMapCenterZ);
+        
+        // Set final floating-point position
+        mCurrentAnimationX = mTargetMapCenterX;
+        mCurrentAnimationY = mTargetMapCenterY;
+        mCurrentAnimationZ = mTargetMapCenterZ;
+        
+        // Clear animation flag to resume normal camera tracking
+        mCameraSmoothAnimating = false;
+        
+        qDebug() << "[Smooth Camera] Animation COMPLETED - final position: (" << mCurrentAnimationX << "," << mCurrentAnimationY << "," << mCurrentAnimationZ << ")";
+    } else {
+        // Interpolate between start and target positions using floating-point
+        qreal easedProgress = mEasingCurve.valueForProgress(mAnimationProgress);
+        
+        mCurrentAnimationX = mStartMapCenterX + (mTargetMapCenterX - mStartMapCenterX) * easedProgress;
+        mCurrentAnimationY = mStartMapCenterY + (mTargetMapCenterY - mStartMapCenterY) * easedProgress;
+        mCurrentAnimationZ = mStartMapCenterZ + (mTargetMapCenterZ - mStartMapCenterZ) * easedProgress;
+        
+        qDebug() << "[Smooth Camera] Interpolating - eased progress:" << easedProgress << 
+                    "new float pos: (" << mCurrentAnimationX << "," << mCurrentAnimationY << "," << mCurrentAnimationZ << ")";
+    }
+    
+    // Update camera controller with current floating-point position
+    mCameraController.setViewCenter(mCurrentAnimationX, mCurrentAnimationY, mCurrentAnimationZ);
+    
+    // Trigger a repaint
+    update();
 }

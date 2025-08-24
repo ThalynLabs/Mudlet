@@ -43,11 +43,12 @@ void CameraController::setRotation(float xRot, float yRot, float zRot)
     mZRot = zRot;
 }
 
-void CameraController::setPosition(int centerX, int centerY, int centerZ)
+void CameraController::setPosition(float centerX, float centerY, float centerZ)
 {
     mCenterX = centerX;
     mCenterY = centerY;
     mCenterZ = centerZ;
+    qDebug() << "[CameraController] setPosition updated to: (" << mCenterX << "," << mCenterY << "," << mCenterZ << ")";
 }
 
 void CameraController::setScale(float scale)
@@ -104,8 +105,9 @@ void CameraController::updateMatrices()
     calculateModelMatrix();
 }
 
-void CameraController::setViewCenter(int x, int y, int z)
+void CameraController::setViewCenter(float x, float y, float z)
 {
+    qDebug() << "[CameraController] setViewCenter called with: (" << x << "," << y << "," << z << ")";
     setPosition(x, y, z);
 }
 
@@ -127,9 +129,9 @@ void CameraController::calculateViewMatrix()
     // gluLookAt(px * 0.1 + xRot, py * 0.1 + yRot, pz * 0.1 + zRot, px * 0.1, py * 0.1, pz * 0.1, 0.0, 1.0, 0.0);
 
     // Calculate camera position with offsets (scale appropriately for our coordinate system)
-    const float px = static_cast<float>(mCenterX) * 0.1f;
-    const float py = static_cast<float>(mCenterY) * 0.1f;
-    const float pz = static_cast<float>(mCenterZ) * 0.1f;
+    const float px = mCenterX * 0.1f;
+    const float py = mCenterY * 0.1f;
+    const float pz = mCenterZ * 0.1f;
 
     // Camera position with offsets, scaled by mScale for zoom
     // The original offsets are scaled by the zoom factor to maintain proper distance

@@ -4584,6 +4584,7 @@ void Host::setUseModern3DMapper(const bool enabled)
 const QSet<QString> Host::mValidExperiments = {
     qsl("experiment.rendering.originalish"),
     qsl("experiment.rendering.more-transparent"),
+    qsl("experiment.rendering.smooth-camera"),
 };
 
 bool Host::isExperimentEnabled(const QString& experimentKey) const

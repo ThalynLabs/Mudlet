@@ -33,7 +33,7 @@ public:
 
     // Camera position and orientation
     void setRotation(float xRot, float yRot, float zRot);
-    void setPosition(int centerX, int centerY, int centerZ);
+    void setPosition(float centerX, float centerY, float centerZ);
     void setScale(float scale);
     void setViewportSize(int width, int height);
     
@@ -54,12 +54,12 @@ public:
     float getYRot() const { return mYRot; }
     float getZRot() const { return mZRot; }
     float getScale() const { return mScale; }
-    int getCenterX() const { return mCenterX; }
-    int getCenterY() const { return mCenterY; }
-    int getCenterZ() const { return mCenterZ; }
+    float getCenterX() const { return mCenterX; }
+    float getCenterY() const { return mCenterY; }
+    float getCenterZ() const { return mCenterZ; }
     
     // View center (for external API compatibility)
-    void setViewCenter(int x, int y, int z);
+    void setViewCenter(float x, float y, float z);
 
 private:
     // Camera parameters
@@ -68,9 +68,9 @@ private:
     float mZRot = 10.0f;
     float mScale = 1.0f;
     
-    int mCenterX = 0;
-    int mCenterY = 0;
-    int mCenterZ = 0;
+    float mCenterX = 0.0f;
+    float mCenterY = 0.0f;
+    float mCenterZ = 0.0f;
     
     int mViewportWidth = 400;
     int mViewportHeight = 400;

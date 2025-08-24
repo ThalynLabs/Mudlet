@@ -40,6 +40,8 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLWidget>
 #include <QPointer>
+#include <QTimer>
+#include <QEasingCurve>
 #include "post_guard.h"
 
 #include "GeometryManager.h"
@@ -87,6 +89,9 @@ public slots:
     void slot_defaultView();
     void slot_sideView();
     void slot_topView();
+
+private slots:
+    void onCameraAnimationTick();
 
 protected:
     void initializeGL() override;
@@ -148,6 +153,24 @@ private:
     
     // Frame timing for benchmarking
     QElapsedTimer mFrameTimer;
+    
+    // Smooth camera animation
+    QTimer* mCameraAnimationTimer = nullptr;
+    int mTargetAID = 0;
+    float mTargetMapCenterX = 0.0f;
+    float mTargetMapCenterY = 0.0f;
+    float mTargetMapCenterZ = 0.0f;
+    float mStartMapCenterX = 0.0f;
+    float mStartMapCenterY = 0.0f; 
+    float mStartMapCenterZ = 0.0f;
+    float mCurrentAnimationX = 0.0f; // Floating point current position during animation
+    float mCurrentAnimationY = 0.0f;
+    float mCurrentAnimationZ = 0.0f;
+    qreal mAnimationProgress = 0.0;
+    int mAnimationDuration = 250; // 250ms animation duration for perceptible smooth movement
+    QEasingCurve mEasingCurve;
+    bool mCameraSmoothAnimating = false; // Dedicated flag for smooth camera animation
+    int mPreviousRID = 0; // Track previous room ID to detect changes
 
     // Private methods for modern OpenGL
     void updateMatrices();
@@ -162,6 +185,7 @@ private:
     void cleanup();
     QColor getPlaneColor(int zLevel, bool belowOrAtLevel);
     QColor getEnvironmentColor(TRoom* pRoom);
+    void startSmoothTransition(int targetAID, int targetX, int targetY, int targetZ);
 };
 
 #endif // MUDLET_MODERN_GLWIDGET_H
