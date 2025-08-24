@@ -338,12 +338,31 @@ void ModernGLWidget::renderRooms()
             if (mpHost->isExperimentEnabled("experiment.rendering.more-transparent")) {
                 static bool debugOnce = false;
                 if (!debugOnce) {
-                    qDebug() << "[Experiment Debug] More-transparent experiment is ENABLED - FULLY TRANSPARENT TEST";
+                    qDebug() << "[Experiment Debug] More-transparent experiment is ENABLED - SLIDING DARKNESS TEST";
                     debugOnce = true;
                 }
-                // EXPERIMENT: Make ALL rooms 99% transparent (alpha = 0.01) - barely visible
-                roomAlpha = 0.01f;
-                qDebug() << "[99% Transparency Test] Room at Z:" << rz << "Player Z:" << pz << "Alpha set to:" << roomAlpha;
+                // EXPERIMENT: Apply sliding darkness based on level distance
+                int levelDistance = abs(static_cast<int>(rz - pz));
+                float darknessFactor = 1.0f; // Default: no darkness
+                
+                if (levelDistance == 1) {
+                    darknessFactor = 0.5f; // 50% darker
+                } else if (levelDistance == 2) {
+                    darknessFactor = 0.2f; // 80% darker
+                } else if (levelDistance > 2) {
+                    darknessFactor = 0.05f; // 95% darker
+                }
+                
+                // Apply darkness to color components, keep full opacity
+                redComponent *= darknessFactor;
+                greenComponent *= darknessFactor;
+                blueComponent *= darknessFactor;
+                roomAlpha = 1.0f; // Full opacity
+                
+                if (levelDistance > 0) {
+                    qDebug() << "[Sliding Darkness] Room Z:" << rz << "Player Z:" << pz 
+                             << "Distance:" << levelDistance << "Darkness factor:" << darknessFactor;
+                }
             } else {
                 // Original rendering: rooms above are dark and transparent
                 roomAlpha = belowOrAtLevel ? 1.0f : 0.2f; // 80% transparent (20% opacity) if above current level
@@ -372,10 +391,25 @@ void ModernGLWidget::renderRooms()
         float envBlue = envColor.blueF();
         float overlayAlpha = 0.8f; // Default overlay transparency
         
-        // Apply same full transparency to environment overlay
+        // Apply same sliding darkness to environment overlay
         if (mpHost->isExperimentEnabled("experiment.rendering.more-transparent")) {
-            // EXPERIMENT: Make environment overlay 99% transparent too
-            overlayAlpha = 0.01f;
+            // EXPERIMENT: Apply same darkness calculation to environment overlay
+            int levelDistance = abs(static_cast<int>(rz - pz));
+            float darknessFactor = 1.0f; // Default: no darkness
+            
+            if (levelDistance == 1) {
+                darknessFactor = 0.5f; // 50% darker
+            } else if (levelDistance == 2) {
+                darknessFactor = 0.2f; // 80% darker
+            } else if (levelDistance > 2) {
+                darknessFactor = 0.05f; // 95% darker
+            }
+            
+            // Apply darkness to environment overlay colors, keep normal alpha
+            envRed *= darknessFactor;
+            envGreen *= darknessFactor;
+            envBlue *= darknessFactor;
+            overlayAlpha = 0.8f; // Normal overlay alpha
         } else {
             // Original rendering: darken overlays above player level
             overlayAlpha = belowOrAtLevel ? 0.8f : 0.16f; // 84% transparent if above current level (0.2 * 0.8)
