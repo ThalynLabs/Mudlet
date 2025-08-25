@@ -4619,7 +4619,7 @@ std::pair<bool, QString> Host::setExperimentEnabled(const QString& experimentKey
     
 #if defined(INCLUDE_3DMAPPER)
     // Refresh maps if any experiments changed the 3D map
-    if (mpMap && mpMap->mpMapper && mpHost->mpMap->mpMapper->mp2dMap) {
+    if (mpMap && mpMap->mpMapper && mpMap->mpMapper->mp2dMap) {
         mpMap->mpMapper->mp2dMap->update();
     }
     if (mpMap && mpMap->mpM) {

@@ -695,7 +695,6 @@ void ModernGLWidget::renderCube(float x, float y, float z, float size, float r, 
     mRenderCommandQueue.addCommand(std::move(command));
 }
 
-// Implement slot methods (same interface as original)
 void ModernGLWidget::slot_showAllLevels()
 {
     mShowTopLevels = 999999;
@@ -707,7 +706,6 @@ void ModernGLWidget::slot_shiftDown()
 {
     mShiftMode = true;
     
-    // Check if smooth camera experiment is enabled
     if (mpHost && mpHost->isExperimentEnabled("experiment.rendering-movement.smooth")) {
         startSmoothTransition(mAID, mMapCenterX, mMapCenterY - 1, mMapCenterZ);
     } else {
@@ -720,7 +718,6 @@ void ModernGLWidget::slot_shiftUp()
 {
     mShiftMode = true;
     
-    // Check if smooth camera experiment is enabled
     if (mpHost && mpHost->isExperimentEnabled("experiment.rendering-movement.smooth")) {
         startSmoothTransition(mAID, mMapCenterX, mMapCenterY + 1, mMapCenterZ);
     } else {
@@ -733,7 +730,6 @@ void ModernGLWidget::slot_shiftLeft()
 {
     mShiftMode = true;
     
-    // Check if smooth camera experiment is enabled
     if (mpHost && mpHost->isExperimentEnabled("experiment.rendering-movement.smooth")) {
         startSmoothTransition(mAID, mMapCenterX - 1, mMapCenterY, mMapCenterZ);
     } else {
@@ -746,7 +742,6 @@ void ModernGLWidget::slot_shiftRight()
 {
     mShiftMode = true;
     
-    // Check if smooth camera experiment is enabled
     if (mpHost && mpHost->isExperimentEnabled("experiment.rendering-movement.smooth")) {
         startSmoothTransition(mAID, mMapCenterX + 1, mMapCenterY, mMapCenterZ);
     } else {
@@ -759,7 +754,6 @@ void ModernGLWidget::slot_shiftZup()
 {
     mShiftMode = true;
     
-    // Check if smooth camera experiment is enabled
     if (mpHost && mpHost->isExperimentEnabled("experiment.rendering-movement.smooth")) {
         startSmoothTransition(mAID, mMapCenterX, mMapCenterY, mMapCenterZ + 1);
     } else {
@@ -772,7 +766,6 @@ void ModernGLWidget::slot_shiftZdown()
 {
     mShiftMode = true;
     
-    // Check if smooth camera experiment is enabled
     if (mpHost && mpHost->isExperimentEnabled("experiment.rendering-movement.smooth")) {
         startSmoothTransition(mAID, mMapCenterX, mMapCenterY, mMapCenterZ - 1);
     } else {
@@ -880,7 +873,6 @@ void ModernGLWidget::setViewCenter(int areaId, int xPos, int yPos, int zPos)
 {
     mShiftMode = true;
     
-    // Check if smooth camera experiment is enabled
     if (mpHost && mpHost->isExperimentEnabled("experiment.rendering-movement.smooth")) {
         // Use smooth transition
         startSmoothTransition(areaId, xPos, yPos, zPos);
