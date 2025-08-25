@@ -4606,9 +4606,9 @@ std::pair<bool, QString> Host::setExperimentEnabled(const QString& experimentKey
             QString group = experimentKey.section('.', 0, 1);
             
             // Disable all other experiments in the same group
-            for (auto& [key, value] : mExperiments) {
-                if (key != experimentKey && key.startsWith(group + ".")) {
-                    value = false;
+            for (auto it = mExperiments.begin(); it != mExperiments.end(); ++it) {
+                if (it.key() != experimentKey && it.key().startsWith(group + ".")) {
+                    it.value() = false;
                 }
             }
         }
