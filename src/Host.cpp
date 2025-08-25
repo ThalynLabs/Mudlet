@@ -4584,7 +4584,7 @@ void Host::setUseModern3DMapper(const bool enabled)
 const QSet<QString> Host::mValidExperiments = {
     qsl("experiment.rendering.originalish"),
     qsl("experiment.rendering.more-transparent"),
-    qsl("experiment.rendering.smooth-camera"),
+    qsl("experiment.rendering-movement.smooth"),
 };
 
 bool Host::isExperimentEnabled(const QString& experimentKey) const
@@ -4606,12 +4606,10 @@ std::pair<bool, QString> Host::setExperimentEnabled(const QString& experimentKey
             QString group = experimentKey.section('.', 0, 1);
             
             // Disable all other experiments in the same group
-            auto it = mExperiments.begin();
-            while (it != mExperiments.end()) {
-                if (it.key() != experimentKey && it.key().startsWith(group + ".")) {
-                    it.value() = false;
+            for (auto& [key, value] : mExperiments) {
+                if (key != experimentKey && key.startsWith(group + ".")) {
+                    value = false;
                 }
-                ++it;
             }
         }
         mExperiments[experimentKey] = true;
@@ -4620,11 +4618,12 @@ std::pair<bool, QString> Host::setExperimentEnabled(const QString& experimentKey
     }
     
 #if defined(INCLUDE_3DMAPPER)
-    // Refresh 3D map if rendering experiments changed
-    if (experimentKey.startsWith(qsl("experiment.rendering."))) {
-        if (mpMap && mpMap->mpM) {
-            mpMap->mpM->update();
-        }
+    // Refresh maps if any experiments changed the 3D map
+    if (mpMap && mpMap->mpMapper && mpHost->mpMap->mpMapper->mp2dMap) {
+        mpMap->mpMapper->mp2dMap->update();
+    }
+    if (mpMap && mpMap->mpM) {
+        mpMap->mpM->update();
     }
 #endif
     
