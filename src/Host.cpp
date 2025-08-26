@@ -4583,7 +4583,7 @@ const QSet<QString> Host::mValidExperiments = {
     qsl("experiment.3dmap.modernmapper"),
 };
 
-bool Host::isExperimentEnabled(const QString& experimentKey) const
+bool Host::experimentEnabled(const QString& experimentKey) const
 {
     return mExperiments.value(experimentKey, false);
 }

@@ -214,10 +214,10 @@ public:
     ControlCharacterMode  getControlCharacterMode() const { return mControlCharacter; }
     bool            getLargeAreaExitArrows() const { return mLargeAreaExitArrows; }
     void            setLargeAreaExitArrows(const bool);
-    bool            getUseModern3DMapper() const { return isExperimentEnabled(qsl("experiment.3dmap.modernmapper")); }
+    bool            getUseModern3DMapper() const { return experimentEnabled(qsl("experiment.3dmap.modernmapper")); }
 
     // Experiment system methods
-    bool            isExperimentEnabled(const QString& experimentKey) const;
+    bool            experimentEnabled(const QString& experimentKey) const;
     std::pair<bool, QString> setExperimentEnabled(const QString& experimentKey, bool enabled);
     QString         getActiveExperimentInGroup(const QString& group) const;
     QStringList     getAllExperiments() const;

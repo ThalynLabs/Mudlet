@@ -7766,7 +7766,7 @@ int TLuaInterpreter::getConfig(lua_State *L)
             // Regular experiment key - but only if it's valid
             QStringList validExperiments = host.getValidExperiments();
             if (validExperiments.contains(key)) {
-                lua_pushboolean(L, host.isExperimentEnabled(key));
+                lua_pushboolean(L, host.experimentEnabled(key));
             } else {
                 lua_pushboolean(L, false);  // Invalid experiments are always false
             }
