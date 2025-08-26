@@ -4575,16 +4575,12 @@ QFont Host::getAndClearTempDisplayFont()
     return tempFont;
 }
 
-void Host::setUseModern3DMapper(const bool enabled)
-{
-    mUseModern3DMapper = enabled;
-}
-
 // Static whitelist of valid experiments
 const QSet<QString> Host::mValidExperiments = {
     qsl("experiment.rendering.originalish"),
     qsl("experiment.rendering.more-transparent"),
     qsl("experiment.rendering-movement.smooth"),
+    qsl("experiment.3dmap.modernmapper"),
 };
 
 bool Host::isExperimentEnabled(const QString& experimentKey) const
