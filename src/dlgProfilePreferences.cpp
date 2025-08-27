@@ -1160,6 +1160,7 @@ void dlgProfilePreferences::initWithHost(Host* pHost)
     doubleSpinBox_networkPacketTimeout->setValue(pHost->mTelnet.getPostingTimeout() / 1000.0);
     comboBox_caretModeKey->setCurrentIndex(static_cast<int>(pHost->mCaretShortcut));
     checkBox_largeAreaExitArrows->setChecked(pHost->getLargeAreaExitArrows());
+    checkBox_invertMapZoom->setChecked(mudlet::self()->invertMapZoom());
     comboBox_blankLinesBehaviour->setCurrentIndex(static_cast<int>(pHost->mBlankLineBehaviour));
 
     // Enable the controls that would be disabled if there wasn't a Host instance
@@ -1247,6 +1248,7 @@ void dlgProfilePreferences::initWithHost(Host* pHost)
     connect(mIsToLogInHtml, &QAbstractButton::clicked, this, &dlgProfilePreferences::slot_changeLogFileAsHtml);
     connect(doubleSpinBox_networkPacketTimeout, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &dlgProfilePreferences::slot_setPostingTimeout);
     connect(checkBox_largeAreaExitArrows, &QCheckBox::toggled, this, &dlgProfilePreferences::slot_changeLargeAreaExitArrows);
+    connect(checkBox_invertMapZoom, &QCheckBox::toggled, this, &dlgProfilePreferences::slot_changeInvertMapZoom);
 
     //Shortcuts tab
     auto shortcutKeys = mudlet::self()->mpShortcutsManager->iterator();
@@ -1375,6 +1377,7 @@ void dlgProfilePreferences::disconnectHostRelatedControls()
     disconnect(spinBox_playerRoomOuterDiameter, qOverload<int>(&QSpinBox::valueChanged), nullptr, nullptr);
     disconnect(spinBox_playerRoomInnerDiameter, qOverload<int>(&QSpinBox::valueChanged), nullptr, nullptr);
     disconnect(checkBox_largeAreaExitArrows, &QCheckBox::toggled, nullptr, nullptr);
+    disconnect(checkBox_invertMapZoom, &QCheckBox::toggled, nullptr, nullptr);
 }
 
 void dlgProfilePreferences::clearHostDetails()
@@ -4513,6 +4516,11 @@ void dlgProfilePreferences::slot_changeLargeAreaExitArrows(const bool state)
     pHost->setLargeAreaExitArrows(state);
 }
 
+void dlgProfilePreferences::slot_changeInvertMapZoom(const bool state)
+{
+    mudlet::self()->setInvertMapZoom(state);
+}
+
 bool dlgProfilePreferences::updateDisplayFont()
 {
     if (mpHost.isNull() || (mpHost.data()->mpConsole.isNull())) {
@@ -4544,9 +4552,12 @@ bool dlgProfilePreferences::updateDisplayFont()
     }
 
 #if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
+#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
     // On GNU/Linux or FreeBSD ensure that emojis are displayed in colour even
     // if this font doesn't support it:
     QFont::insertSubstitution(mpHost->getDisplayFont().family(), qsl("Noto Color Emoji"));
+#endif
+    // For Qt 6.9+, emoji font support is handled globally in FontManager::addEmojiFont()
 #endif
 
     // update the display properly when font or size or antiAliasing selections
