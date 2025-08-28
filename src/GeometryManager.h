@@ -31,11 +31,13 @@ struct GeometryData {
     QVector<float> vertices;
     QVector<float> colors;
     QVector<float> normals;
+    QVector<unsigned int> indices;
     
     void clear() {
         vertices.clear();
         colors.clear();
         normals.clear();
+        indices.clear();
     }
     
     bool isEmpty() const {
@@ -44,6 +46,14 @@ struct GeometryData {
     
     int vertexCount() const {
         return vertices.size() / 3;
+    }
+    
+    int indexCount() const {
+        return indices.size();
+    }
+    
+    bool hasIndices() const {
+        return !indices.isEmpty();
     }
 };
 
@@ -67,6 +77,7 @@ public:
                        QOpenGLBuffer& vertexBuffer,
                        QOpenGLBuffer& colorBuffer,
                        QOpenGLBuffer& normalBuffer,
+                       QOpenGLBuffer& indexBuffer,
                        GLenum drawMode = GL_TRIANGLES);
                        
     // Render geometry with resource tracking
@@ -75,6 +86,7 @@ public:
                        QOpenGLBuffer& vertexBuffer,
                        QOpenGLBuffer& colorBuffer,
                        QOpenGLBuffer& normalBuffer,
+                       QOpenGLBuffer& indexBuffer,
                        class ResourceManager* resourceManager,
                        GLenum drawMode = GL_TRIANGLES);
 
