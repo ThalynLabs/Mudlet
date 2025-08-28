@@ -4797,8 +4797,8 @@ QAbstractSocket::SocketState cTelnet::getConnectionState() const
     }
 
     // These two other states should not be possible!
-    Q_ASSERT_X(mSocket_ipV4.state() != QAbstractSocket::ListeningState && mSocket_ipV4.state() != QAbstractSocket::BoundState, "cTelnet::getConnectionState()", "The IPv4 socket is not in an expected state." );
-    Q_ASSERT_X(mSocket_ipV6.state() != QAbstractSocket::ListeningState && mSocket_ipV6.state() != QAbstractSocket::BoundState, "cTelnet::getConnectionState()", "The IPv6 socket is not in an expected state." );
+    Q_ASSERT_X(mSocket_ipV4.state() != QAbstractSocket::ListeningState && mSocket_ipV4.state() != QAbstractSocket::BoundState, "cTelnet::getConnectionState()", "The IPv4 socket is not in an expected state.");
+    Q_ASSERT_X(mSocket_ipV6.state() != QAbstractSocket::ListeningState && mSocket_ipV6.state() != QAbstractSocket::BoundState, "cTelnet::getConnectionState()", "The IPv6 socket is not in an expected state.");
 
     return QAbstractSocket::UnconnectedState;
 }
