@@ -42,6 +42,22 @@ dlgNotepad::dlgNotepad(Host* pH)
 {
     setupUi(this);
 
+    checkBox_prependText = new QCheckBox("Prepend");
+    toolBar->addWidget(checkBox_prependText);
+
+    lineEdit_prependText = new QLineEdit(this);
+    lineEdit_prependText->setPlaceholderText("Text to prepend to lines");
+    toolBar->addWidget(lineEdit_prependText);
+
+    action_stop = new QAction("Stop", this);
+    toolBar->addAction(action_stop);
+    action_stop->setEnabled(false);
+
+    connect(action_stop, &QAction::triggered, this, &dlgNotepad::slot_stopSending);
+    connect(action_sendAll, &QAction::triggered, this, &dlgNotepad::slot_sendAll);
+    connect(action_sendLine, &QAction::triggered, this, &dlgNotepad::slot_sendLine);
+    connect(action_sendSelected, &QAction::triggered, this, &dlgNotepad::slot_sendSelected);
+
     if (mpHost) {
         restore();
         notesEdit->setFont(mpHost->getDisplayFont());
@@ -139,4 +155,66 @@ void dlgNotepad::timerEvent(QTimerEvent* event)
     }
 
     save();
+}
+
+void dlgNotepad::slot_sendAll() {
+    QString allText = notesEdit->toPlainText();
+    QStringList lines = allText.split('\n');
+    startSendingLines(lines);
+}
+
+void dlgNotepad::slot_sendLine() {
+    QTextCursor cursor = notesEdit->textCursor();
+    cursor.select(QTextCursor::LineUnderCursor);
+    QString line = cursor.selectedText();
+
+    if (!line.isEmpty()) {
+        startSendingLines(QStringList{line});
+    }
+}
+
+void dlgNotepad::slot_sendSelected() {
+    QString selectedText = notesEdit->textCursor().selectedText();
+
+    if (!selectedText.isEmpty()) {
+        QStringList lines = selectedText.replace(QChar(0x2029), "\n").split('\n');
+        startSendingLines(lines);
+    }
+}
+
+void dlgNotepad::startSendingLines(const QStringList& lines) {
+    mLinesToSend = lines;
+    mCurrentLineIndex = 0;
+
+    if (!mSendTimer) {
+        mSendTimer = new QTimer(this);
+        connect(mSendTimer, &QTimer::timeout, this, &dlgNotepad::slot_sendNextLine);
+    }
+
+    action_stop->setEnabled(true);
+    mSendTimer->start(300);
+}
+
+void dlgNotepad::slot_sendNextLine() {
+    if (mCurrentLineIndex >= mLinesToSend.size()) {
+        mSendTimer->stop();
+        action_stop->setEnabled(false);
+        return;
+    }
+
+    QString line = mLinesToSend[mCurrentLineIndex++];
+    if (!line.isEmpty()) {
+        QString prepend = checkBox_prependText->isChecked() ? lineEdit_prependText->text() : "";
+        mpHost->send(prepend + line);
+    }
+}
+
+void dlgNotepad::slot_stopSending() {
+    if (mSendTimer && mSendTimer->isActive()) {
+        mSendTimer->stop();
+    }
+
+    action_stop->setEnabled(false);
+    mLinesToSend.clear();
+    mCurrentLineIndex = 0;
 }
