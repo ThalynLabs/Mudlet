@@ -42,11 +42,9 @@ dlgNotepad::dlgNotepad(Host* pH)
 {
     setupUi(this);
 
-    checkBox_prependText = new QCheckBox("Prepend");
-    toolBar->addWidget(checkBox_prependText);
-
     lineEdit_prependText = new QLineEdit(this);
-    lineEdit_prependText->setPlaceholderText("Text to prepend to lines");
+    lineEdit_prependText->setPlaceholderText(tr("Text to prepend to lines"));
+    lineEdit_prependText->setClearButtonEnabled(true);
     toolBar->addWidget(lineEdit_prependText);
 
     action_stop = new QAction("Stop", this);
@@ -204,7 +202,7 @@ void dlgNotepad::slot_sendNextLine() {
 
     QString line = mLinesToSend[mCurrentLineIndex++];
     if (!line.isEmpty()) {
-        QString prepend = checkBox_prependText->isChecked() ? lineEdit_prependText->text() : "";
+        QString prepend = lineEdit_prependText->text().isEmpty() ? "" : lineEdit_prependText->text();
         mpHost->send(prepend + line);
     }
 }

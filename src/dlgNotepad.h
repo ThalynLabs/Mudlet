@@ -64,7 +64,6 @@ private:
     QPointer<Host> mpHost;
     bool mNeedToSave = false;
     QAction* action_stop = nullptr;
-    QCheckBox* checkBox_prependText = nullptr;
     QLineEdit* lineEdit_prependText = nullptr;
     QStringList mLinesToSend;
     QTimer* mSendTimer = nullptr;
