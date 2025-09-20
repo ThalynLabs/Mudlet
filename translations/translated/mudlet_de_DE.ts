@@ -9203,7 +9203,7 @@ Items to be deleted:
 %2</source>
       <translation>Willst Du wirklich %1 Skripte löschen?
 
-Einträge, die gelöscht werden sollen:
+Objekte, die gelöscht werden sollen:
 %2</translation>
     </message>
     <message>
@@ -9214,7 +9214,7 @@ Einträge, die gelöscht werden sollen:
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="3219"/>
       <source>Do you really want to delete key &quot;%1&quot;?</source>
-      <translation type="unfinished"/>
+      <translation>Möchtest Du die Taste &quot;%1&quot; wirklich löschen?</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="3221"/>
@@ -9224,7 +9224,7 @@ Items to be deleted:
 %2</source>
       <translation>Willst Du wirklich %1 Tasten löschen?
 
-Einträge, die gelöscht werden sollen:
+Objekte, die gelöscht werden sollen:
 %2</translation>
     </message>
     <message>
@@ -9235,7 +9235,10 @@ Einträge, die gelöscht werden sollen:
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="3292"/>
       <source>Do you really want to delete trigger &quot;%1&quot;?</source>
-      <translation type="unfinished"/>
+      <translation>Willst Du wirklich %1 Trigger löschen?
+
+Einträge, die gelöscht werden sollen:
+%2</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="3294"/>
@@ -9245,7 +9248,7 @@ Items to be deleted:
 %2</source>
       <translation>Willst Du wirklich %1 Trigger löschen?
 
-Einträge, die gelöscht werden sollen:
+Objekte, die gelöscht werden sollen:
 %2</translation>
     </message>
     <message>
@@ -9256,7 +9259,10 @@ Einträge, die gelöscht werden sollen:
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="3365"/>
       <source>Do you really want to delete timer &quot;%1&quot;?</source>
-      <translation type="unfinished"/>
+      <translation>Willst Du wirklich %1 Timer löschen?
+
+Einträge, die gelöscht werden sollen:
+%2</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="3367"/>
@@ -9266,7 +9272,7 @@ Items to be deleted:
 %2</source>
       <translation>Willst Du wirklich %1 Timer löschen?
 
-Einträge, die gelöscht werden sollen:
+Objekte, die gelöscht werden sollen:
 %2</translation>
     </message>
     <message>
@@ -9301,7 +9307,7 @@ Einträge, die gelöscht werden sollen:
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="5063"/>
       <source>This item is part of a package. To best preserve your changes, copy this item before editing as package upgrades may overwrite modifications.</source>
-      <translation type="unfinished"/>
+      <translation>Dieses Objekt gehört zu einem Paket. Kopiere das Objekt, bevor Du es änderst, da Updates des Paketes sonst Deine Änderungen überschreiben könnten.</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="6311"/>
@@ -9740,7 +9746,7 @@ Einträge, die gelöscht werden sollen:
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="9462"/>
       <source>No valid triggers found to export.</source>
-      <translation type="unfinished"/>
+      <translation>Keine gültigen Trigger zum Exportieren gefunden.</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="9470"/>
@@ -9755,57 +9761,57 @@ Einträge, die gelöscht werden sollen:
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="9474"/>
       <source>Copied %1 triggers to clipboard</source>
-      <translation type="unfinished"/>
+      <translation>%1 Trigger in die Zwischenablage kopiert</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="9526"/>
       <source>No valid timers found to export.</source>
-      <translation type="unfinished"/>
+      <translation>Keine gültigen Timer zum Exportieren gefunden.</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="9536"/>
       <source>Copied %1 timers to clipboard</source>
-      <translation type="unfinished"/>
+      <translation>%1 Timer in die Zwischenablage kopiert</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="9582"/>
       <source>No valid aliases found to export.</source>
-      <translation type="unfinished"/>
+      <translation>Keine gültigen Aliase zum Exportieren gefunden.</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="9592"/>
       <source>Copied %1 aliases to clipboard</source>
-      <translation type="unfinished"/>
+      <translation>%1 Aliase in die Zwischenablage kopiert</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="9638"/>
       <source>No valid actions found to export.</source>
-      <translation type="unfinished"/>
+      <translation>Keine gültigen Aktionen zum Exportieren gefunden.</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="9648"/>
       <source>Copied %1 actions to clipboard</source>
-      <translation type="unfinished"/>
+      <translation>%1 Aktionen in die Zwischenablage kopiert</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="9694"/>
       <source>No valid scripts found to export.</source>
-      <translation type="unfinished"/>
+      <translation>Keine gültigen Skripte zum Exportieren gefunden.</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="9704"/>
       <source>Copied %1 scripts to clipboard</source>
-      <translation type="unfinished"/>
+      <translation>%1 Skripte in die Zwischenablage kopiert</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="9750"/>
       <source>No valid keys found to export.</source>
-      <translation type="unfinished"/>
+      <translation>Keine gültigen Tasten zum Exportieren gefunden.</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="9760"/>
       <source>Copied %1 keys to clipboard</source>
-      <translation type="unfinished"/>
+      <translation>%1 Tasten in die Zwischenablage kopiert</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="9794"/>
@@ -9832,7 +9838,7 @@ Einträge, die gelöscht werden sollen:
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="10032"/>
       <source>Pasted %1 items successfully</source>
-      <translation type="unfinished"/>
+      <translation>%1 Objekte erfolgreich eingefügt</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="10302"/>
@@ -9936,7 +9942,7 @@ Einträge, die gelöscht werden sollen:
       <location filename="../src/dlgTriggerEditor.cpp" line="81"/>
       <source>Alias react on user input.</source>
       <extracomment>Headline for the Alias intro</extracomment>
-      <translation>Aliase reagieren auf Benutzereingaben.</translation>
+      <translation>Aliase reagieren auf die Eingaben des Spielers.</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="83"/>
@@ -9954,7 +9960,7 @@ Einträge, die gelöscht werden sollen:
       <location filename="../src/dlgTriggerEditor.cpp" line="117"/>
       <source>Triggers react on game output.</source>
       <extracomment>Headline for the Trigger intro</extracomment>
-      <translation type="unfinished"/>
+      <translation>Trigger reagieren auf die Ausgabe des Spiels.</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="119"/>
@@ -9972,7 +9978,7 @@ Einträge, die gelöscht werden sollen:
       <location filename="../src/dlgTriggerEditor.cpp" line="152"/>
       <source>Scripts organize code and can react to events.</source>
       <extracomment>Headline for the Script intro</extracomment>
-      <translation type="unfinished"/>
+      <translation>Skripte organisieren Code und können auf Ereignisse reagieren.</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="154"/>
@@ -9990,7 +9996,7 @@ Einträge, die gelöscht werden sollen:
       <location filename="../src/dlgTriggerEditor.cpp" line="162"/>
       <source>How to have a script react to events</source>
       <extracomment>Name of a selectable option for the Script intro</extracomment>
-      <translation type="unfinished"/>
+      <translation>Wie ein Skript auf Ereignisse reagieren kann</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="164"/>
@@ -10002,7 +10008,7 @@ Einträge, die gelöscht werden sollen:
       <location filename="../src/dlgTriggerEditor.cpp" line="177"/>
       <source>Timers react after a timespan once or regularly.</source>
       <extracomment>Headline for the Timer intro</extracomment>
-      <translation type="unfinished"/>
+      <translation>Timer reagieren nach eine Dauer einmal oder regelmäßig.</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="179"/>
@@ -10045,7 +10051,7 @@ Einträge, die gelöscht werden sollen:
       <location filename="../src/dlgTriggerEditor.cpp" line="221"/>
       <source>Keys react on keyboard presses.</source>
       <extracomment>Headline for the Keys intro</extracomment>
-      <translation type="unfinished"/>
+      <translation>Tasten reagieren bei einem Druck auf die Tastatur.</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="223"/>
@@ -10069,7 +10075,7 @@ Einträge, die gelöscht werden sollen:
       <location filename="../src/dlgTriggerEditor.cpp" line="245"/>
       <source>Variables store information.</source>
       <extracomment>Headline for the Variable intro</extracomment>
-      <translation type="unfinished"/>
+      <translation>Variablen speichern Informationen.</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="247"/>
@@ -11452,7 +11458,7 @@ Es gibt KEINE GARANTIE soweit gesetzlich zulässig.</translation>
     <message>
       <location filename="../src/ui/mapper.ui" line="576"/>
       <source>Export current area to image</source>
-      <translation type="unfinished"/>
+      <translation>Exportiere das aktuelle Gebiet als Bild</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="592"/>
