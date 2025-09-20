@@ -1414,7 +1414,7 @@ Accessibility-friendly description for the built-in command line of a console/wi
     <message>
       <location filename="../src/TConsole.cpp" line="440"/>
       <source>Match case precisely</source>
-      <translation>Groß - / Kleinschreibung genau</translation>
+      <translation>Groß - / Kleinschreibung genau abgleichen</translation>
     </message>
     <message>
       <location filename="../src/TConsole.cpp" line="453"/>
@@ -1880,7 +1880,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="258"/>
       <source>Configure connection details of, and make a connection to, game servers.</source>
       <extracomment>This explains the &quot;Play&quot; item in the &quot;Games&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Konfiguriere die Details der Verbindungen und verbinde zu Spielservern.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="265"/>
@@ -1892,7 +1892,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="272"/>
       <source>Disconnect from the current game server.</source>
       <extracomment>This explains the &quot;Disconnect&quot; item in the &quot;Games&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Trenne die Verbindung zum aktuellen Spielserver.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="277"/>
@@ -1904,19 +1904,19 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="284"/>
       <source>Disconnect and then reconnect to the current game server.</source>
       <extracomment>This explains the &quot;Reconnect&quot; item in the &quot;Games&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Trenne und verbinde dann wieder zum aktuellen Spielserver.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="303"/>
       <source>Close &amp;Mudlet</source>
       <extracomment>This is an item in the &quot;Games&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Mudlet &amp;schließen</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="305"/>
       <source>Close the entire Mudlet application</source>
       <extracomment>This explains the &quot;Close Mudlet&quot; item in the &quot;Games&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Schließe die gesamte Mudlet-Anwendung</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="311"/>
@@ -1940,37 +1940,37 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="326"/>
       <source>Show &amp;errors</source>
       <extracomment>This is an item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>&amp;Fehler anzeigen</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="328"/>
       <source>Show errors from scripts that you have running</source>
       <extracomment>This explains the &quot;Show errors&quot; item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Fehler von ausgeführten Skripten anzeigen</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="333"/>
       <source>Show &amp;map</source>
       <extracomment>This is an item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>&amp;Karte anzeigen</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="340"/>
       <source>Show or hide the game map.</source>
       <extracomment>This explains the &quot;Show map&quot; item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Karte des Spiels anzeigen oder verbergen.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="345"/>
       <source>Compact &amp;input line</source>
       <extracomment>This is an item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Kompakte &amp;Eingabezeile</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="352"/>
       <source>Hide / show the search area and buttons at the bottom of the screen.</source>
       <extracomment>This explains the &quot;Compact input line&quot; item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Suchbereich und Schaltflächen am unteren Bildschirmrand ein- und ausblenden.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="358"/>
@@ -1982,7 +1982,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="365"/>
       <source>Opens a free form text editor window for this profile that is saved between sessions.</source>
       <extracomment>This explains the &quot;Notepad&quot; item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Öffne einen formlosen Texteditor, der in diesem Profil zwischen den Sitzungen gespeichert wird.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="370"/>
@@ -1994,7 +1994,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="372"/>
       <source>Opens a built-in IRC chat.</source>
       <extracomment>This explains the &quot;IRC&quot; item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Öffnet einen eingebauten IRC-Chat.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="377"/>
@@ -2012,13 +2012,13 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="389"/>
       <source>Load &amp;replay</source>
       <extracomment>This is an item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>&amp;Wiederholung laden</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="391"/>
       <source>Load a previous saved game session that can be used to test Mudlet lua systems (off-line!).</source>
       <extracomment>This explains the &quot;Load replay&quot; item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Lade eine zuvor gespeicherte Spielsitzung, mit der Mudlets Lua Systeme (offline!) getestet werden können</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="396"/>
@@ -2036,7 +2036,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="408"/>
       <source>Package &amp;exporter</source>
       <extracomment>This is an item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Paket e&amp;xportieren</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="410"/>
@@ -2048,7 +2048,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="415"/>
       <source>Record replay</source>
       <extracomment>This is an item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Wiederholung aufzeichnen</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="422"/>
@@ -2060,25 +2060,25 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="427"/>
       <source>Record log</source>
       <extracomment>This is an item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Protokoll aufzeichnen</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="434"/>
       <source>Toggle logging facilities.</source>
       <extracomment>This explains the &quot;Record log&quot; item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Protokollierung ein- oder ausschalten</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="439"/>
       <source>Emergency stop</source>
       <extracomment>This is an item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Not-Aus</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="442"/>
       <source>Toggle all triggers, aliases, timers, etc. on or off</source>
       <extracomment>This explains the &quot;Emergency stop&quot; item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Alle Trigger, Aliasse, Timer usw. ein- oder ausschalten</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="448"/>
@@ -2102,19 +2102,19 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="459"/>
       <source>&amp;Timestamps</source>
       <extracomment>This is an item in the &quot;Options&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>&amp;Zeitstempel</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="462"/>
       <source>Toggle time stamps on the main console.</source>
       <extracomment>This explains the &quot;Timestamps&quot; item in the &quot;Options&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Zeitstempel auf der Hauptkonsole ein- oder ausschalten</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="472"/>
       <source>Mutes all media played.</source>
       <extracomment>This explains the &quot;Mute all media&quot; item in the &quot;Options&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Alle abgespielten Medien werden stumm gestellt</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="478"/>
@@ -2154,7 +2154,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="506"/>
       <source>&amp;Multiview</source>
       <extracomment>This is an item in the &quot;Window&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>&amp;Multi-Sicht</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="509"/>
@@ -2166,7 +2166,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="534"/>
       <source>Minimize this window</source>
       <extracomment>This explains the &quot;Minimize&quot; item in the &quot;Window&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Dieses Fenster minimieren</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="540"/>
@@ -2184,7 +2184,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="545"/>
       <source>Opens the Mudlet manual in your web browser.</source>
       <extracomment>This explains the &quot;API Reference&quot; item in the &quot;Help&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Öffne das Mudlet-Handbuch in deinem Webbrowser</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="550"/>
@@ -2208,13 +2208,13 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="559"/>
       <source>Open a link to Discord.</source>
       <extracomment>This explains the &quot;Discord&quot; item in the &quot;Help&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Öffne einen Link zu Discord</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="564"/>
       <source>Discord &amp;help channel</source>
       <extracomment>This is an item in the &quot;Help&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>&amp;Hilfskanal in Discord</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="566"/>
@@ -2232,13 +2232,13 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="573"/>
       <source>Opens a connect to an IRC server (LiberaChat) in your system web-browser.</source>
       <extracomment>This explains the &quot;Live help chat&quot; item in the &quot;Help&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Öffne eine Verbindung zu einem IRC-Server (LiberaChat) im Web-Browser deines Systems.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="578"/>
       <source>Online &amp;forum</source>
       <extracomment>This is an item in the &quot;Help&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Online-&amp;Forum</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="580"/>
@@ -2256,7 +2256,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="589"/>
       <source>About &amp;Mudlet</source>
       <extracomment>This is an item in the &quot;About&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Über &amp;Mudlet</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="597"/>
@@ -2268,19 +2268,19 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="599"/>
       <source>Check for newer versions of Mudlet</source>
       <extracomment>This explains the &quot;Check for updates...&quot; item in the &quot;About&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Suche nach neueren Versionen von Mudlet</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="604"/>
       <source>Show &amp;changelog</source>
       <extracomment>This is an item in the &quot;About&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>&amp;Änderungen anzeigen</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="606"/>
       <source>Show the changelog for this version</source>
       <extracomment>This explains the &quot;Show changelog&quot; item in the &quot;About&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Zeige das Protokoll der Änderungen für diese Version an</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="612"/>
@@ -9193,7 +9193,7 @@ Items to be deleted:
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="3146"/>
       <source>Do you really want to delete script &quot;%1&quot;?</source>
-      <translation type="unfinished"/>
+      <translation>Möchtest Du das Skript &quot;%1&quot; wirklich löschen?</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="3148"/>
@@ -9201,12 +9201,15 @@ Items to be deleted:
 
 Items to be deleted:
 %2</source>
-      <translation type="unfinished"/>
+      <translation>Willst Du wirklich %1 Skripte löschen?
+
+Einträge, die gelöscht werden sollen:
+%2</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="3153"/>
       <source>Delete Script(s)</source>
-      <translation type="unfinished"/>
+      <translation>Skript(e) löschen</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="3219"/>
@@ -9219,12 +9222,15 @@ Items to be deleted:
 
 Items to be deleted:
 %2</source>
-      <translation type="unfinished"/>
+      <translation>Willst Du wirklich %1 Tasten löschen?
+
+Einträge, die gelöscht werden sollen:
+%2</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="3226"/>
       <source>Delete Key(s)</source>
-      <translation type="unfinished"/>
+      <translation>Taste(n) löschen</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="3292"/>
@@ -9237,12 +9243,15 @@ Items to be deleted:
 
 Items to be deleted:
 %2</source>
-      <translation type="unfinished"/>
+      <translation>Willst Du wirklich %1 Trigger löschen?
+
+Einträge, die gelöscht werden sollen:
+%2</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="3299"/>
       <source>Delete Trigger(s)</source>
-      <translation type="unfinished"/>
+      <translation>Trigger löschen</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="3365"/>
@@ -9255,12 +9264,15 @@ Items to be deleted:
 
 Items to be deleted:
 %2</source>
-      <translation type="unfinished"/>
+      <translation>Willst Du wirklich %1 Timer löschen?
+
+Einträge, die gelöscht werden sollen:
+%2</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="3372"/>
       <source>Delete Timer(s)</source>
-      <translation type="unfinished"/>
+      <translation>Timer löschen</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="3485"/>
@@ -10235,7 +10247,7 @@ Items to be deleted:
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="904"/>
       <source>Match case precisely</source>
-      <translation>Groß - / Kleinschreibung genau</translation>
+      <translation>Groß - / Kleinschreibung genau abgleichen</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="908"/>
