@@ -3611,7 +3611,7 @@ and the exit will be turned into a stub.</source>
 Richtung: %3 aber dieser Raum existiert nicht. Der Ausgang wird
 entfernt (aber die ID des Ziel-Raumes wird gespeichert in den 
 Benutzerdaten des Raums unter dem Schlüssel: &quot;%4&quot;) 
-und der Ausgang wird in eine Abzweigung umgewandelt.</translation>
+und der Ausgang wird in einen Abzweig umgewandelt.</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1501"/>
@@ -3620,7 +3620,7 @@ und der Ausgang wird in eine Abzweigung umgewandelt.</translation>
 Richtung: %2 aber dieser Raum existiert nicht. Der Ausgang wird
 entfernt (aber die ID des Ziel-Raumes wird gespeichert in den 
 Benutzerdaten des Raums unter dem Schlüssel: &quot;%4&quot;) 
-und der Ausgang wird in eine Abzweigung umgewandelt.</translation>
+und der Ausgang wird in einen Abzweig umgewandelt.</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1545"/>
@@ -3628,15 +3628,15 @@ und der Ausgang wird in eine Abzweigung umgewandelt.</translation>
 has a stub exit!  As a real exit precludes a stub, the latter will
 be removed.</source>
       <translation>[ ACHTUNG ]  - Der Raum mit der ID: %1 hat einen Ausgang &quot;%2&quot; in
-Richtung: %3 aber außerdem eine Abzweigung. Ein richtiger Ausgang geht vor,
-also wird die Abzweigung entfernt.</translation>
+Richtung: %3 aber außerdem einen Abzweig. Ein richtiger Ausgang geht vor,
+also wird der Abzweig entfernt.</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1555"/>
       <source>[ ALERT ] - Room has an exit &quot;%1&quot; to: %2 but also has a stub exit in the same direction!  As a real exit precludes a stub, the latter will be removed.</source>
       <translation>[ ACHTUNG ]  - Der Raum hat einen Ausgang &quot;%1&quot; in
-Richtung: %2 aber außerdem eine Abzweigung in dieselbe Richtung. 
-Ein richtiger Ausgang geht vor, also wird die Abzweigung entfernt.</translation>
+Richtung: %2 aber außerdem ein Abzweig in dieselbe Richtung. 
+Ein richtiger Ausgang geht vor, also wird der Abzweig entfernt.</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1611"/>
@@ -3649,12 +3649,12 @@ and the exit will be turned into a stub.</source>
 Richtung: %3 aber dieser Raum existiert nicht. Der Ausgang wird
 entfernt (aber die ID des Ziel-Raumes wird gespeichert in den 
 Benutzerdaten des Raums unter dem Schlüssel: &quot;%4&quot;) 
-und der Ausgang wird in eine Abzweigung umgewandelt.</translation>
+und der Ausgang wird in einen Abzweig umgewandelt.</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1622"/>
       <source>[ INFO ]  - Room exit &quot;%1&quot; that was to a room with an invalid id: %2 that does not exist.  The exit will be removed (the bad destination room id will be stored in the room user data under a key:&quot;%4&quot;) and the exit will be turned into a stub.</source>
-      <translation>[ INFO ]  - Der Raumausgang &quot;%1&quot; ging zu einem Raum mit einer ungültigen ID %2, die nicht existiert. Der Ausgang wird entfernt (aber die ID des Ziel-Raumes wird gespeichert in den Benutzerdaten des Raums unter dem Schlüssel: &quot;%4&quot;) und der Ausgang wird in eine Abzweigung umgewandelt.</translation>
+      <translation>[ INFO ]  - Der Raumausgang &quot;%1&quot; ging zu einem Raum mit einer ungültigen ID %2, die nicht existiert. Der Ausgang wird entfernt (aber die ID des Ziel-Raumes wird gespeichert in den Benutzerdaten des Raums unter dem Schlüssel: &quot;%4&quot;) und der Ausgang wird in einen Abzweig umgewandelt.</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1640"/>
@@ -3873,7 +3873,7 @@ Dies ist eine Anomalie, aber wurde problemlos aufgeräumt.</translation>
     <message>
       <location filename="../src/TRoomDB.cpp" line="938"/>
       <source>[ INFO ]  - Duplicate exit stub identifiers found in room, this is an anomaly but has been cleaned up easily.</source>
-      <translation>[ INFO ]  - Doppelte Abzweigungen im Raum gefunden. 
+      <translation>[ INFO ]  - Doppelte Abzweige im Raum gefunden. 
 Dies ist eine Anomalie, aber wurde problemlos aufgeräumt.</translation>
     </message>
     <message>
@@ -8401,7 +8401,7 @@ Bold HTML tags are used to emphasis that the value is destination room&apos;s we
       <location filename="../src/dlgRoomExits.cpp" line="1156"/>
       <location filename="../src/dlgRoomExits.cpp" line="1477"/>
       <source>Clear the stub exit for this exit to enter an exit roomID.</source>
-      <translation>Deaktiviere die Abzweigung, um einen Ausgang per ID einzugeben.</translation>
+      <translation>Entferne den Abzweig, um einen Ausgang per ID einzugeben.</translation>
     </message>
     <message>
       <location filename="../src/dlgRoomExits.cpp" line="1184"/>
@@ -15566,7 +15566,7 @@ Du kannst sie verwenden, aber es könnte Probleme mit der Ausrichtung von Textsp
     <message>
       <location filename="../src/ui/room_exits.ui" line="1696"/>
       <source>Stub Exit</source>
-      <translation>Platzhalter</translation>
+      <translation>Abzweig</translation>
     </message>
     <message>
       <location filename="../src/ui/room_exits.ui" line="65"/>
@@ -15633,7 +15633,7 @@ Du kannst sie verwenden, aber es könnte Probleme mit der Ausrichtung von Textsp
       <location filename="../src/ui/room_exits.ui" line="1339"/>
       <location filename="../src/ui/room_exits.ui" line="1473"/>
       <source>&lt;p&gt;Green (Open) door symbol is drawn on 2D Map, can be set on either a stub or a real exit.&lt;/p&gt;</source>
-      <translation>&lt;p&gt;Ein grünes Symbol für die (offene) Tür wird auf der 2D Karte gezeichnet, passt entweder zu einem Platzhalter oder einem echten Ausgang.&lt;/p&gt;</translation>
+      <translation>&lt;p&gt;Ein grünes Symbol für die (offene) Tür wird auf der 2D Karte gezeichnet. Passt entweder zu einem Abzweig oder einem echten Ausgang.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/room_exits.ui" line="149"/>
@@ -15645,7 +15645,7 @@ Du kannst sie verwenden, aber es könnte Probleme mit der Ausrichtung von Textsp
       <location filename="../src/ui/room_exits.ui" line="1355"/>
       <location filename="../src/ui/room_exits.ui" line="1489"/>
       <source>&lt;p&gt;Orange (Closed) door symbol is drawn on 2D Map, can be set on either a stub or a real exit.&lt;/p&gt;</source>
-      <translation>&lt;p&gt;Ein oranges Symbol für die (geschlossene) Tür wird auf der 2D Karte gezeichnet, passt entweder zu einem Platzhalter oder einem echten Ausgang.&lt;/p&gt;</translation>
+      <translation>&lt;p&gt;Ein oranges Symbol für die (geschlossene) Tür wird auf der 2D Karte gezeichnet. Passt entweder zu einem Abzweig oder einem echten Ausgang.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/room_exits.ui" line="165"/>
@@ -15657,7 +15657,7 @@ Du kannst sie verwenden, aber es könnte Probleme mit der Ausrichtung von Textsp
       <location filename="../src/ui/room_exits.ui" line="1371"/>
       <location filename="../src/ui/room_exits.ui" line="1505"/>
       <source>&lt;p&gt;Red (Locked) door symbol is drawn on 2D Map, can be set on either a stub or a real exit.&lt;/p&gt;</source>
-      <translation>&lt;p&gt;Ein rotes Symbol für die (versperrte) Tür wird auf der 2D Karte gezeichnet, passt entweder zu einem Platzhalter oder einem echten Ausgang.&lt;/p&gt;</translation>
+      <translation>&lt;p&gt;Ein rotes Symbol für die (versperrte) Tür wird auf der 2D Karte gezeichnet. Passt entweder zu einem Abzweig oder einem echten Ausgang.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/room_exits.ui" line="187"/>
@@ -15680,7 +15680,7 @@ Du kannst sie verwenden, aber es könnte Probleme mit der Ausrichtung von Textsp
       <location filename="../src/ui/room_exits.ui" line="1607"/>
       <location filename="../src/ui/room_exits.ui" line="1870"/>
       <source>&lt;p&gt;A symbol is drawn with a green (Open) fill color on 2D Map, can be set on either a stub or a real exit.&lt;/p&gt;</source>
-      <translation>&lt;p&gt;Ein Symbol mit grüner (offener) Füllung wird auf der 2D Karte gezeichnet, passt entweder zu einem Platzhalter oder einem echten Ausgang.&lt;/p&gt;</translation>
+      <translation>&lt;p&gt;Ein Symbol mit grüner (offener) Füllung wird auf der 2D Karte gezeichnet. Passt entweder zu einem Abzweig oder einem echten Ausgang.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/room_exits.ui" line="551"/>
@@ -15688,7 +15688,7 @@ Du kannst sie verwenden, aber es könnte Probleme mit der Ausrichtung von Textsp
       <location filename="../src/ui/room_exits.ui" line="1623"/>
       <location filename="../src/ui/room_exits.ui" line="1886"/>
       <source>&lt;p&gt;A symbol is drawn with an orange (Closed) fill color on 2D Map, can be set on either a stub or a real exit.&lt;/p&gt;</source>
-      <translation>&lt;p&gt;Ein Symbol mit oranger (geschlossener) Füllung wird auf der 2D Karte gezeichnet, passt entweder zu einem Platzhalter oder einem echten Ausgang.&lt;/p&gt;</translation>
+      <translation>&lt;p&gt;Ein Symbol mit oranger (geschlossener) Füllung wird auf der 2D Karte gezeichnet. Passt entweder zu einem Abzweig oder einem echten Ausgang.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/room_exits.ui" line="567"/>
@@ -15696,7 +15696,7 @@ Du kannst sie verwenden, aber es könnte Probleme mit der Ausrichtung von Textsp
       <location filename="../src/ui/room_exits.ui" line="1639"/>
       <location filename="../src/ui/room_exits.ui" line="1902"/>
       <source>&lt;p&gt;A symbol is drawn with a red (Locked) fill color on 2D Map, can be set on either a stub or a real exit.&lt;/p&gt;</source>
-      <translation>&lt;p&gt;Ein Symbol mit roter (versperrter) Füllung wird auf der 2D Karte gezeichnet, passt entweder zu einem Platzhalter oder einem echten Ausgang.&lt;/p&gt;</translation>
+      <translation>&lt;p&gt;Ein Symbol mit roter (versperrter) Füllung wird auf der 2D Karte gezeichnet. Passt entweder zu einem Abzweig oder einem echten Ausgang.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/room_exits.ui" line="589"/>
