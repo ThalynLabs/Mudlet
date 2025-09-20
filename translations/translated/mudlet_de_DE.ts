@@ -14463,7 +14463,7 @@ try again when it has finished.</source>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="241"/>
       <source>Appearance</source>
-      <translation>Erscheinungsbild</translation>
+      <translation>Farbschema</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="275"/>
