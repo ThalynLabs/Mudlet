@@ -14300,7 +14300,7 @@ try again when it has finished.</source>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="2485"/>
       <source>Invert zoom direction</source>
-      <translation type="unfinished"/>
+      <translation>Zoom-Richtung umkehren</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="3355"/>
@@ -14345,12 +14345,12 @@ try again when it has finished.</source>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="4002"/>
       <source>Advertise screen reader use via protocols supporting this notice (NEW-ENVIRON, MNES, MTTS)</source>
-      <translation type="unfinished"/>
+      <translation>Bewerbe die Nutzung von Screenreadern über Protokolle, die diesen Hinweis unterstützen (NEW-ENVIRON, MNES, MTTS)</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="4009"/>
       <source>Enable closed caption for media</source>
-      <translation type="unfinished"/>
+      <translation>Untertitel für Medien aktivieren</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="4079"/>
@@ -14366,7 +14366,7 @@ try again when it has finished.</source>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="4146"/>
       <source>Force NEW_ENVIRON negotiation off</source>
-      <translation type="unfinished"/>
+      <translation>NEW_ENVIRON Verhandlungen abschalten</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="4160"/>
@@ -14376,7 +14376,7 @@ try again when it has finished.</source>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="4163"/>
       <source>Send Mudlet version in terminal type</source>
-      <translation type="unfinished"/>
+      <translation>Mudlet-Version im Terminal-Typ senden</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="4170"/>
@@ -14386,7 +14386,7 @@ try again when it has finished.</source>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="4173"/>
       <source>Force MXP processing on</source>
-      <translation type="unfinished"/>
+      <translation>MXP-Verarbeitung erzwingen</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="4207"/>
@@ -14478,7 +14478,7 @@ try again when it has finished.</source>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="558"/>
       <source>Show sent commands:</source>
-      <translation type="unfinished"/>
+      <translation>Gesendete Befehle anzeigen:</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="574"/>
@@ -14494,7 +14494,7 @@ try again when it has finished.</source>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="589"/>
       <source>Script controlled</source>
-      <translation type="unfinished"/>
+      <translation>Skriptgesteuert</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="852"/>
