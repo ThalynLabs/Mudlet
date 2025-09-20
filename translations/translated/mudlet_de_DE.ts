@@ -813,13 +813,13 @@ Bitte warten...</translation>
       <location filename="../src/T2DMap.cpp" line="2784"/>
       <source>Export area to image...</source>
       <extracomment>2D Mapper context menu (area) item</extracomment>
-      <translation type="unfinished"/>
+      <translation>Exportiere Gebiet als Bild...</translation>
     </message>
     <message>
       <location filename="../src/T2DMap.cpp" line="2786"/>
       <source>Export the current area as an image file</source>
       <extracomment>2D Mapper context menu (area) item tooltip</extracomment>
-      <translation type="unfinished"/>
+      <translation>Exportiere das aktuelle Gebiet als eine Bilddatei</translation>
     </message>
     <message>
       <location filename="../src/T2DMap.cpp" line="2793"/>
@@ -1007,32 +1007,32 @@ Bitte warten...</translation>
     <message>
       <location filename="../src/T2DMap.cpp" line="6045"/>
       <source>[MAP]: %1</source>
-      <translation type="unfinished"/>
+      <translation>[KARTE]: %1</translation>
     </message>
     <message>
       <location filename="../src/T2DMap.cpp" line="6075"/>
       <source>Unknown Area</source>
-      <translation type="unfinished"/>
+      <translation>Unbekanntes Gebiet</translation>
     </message>
     <message>
       <location filename="../src/T2DMap.cpp" line="6090"/>
       <source>area_%1.png</source>
-      <translation type="unfinished"/>
+      <translation>area_%1.png</translation>
     </message>
     <message>
       <location filename="../src/T2DMap.cpp" line="6095"/>
       <source>Export Area %1 to Image</source>
-      <translation type="unfinished"/>
+      <translation>Exportiere Gebiet %1 als Bild</translation>
     </message>
     <message>
       <location filename="../src/T2DMap.cpp" line="6097"/>
       <source>Image Files (*.png *.jpg *.jpeg *.bmp *.tiff);;All Files (*)</source>
-      <translation type="unfinished"/>
+      <translation>Bilddateien (*.png *.jpg *.jpeg *.bmp *.tiff);;Alle Dateien (*)</translation>
     </message>
     <message>
       <location filename="../src/T2DMap.cpp" line="6110"/>
       <source>[MAP]: Export failed - %1</source>
-      <translation type="unfinished"/>
+      <translation>[KARTE]: Exportieren fehlgeschlagen - %1</translation>
     </message>
     <message>
       <location filename="../src/T2DMap.cpp" line="576"/>
@@ -3867,7 +3867,7 @@ Achte auf weitere Nachrichten zu jedem betroffenen Raum...</translation>
       <location filename="../src/TRoomDB.cpp" line="933"/>
       <source>[ INFO ]  - Duplicate exit stub identifiers found in room id: %1, this is an
 anomaly but has been cleaned up easily.</source>
-      <translation>[ INFO ]  - Doppelte Abzweigungen im Raum ID: %1 gefunden. 
+      <translation>[ INFO ]  - Doppelte Abzweige im Raum ID: %1 gefunden. 
 Dies ist eine Anomalie, aber wurde problemlos aufgeräumt.</translation>
     </message>
     <message>
@@ -8470,7 +8470,7 @@ Bold HTML tags are used to emphasis that the value is destination room&apos;s we
       <source>Type one or more graphemes (&quot;visible characters&quot;) to use as a symbol for all of the %n selected room(s), or enter a space to clear the symbol:</source>
       <comment>%n is the total number of rooms involved.</comment>
       <translation>
-        <numerusform>Gib ein oder mehrere Grapheme (&quot;sichtbare Zeichen&quot;) ein, die als neues Symbol in allen %n ausgewählten Räumen genutzt werden sollen, oder gib ein Leerzeichen ein, um das Symbole zu entfernen:</numerusform>
+        <numerusform>Gib ein oder mehrere Grapheme (&quot;sichtbare Zeichen&quot;) ein, die als neues Symbol im ausgewählten Raum genutzt werden sollen, oder gib ein Leerzeichen ein, um das Symbol zu entfernen:</numerusform>
         <numerusform>Gib ein oder mehrere Grapheme (&quot;sichtbare Zeichen&quot;) ein, die als neues Symbol in allen %n ausgewählten Räumen genutzt werden sollen, oder gib ein Leerzeichen ein, um das Symbole zu entfernen:</numerusform>
       </translation>
     </message>
@@ -8482,7 +8482,7 @@ Bold HTML tags are used to emphasis that the value is destination room&apos;s we
  • enter a space to clear any existing symbols</source>
       <comment>This is for when applying a new room symbol to one or more rooms and some have different symbols or no symbol at present. %n is the total number of rooms involved.</comment>
       <translation>
-        <numerusform>Um das Symbol in allen %n ausgewählten Räumen zu ändern, bitte entweder:
+        <numerusform>Um das Symbol im ausgewählten Raum zu ändern, bitte entweder:
  • ein existierendes Symbol aus der Liste unten wählen (sortiert nach Häufigkeit der Nutzung),
  • ein oder mehrere Grapheme (&quot;sichtbare Zeichen&quot;) als neues Symbol eingeben, oder
  • ein Leerzeichen eingeben, um alle bestehenden Symbole zu entfernen</numerusform>
@@ -15090,7 +15090,7 @@ Du kannst sie verwenden, aber es könnte Probleme mit der Ausrichtung von Textsp
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="196"/>
       <source>&lt;p&gt;Can you help translate Mudlet?&lt;/p&gt;&lt;p&gt;If so, please visit: &lt;b&gt;https://www.mudlet.org/translate&lt;/b&gt;.&lt;/p&gt;</source>
-      <translation>&lt;p&gt;Kannst du helfen, Mudlet zu übersetzen?&lt;/p&gt;&lt;p&gt;Falls ja, besuche bitte: &lt;b&gt;https://https://www.mudlet.org/translate&lt;/b&gt;.&lt;/p&gt;</translation>
+      <translation>&lt;p&gt;Kannst du helfen, Mudlet zu übersetzen?&lt;/p&gt;&lt;p&gt;Falls ja, besuche bitte: &lt;b&gt;https://www.mudlet.org/translate&lt;/b&gt;.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="618"/>
