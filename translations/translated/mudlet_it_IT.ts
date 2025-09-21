@@ -1910,7 +1910,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="303"/>
       <source>Close &amp;Mudlet</source>
       <extracomment>This is an item in the &quot;Games&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Chiudi &amp;Mudlet</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="305"/>
