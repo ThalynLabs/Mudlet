@@ -11178,27 +11178,27 @@ Es gibt KEINE GARANTIE soweit gesetzlich zulässig.</translation>
     <message>
       <location filename="../src/ui/main_window.ui" line="475"/>
       <source>Close Mudlet</source>
-      <translation type="unfinished"/>
+      <translation>Mudlet schließen</translation>
     </message>
     <message>
       <location filename="../src/ui/main_window.ui" line="483"/>
       <source>Show changelog</source>
-      <translation type="unfinished"/>
+      <translation>Änderungen zeigen</translation>
     </message>
     <message>
       <location filename="../src/ui/main_window.ui" line="491"/>
       <source>&lt;p&gt;Toggle time stamps on the main console.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Zeitstempel auf der Hauptkonsole ein- oder ausschalten.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/main_window.ui" line="499"/>
       <source>&lt;p&gt;Toggle recording of replays.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Aufnahme von Wiederholungen umschalten.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/main_window.ui" line="507"/>
       <source>&lt;p&gt;Toggle logging facilities.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Protokollierung ein- oder ausschalten.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/main_window.ui" line="212"/>
@@ -11389,7 +11389,7 @@ Es gibt KEINE GARANTIE soweit gesetzlich zulässig.</translation>
     <message>
       <location filename="../src/ui/map_label.ui" line="174"/>
       <source>Text outline:</source>
-      <translation type="unfinished"/>
+      <translation>Text-Umrandung:</translation>
     </message>
     <message>
       <location filename="../src/ui/map_label.ui" line="202"/>
@@ -11404,7 +11404,7 @@ Es gibt KEINE GARANTIE soweit gesetzlich zulässig.</translation>
     <message>
       <location filename="../src/ui/map_label.ui" line="215"/>
       <source>&lt;p&gt;If deselected the label will have the same size when you zoom in and out in the mapper. If it is selected the label will scale when you zoom the mapper.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Wenn diese Option deaktiviert ist, hat die Markierung beim Vergrößern und Verkleinern im Mapper die gleiche Größe. Wenn sie aktiviert ist, wird die Beschriftung beim Zoomen des Mappers skaliert.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/map_label.ui" line="191"/>
@@ -11907,7 +11907,7 @@ Es gibt KEINE GARANTIE soweit gesetzlich zulässig.</translation>
       <location filename="../src/mudlet.cpp" line="297"/>
       <location filename="../src/mudlet.cpp" line="299"/>
       <source>Close Mudlet</source>
-      <translation type="unfinished"/>
+      <translation>Mudlet schließen</translation>
     </message>
     <message>
       <location filename="../src/mudlet.cpp" line="353"/>
@@ -11953,7 +11953,7 @@ Es gibt KEINE GARANTIE soweit gesetzlich zulässig.</translation>
     <message>
       <location filename="../src/mudlet.cpp" line="518"/>
       <source>Full Screen</source>
-      <translation type="unfinished"/>
+      <translation>Vollbild</translation>
     </message>
     <message>
       <location filename="../src/mudlet.cpp" line="681"/>
@@ -11993,22 +11993,22 @@ Es gibt KEINE GARANTIE soweit gesetzlich zulässig.</translation>
     <message>
       <location filename="../src/mudlet.cpp" line="694"/>
       <source>Toggle Time Stamps</source>
-      <translation type="unfinished"/>
+      <translation>Zeitstempel umschalten</translation>
     </message>
     <message>
       <location filename="../src/mudlet.cpp" line="695"/>
       <source>Toggle Replay</source>
-      <translation type="unfinished"/>
+      <translation>Wiedergabe umschalten</translation>
     </message>
     <message>
       <location filename="../src/mudlet.cpp" line="696"/>
       <source>Toggle Logging</source>
-      <translation type="unfinished"/>
+      <translation>Protokollierung umschalten</translation>
     </message>
     <message>
       <location filename="../src/mudlet.cpp" line="697"/>
       <source>Toggle Emergency Stop</source>
-      <translation type="unfinished"/>
+      <translation>Not-Aus umschalten</translation>
     </message>
     <message>
       <location filename="../src/mudlet.cpp" line="976"/>
@@ -12148,7 +12148,7 @@ Es gibt KEINE GARANTIE soweit gesetzlich zulässig.</translation>
     <message>
       <location filename="../src/mudlet.cpp" line="1022"/>
       <source>Esperanto</source>
-      <translation type="unfinished"/>
+      <translation>Esperanto</translation>
     </message>
     <message>
       <location filename="../src/mudlet.cpp" line="1023"/>
@@ -12294,7 +12294,7 @@ Es gibt KEINE GARANTIE soweit gesetzlich zulässig.</translation>
     <message>
       <location filename="../src/mudlet.cpp" line="1052"/>
       <source>Faroese</source>
-      <translation type="unfinished"/>
+      <translation>Färöisch</translation>
     </message>
     <message>
       <location filename="../src/mudlet.cpp" line="1053"/>
@@ -13957,7 +13957,7 @@ try again when it has finished.</source>
       <location filename="../src/ui/profile_preferences.ui" line="887"/>
       <location filename="../src/ui/profile_preferences.ui" line="906"/>
       <source>&lt;p&gt;Extra space to have before text on top - can be set to negative to move text up beyond the screen.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Mehr Platz vor dem Text oben - kann negativ gesetzt werden, um Text oben vom Bildschirm verschwinden zu lassen.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="890"/>
@@ -13968,7 +13968,7 @@ try again when it has finished.</source>
       <location filename="../src/ui/profile_preferences.ui" line="934"/>
       <location filename="../src/ui/profile_preferences.ui" line="953"/>
       <source>&lt;p&gt;Extra space to have before text on the left - can be set to negative to move text left beyond the screen.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Mehr Platz vor dem Text links - kann negativ gesetzt werden, um Text links vom Bildschirm verschwinden zu lassen.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="937"/>
@@ -13979,7 +13979,7 @@ try again when it has finished.</source>
       <location filename="../src/ui/profile_preferences.ui" line="981"/>
       <location filename="../src/ui/profile_preferences.ui" line="1000"/>
       <source>&lt;p&gt;Extra space to have before text on the bottom - can be set to negative to allow text to go down beyond the screen.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Mehr Platz vor dem Text unten - kann negativ gesetzt werden, um Text unten vom Bildschirm verschwinden zu lassen.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="984"/>
@@ -13990,7 +13990,7 @@ try again when it has finished.</source>
       <location filename="../src/ui/profile_preferences.ui" line="1028"/>
       <location filename="../src/ui/profile_preferences.ui" line="1047"/>
       <source>&lt;p&gt;Extra space to have before text on the right - can be set to negative to move text right beyond the screen.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Mehr Platz vor dem Text rechts - kann negativ gesetzt werden, um Text rechts vom Bildschirm verschwinden zu lassen.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="1031"/>
@@ -14022,7 +14022,7 @@ try again when it has finished.</source>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="1207"/>
       <source>&lt;p&gt;Subsequent wrapped lines will be indented by this amount.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Nachfolgende umgebrochene Zeilen werden um soviel eingerückt.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="1328"/>
@@ -14083,7 +14083,7 @@ try again when it has finished.</source>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="1591"/>
       <source>&lt;p&gt;Shows bidirection Unicode characters which can be used to change the meaning of source code while remaining invisible to the eye.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Zeigt bidirektionale Unicode-Zeichen an, die verwendet werden können, um die Bedeutung von Quellcode zu ändern, dabei aber für das Auge unsichtbar bleiben.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="1628"/>
@@ -14273,23 +14273,23 @@ try again when it has finished.</source>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="2320"/>
       <source>&lt;p&gt;Select profiles that you want to copy map to, then press the Copy button to the right.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Wähle die Profile aus, in die die Karte kopiert werden soll, und drücke dann rechts auf Kopieren.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="2333"/>
       <source>&lt;p&gt;Copy map into the selected profiles on the left.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Karte in die links ausgewählten Profile kopieren.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="2365"/>
       <source>&lt;p&gt;Change this to a lower version if you need to save your map in a format that can be read by older versions of Mudlet. Doing so will lose the extra data available in the current map format.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Ändere dies auf eine kleinere Version, wenn du deine Karte in einem Format speichern möchtest, die von älteren Mudlet Versionen gelesen werden kann. Dadurch werden zusätzliche Daten aus dem aktuellen Kartenformat verloren gehen.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="2404"/>
       <location filename="../src/ui/profile_preferences.ui" line="2417"/>
       <source>&lt;p&gt;On games that provide maps for download, you can press this button to get the latest map. Note that this will &lt;span style=&quot; font-weight:600;&quot;&gt;overwrite&lt;/span&gt; any changes you&apos;ve done to your map, and will use the new map only.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;In Spielen, die Karten zum Download anbieten, kannst du diese Taste drücken, um die neueste Karte zu erhalten. Beachte, dass dies deine bisherigen Änderungen &lt;span style=&quot; font-weight:600;&quot;&gt;überschreiben&lt;/span&gt; wird, und nur noch die neue Karte verwendet.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="2446"/>
@@ -14517,7 +14517,7 @@ Du kannst sie verwenden, aber es könnte Probleme mit der Ausrichtung von Textsp
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="1210"/>
       <source>Indent hanging wrapped lines by:</source>
-      <translation type="unfinished"/>
+      <translation>Einzug bei umgebrochenen Zeilen:</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="1249"/>
@@ -14527,32 +14527,32 @@ Du kannst sie verwenden, aber es könnte Probleme mit der Ausrichtung von Textsp
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="1273"/>
       <source>&lt;p&gt;Maximum number of lines to keep in the console buffer. When exceeded, older lines are removed in batches.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Maximale Anzahl von Zeilen, die im Konsolenpuffer gehalten werden sollen. Bei Überschreitung werden ältere Zeilen chargenweise entfernt.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="1276"/>
       <source>Main display size:</source>
-      <translation type="unfinished"/>
+      <translation>Größe der Hauptanzeige:</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="1286"/>
       <source>&lt;p&gt;Maximum number of lines to keep in the console buffer. Minimum is 100 lines.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Maximale Anzahl von Zeilen, die im Konsolenpuffer gehalten werden sollen. Das Minimum ist 100 Zeilen.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="1302"/>
       <source>lines</source>
-      <translation type="unfinished"/>
+      <translation>Zeilen</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="1315"/>
       <source>&lt;p&gt;Use the maximum buffer size your system can handle. This will be calculated based on available memory.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Maximale Puffergröße des Systems verwenden. Dies wird je nach verfügbarem Speicher berechnet.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="1318"/>
       <source>Use maximum lines possible</source>
-      <translation type="unfinished"/>
+      <translation>Maximal mögliche Zeilen verwenden</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="1366"/>
@@ -14582,12 +14582,12 @@ Du kannst sie verwenden, aber es könnte Probleme mit der Ausrichtung von Textsp
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="1438"/>
       <source>Display whenever a tab is connected or a disconnected</source>
-      <translation type="unfinished"/>
+      <translation>Anzeigen, wenn ein Tab verbunden oder getrennt ist</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="1441"/>
       <source>Show connection status on tabs</source>
-      <translation type="unfinished"/>
+      <translation>Verbindungsstatus auf Tabs anzeigen</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="1555"/>
@@ -14602,12 +14602,12 @@ Du kannst sie verwenden, aber es könnte Probleme mit der Ausrichtung von Textsp
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="1601"/>
       <source>&lt;p&gt;Shows the &lt;b&gt;unique&lt;/b&gt; ID number that Mudlet uses internally to identify each instance of an item this is the same number that the Lua API functions that create aliases, key-binding, etc. return on success. This may be useful to know when there are multiple items of the same type with the same name and will be incorporated in the names of the related items&apos; Lua scripts in the Central Debug Console output.&lt;/p&gt;&lt;p&gt;Note that although the number assigned to an item is constant during a session of the profile it may be different the next time the profile is loaded if other items are added or removed.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Zeigt die &lt;b&gt;eindeutige&lt;/b&gt; ID-Nummer an, die Mudlet intern verwendet, um jedes Objekt zu identifizieren. Dies ist die gleiche Nummer, die Lua API Funktionen bei Erfolg zurückgeben, wenn sie Aliase, Tasten, usw. erzeugen. Dies kann gut zu wissen sein, wenn es mehrere Elemente desselben Typs mit dem gleichen Namen gibt, und wird mit im Namen der Lua Skripte der Elemente in der zentralen Debug-Konsole ausgegeben.&lt;/p&gt;&lt;p&gt;Die Nummer, die einem Element zugewiesen wurde, bleibt während einer Sitzung des Profils konstant, kann sich aber beim nächsten Laden des Profils unterscheiden, wenn andere Elemente hinzugefügt oder entfernt werden.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="1604"/>
       <source>Show Items&apos; ID number</source>
-      <translation type="unfinished"/>
+      <translation>ID Nummer der Objekte anzeigen</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="1650"/>
@@ -14864,12 +14864,12 @@ Du kannst sie verwenden, aber es könnte Probleme mit der Ausrichtung von Textsp
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="311"/>
       <source>Choose protocols</source>
-      <translation type="unfinished"/>
+      <translation>Protokolle auswählen</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="349"/>
       <source>&lt;p&gt;This also needs GMCP to be enabled in the protocols.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Dies erfordert auch die Aktivierung von GMCP in den Protokollen.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="2232"/>
@@ -15123,7 +15123,7 @@ Du kannst sie verwenden, aber es könnte Probleme mit der Ausrichtung von Textsp
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="618"/>
       <source>Text to separate commands or blank to disable</source>
-      <translation type="unfinished"/>
+      <translation>Text, an dem Befehle getrennt werden, oder leer zum deaktivieren</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="689"/>
@@ -15173,22 +15173,22 @@ Du kannst sie verwenden, aber es könnte Probleme mit der Ausrichtung von Textsp
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="2753"/>
       <source>Lower level color:</source>
-      <translation type="unfinished"/>
+      <translation>Farbe der unteren Ebene:</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="2773"/>
       <source>Upper level color:</source>
-      <translation type="unfinished"/>
+      <translation>Farbe der oberen Ebene:</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="2793"/>
       <source>Overlapping rooms border:</source>
-      <translation type="unfinished"/>
+      <translation>Überlappende Raumgrenzen:</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="4082"/>
       <source>Enable F3 search shortcuts</source>
-      <translation type="unfinished"/>
+      <translation>Aktiviere F3 als Kürzel zur Suche</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="4109"/>
@@ -15942,7 +15942,7 @@ LUA Skript</translation>
     <message>
       <location filename="../src/ui/room_exits.ui" line="2040"/>
       <source>&lt;p&gt;Some mapper scripts may require prefixing the keyword &quot;script:&quot;.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Einige Mapper-Skripte erfordern möglicherweise das Schlüsselwort &quot;script:&quot; voranzustellen.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/room_exits.ui" line="2060"/>
@@ -16039,22 +16039,22 @@ LUA Skript</translation>
     <message>
       <location filename="../src/ui/scripts_main_area.ui" line="90"/>
       <source>Registered Events:</source>
-      <translation type="unfinished"/>
+      <translation>Registrierte Ereignisse:</translation>
     </message>
     <message>
       <location filename="../src/ui/scripts_main_area.ui" line="137"/>
       <source>&lt;p&gt;Remove (selected) event from list.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Entferne das ausgewählte Ereignis aus der Liste.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/scripts_main_area.ui" line="147"/>
       <source>Add User Event:</source>
-      <translation type="unfinished"/>
+      <translation>Benutzerdefiniertes Ereignis hinzufügen:</translation>
     </message>
     <message>
       <location filename="../src/ui/scripts_main_area.ui" line="181"/>
       <source>&lt;p&gt;Add entered event name to list.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Füge das genannte Ereignis der Liste hinzu.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/scripts_main_area.ui" line="140"/>
@@ -16273,25 +16273,26 @@ LUA Skript</translation>
     <message>
       <location filename="../src/ui/triggers_main_area.ui" line="407"/>
       <source>&lt;p&gt;If set to any value but the first the trigger will only fire if &lt;u&gt;all&lt;/u&gt; conditions on the list have been met within the specified line delta, and captures will be saved in &lt;tt&gt;multimatches&lt;/tt&gt; instead of &lt;tt&gt;matches&lt;/tt&gt;.&lt;/p&gt;&lt;p&gt;If set to the first value the trigger will fire if &lt;u&gt;any&lt;/u&gt; condition on the list have been met.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Außer wenn der erste Wert gewählt ist, wird der Trigger nur ausgelöst, wenn &lt;u&gt;alle&lt;/u&gt; Bedingungen der Liste innerhalb des angegebenen Zeilenabstands erfüllt sind. Erfasstes wird als &lt;tt&gt;multimatches&lt;/tt&gt; gespeichert werden, anstelle von &lt;tt&gt;matches&lt;/tt&gt;.&lt;/p&gt; 
+&lt;p&gt;Wenn diese Option auf den ersten Wert gesetzt ist, wird der Trigger ausgelöst, wenn &lt;u&gt;irgendeine&lt;/u&gt; Bedingung der Liste erfüllt worden ist.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/triggers_main_area.ui" line="413"/>
       <source>handle multiple items as a</source>
       <extracomment>This text preceeds (is above) the content of the spinBox_lineMargin which also contain text with the text in the label_multiLineTrigger suffixed on the end (underneath).</extracomment>
-      <translation type="unfinished"/>
+      <translation>Behandle mehrere Elemente wie ein</translation>
     </message>
     <message>
       <location filename="../src/ui/triggers_main_area.ui" line="446"/>
       <source>OR / Multi-item</source>
       <extracomment>This text represents what is shown in the spinBox_lineMargin control when it is at it minimum value and replaces the normal value and the normal prefix and suffix that would otherwise surround it before this or those elements are inserted in the middle of the groupBox_multiLineTrigger and the label_multiLineTrigger text.</extracomment>
-      <translation type="unfinished"/>
+      <translation>ODER / Mehrere Elemente</translation>
     </message>
     <message>
       <location filename="../src/ui/triggers_main_area.ui" line="449"/>
       <source>)</source>
       <extracomment>This text is appended after the numeric value shown in the spin box (so that it and the prefix text is &quot;wrapped&quot; around it), except when the control is set to the special first value when all of them are replaced by that text.</extracomment>
-      <translation type="unfinished"/>
+      <translation>)</translation>
     </message>
     <message>
       <location filename="../src/ui/triggers_main_area.ui" line="452"/>
@@ -16308,7 +16309,7 @@ LUA Skript</translation>
     <message>
       <location filename="../src/ui/triggers_main_area.ui" line="478"/>
       <source>&lt;p&gt;Do not pass whole line to children.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Nicht die ganze Zeile an Kinder übergeben.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/triggers_main_area.ui" line="495"/>
@@ -16355,7 +16356,7 @@ LUA Skript</translation>
     <message>
       <location filename="../src/ui/triggers_main_area.ui" line="211"/>
       <source>&lt;p&gt;Match all occurrences of the pattern in the line.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Treffe alle Vorkommnisse des Musters in der Zeile.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/triggers_main_area.ui" line="440"/>
@@ -16438,7 +16439,7 @@ LUA Skript</translation>
     <message>
       <location filename="../src/ui/vars_main_area.ui" line="107"/>
       <source>&lt;p&gt;Tables can store values either in a list, and/or a hashmap.&lt;/p&gt;&lt;p&gt;In a &lt;b&gt;list&lt;/b&gt;, &lt;i&gt;unique indexed keys&lt;/i&gt; represent values - so you can have values at &lt;i&gt;1, 2, 3...&lt;/i&gt;&lt;/p&gt;&lt;p&gt;In a &lt;b&gt;map&lt;/b&gt; {a.k.a. an &lt;i&gt;associative array}&lt;/i&gt;, &lt;i&gt;unique keys&lt;/i&gt; represent values - so you can have values under any identifier you would like (theoretically even a function or other lua entity although this GUI only supports strings).&lt;/p&gt;&lt;p&gt;This, for a newly created table (group) selects whenever you would like your table to be an indexed or an associative one.&lt;/p&gt;&lt;p&gt;In other cases it displays other entities (&lt;span style=&quot; font-style:italic;&quot;&gt;functions&lt;/span&gt;) which cannot be modified from here.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Tabellen können Werte entweder als Liste und/oder als Hashtabelle speichern.&lt;/p&gt;&lt;p&gt;In einer &lt;b&gt;Liste&lt;/b&gt;, repräsentieren &lt;i&gt;einzigartige nummerierte Schlüssel&lt;/i&gt; die Werte - also kannst du Werte haben bei &lt;i&gt;1, 2, 3...&lt;/i&gt;&lt;/p&gt;&lt;p&gt;In einer &lt;b&gt;Hashtabelle&lt;/b&gt; {bzw. einem &lt;i&gt;assoziativen Datenfeld&lt;/i&gt;} repräsentieren &lt;i&gt;einzigartige Schlüssel&lt;/i&gt; die Werte - du kannst also jeden Wert unter jeder gewünschten Bezeichnung eintragen (theoretisch sogar einer Funktion oder anderen Lua Objekten, aber diese GUI unterstützt nur Strings).&lt;/p&gt;&lt;p&gt;Hier wählst du für neu erstellte Tabellen(-gruppen), ob es eine nummerierte oder assoziative Tabelle sein soll.&lt;/p&gt;&lt;p&gt;Andernfalls werden andere Objekte (&lt;span style=&quot; font-style:italic;&quot;&gt;Funktionen&lt;/span&gt;) angezeigt, die von hier nicht verändert werden können.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/vars_main_area.ui" line="119"/>
