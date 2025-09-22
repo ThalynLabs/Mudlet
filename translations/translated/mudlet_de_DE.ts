@@ -1862,7 +1862,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="989"/>
       <source>Mute all media</source>
       <extracomment>This is an item in the &quot;Options&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation>Alle Töne stumm schalten</translation>
+      <translation>Alles stumm</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="248"/>
@@ -6644,7 +6644,7 @@ Nutzungen</translation>
       <location filename="../src/dlgConnectionProfiles.cpp" line="103"/>
       <source>&lt;p&gt;&lt;center&gt;&lt;big&gt;&lt;b&gt;Welcome to Mudlet!&lt;/b&gt;&lt;/big&gt;&lt;/center&gt;&lt;/p&gt;&lt;p&gt;&lt;center&gt;&lt;b&gt;To get started, double-click on &lt;/b&gt;Mudlet Tutorial&lt;b&gt; or select a game from the list.&lt;/b&gt;&lt;/center&gt;&lt;/p&gt;&lt;p&gt;Want to play a game that’s not listed?&lt;/p&gt;&lt;p&gt;Click %1 &lt;span style=&quot; color:#555753;&quot;&gt;New&lt;/span&gt;, then enter the &lt;i&gt;Profile Name&lt;/i&gt;, &lt;i&gt;Server Address&lt;/i&gt;, and &lt;i&gt;Port&lt;/i&gt; in the required fields.&lt;/p&gt;&lt;p&gt;Once you&apos;re ready, click %2 &lt;span style=&quot; color:#555753;&quot;&gt;Connect&lt;/span&gt; to begin your adventure.&lt;/p&gt;&lt;p&gt;Have fun!&lt;/p&gt;&lt;p align=&quot;right&quot;&gt;&lt;span style=&quot; font-family:&apos;Sans&apos;;&quot;&gt;The Mudlet Team &lt;/span&gt;&lt;img src=&quot;:/icons/mudlet_main_16px.png&quot;/&gt;&lt;/p&gt;</source>
       <comment>Welcome message. Both %1 and %2 may be replaced by icons when this text is used.</comment>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;&lt;center&gt;&lt;big&gt;&lt;b&gt;Willkommen bei Mudlet!&lt;/b&gt;&lt;/big&gt;&lt;/center&gt;&lt;/p&gt;&lt;p&gt;&lt;center&gt;&lt;b&gt;Starte mit dem &lt;/b&gt;Mudlet Tutorial&lt;b&gt; per Doppelklick, oder wähle ein Spiel aus der Liste.&lt;/b&gt;&lt;/center&gt;&lt;/p&gt;&lt;p&gt;Willst Du ein Spiel spielen, das nicht aufgeführt ist?&lt;/p&gt;&lt;p&gt;Klicke auf %1 &lt;span style=&quot; color:#555753;&quot;&gt;Neu&lt;/span&gt;und gib dann in den erforderlichen Feldern den &lt;i&gt;Namen&lt;/i&gt; des Profils, sowie &lt;i&gt;Adresse&lt;/i&gt;und &lt;i&gt;Port&lt;/i&gt; des Servers ein.&lt;/p&gt;&lt;p&gt;Klicke Sie auf %2 &lt;span style=&quot; color:#555753;&quot;&gt;Verbinden&lt;/span&gt; um Dein Abenteuer zu beginnen, wenn Du bereit bist.&lt;/p&gt;&lt;p&gt;Viel Spaß!&lt;/p&gt;&lt;p align=&quot;right&quot;&gt;&lt;span style=&quot; font-family:&apos;Sans&apos;;&quot;&gt;Das Mudlet Team &lt;/span&gt;&lt;img src=&quot;:/icons/mudlet_main_16px.png&quot;/&gt;&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/dlgConnectionProfiles.cpp" line="894"/>
@@ -7736,7 +7736,7 @@ Weiteres Lesematerial, z.B. Links zu Dokumentation oder Forumbeiträgen.
     <message>
       <location filename="../src/dlgProfilePreferences.cpp" line="809"/>
       <source>&lt;p&gt;Use the maximum buffer size your system can handle (%1 lines). This will be calculated based on available memory.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Maximale Puffergröße des Systems verwenden (%1 Zeilen). Dies wird je nach verfügbarem Speicher berechnet.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/dlgProfilePreferences.cpp" line="906"/>
@@ -9082,12 +9082,12 @@ Help contents of a selectable option for the Trigger intro</extracomment>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="194"/>
       <source>Read the &lt;a href=&apos;http://wiki.mudlet.org/w/Manual:Introduction#Timers&apos;&gt;Introduction to Timers&lt;/a&gt; for a detailed overview.</source>
-      <translation type="unfinished"/>
+      <translation>Lies die &lt;a href=&apos;http://wiki.mudlet.org/w/Manual:Introduction#Timers&apos;&gt;Einleitung für Timer&lt;/a&gt; für eine detaillierte Übersicht.</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="215"/>
       <source>Read the &lt;a href=&apos;http://wiki.mudlet.org/w/Manual:Introduction#Buttons&apos;&gt;Introduction to Buttons&lt;/a&gt; for a detailed overview.</source>
-      <translation type="unfinished"/>
+      <translation>Lies die &lt;a href=&apos;http://wiki.mudlet.org/w/Manual:Introduction#Buttons&apos;&gt;Einleitung für Buttons&lt;/a&gt; für eine detaillierte Übersicht.</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="230"/>
@@ -9098,7 +9098,7 @@ Help contents of a selectable option for the Trigger intro</extracomment>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="239"/>
       <source>Read the &lt;a href=&apos;http://wiki.mudlet.org/w/Manual:Introduction#Keybindings&apos;&gt;Introduction to Keybindings&lt;/a&gt; for a detailed overview.</source>
-      <translation type="unfinished"/>
+      <translation>Lies die &lt;a href=&apos;http://wiki.mudlet.org/w/Manual:Introduction#Keybindings&apos;&gt;Einleitung für Tastenkürzel&lt;/a&gt; für eine detaillierte Übersicht.</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="256"/>
@@ -9109,7 +9109,7 @@ Help contents of a selectable option for the Trigger intro</extracomment>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="263"/>
       <source>Read the &lt;a href=&apos;http://wiki.mudlet.org/w/Manual:Introduction#Variables&apos;&gt;Introduction to Variables&lt;/a&gt; for a detailed overview.</source>
-      <translation type="unfinished"/>
+      <translation>Lies die &lt;a href=&apos;http://wiki.mudlet.org/w/Manual:Introduction#Variables&apos;&gt;Einleitung für Variablen&lt;/a&gt; für eine detaillierte Übersicht.</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="595"/>
@@ -9134,12 +9134,12 @@ Help contents of a selectable option for the Trigger intro</extracomment>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="2872"/>
       <source>Don&apos;t ask again</source>
-      <translation type="unfinished"/>
+      <translation>Nicht noch einmal fragen</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="2909"/>
       <source>Do you really want to delete alias &quot;%1&quot;?</source>
-      <translation type="unfinished"/>
+      <translation>Möchtest Du das Alias &quot;%1&quot; wirklich löschen?</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="2911"/>
@@ -9147,17 +9147,20 @@ Help contents of a selectable option for the Trigger intro</extracomment>
 
 Items to be deleted:
 %2</source>
-      <translation type="unfinished"/>
+      <translation>Willst Du wirklich %1 Aliase löschen?
+
+Objekte, die gelöscht werden sollen:
+%2</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="2916"/>
       <source>Delete Alias(es)</source>
-      <translation type="unfinished"/>
+      <translation>Alias(e) löschen</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="2982"/>
       <source>Do you really want to delete button &quot;%1&quot;?</source>
-      <translation type="unfinished"/>
+      <translation>Möchtest Du den Button &quot;%1&quot; wirklich löschen?</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="2984"/>
@@ -9165,17 +9168,20 @@ Items to be deleted:
 
 Items to be deleted:
 %2</source>
-      <translation type="unfinished"/>
+      <translation>Willst Du wirklich %1 Buttons löschen?
+
+Objekte, die gelöscht werden sollen:
+%2</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="2989"/>
       <source>Delete Button(s)</source>
-      <translation type="unfinished"/>
+      <translation>Button(s) löschen</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="3066"/>
       <source>Do you really want to delete variable &quot;%1&quot;?</source>
-      <translation type="unfinished"/>
+      <translation>Möchtest Du die Variable &quot;%1&quot; wirklich löschen?</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="3068"/>
@@ -9183,12 +9189,15 @@ Items to be deleted:
 
 Items to be deleted:
 %2</source>
-      <translation type="unfinished"/>
+      <translation>Willst Du wirklich %1 Variablen löschen?
+
+Objekte, die gelöscht werden sollen:
+%2</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="3073"/>
       <source>Delete Variable(s)</source>
-      <translation type="unfinished"/>
+      <translation>Variable(n) löschen</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="3146"/>
@@ -10886,7 +10895,7 @@ Verwendung dieser Anwendung nützlich sind:</translation>
     <message>
       <location filename="../src/main.cpp" line="342"/>
       <source>       -s, --splashscreen           show splashscreen on startup.</source>
-      <translation type="unfinished"/>
+      <translation>       -s, --splashscreen           Splashscreen beim Start anzeigen.</translation>
     </message>
     <message>
       <location filename="../src/main.cpp" line="396"/>
@@ -10948,7 +10957,7 @@ Es gibt KEINE GARANTIE soweit gesetzlich zulässig.</translation>
     <message>
       <location filename="../src/ui/main_window.ui" line="144"/>
       <source>Window</source>
-      <translation type="unfinished"/>
+      <translation>Fenster</translation>
     </message>
     <message>
       <location filename="../src/ui/main_window.ui" line="155"/>
@@ -10958,32 +10967,32 @@ Es gibt KEINE GARANTIE soweit gesetzlich zulässig.</translation>
     <message>
       <location filename="../src/ui/main_window.ui" line="174"/>
       <source>Reattach detached windows</source>
-      <translation type="unfinished"/>
+      <translation>Freistehende Fenster anhängen</translation>
     </message>
     <message>
       <location filename="../src/ui/main_window.ui" line="177"/>
       <source>&lt;p&gt;Reattach all detached profile windows back to the main Mudlet window.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Alle freistehenden Profil-Fenster wieder an das Mudlet-Hauptfenster anhängen.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/main_window.ui" line="188"/>
       <source>Always on Top</source>
-      <translation type="unfinished"/>
+      <translation>Immer im Vordergrund</translation>
     </message>
     <message>
       <location filename="../src/ui/main_window.ui" line="191"/>
       <source>&lt;p&gt;Keep the main Mudlet window always on top of other windows.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Behalte das Mudlet-Hauptfenster immer über den anderen Fenstern.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/main_window.ui" line="196"/>
       <source>Minimize</source>
-      <translation type="unfinished"/>
+      <translation>Minimieren</translation>
     </message>
     <message>
       <location filename="../src/ui/main_window.ui" line="199"/>
       <source>&lt;p&gt;Minimize the main Mudlet window.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Minimiere das Mudlet-Hauptfenster.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/main_window.ui" line="204"/>
@@ -11048,7 +11057,7 @@ Es gibt KEINE GARANTIE soweit gesetzlich zulässig.</translation>
     <message>
       <location filename="../src/ui/main_window.ui" line="322"/>
       <source>&lt;p&gt;Opens a connect to an IRC server (LiberaChat) in your system web-browser.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Öffne eine Verbindung zu einem IRC-Server (LiberaChat) im Web-Browser deines Systems.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/main_window.ui" line="330"/>
@@ -11078,37 +11087,37 @@ Es gibt KEINE GARANTIE soweit gesetzlich zulässig.</translation>
     <message>
       <location filename="../src/ui/main_window.ui" line="365"/>
       <source>Multiview</source>
-      <translation type="unfinished"/>
+      <translation>Multi-Sicht</translation>
     </message>
     <message>
       <location filename="../src/ui/main_window.ui" line="488"/>
       <source>Timestamps</source>
-      <translation type="unfinished"/>
+      <translation>Zeitstempel</translation>
     </message>
     <message>
       <location filename="../src/ui/main_window.ui" line="496"/>
       <source>Record replay</source>
-      <translation type="unfinished"/>
+      <translation>Wiederholung aufzeichnen</translation>
     </message>
     <message>
       <location filename="../src/ui/main_window.ui" line="504"/>
       <source>Record log</source>
-      <translation type="unfinished"/>
+      <translation>Protokoll aufzeichnen</translation>
     </message>
     <message>
       <location filename="../src/ui/main_window.ui" line="512"/>
       <source>Emergency stop</source>
-      <translation type="unfinished"/>
+      <translation>Not-Aus</translation>
     </message>
     <message>
       <location filename="../src/ui/main_window.ui" line="515"/>
       <source>&lt;p&gt;Toggle all triggers, aliases, timers, etc. on or off&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Alle Trigger, Aliasse, Timer usw. ein- oder ausschalten&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/main_window.ui" line="390"/>
       <source>Mute all media</source>
-      <translation>Alle Töne stumm schalten</translation>
+      <translation>Alles stumm</translation>
     </message>
     <message>
       <location filename="../src/ui/main_window.ui" line="393"/>
@@ -12290,7 +12299,7 @@ Es gibt KEINE GARANTIE soweit gesetzlich zulässig.</translation>
     <message>
       <location filename="../src/mudlet.cpp" line="1053"/>
       <source>Faroese (Faroe Islands)</source>
-      <translation type="unfinished"/>
+      <translation>Färöisch (Färöer Inseln)</translation>
     </message>
     <message>
       <location filename="../src/mudlet.cpp" line="1054"/>
@@ -12438,23 +12447,23 @@ Es gibt KEINE GARANTIE soweit gesetzlich zulässig.</translation>
     <message>
       <location filename="../src/mudlet.cpp" line="1116"/>
       <source>Mongolian</source>
-      <translation type="unfinished"/>
+      <translation>Mongolisch</translation>
     </message>
     <message>
       <location filename="../src/mudlet.cpp" line="1117"/>
       <source>Mongolian (Mongolia)</source>
-      <translation type="unfinished"/>
+      <translation>Mongolisch (Mongolei)</translation>
     </message>
     <message>
       <location filename="../src/mudlet.cpp" line="1182"/>
       <source>Tagalog</source>
-      <translation type="unfinished"/>
+      <translation>Tagalog</translation>
     </message>
     <message>
       <location filename="../src/mudlet.cpp" line="1285"/>
       <source>Medievia {Custom codec for that MUD}</source>
       <extracomment>Keep the English translation intact, so if a user accidentally changes to a language they don&apos;t understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)</extracomment>
-      <translation type="unfinished"/>
+      <translation>Medievia {Spezifischer Codec für dieses MUD}</translation>
     </message>
     <message>
       <location filename="../src/mudlet.cpp" line="1310"/>
@@ -12466,17 +12475,17 @@ Es gibt KEINE GARANTIE soweit gesetzlich zulässig.</translation>
       <location filename="../src/mudlet.cpp" line="1315"/>
       <source>------------ </source>
       <extracomment>This represents the format of the timestamps shown for lines that do not * have a timestamp in a console that is showing them. If localised this * should be set to the same format and length as the smTimeStampFormat:</extracomment>
-      <translation type="unfinished"/>
+      <translation>------------ </translation>
     </message>
     <message>
       <location filename="../src/mudlet.cpp" line="1780"/>
       <source>%1 (Main Window)</source>
-      <translation type="unfinished"/>
+      <translation>%1 (Hauptfenster)</translation>
     </message>
     <message>
       <location filename="../src/mudlet.cpp" line="1809"/>
       <source>%1 (Detached)</source>
-      <translation type="unfinished"/>
+      <translation>%1 (abgetrennt)</translation>
     </message>
     <message>
       <location filename="../src/mudlet.cpp" line="3786"/>
@@ -12503,7 +12512,7 @@ Es gibt KEINE GARANTIE soweit gesetzlich zulässig.</translation>
       <location filename="../src/mudlet.cpp" line="4592"/>
       <source>[ INFO ]  - Compact input line set. Press &quot;%1&quot; to show bottom-right buttons again.</source>
       <extracomment>Here %1 will be replaced with the keyboard shortcut, default is ALT+L.</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ INFO ]  - Kompakte Eingabezeile aktiviert. Drücke &quot;%1&quot;, um die Buttons unten rechts wieder anzuzeigen.</translation>
     </message>
     <message>
       <location filename="../src/mudlet.cpp" line="4683"/>
@@ -12514,7 +12523,7 @@ Es gibt KEINE GARANTIE soweit gesetzlich zulässig.</translation>
     <message>
       <location filename="../src/mudlet.cpp" line="4736"/>
       <source>Detach Tab &quot;%1&quot;</source>
-      <translation type="unfinished"/>
+      <translation>Profil &quot;%1&quot; abtrennen</translation>
     </message>
     <message>
       <location filename="../src/mudlet.cpp" line="4755"/>
@@ -13887,7 +13896,7 @@ try again when it has finished.</source>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="503"/>
       <source>&lt;p&gt;Use strict UNIX line endings on commands for old UNIX servers that can&apos;t handle windows line endings correctly.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Benutze strenge UNIX-Zeilenenden bei Befehlen für alte UNIX-Server, die mit Windows-Zeilenenden nicht korrekt umgehen können&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="551"/>
@@ -13897,7 +13906,7 @@ try again when it has finished.</source>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="532"/>
       <source>&lt;p&gt;Highlights your input line text when scrolling through your history for easy cancellation.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Hebt den Text deiner Eingabezeile hervor während du durch den Verlauf scrollst, um leichter abzubrechen&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="602"/>
@@ -13932,7 +13941,7 @@ try again when it has finished.</source>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="825"/>
       <source>&lt;p&gt;Use anti aliasing on fonts. Smoothes fonts if you have a high screen resolution and you can use larger fonts. Note that on low resolutions and small font sizes, the font gets blurry.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Glätte Kanten der Schriften. Ergibt glattere Schriften, wenn du eine hohe Bildschirmauflösung und größere Schriften benutzt. Beachte, dass die Schrift bei kleinen Auflösungen verschwommen wird. &lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="828"/>
@@ -14285,17 +14294,17 @@ try again when it has finished.</source>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="2446"/>
       <source>&lt;p&gt;The default area (area id -1) is used by some mapper scripts as a temporary &apos;holding area&apos; for rooms before they&apos;re placed in the correct area.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Das Standard-Gebiet (Gebiets-ID -1) wird von einigen Mapper-Skripten als temporärer &apos;Wartebereich&apos; für Räume verwendet, bevor diese ins richtige Gebiet platziert werden.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="2459"/>
       <source>&lt;p&gt;This enables borders around room. Color can be set in Mapper colors tab.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Dies zeigt Ränder am Raum. Die Farbe kann unter Mapper-Farben eingestellt werden.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="2482"/>
       <source>&lt;p&gt;If checked, scrolling up zooms out and scrolling down zooms in. If unchecked, scrolling up zooms in and scrolling down zooms out.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Wenn diese Option aktiviert ist, wird beim Scrollen nach oben die Ansicht verkleinert und beim Scrollen nach unten vergrößert. Wenn diese Option deaktiviert ist, wird beim Scrollen nach oben die Ansicht vergrößert und beim Scrollen nach unten verkleinert.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="2485"/>
@@ -14305,17 +14314,17 @@ try again when it has finished.</source>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="3355"/>
       <source>&lt;p&gt;Allow Lua to set Discord status.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Erlaube Lua, den Status des Discord zu setzen.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="3861"/>
       <source>&lt;p&gt;Username for logging into the proxy if required.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Benutzername für die Anmeldung am Proxy, falls nötig.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="3877"/>
       <source>&lt;p&gt;Password for logging into the proxy if required.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Passwort für die Anmeldung am Proxy, falls nötig.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="3910"/>
@@ -14340,7 +14349,7 @@ try again when it has finished.</source>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="3992"/>
       <source>&lt;p&gt;On some platforms, like macOS, the screen reader tool has issues announcing incoming text fully, without skipping. You can opt into disabling announcing new text from the game with this option to use a custom TTS instead which avoids such issues.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Auf einigen Plattformen, wie z. B. macOS, hat das Screenreader-Tool Probleme damit, eingehenden Text vollständig und ohne Überspringen anzusagen. Mit dieser Option kannst du die Ansage von neuem Text im Spiel deaktivieren und stattdessen ein benutzerdefiniertes TTS verwenden, das solche Probleme vermeidet.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="4002"/>
@@ -14355,13 +14364,14 @@ try again when it has finished.</source>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="4079"/>
       <source>&lt;p&gt;Enable F3 and Shift+F3 shortcuts for searching up and down in the buffer.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Tastenkürzel F3 und Umschalt+F3 aktivieren, um im Puffer nach oben und unten zu suchen.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="4128"/>
       <source>&lt;p&gt;This option adds a line line break &lt;LF&gt; or &quot;
 &quot; to your command input on empty commands. This option will rarely be necessary.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Diese Option ergänzt einen Zeilenumbruch &lt;LF&gt; oder &quot;
+&quot; zu deiner Befehlszeile bei leeren Befehlen. Diese Option wird nur selten notwendig sein.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="4146"/>
