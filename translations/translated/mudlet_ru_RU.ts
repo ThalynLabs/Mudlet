@@ -1318,7 +1318,7 @@ Accessibility-friendly description for the built-in command line of a console/wi
     <message>
       <location filename="../src/TConsole.cpp" line="1059"/>
       <source>[ INFO ]  - Split-screen scrollback activated. Press &lt;⌘&gt;+&lt;ENTER&gt; to cancel.</source>
-      <translation type="unfinished"/>
+      <translation>[ ИНФО ] - Прокрутка сплит-экрана активирована. Нажмите &lt;&gt;+&lt;ENTER&gt; для отмены.</translation>
     </message>
     <message>
       <location filename="../src/TConsole.cpp" line="1061"/>
@@ -1473,13 +1473,13 @@ Accessibility-friendly description for the built-in command line of a console/wi
       <location filename="../src/TConsole.cpp" line="2225"/>
       <source>Profile main window past content.</source>
       <extracomment>accessibility-friendly name to describe the upper half of a Mudlet profile&apos;s main window when you&apos;ve scrolled up and only one profile is loaded.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Последнее содержимое главного окна профиля.</translation>
     </message>
     <message>
       <location filename="../src/TConsole.cpp" line="2227"/>
       <source>Profile main window live content.</source>
       <extracomment>accessibility-friendly name to describe the lower half of a Mudlet profile&apos;s main window when you&apos;ve scrolled up and only one profile is loaded.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Основное окно профиля живого контента.</translation>
     </message>
     <message>
       <location filename="../src/TConsole.cpp" line="2232"/>
@@ -1573,7 +1573,7 @@ Accessibility-friendly description for the built-in command line of a console/wi
     <message>
       <location filename="../src/TConsole.cpp" line="327"/>
       <source>Toggle time stamps</source>
-      <translation type="unfinished"/>
+      <translation>Вкл/выкл временные марки</translation>
     </message>
     <message>
       <location filename="../src/TConsole.cpp" line="341"/>
@@ -4053,7 +4053,7 @@ area) not found, adding &quot;%1&quot; against the reserved -1 id.</source>
     <message>
       <location filename="../src/TTextEdit.cpp" line="1817"/>
       <source>Select all</source>
-      <translation type="unfinished"/>
+      <translation>Выбрать все</translation>
     </message>
     <message>
       <location filename="../src/TTextEdit.cpp" line="1822"/>
@@ -6968,18 +6968,18 @@ Count</source>
       <location filename="../src/dlgNotepad.cpp" line="46"/>
       <source>Prepend</source>
       <extracomment>label for prepended text entry box in notepad</extracomment>
-      <translation type="unfinished"/>
+      <translation>Вставить в начале</translation>
     </message>
     <message>
       <location filename="../src/dlgNotepad.cpp" line="50"/>
       <source>Text to prepend to lines</source>
       <extracomment>placeholder text for text entry box in notepad - text which gets added before sending a line</extracomment>
-      <translation type="unfinished"/>
+      <translation>Текст для добавления в строки</translation>
     </message>
     <message>
       <location filename="../src/dlgNotepad.cpp" line="54"/>
       <source>Stop</source>
-      <translation type="unfinished"/>
+      <translation>Стоп</translation>
     </message>
   </context>
   <context>
@@ -7019,7 +7019,7 @@ Count</source>
     <message>
       <location filename="../src/ui/dlgPackageExporter.ui" line="260"/>
       <source>X</source>
-      <translation type="unfinished"/>
+      <translation>Х</translation>
     </message>
     <message>
       <location filename="../src/ui/dlgPackageExporter.ui" line="270"/>
@@ -9842,7 +9842,7 @@ Items to be deleted:
       <location filename="../src/dlgTriggerEditor.cpp" line="11558"/>
       <source>Banner hidden. &lt;a href=&apos;undo&apos; style=&apos;color: inherit; text-decoration: underline;&apos;&gt;Undo&lt;/a&gt; | &lt;a href=&apos;hide-permanently&apos; style=&apos;color: inherit; text-decoration: underline;&apos;&gt;Hide permanently&lt;/a&gt;</source>
       <extracomment>Toast notification shown when user dismisses an editor tip banner. Allows them to undo or permanently hide the tips for this editor view type.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Баннер спрятан. &lt;a href=&apos;undo&apos; style=&apos;color: inherit; text-decoration: underline;&apos;&gt;Отменить&lt;/a&gt; | &lt;a href=&apos;hide-permanently&apos; style=&apos;color: inherit; text-decoration: underline;&apos;&gt; Спрятать навсегда&lt;/a&gt;</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.h" line="501"/>
@@ -13696,22 +13696,22 @@ try again when it has finished.</source>
     <message>
       <location filename="../src/ui/notes_editor.ui" line="39"/>
       <source>toolBar</source>
-      <translation type="unfinished"/>
+      <translation>панель инструментов</translation>
     </message>
     <message>
       <location filename="../src/ui/notes_editor.ui" line="76"/>
       <source>Send all</source>
-      <translation type="unfinished"/>
+      <translation>Отправить всё</translation>
     </message>
     <message>
       <location filename="../src/ui/notes_editor.ui" line="84"/>
       <source>Send line</source>
-      <translation type="unfinished"/>
+      <translation>Отправить строку</translation>
     </message>
     <message>
       <location filename="../src/ui/notes_editor.ui" line="92"/>
       <source>Send selection</source>
-      <translation type="unfinished"/>
+      <translation>Отправить выделенное</translation>
     </message>
   </context>
   <context>
