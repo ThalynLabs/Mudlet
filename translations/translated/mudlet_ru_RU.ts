@@ -1578,17 +1578,17 @@ Accessibility-friendly description for the built-in command line of a console/wi
     <message>
       <location filename="../src/TConsole.cpp" line="341"/>
       <source>Toggle recording of replays</source>
-      <translation type="unfinished"/>
+      <translation>Вкл/выкл запись повторов</translation>
     </message>
     <message>
       <location filename="../src/TConsole.cpp" line="350"/>
       <source>Toggle logging</source>
-      <translation type="unfinished"/>
+      <translation>Вкл/выкл журнал</translation>
     </message>
     <message>
       <location filename="../src/TConsole.cpp" line="405"/>
       <source>Emergency stop! Stop all scripts</source>
-      <translation type="unfinished"/>
+      <translation>Аварийная остановка! Остановка всех скриптов</translation>
     </message>
     <message>
       <location filename="../src/TConsole.cpp" line="2197"/>
@@ -1654,25 +1654,25 @@ Accessibility-friendly description for the built-in command line of a console/wi
       <location filename="../src/TDetachedWindow.cpp" line="291"/>
       <source>&amp;Close Profile</source>
       <extracomment>This is an item in the &quot;Games&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Закрыть профиль</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="298"/>
       <source>Close the current profile</source>
       <extracomment>This explains the &quot;Close Profile&quot; item in the &quot;Games&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Закройте текущий профиль</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="495"/>
       <source>&amp;Window</source>
       <extracomment>This is the name of a menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Окно</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="515"/>
       <source>&amp;Reattach to Main Window</source>
       <extracomment>This is an item in the &quot;Window&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>&amp;Вложить в главное окно</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="517"/>
@@ -1681,25 +1681,25 @@ Accessibility-friendly description for the built-in command line of a console/wi
       <extracomment>This explains the &quot;Reattach to Main Window&quot; item in the &quot;Window&quot; menu in the menubar of a detached Mudlet window.
 ----------
 This explains the &quot;Reattach&quot; item in the toolbar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Прикрепить окно профиля к главному окну Mudlet</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="524"/>
       <source>Always on &amp;Top</source>
       <extracomment>This is an item in the &quot;Window&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Всегда &amp;поверх</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="527"/>
       <source>Keep this window always on top of other windows</source>
       <extracomment>This explains the &quot;Always on Top&quot; item in the &quot;Window&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Держать это окно всегда на верху других окон</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="532"/>
       <source>&amp;Minimize</source>
       <extracomment>This is an item in the &quot;Window&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>&amp;Свернуть</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="796"/>
