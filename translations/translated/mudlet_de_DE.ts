@@ -4029,7 +4029,7 @@ area) not found, adding &quot;%1&quot; against the reserved -1 id.</source>
     <message>
       <location filename="../src/TTextEdit.cpp" line="1817"/>
       <source>Select all</source>
-      <translation type="unfinished"/>
+      <translation>Alle auswählen</translation>
     </message>
     <message>
       <location filename="../src/TTextEdit.cpp" line="1822"/>
@@ -6946,18 +6946,18 @@ Nutzungen</translation>
       <location filename="../src/dlgNotepad.cpp" line="46"/>
       <source>Prepend</source>
       <extracomment>label for prepended text entry box in notepad</extracomment>
-      <translation type="unfinished"/>
+      <translation>Voranstellen</translation>
     </message>
     <message>
       <location filename="../src/dlgNotepad.cpp" line="50"/>
       <source>Text to prepend to lines</source>
       <extracomment>placeholder text for text entry box in notepad - text which gets added before sending a line</extracomment>
-      <translation type="unfinished"/>
+      <translation>Text, der den Zeilen vorangestellt werden soll</translation>
     </message>
     <message>
       <location filename="../src/dlgNotepad.cpp" line="54"/>
       <source>Stop</source>
-      <translation type="unfinished"/>
+      <translation>Stopp</translation>
     </message>
   </context>
   <context>
@@ -6997,7 +6997,7 @@ Nutzungen</translation>
     <message>
       <location filename="../src/ui/dlgPackageExporter.ui" line="260"/>
       <source>X</source>
-      <translation type="unfinished"/>
+      <translation>X</translation>
     </message>
     <message>
       <location filename="../src/ui/dlgPackageExporter.ui" line="270"/>
@@ -9910,7 +9910,7 @@ Objekte, die gelöscht werden sollen:
       <location filename="../src/dlgTriggerEditor.cpp" line="11558"/>
       <source>Banner hidden. &lt;a href=&apos;undo&apos; style=&apos;color: inherit; text-decoration: underline;&apos;&gt;Undo&lt;/a&gt; | &lt;a href=&apos;hide-permanently&apos; style=&apos;color: inherit; text-decoration: underline;&apos;&gt;Hide permanently&lt;/a&gt;</source>
       <extracomment>Toast notification shown when user dismisses an editor tip banner. Allows them to undo or permanently hide the tips for this editor view type.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Banner ausgeblendet. &lt;a href=&apos;undo&apos; style=&apos;color: inherit; text-decoration: underline;&apos;&gt;Rückgängig&lt;/a&gt; | &lt;a href=&apos;hide-permanently&apos; style=&apos;color: inherit; text-decoration: underline;&apos;&gt;Dauerhaft ausblenden&lt;/a&gt;</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.h" line="501"/>
@@ -13755,7 +13755,7 @@ try again when it has finished.</source>
     <message>
       <location filename="../src/ui/notes_editor.ui" line="39"/>
       <source>toolBar</source>
-      <translation type="unfinished"/>
+      <translation>Werkzeugleiste</translation>
     </message>
     <message>
       <location filename="../src/ui/notes_editor.ui" line="76"/>
