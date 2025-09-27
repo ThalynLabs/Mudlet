@@ -13760,17 +13760,17 @@ try again when it has finished.</source>
     <message>
       <location filename="../src/ui/notes_editor.ui" line="76"/>
       <source>Send all</source>
-      <translation type="unfinished"/>
+      <translation>Alles senden</translation>
     </message>
     <message>
       <location filename="../src/ui/notes_editor.ui" line="84"/>
       <source>Send line</source>
-      <translation type="unfinished"/>
+      <translation>Zeile senden</translation>
     </message>
     <message>
       <location filename="../src/ui/notes_editor.ui" line="92"/>
       <source>Send selection</source>
-      <translation type="unfinished"/>
+      <translation>Auswahl senden</translation>
     </message>
   </context>
   <context>
