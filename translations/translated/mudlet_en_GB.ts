@@ -1396,7 +1396,7 @@ Accessibility-friendly description for the built-in command line of a console/wi
       <location filename="../src/TConsole.cpp" line="423"/>
       <source>Search</source>
       <extracomment>search bar placeholder text</extracomment>
-      <translation type="unfinished"/>
+      <translation>Search</translation>
     </message>
     <message>
       <location filename="../src/TConsole.cpp" line="430"/>
@@ -1871,7 +1871,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="248"/>
       <source>&amp;Games</source>
       <extracomment>This is the name of a menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>&amp;Games</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="251"/>
@@ -1883,7 +1883,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="258"/>
       <source>Configure connection details of, and make a connection to, game servers.</source>
       <extracomment>This explains the &quot;Play&quot; item in the &quot;Games&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Configure connection details of, and make a connection to, game servers.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="265"/>
@@ -1895,7 +1895,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="272"/>
       <source>Disconnect from the current game server.</source>
       <extracomment>This explains the &quot;Disconnect&quot; item in the &quot;Games&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Disconnect from the current game server.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="277"/>
@@ -1907,25 +1907,25 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="284"/>
       <source>Disconnect and then reconnect to the current game server.</source>
       <extracomment>This explains the &quot;Reconnect&quot; item in the &quot;Games&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Disconnect and then reconnect to the current game server.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="303"/>
       <source>Close &amp;Mudlet</source>
       <extracomment>This is an item in the &quot;Games&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Close &amp;Mudlet</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="305"/>
       <source>Close the entire Mudlet application</source>
       <extracomment>This explains the &quot;Close Mudlet&quot; item in the &quot;Games&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Close the entire Mudlet application</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="311"/>
       <source>&amp;Toolbox</source>
       <extracomment>This is the name of a menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>&amp;Toolbox</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="314"/>
@@ -1937,43 +1937,43 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="321"/>
       <source>Opens the Editor for the different types of things that can be scripted by the user.</source>
       <extracomment>This explains the &quot;Script editor&quot; item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Opens the Editor for the different types of things that can be scripted by the user.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="326"/>
       <source>Show &amp;errors</source>
       <extracomment>This is an item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Show &amp;errors</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="328"/>
       <source>Show errors from scripts that you have running</source>
       <extracomment>This explains the &quot;Show errors&quot; item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Show errors from scripts that you have running</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="333"/>
       <source>Show &amp;map</source>
       <extracomment>This is an item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Show &amp;map</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="340"/>
       <source>Show or hide the game map.</source>
       <extracomment>This explains the &quot;Show map&quot; item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Show or hide the game map.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="345"/>
       <source>Compact &amp;input line</source>
       <extracomment>This is an item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Compact &amp;input line</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="352"/>
       <source>Hide / show the search area and buttons at the bottom of the screen.</source>
       <extracomment>This explains the &quot;Compact input line&quot; item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Hide / show the search area and buttons at the bottom of the screen.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="358"/>
@@ -3983,7 +3983,7 @@ area) not found, adding &quot;%1&quot; against the reserved -1 id.</source>
     <message>
       <location filename="../src/TTextEdit.cpp" line="1817"/>
       <source>Select all</source>
-      <translation type="unfinished"/>
+      <translation>Select all</translation>
     </message>
     <message>
       <location filename="../src/TTextEdit.cpp" line="1822"/>
@@ -6909,18 +6909,18 @@ Count</translation>
       <location filename="../src/dlgNotepad.cpp" line="46"/>
       <source>Prepend</source>
       <extracomment>label for prepended text entry box in notepad</extracomment>
-      <translation type="unfinished"/>
+      <translation>Prepend</translation>
     </message>
     <message>
       <location filename="../src/dlgNotepad.cpp" line="50"/>
       <source>Text to prepend to lines</source>
       <extracomment>placeholder text for text entry box in notepad - text which gets added before sending a line</extracomment>
-      <translation type="unfinished"/>
+      <translation>Text to prepend to lines</translation>
     </message>
     <message>
       <location filename="../src/dlgNotepad.cpp" line="54"/>
       <source>Stop</source>
-      <translation type="unfinished"/>
+      <translation>Stop</translation>
     </message>
   </context>
   <context>
@@ -6960,7 +6960,7 @@ Count</translation>
     <message>
       <location filename="../src/ui/dlgPackageExporter.ui" line="260"/>
       <source>X</source>
-      <translation type="unfinished"/>
+      <translation>X</translation>
     </message>
     <message>
       <location filename="../src/ui/dlgPackageExporter.ui" line="270"/>
@@ -9859,7 +9859,7 @@ Items to be deleted:
       <location filename="../src/dlgTriggerEditor.cpp" line="11558"/>
       <source>Banner hidden. &lt;a href=&apos;undo&apos; style=&apos;color: inherit; text-decoration: underline;&apos;&gt;Undo&lt;/a&gt; | &lt;a href=&apos;hide-permanently&apos; style=&apos;color: inherit; text-decoration: underline;&apos;&gt;Hide permanently&lt;/a&gt;</source>
       <extracomment>Toast notification shown when user dismisses an editor tip banner. Allows them to undo or permanently hide the tips for this editor view type.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Banner hidden. &lt;a href=&apos;undo&apos; style=&apos;color: inherit; text-decoration: underline;&apos;&gt;Undo&lt;/a&gt; | &lt;a href=&apos;hide-permanently&apos; style=&apos;color: inherit; text-decoration: underline;&apos;&gt;Hide permanently&lt;/a&gt;</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.h" line="501"/>
@@ -13679,22 +13679,22 @@ try again when it has finished.</source>
     <message>
       <location filename="../src/ui/notes_editor.ui" line="39"/>
       <source>toolBar</source>
-      <translation type="unfinished"/>
+      <translation>toolBar</translation>
     </message>
     <message>
       <location filename="../src/ui/notes_editor.ui" line="76"/>
       <source>Send all</source>
-      <translation type="unfinished"/>
+      <translation>Send all</translation>
     </message>
     <message>
       <location filename="../src/ui/notes_editor.ui" line="84"/>
       <source>Send line</source>
-      <translation type="unfinished"/>
+      <translation>Send line</translation>
     </message>
     <message>
       <location filename="../src/ui/notes_editor.ui" line="92"/>
       <source>Send selection</source>
-      <translation type="unfinished"/>
+      <translation>Send selection</translation>
     </message>
   </context>
   <context>
