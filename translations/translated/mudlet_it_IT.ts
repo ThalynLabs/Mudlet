@@ -1881,7 +1881,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="258"/>
       <source>Configure connection details of, and make a connection to, game servers.</source>
       <extracomment>This explains the &quot;Play&quot; item in the &quot;Games&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Configura i dettagli di connessione e avvia una connessione al server di gioco.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="265"/>
@@ -1893,7 +1893,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="272"/>
       <source>Disconnect from the current game server.</source>
       <extracomment>This explains the &quot;Disconnect&quot; item in the &quot;Games&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Disconnetti dal server di gioco attuale.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="277"/>
@@ -1905,7 +1905,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="284"/>
       <source>Disconnect and then reconnect to the current game server.</source>
       <extracomment>This explains the &quot;Reconnect&quot; item in the &quot;Games&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Disconnetti e poi ricollega al server di gioco corrente.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="303"/>
@@ -1917,7 +1917,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="305"/>
       <source>Close the entire Mudlet application</source>
       <extracomment>This explains the &quot;Close Mudlet&quot; item in the &quot;Games&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Chiudi l'intera applicazione Mudlet</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="311"/>
@@ -1947,7 +1947,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="328"/>
       <source>Show errors from scripts that you have running</source>
       <extracomment>This explains the &quot;Show errors&quot; item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Mostra gli errori degli script che hai eseguito</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="333"/>
@@ -1959,7 +1959,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="340"/>
       <source>Show or hide the game map.</source>
       <extracomment>This explains the &quot;Show map&quot; item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Mostra o nascondi la mappa del gioco.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="345"/>
@@ -1971,7 +1971,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="352"/>
       <source>Hide / show the search area and buttons at the bottom of the screen.</source>
       <extracomment>This explains the &quot;Compact input line&quot; item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Nascondi / mostra l'area di ricerca e i bottoni nella parte inferiore dello schermo.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="358"/>
@@ -1983,7 +1983,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="365"/>
       <source>Opens a free form text editor window for this profile that is saved between sessions.</source>
       <extracomment>This explains the &quot;Notepad&quot; item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Apre una finestra di testo personalizzata per questo profilo che viene salvato tra le sessioni.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="370"/>
@@ -1995,7 +1995,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="372"/>
       <source>Opens a built-in IRC chat.</source>
       <extracomment>This explains the &quot;IRC&quot; item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Apri la chat IRC integrata.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="377"/>
@@ -2007,19 +2007,19 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="384"/>
       <source>Install and remove collections of Mudlet lua items (packages).</source>
       <extracomment>This explains the &quot;Package manager&quot; item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Installa o rimuove le raccolte di elementi lua di Mudlet (package).</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="389"/>
       <source>Load &amp;replay</source>
       <extracomment>This is an item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Carica &amp;replay</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="391"/>
       <source>Load a previous saved game session that can be used to test Mudlet lua systems (off-line!).</source>
       <extracomment>This explains the &quot;Load replay&quot; item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Carica una precedente sessione di gioco salvata che puoi utilizzare per testare i tuoi script Lua (offline!).</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="396"/>
@@ -2031,19 +2031,19 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="403"/>
       <source>Install and remove (share- &amp; sync-able) collections of Mudlet lua items (modules).</source>
       <extracomment>This explains the &quot;Module manager&quot; item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Installa o rimuove le raccolte (condivise o sincronizzate) di elementi lua di Mudlet (moduli).</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="408"/>
       <source>Package &amp;exporter</source>
       <extracomment>This is an item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>&amp;Esportatore package</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="410"/>
       <source>Gather and bundle up collections of Mudlet Lua items and other reasources into a module.</source>
       <extracomment>This explains the &quot;Package exporter&quot; item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Raccoglie e raggruppa le raccolte di elementi Lua di Mudlet e altre risorse in un modulo.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="415"/>
@@ -2097,7 +2097,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="454"/>
       <source>Configure setting for the Mudlet application globally and for the current profile.</source>
       <extracomment>This explains the &quot;Preferences&quot; item in the &quot;Options&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Configura le impostazioni globali per Mudlet e per il profilo corrente.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="459"/>
@@ -2115,7 +2115,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="472"/>
       <source>Mutes all media played.</source>
       <extracomment>This explains the &quot;Mute all media&quot; item in the &quot;Options&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Silenzia tutti i media in riproduzione.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="478"/>
@@ -2129,7 +2129,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="480"/>
       <source>Mutes media played by the Lua API and scripts.</source>
       <extracomment>This explains the &quot;Mute sounds from Mudlet (triggers, scripts, etc.)&quot; item in the &quot;Options&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Silenzia i media in riproduzione da API e script di Lua.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="486"/>
@@ -2167,7 +2167,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="534"/>
       <source>Minimize this window</source>
       <extracomment>This explains the &quot;Minimize&quot; item in the &quot;Window&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Minimizza la finestra</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="540"/>
@@ -2185,7 +2185,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="545"/>
       <source>Opens the Mudlet manual in your web browser.</source>
       <extracomment>This explains the &quot;API Reference&quot; item in the &quot;Help&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Apri il manuale di Mudlet nel browser web di sistema.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="550"/>
@@ -2197,7 +2197,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="552"/>
       <source>Opens an (on-line) collection of &quot;Educational Mudlet screencasts&quot; in your system web-browser.</source>
       <extracomment>This explains the &quot;Video tutorials&quot; item in the &quot;Help&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Apre una raccolta (online e in inflese) di &quot;video educativi su Mudlet&quot; nel browser di sistema.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="557"/>
@@ -2209,13 +2209,13 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="559"/>
       <source>Open a link to Discord.</source>
       <extracomment>This explains the &quot;Discord&quot; item in the &quot;Help&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Aprire un link al canale Discord di aiuto.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="564"/>
       <source>Discord &amp;help channel</source>
       <extracomment>This is an item in the &quot;Help&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Canale di aiuto &amp;Discord</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="566"/>
@@ -2239,13 +2239,13 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="578"/>
       <source>Online &amp;forum</source>
       <extracomment>This is an item in the &quot;Help&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>&amp;Forum online</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="580"/>
       <source>Opens the (on-line) Mudlet Forum in your system web-browser.</source>
       <extracomment>This explains the &quot;Online forum&quot; item in the &quot;Help&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Apre il forum (online) di Mudlet nel browser di sistema.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="586"/>
@@ -2257,7 +2257,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="589"/>
       <source>About &amp;Mudlet</source>
       <extracomment>This is an item in the &quot;About&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Informazioni su &amp;Mudlet</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="597"/>
@@ -2269,19 +2269,19 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="599"/>
       <source>Check for newer versions of Mudlet</source>
       <extracomment>This explains the &quot;Check for updates...&quot; item in the &quot;About&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Verifica la disponibilità di versioni più recenti di Mudlet</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="604"/>
       <source>Show &amp;changelog</source>
       <extracomment>This is an item in the &quot;About&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Mostra il &amp;changelog</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="606"/>
       <source>Show the changelog for this version</source>
       <extracomment>This explains the &quot;Show changelog&quot; item in the &quot;About&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Mostra il changelog di questa versione</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="612"/>
@@ -5136,7 +5136,7 @@ non sarà variata nuovamente.</translation>
     <message>
       <location filename="../src/ctelnet.cpp" line="1658"/>
       <source>[ INFO ]  - This game appears to support MXP (Mud eXtension Protocol), but hasn&apos;t turned it on properly. MXP processing has been automatically enabled for clickable links, room info, and richer interactions. You can disable this setting in Settings &gt; Special Options.</source>
-      <translation type="unfinished"/>
+      <translation>[ INFO ]  - Questo gioco sembra supportare MXP (MUD eXtension Protocol), ma questo protocollo non è stato negozioto correttamente. L'elaborazione MXP è stata forzatamente abilitata per i collegamenti cliccabili, le informazioni sulla stanza e altre interazioni. Puoi disabilitare questa impostazione nella sezione Impostazioni &gt; Opzioni Speciali.</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="2662"/>
@@ -7801,7 +7801,7 @@ Altro materiale utile come link alla documentazione ai post dei forum:
     <message>
       <location filename="../src/dlgProfilePreferences.cpp" line="809"/>
       <source>&lt;p&gt;Use the maximum buffer size your system can handle (%1 lines). This will be calculated based on available memory.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Usa la dimensione massima del buffer che il tuo sistema può gestire (%1 righe). Questo valore verrà calcolato in base alla memoria disponibile.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/dlgProfilePreferences.cpp" line="906"/>
@@ -14603,37 +14603,37 @@ you can use it but there could be issues with aligning columns of text</source>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="1249"/>
       <source>Scrollback</source>
-      <translation type="unfinished"/>
+      <translation>Scorrimento</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="1273"/>
       <source>&lt;p&gt;Maximum number of lines to keep in the console buffer. When exceeded, older lines are removed in batches.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Numero massimo di righe da mantenere nel buffer della console. Quando pieno, le righe più vecchie vengono rimosse in gruppi.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="1276"/>
       <source>Main display size:</source>
-      <translation type="unfinished"/>
+      <translation>Dimensione finestra principale:</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="1286"/>
       <source>&lt;p&gt;Maximum number of lines to keep in the console buffer. Minimum is 100 lines.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Numero massimo di righe da tenere nel buffer della console. Minimo è 100 righe.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="1302"/>
       <source>lines</source>
-      <translation type="unfinished"/>
+      <translation>righe</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="1315"/>
       <source>&lt;p&gt;Use the maximum buffer size your system can handle. This will be calculated based on available memory.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Usa la dimensione massima del buffer che il tuo sistema può gestire. Questo verrà calcolato in base alla memoria disponibile.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="1318"/>
       <source>Use maximum lines possible</source>
-      <translation type="unfinished"/>
+      <translation>Usa il numero massimo possibile di righe</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="1366"/>
