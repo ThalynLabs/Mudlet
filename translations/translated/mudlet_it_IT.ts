@@ -1941,7 +1941,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="326"/>
       <source>Show &amp;errors</source>
       <extracomment>This is an item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Mostra &amp;errori</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="328"/>
@@ -1953,7 +1953,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="333"/>
       <source>Show &amp;map</source>
       <extracomment>This is an item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Mostra &amp;mappa</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="340"/>
@@ -1965,7 +1965,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="345"/>
       <source>Compact &amp;input line</source>
       <extracomment>This is an item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Compatta &amp;linea dei comandi</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="352"/>
@@ -4058,7 +4058,7 @@ area) not found, adding &quot;%1&quot; against the reserved -1 id.</source>
     <message>
       <location filename="../src/TTextEdit.cpp" line="1817"/>
       <source>Select all</source>
-      <translation type="unfinished"/>
+      <translation>Seleziona tutto</translation>
     </message>
     <message>
       <location filename="../src/TTextEdit.cpp" line="1822"/>
@@ -6985,18 +6985,18 @@ Utilizzi</translation>
       <location filename="../src/dlgNotepad.cpp" line="46"/>
       <source>Prepend</source>
       <extracomment>label for prepended text entry box in notepad</extracomment>
-      <translation type="unfinished"/>
+      <translation>Anteponi</translation>
     </message>
     <message>
       <location filename="../src/dlgNotepad.cpp" line="50"/>
       <source>Text to prepend to lines</source>
       <extracomment>placeholder text for text entry box in notepad - text which gets added before sending a line</extracomment>
-      <translation type="unfinished"/>
+      <translation>Testo da anteporre alle righe</translation>
     </message>
     <message>
       <location filename="../src/dlgNotepad.cpp" line="54"/>
       <source>Stop</source>
-      <translation type="unfinished"/>
+      <translation>Stop</translation>
     </message>
   </context>
   <context>
@@ -7036,7 +7036,7 @@ Utilizzi</translation>
     <message>
       <location filename="../src/ui/dlgPackageExporter.ui" line="260"/>
       <source>X</source>
-      <translation type="unfinished"/>
+      <translation>X</translation>
     </message>
     <message>
       <location filename="../src/ui/dlgPackageExporter.ui" line="270"/>
@@ -9942,7 +9942,7 @@ Timer da eliminare:
       <location filename="../src/dlgTriggerEditor.cpp" line="11558"/>
       <source>Banner hidden. &lt;a href=&apos;undo&apos; style=&apos;color: inherit; text-decoration: underline;&apos;&gt;Undo&lt;/a&gt; | &lt;a href=&apos;hide-permanently&apos; style=&apos;color: inherit; text-decoration: underline;&apos;&gt;Hide permanently&lt;/a&gt;</source>
       <extracomment>Toast notification shown when user dismisses an editor tip banner. Allows them to undo or permanently hide the tips for this editor view type.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Banner nascosto. &lt;a href=&apos;undo&apos; style=&apos;color: inherit; text-decoration: underline;&apos;&gt;Annulla&lt;/a&gt; | &lt;a href=&apos;hide-permanently&apos; style=&apos;color: inherit; text-decoration: underline;&apos;&gt;Nascondi per sempre&lt;/a&gt;</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.h" line="501"/>
@@ -13782,22 +13782,22 @@ tenta di nuovo quando sarà terminato.</translation>
     <message>
       <location filename="../src/ui/notes_editor.ui" line="39"/>
       <source>toolBar</source>
-      <translation type="unfinished"/>
+      <translation>barra degli strumenti</translation>
     </message>
     <message>
       <location filename="../src/ui/notes_editor.ui" line="76"/>
       <source>Send all</source>
-      <translation type="unfinished"/>
+      <translation>Invia tutto</translation>
     </message>
     <message>
       <location filename="../src/ui/notes_editor.ui" line="84"/>
       <source>Send line</source>
-      <translation type="unfinished"/>
+      <translation>Invia riga</translation>
     </message>
     <message>
       <location filename="../src/ui/notes_editor.ui" line="92"/>
       <source>Send selection</source>
-      <translation type="unfinished"/>
+      <translation>Invia selezionati</translation>
     </message>
   </context>
   <context>
