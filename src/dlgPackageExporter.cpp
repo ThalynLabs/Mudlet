@@ -624,6 +624,8 @@ void dlgPackageExporter::slot_importIcon()
     }
     lastDir = QFileInfo(fileName).absolutePath();
     settings.setValue("lastFileDialogLocation", lastDir);
+    mPackagePath = lastDir;
+    emit signal_exportLocationChanged(mPackagePath);
     mPackageIconPath = fileName;
     const QIcon myIcon(mPackageIconPath);
     ui->Icon->clear();
@@ -1542,6 +1544,8 @@ void dlgPackageExporter::slot_addFiles()
 
         lastDir = fDialog->directory().absolutePath();
         settings.setValue("lastFileDialogLocation", lastDir);
+        mPackagePath = lastDir;
+        emit signal_exportLocationChanged(mPackagePath);
     }
     fDialog->deleteLater();
 }
@@ -1557,8 +1561,8 @@ void dlgPackageExporter::slot_openPackageLocation()
     if (mPackagePath.isEmpty()) {
         return;
     }
-    lastDir = QFileInfo(mPackagePath).absolutePath();
-    settings.setValue("lastFileDialogLocation", lastDir);
+
+    settings.setValue("lastFileDialogLocation", mPackagePath);
     emit signal_exportLocationChanged(mPackagePath);
 }
 
