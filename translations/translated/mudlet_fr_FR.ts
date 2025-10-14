@@ -42,7 +42,7 @@
     <message>
       <location filename="../src/glwidget.cpp" line="2112"/>
       <source>Mapper: Cannot find a path from %1 to %2 using known exits.</source>
-      <translation type="unfinished"/>
+      <translation>Mapper: Impossible de trouver un chemin de %1 à %2 en utilisant des sorties connues.</translation>
     </message>
     <message numerus="yes">
       <location filename="../src/glwidget.cpp" line="290"/>
