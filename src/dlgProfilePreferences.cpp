@@ -4525,6 +4525,8 @@ void dlgProfilePreferences::slot_toggleEnableClosedCaption(const bool state)
     }
 }
 
+
+
 void dlgProfilePreferences::slot_changeWrapAt()
 {
     Host* pHost = mpHost;
