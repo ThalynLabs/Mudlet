@@ -675,6 +675,38 @@ bool TMap::gotoRoom(int r1, int r2)
     return findPath(r1, r2);
 }
 
+void TMap::addDirectionalRoute(QHash<unsigned int, route>& bestRoutes,
+                               const QMap<QString, int>& exitWeights,
+                               unsigned int source,
+                               TRoom* pSourceR,
+                               int target,
+                               quint8 direction,
+                               const QString& exitKey,
+                               const QSet<unsigned int>& unUsableRoomSet)
+{
+    // Skip self-edges and any exits that lead to rooms already known to be unusable.
+    if (target <= 0 || static_cast<int>(source) == target || unUsableRoomSet.contains(target)) {
+        return;
+    }
+
+    if (pSourceR->hasExitLock(direction)) {
+        return;
+    }
+
+    TRoom* pTargetR = mpRoomDB->getRoom(target);
+    if (!pTargetR || pTargetR->isLocked) {
+        return;
+    }
+
+    route r;
+    r.cost = exitWeights.value(exitKey, pTargetR->getWeight());
+    r.direction = direction;
+
+    if (!bestRoutes.contains(target) || bestRoutes.value(target).cost > r.cost) {
+        bestRoutes.insert(target, r);
+    }
+}
+
 void TMap::initGraph()
 {
     QElapsedTimer _time;
@@ -716,176 +748,18 @@ void TMap::initGraph()
         // value is data we will need to store later,
         QMap<QString, int> const exitWeights = pSourceR->getExitWeights();
 
-        int target = pSourceR->getNorth();
-        TRoom* pTargetR;
-        quint8 direction = DIR_NORTH;
-        if (target > 0 && static_cast<int>(source) != target && !unUsableRoomSet.contains(target) && !pSourceR->hasExitLock(direction)) {
-            // In above tests the second test is to eliminate self-edges (they
-            // are of no use).  The third test is to eliminate targets that we
-            // have already found to be unreachable because they are invalid or
-            // locked.
-            pTargetR = mpRoomDB->getRoom(target);
-            if (pTargetR && !pTargetR->isLocked) { // OK got something that is valid
-                route r;
-                r.cost = exitWeights.value(qsl("n"), pTargetR->getWeight());
-                r.direction = direction;
-                bestRoutes.insert(target, r);
-            }
-        }
-
-        target = pSourceR->getEast();
-        direction = DIR_EAST;
-        if (target > 0 && static_cast<int>(source) != target && !unUsableRoomSet.contains(target) && !pSourceR->hasExitLock(direction)) {
-            pTargetR = mpRoomDB->getRoom(target);
-            if (pTargetR && !pTargetR->isLocked) {
-                route r;
-                r.cost = exitWeights.value(qsl("e"), pTargetR->getWeight());
-                if (!bestRoutes.contains(target) || bestRoutes.value(target).cost > r.cost) { // Ah, this is a better route
-                    r.direction = direction;
-                    bestRoutes.insert(target, r); // If the second part of conditional is the truth this will replace previous best route to this target
-                }
-            }
-        }
-
-        target = pSourceR->getSouth();
-        direction = DIR_SOUTH;
-        if (target > 0 && static_cast<int>(source) != target && !unUsableRoomSet.contains(target) && !pSourceR->hasExitLock(direction)) {
-            pTargetR = mpRoomDB->getRoom(target);
-            if (pTargetR && !pTargetR->isLocked) {
-                route r;
-                r.cost = exitWeights.value(qsl("s"), pTargetR->getWeight());
-                if (!bestRoutes.contains(target) || bestRoutes.value(target).cost > r.cost) {
-                    r.direction = direction;
-                    bestRoutes.insert(target, r);
-                }
-            }
-        }
-
-        target = pSourceR->getWest();
-        direction = DIR_WEST;
-        if (target > 0 && static_cast<int>(source) != target && !unUsableRoomSet.contains(target) && !pSourceR->hasExitLock(direction)) {
-            pTargetR = mpRoomDB->getRoom(target);
-            if (pTargetR && !pTargetR->isLocked) {
-                route r;
-                r.cost = exitWeights.value(qsl("w"), pTargetR->getWeight());
-                if (!bestRoutes.contains(target) || bestRoutes.value(target).cost > r.cost) {
-                    r.direction = direction;
-                    bestRoutes.insert(target, r);
-                }
-            }
-        }
-
-        target = pSourceR->getUp();
-        direction = DIR_UP;
-        if (target > 0 && static_cast<int>(source) != target && !unUsableRoomSet.contains(target) && !pSourceR->hasExitLock(direction)) {
-            pTargetR = mpRoomDB->getRoom(target);
-            if (pTargetR && !pTargetR->isLocked) {
-                route r;
-                r.cost = exitWeights.value(qsl("up"), pTargetR->getWeight());
-                if (!bestRoutes.contains(target) || bestRoutes.value(target).cost > r.cost) {
-                    r.direction = direction;
-                    bestRoutes.insert(target, r);
-                }
-            }
-        }
-
-        target = pSourceR->getDown();
-        direction = DIR_DOWN;
-        if (target > 0 && static_cast<int>(source) != target && !unUsableRoomSet.contains(target) && !pSourceR->hasExitLock(direction)) {
-            pTargetR = mpRoomDB->getRoom(target);
-            if (pTargetR && !pTargetR->isLocked) {
-                route r;
-                r.cost = exitWeights.value(qsl("down"), pTargetR->getWeight());
-                if (!bestRoutes.contains(target) || bestRoutes.value(target).cost > r.cost) {
-                    r.direction = direction;
-                    bestRoutes.insert(target, r);
-                }
-            }
-        }
-
-        target = pSourceR->getNortheast();
-        direction = DIR_NORTHEAST;
-        if (target > 0 && static_cast<int>(source) != target && !unUsableRoomSet.contains(target) && !pSourceR->hasExitLock(direction)) {
-            pTargetR = mpRoomDB->getRoom(target);
-            if (pTargetR && !pTargetR->isLocked) {
-                route r;
-                r.cost = exitWeights.value(qsl("ne"), pTargetR->getWeight());
-                if (!bestRoutes.contains(target) || bestRoutes.value(target).cost > r.cost) {
-                    r.direction = direction;
-                    bestRoutes.insert(target, r);
-                }
-            }
-        }
-
-        target = pSourceR->getSoutheast();
-        direction = DIR_SOUTHEAST;
-        if (target > 0 && static_cast<int>(source) != target && !unUsableRoomSet.contains(target) && !pSourceR->hasExitLock(direction)) {
-            pTargetR = mpRoomDB->getRoom(target);
-            if (pTargetR && !pTargetR->isLocked) {
-                route r;
-                r.cost = exitWeights.value(qsl("se"), pTargetR->getWeight());
-                if (!bestRoutes.contains(target) || bestRoutes.value(target).cost > r.cost) {
-                    r.direction = direction;
-                    bestRoutes.insert(target, r);
-                }
-            }
-        }
-
-        target = pSourceR->getSouthwest();
-        direction = DIR_SOUTHWEST;
-        if (target > 0 && static_cast<int>(source) != target && !unUsableRoomSet.contains(target) && !pSourceR->hasExitLock(direction)) {
-            pTargetR = mpRoomDB->getRoom(target);
-            if (pTargetR && !pTargetR->isLocked) {
-                route r;
-                r.cost = exitWeights.value(qsl("sw"), pTargetR->getWeight());
-                if (!bestRoutes.contains(target) || bestRoutes.value(target).cost > r.cost) {
-                    r.direction = direction;
-                    bestRoutes.insert(target, r);
-                }
-            }
-        }
-
-        target = pSourceR->getNorthwest();
-        direction = DIR_NORTHWEST;
-        if (target > 0 && static_cast<int>(source) != target && !unUsableRoomSet.contains(target) && !pSourceR->hasExitLock(direction)) {
-            pTargetR = mpRoomDB->getRoom(target);
-            if (pTargetR && !pTargetR->isLocked) {
-                route r;
-                r.cost = exitWeights.value(qsl("nw"), pTargetR->getWeight());
-                if (!bestRoutes.contains(target) || bestRoutes.value(target).cost > r.cost) {
-                    r.direction = direction;
-                    bestRoutes.insert(target, r);
-                }
-            }
-        }
-
-        target = pSourceR->getIn();
-        direction = DIR_IN;
-        if (target > 0 && static_cast<int>(source) != target && !unUsableRoomSet.contains(target) && !pSourceR->hasExitLock(direction)) {
-            pTargetR = mpRoomDB->getRoom(target);
-            if (pTargetR && !pTargetR->isLocked) {
-                route r;
-                r.cost = exitWeights.value(qsl("in"), pTargetR->getWeight());
-                if (!bestRoutes.contains(target) || bestRoutes.value(target).cost > r.cost) {
-                    r.direction = direction;
-                    bestRoutes.insert(target, r);
-                }
-            }
-        }
-
-        target = pSourceR->getOut();
-        direction = DIR_OUT;
-        if (target > 0 && static_cast<int>(source) != target && !unUsableRoomSet.contains(target) && !pSourceR->hasExitLock(direction)) {
-            pTargetR = mpRoomDB->getRoom(target);
-            if (pTargetR && !pTargetR->isLocked) {
-                route r;
-                r.cost = exitWeights.value(qsl("out"), pTargetR->getWeight());
-                if (!bestRoutes.contains(target) || bestRoutes.value(target).cost > r.cost) {
-                    r.direction = direction;
-                    bestRoutes.insert(target, r);
-                }
-            }
-        }
+        addDirectionalRoute(bestRoutes, exitWeights, source, pSourceR, pSourceR->getNorth(), DIR_NORTH, qsl("n"), unUsableRoomSet);
+        addDirectionalRoute(bestRoutes, exitWeights, source, pSourceR, pSourceR->getEast(), DIR_EAST, qsl("e"), unUsableRoomSet);
+        addDirectionalRoute(bestRoutes, exitWeights, source, pSourceR, pSourceR->getSouth(), DIR_SOUTH, qsl("s"), unUsableRoomSet);
+        addDirectionalRoute(bestRoutes, exitWeights, source, pSourceR, pSourceR->getWest(), DIR_WEST, qsl("w"), unUsableRoomSet);
+        addDirectionalRoute(bestRoutes, exitWeights, source, pSourceR, pSourceR->getUp(), DIR_UP, qsl("up"), unUsableRoomSet);
+        addDirectionalRoute(bestRoutes, exitWeights, source, pSourceR, pSourceR->getDown(), DIR_DOWN, qsl("down"), unUsableRoomSet);
+        addDirectionalRoute(bestRoutes, exitWeights, source, pSourceR, pSourceR->getNortheast(), DIR_NORTHEAST, qsl("ne"), unUsableRoomSet);
+        addDirectionalRoute(bestRoutes, exitWeights, source, pSourceR, pSourceR->getSoutheast(), DIR_SOUTHEAST, qsl("se"), unUsableRoomSet);
+        addDirectionalRoute(bestRoutes, exitWeights, source, pSourceR, pSourceR->getSouthwest(), DIR_SOUTHWEST, qsl("sw"), unUsableRoomSet);
+        addDirectionalRoute(bestRoutes, exitWeights, source, pSourceR, pSourceR->getNorthwest(), DIR_NORTHWEST, qsl("nw"), unUsableRoomSet);
+        addDirectionalRoute(bestRoutes, exitWeights, source, pSourceR, pSourceR->getIn(), DIR_IN, qsl("in"), unUsableRoomSet);
+        addDirectionalRoute(bestRoutes, exitWeights, source, pSourceR, pSourceR->getOut(), DIR_OUT, qsl("out"), unUsableRoomSet);
 
         QMapIterator<QString, int> itSpecialExit(pSourceR->getSpecialExits());
         while (itSpecialExit.hasNext()) {
@@ -894,10 +768,10 @@ void TMap::initGraph()
                 continue; // Is a locked exit so forget it...
             }
 
-            target = itSpecialExit.value();
-            direction = DIR_OTHER;
+            const int target = itSpecialExit.value();
+            const quint8 direction = DIR_OTHER;
             if (target > 0 && static_cast<int>(source) != target && !unUsableRoomSet.contains(target)) {
-                pTargetR = mpRoomDB->getRoom(target);
+                TRoom* pTargetR = mpRoomDB->getRoom(target);
                 if (pTargetR && !pTargetR->isLocked) {
                     route r;
                     r.specialExitName = itSpecialExit.key();
