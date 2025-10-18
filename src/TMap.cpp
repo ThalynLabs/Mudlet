@@ -699,7 +699,19 @@ void TMap::addDirectionalRoute(QHash<unsigned int, route>& bestRoutes,
     }
 
     route r;
-    r.cost = exitWeights.value(exitKey, pTargetR->getWeight());
+    int cost = exitWeights.value(exitKey, pTargetR->getWeight());
+    if (mpHost) {
+        if (auto* interpreter = mpHost->getLuaInterpreter(); interpreter) {
+            const auto filterResult = interpreter->applyExitWeightFilter(static_cast<int>(source), exitKey);
+            if (filterResult.blocked) {
+                return;
+            }
+            if (filterResult.weightOverride.has_value()) {
+                cost = filterResult.weightOverride.value();
+            }
+        }
+    }
+    r.cost = cost;
     r.direction = direction;
 
     if (!bestRoutes.contains(target) || bestRoutes.value(target).cost > r.cost) {
@@ -775,7 +787,20 @@ void TMap::initGraph()
                 if (pTargetR && !pTargetR->isLocked) {
                     route r;
                     r.specialExitName = itSpecialExit.key();
-                    r.cost = exitWeights.value(r.specialExitName, pTargetR->getWeight());
+                    int cost = exitWeights.value(r.specialExitName, pTargetR->getWeight());
+                    if (mpHost) {
+                        if (auto* interpreter = mpHost->getLuaInterpreter(); interpreter) {
+                            const auto filterResult =
+                                interpreter->applyExitWeightFilter(static_cast<int>(source), r.specialExitName);
+                            if (filterResult.blocked) {
+                                continue;
+                            }
+                            if (filterResult.weightOverride.has_value()) {
+                                cost = filterResult.weightOverride.value();
+                            }
+                        }
+                    }
+                    r.cost = cost;
                     if (!bestRoutes.contains(target) || bestRoutes.value(target).cost > r.cost) {
                         r.direction = direction;
                         bestRoutes.insert(target, r);

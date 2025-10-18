@@ -3530,6 +3530,42 @@ int TLuaInterpreter::setExitStub(lua_State* L)
     host.mpMap->update();
     return 0;
 }
+// Documentation: https://wiki.mudlet.org/w/Manual:Lua_Functions#setExitWeightFilter
+// Scripts may return false or the string "block" from the callback.
+// Returning those values prevents the exit from being added to the pathfinding graph.
+int TLuaInterpreter::setExitWeightFilter(lua_State* L)
+{
+    Host& host = getHostFromLua(L);
+
+    if (lua_isnoneornil(L, 1)) {
+        if (auto* interpreter = host.getLuaInterpreter(); interpreter) {
+            interpreter->clearExitWeightFilter(L);
+        }
+        if (host.mpMap) {
+            host.mpMap->mMapGraphNeedsUpdate = true;
+        }
+        lua_pushboolean(L, true);
+        return 1;
+    }
+
+    if (!lua_isfunction(L, 1)) {
+        lua_pushfstring(L,
+                        "setExitWeightFilter: bad argument #1 type (callback as function expected, got %s!)",
+                        luaL_typename(L, 1));
+        return lua_error(L);
+    }
+
+    if (auto* interpreter = host.getLuaInterpreter(); interpreter) {
+        interpreter->storeExitWeightFilter(L, 1);
+    }
+
+    if (host.mpMap) {
+        host.mpMap->mMapGraphNeedsUpdate = true;
+    }
+
+    lua_pushboolean(L, true);
+    return 1;
+}
 
 // Documentation: https://wiki.mudlet.org/w/Manual:Lua_Functions#setExitWeight
 int TLuaInterpreter::setExitWeight(lua_State* L)
