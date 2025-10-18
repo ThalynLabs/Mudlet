@@ -128,6 +128,7 @@ public:
     };
 
     ExitWeightFilterResult applyExitWeightFilter(int roomId, const QString& exitCommand);
+    bool hasExitWeightFilter() const;
     int check_for_mappingscript();
     int check_for_custom_speedwalk();
     void set_lua_integer(const QString& varName, int varValue);

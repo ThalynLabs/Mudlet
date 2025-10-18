@@ -6635,6 +6635,11 @@ TLuaInterpreter::ExitWeightFilterResult TLuaInterpreter::applyExitWeightFilter(i
     return result;
 }
 
+bool TLuaInterpreter::hasExitWeightFilter() const
+{
+    return mExitWeightFilterRef != LUA_NOREF;
+}
+
 void TLuaInterpreter::storeExitWeightFilter(lua_State* L, int index)
 {
     if (!L) {

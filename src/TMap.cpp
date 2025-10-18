@@ -30,6 +30,7 @@
 #include "TRoomDB.h"
 #include "XMLimport.h"
 #include "dlgMapper.h"
+#include "TLuaInterpreter.h"
 #include "mapInfoContributorManager.h"
 #include "mudlet.h"
 
@@ -685,31 +686,44 @@ void TMap::addDirectionalRoute(QHash<unsigned int, route>& bestRoutes,
                                const QSet<unsigned int>& unUsableRoomSet)
 {
     // Skip self-edges and any exits that lead to rooms already known to be unusable.
-    if (target <= 0 || static_cast<int>(source) == target || unUsableRoomSet.contains(target)) {
+    if (target <= 0 || static_cast<int>(source) == target) {
         return;
     }
 
-    if (pSourceR->hasExitLock(direction)) {
+    TLuaInterpreter* interpreter = mpHost ? mpHost->getLuaInterpreter() : nullptr;
+    const bool filterActive = interpreter && interpreter->hasExitWeightFilter();
+
+    TLuaInterpreter::ExitWeightFilterResult filterResult;
+    if (filterActive) {
+        filterResult = interpreter->applyExitWeightFilter(static_cast<int>(source), exitKey);
+        if (filterResult.blocked) {
+            return;
+        }
+    }
+
+    const bool filterOverridesBlocks = filterActive && filterResult.weightOverride.has_value();
+
+    if (pSourceR->isLocked && !filterOverridesBlocks) {
+        return;
+    }
+
+    if (pSourceR->hasExitLock(direction) && !filterOverridesBlocks) {
         return;
     }
 
     TRoom* pTargetR = mpRoomDB->getRoom(target);
-    if (!pTargetR || pTargetR->isLocked) {
+    if (!pTargetR) {
+        return;
+    }
+
+    if (!filterOverridesBlocks && (pTargetR->isLocked || unUsableRoomSet.contains(target))) {
         return;
     }
 
     route r;
     int cost = exitWeights.value(exitKey, pTargetR->getWeight());
-    if (mpHost) {
-        if (auto* interpreter = mpHost->getLuaInterpreter(); interpreter) {
-            const auto filterResult = interpreter->applyExitWeightFilter(static_cast<int>(source), exitKey);
-            if (filterResult.blocked) {
-                return;
-            }
-            if (filterResult.weightOverride.has_value()) {
-                cost = filterResult.weightOverride.value();
-            }
-        }
+    if (filterOverridesBlocks) {
+        cost = filterResult.weightOverride.value();
     }
     r.cost = cost;
     r.direction = direction;
@@ -730,15 +744,24 @@ void TMap::initGraph()
     unsigned int roomCount = 0;
     unsigned int edgeCount = 0;
     QSet<unsigned int> unUsableRoomSet;
+    TLuaInterpreter* interpreter = mpHost ? mpHost->getLuaInterpreter() : nullptr;
+    const bool exitWeightFilterActive = interpreter && interpreter->hasExitWeightFilter();
     // Keep track of the unusable rather than the usable ones because that is
     // hopefully a MUCH smaller set in normal situations!
     QHashIterator<int, TRoom*> itRoom = mpRoomDB->getRoomMap();
     while (itRoom.hasNext()) {
         itRoom.next();
         TRoom* pR = itRoom.value();
-        if (itRoom.key() < 1 || !pR || pR->isLocked) {
+        if (itRoom.key() < 1 || !pR) {
             unUsableRoomSet.insert(itRoom.key());
             continue;
+        }
+
+        if (pR->isLocked) {
+            unUsableRoomSet.insert(itRoom.key());
+            if (!exitWeightFilterActive) {
+                continue;
+            }
         }
 
         location l;
@@ -749,6 +772,10 @@ void TMap::initGraph()
         // This command maps usable TRooms (key) to index of entry in locations (for route finding).
         // It loses invalid and unusable (i.e. locked) rooms
         roomidToIndex.insert(itRoom.key(), roomCount++);
+    }
+
+    for (unsigned int i = 0; i < roomCount; ++i) {
+        boost::add_vertex(g);
     }
 
     // Now identify the routes between rooms, and pick out the best edges of parallel ones
@@ -776,36 +803,48 @@ void TMap::initGraph()
         QMapIterator<QString, int> itSpecialExit(pSourceR->getSpecialExits());
         while (itSpecialExit.hasNext()) {
             itSpecialExit.next();
-            if (pSourceR->hasSpecialExitLock(itSpecialExit.key())) {
-                continue; // Is a locked exit so forget it...
-            }
 
             const int target = itSpecialExit.value();
             const quint8 direction = DIR_OTHER;
-            if (target > 0 && static_cast<int>(source) != target && !unUsableRoomSet.contains(target)) {
-                TRoom* pTargetR = mpRoomDB->getRoom(target);
-                if (pTargetR && !pTargetR->isLocked) {
-                    route r;
-                    r.specialExitName = itSpecialExit.key();
-                    int cost = exitWeights.value(r.specialExitName, pTargetR->getWeight());
-                    if (mpHost) {
-                        if (auto* interpreter = mpHost->getLuaInterpreter(); interpreter) {
-                            const auto filterResult =
-                                interpreter->applyExitWeightFilter(static_cast<int>(source), r.specialExitName);
-                            if (filterResult.blocked) {
-                                continue;
-                            }
-                            if (filterResult.weightOverride.has_value()) {
-                                cost = filterResult.weightOverride.value();
-                            }
-                        }
-                    }
-                    r.cost = cost;
-                    if (!bestRoutes.contains(target) || bestRoutes.value(target).cost > r.cost) {
-                        r.direction = direction;
-                        bestRoutes.insert(target, r);
-                    }
+            const QString specialExitName = itSpecialExit.key();
+            if (target <= 0 || static_cast<int>(source) == target) {
+                continue;
+            }
+
+            TRoom* pTargetR = mpRoomDB->getRoom(target);
+            if (!pTargetR) {
+                continue;
+            }
+
+            TLuaInterpreter::ExitWeightFilterResult filterResult;
+            if (exitWeightFilterActive) {
+                filterResult = interpreter->applyExitWeightFilter(static_cast<int>(source), specialExitName);
+                if (filterResult.blocked) {
+                    continue;
                 }
+            }
+
+            const bool filterOverridesBlocks = exitWeightFilterActive && filterResult.weightOverride.has_value();
+            if (pSourceR->isLocked && !filterOverridesBlocks) {
+                continue;
+            }
+            if (pSourceR->hasSpecialExitLock(specialExitName) && !filterOverridesBlocks) {
+                continue;
+            }
+            if (!filterOverridesBlocks && (pTargetR->isLocked || unUsableRoomSet.contains(target))) {
+                continue;
+            }
+
+            route r;
+            r.specialExitName = specialExitName;
+            int cost = exitWeights.value(r.specialExitName, pTargetR->getWeight());
+            if (filterOverridesBlocks) {
+                cost = filterResult.weightOverride.value();
+            }
+            r.cost = cost;
+            if (!bestRoutes.contains(target) || bestRoutes.value(target).cost > r.cost) {
+                r.direction = direction;
+                bestRoutes.insert(target, r);
             }
         } // End of while(itSpecialExit.hasNext())
 
@@ -928,10 +967,23 @@ bool TMap::findPath(int from, int to)
     }
     vertex const goal = roomidToIndex.value(to);
 
-    std::vector<vertex> p(num_vertices(g));
+    const auto vertexCount = static_cast<std::size_t>(num_vertices(g));
+    if (vertexCount == 0) {
+        qDebug() << "TMap::findPath(" << from << "," << to << ") FAIL: map graph has no vertices.";
+        return false;
+    }
+
+    if (static_cast<std::size_t>(start) >= vertexCount || static_cast<std::size_t>(goal) >= vertexCount) {
+        qWarning().nospace().noquote() << "TMap::findPath(" << from << "," << to
+                                       << ") FAIL: start or target vertex outside of graph range (vertexCount=" << vertexCount
+                                       << ").";
+        return false;
+    }
+
+    std::vector<vertex> p(vertexCount);
     // Somehow p is an ascending, monotonic series of numbers start at 0, it
     // seems we have a redundant indirection in play there as p[0]=0, p[1]=1,..., p[n]=n ...!
-    std::vector<cost> d(num_vertices(g));
+    std::vector<cost> d(vertexCount);
     try {
         astar_search(g, start, distance_heuristic<mygraph_t, cost, std::vector<location>>(locations, goal), predecessor_map(&p[0]).distance_map(&d[0]).visitor(astar_goal_visitor<vertex>(goal)));
     } catch (found_goal) {
