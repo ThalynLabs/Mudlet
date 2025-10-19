@@ -691,24 +691,32 @@ void TMap::addDirectionalRoute(QHash<unsigned int, route>& bestRoutes,
     }
 
     TLuaInterpreter* interpreter = mpHost ? mpHost->getLuaInterpreter() : nullptr;
-    const bool filterActive = interpreter && interpreter->hasExitWeightFilter();
-
     TLuaInterpreter::ExitWeightFilterResult filterResult;
-    if (filterActive) {
+    TLuaInterpreter::ExitWeightFilterResult* filterResultPtr = nullptr;
+    if (interpreter && interpreter->hasExitWeightFilter()) {
         filterResult = interpreter->applyExitWeightFilter(static_cast<int>(source), exitKey);
         if (filterResult.blocked) {
             return;
         }
+        filterResultPtr = &filterResult;
     }
 
-    const bool filterOverridesBlocks = filterActive && filterResult.weightOverride.has_value();
+    const bool filterOverridesBlocks = filterResultPtr && filterResultPtr->weightOverride.has_value();
 
     if (pSourceR->isLocked && !filterOverridesBlocks) {
         return;
     }
 
-    if (pSourceR->hasExitLock(direction) && !filterOverridesBlocks) {
-        return;
+    const bool isSpecialExit = direction == DIR_OTHER;
+
+    if (!filterOverridesBlocks) {
+        if (isSpecialExit) {
+            if (pSourceR->hasSpecialExitLock(exitKey)) {
+                return;
+            }
+        } else if (pSourceR->hasExitLock(direction)) {
+            return;
+        }
     }
 
     TRoom* pTargetR = mpRoomDB->getRoom(target);
@@ -721,12 +729,16 @@ void TMap::addDirectionalRoute(QHash<unsigned int, route>& bestRoutes,
     }
 
     route r;
+    r.direction = direction;
+    if (isSpecialExit) {
+        r.specialExitName = exitKey;
+    }
+
     int cost = exitWeights.value(exitKey, pTargetR->getWeight());
     if (filterOverridesBlocks) {
-        cost = filterResult.weightOverride.value();
+        cost = filterResultPtr->weightOverride.value();
     }
     r.cost = cost;
-    r.direction = direction;
 
     if (!bestRoutes.contains(target) || bestRoutes.value(target).cost > r.cost) {
         bestRoutes.insert(target, r);
@@ -804,48 +816,14 @@ void TMap::initGraph()
         while (itSpecialExit.hasNext()) {
             itSpecialExit.next();
 
-            const int target = itSpecialExit.value();
-            const quint8 direction = DIR_OTHER;
-            const QString specialExitName = itSpecialExit.key();
-            if (target <= 0 || static_cast<int>(source) == target) {
-                continue;
-            }
-
-            TRoom* pTargetR = mpRoomDB->getRoom(target);
-            if (!pTargetR) {
-                continue;
-            }
-
-            TLuaInterpreter::ExitWeightFilterResult filterResult;
-            if (exitWeightFilterActive) {
-                filterResult = interpreter->applyExitWeightFilter(static_cast<int>(source), specialExitName);
-                if (filterResult.blocked) {
-                    continue;
-                }
-            }
-
-            const bool filterOverridesBlocks = exitWeightFilterActive && filterResult.weightOverride.has_value();
-            if (pSourceR->isLocked && !filterOverridesBlocks) {
-                continue;
-            }
-            if (pSourceR->hasSpecialExitLock(specialExitName) && !filterOverridesBlocks) {
-                continue;
-            }
-            if (!filterOverridesBlocks && (pTargetR->isLocked || unUsableRoomSet.contains(target))) {
-                continue;
-            }
-
-            route r;
-            r.specialExitName = specialExitName;
-            int cost = exitWeights.value(r.specialExitName, pTargetR->getWeight());
-            if (filterOverridesBlocks) {
-                cost = filterResult.weightOverride.value();
-            }
-            r.cost = cost;
-            if (!bestRoutes.contains(target) || bestRoutes.value(target).cost > r.cost) {
-                r.direction = direction;
-                bestRoutes.insert(target, r);
-            }
+            addDirectionalRoute(bestRoutes,
+                                exitWeights,
+                                source,
+                                pSourceR,
+                                itSpecialExit.value(),
+                                DIR_OTHER,
+                                itSpecialExit.key(),
+                                unUsableRoomSet);
         } // End of while(itSpecialExit.hasNext())
 
         // Now we have eliminated possible duplicate and useless edges we can create and
