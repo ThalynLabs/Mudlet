@@ -4,6 +4,7 @@
 /***************************************************************************
  *   Copyright (C) 2008-2012 by Heiko Koehn - KoehnHeiko@googlemail.com    *
  *   Copyright (C) 2014 by Ahmed Charles - acharles@outlook.com            *
+ *   Copyright (C) 2024 by Stephen Lyons - slysven@virginmedia.com         *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -25,11 +26,9 @@
 #include "Tree.h"
 
 
-#include "pre_guard.h"
 #include <QDebug>
 #include <QPointer>
 #include <QTime>
-#include "post_guard.h"
 
 class Host;
 
@@ -98,19 +97,22 @@ public:
     // Override the Tree version as we need to insert the id number as a
     // property into the QTimer that mpQTimer points to as well:
     void setID(int) override;
+    QString packageName(TTimer* pTimer);
+    QString moduleName(TTimer* pTimer);
+
 
 
     // specifies whenever the payload is Lua code as a string
     // or a function
-    bool mRegisteredAnonymousLuaFunction;
-    bool exportItem;
-    bool mModuleMasterFolder;
+    bool mRegisteredAnonymousLuaFunction = false;
+    bool exportItem = true;
+    bool mModuleMasterFolder = false;
 
     static const char* scmProperty_HostName;
     static const char* scmProperty_TTimerId;
 
     // temporary timers are single-shot by default, unless repeating is set
-    bool mRepeating;
+    bool mRepeating = false;
 
 private:
     TTimer() = default;
@@ -120,16 +122,16 @@ private:
     QString mCommand;
     QString mFuncName;
     QPointer<Host> mpHost;
-    bool mNeedsToBeCompiled;
+    bool mNeedsToBeCompiled = true;
     QTimer* mpQTimer;
-    bool mModuleMember;
+    bool mModuleMember = false;
 };
 
 #ifndef QT_NO_DEBUG_STREAM
 inline QDebug& operator<<(QDebug& debug, const TTimer* timer)
 {
     QDebugStateSaver saver(debug);
-    Q_UNUSED(saver);
+    Q_UNUSED(saver)
     debug.nospace() << "TTimer("
                     << "name= " << timer->getName()
                     << " time= " << timer->getTime()

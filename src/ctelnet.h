@@ -32,7 +32,6 @@
 #include <winsock2.h>
 #endif
 
-#include "pre_guard.h"
 #include <QElapsedTimer>
 #include <QHostAddress>
 #include <QHostInfo>
@@ -44,15 +43,15 @@
 #include <QSslSocket>
 #endif
 #include <QTime>
-#include "post_guard.h"
 
 #include <zlib.h>
 
 #include <iostream>
 #include <queue>
 #include <string>
+#include <QVector>
 
-#if defined(Q_OS_WIN32)
+#if defined(Q_OS_WINDOWS)
 #include <ws2tcpip.h>
 #include "mstcpip.h"
 #else
@@ -120,8 +119,8 @@ const char OPT_COMPRESS2 = 86;
 const char OPT_MSP = 90;
 const char OPT_MXP = 91;
 const char OPT_102 = 102;
-const char OPT_ATCP = static_cast<char>(200);
-const char OPT_GMCP = static_cast<char>(201);
+const auto OPT_ATCP = static_cast<unsigned char>(200);
+const auto OPT_GMCP = static_cast<unsigned char>(201);
 
 const char CHARSET_REQUEST = 1;
 const char CHARSET_ACCEPTED = 2;
@@ -194,6 +193,7 @@ public:
     void setAutoReconnect(bool status);
     void encodingChanged(const QByteArray&);
     void set_USE_IRE_DRIVER_BUGFIX(bool b) { mUSE_IRE_DRIVER_BUGFIX = b; }
+    void setDontReconnect(bool b) { mDontReconnect = b; }
     void recordReplay();
     bool loadReplay(const QString&, QString* pErrMsg = nullptr);
     void loadReplayChunk();
@@ -219,21 +219,24 @@ public:
     bool isMSSPEnabled() const { return enableMSSP; }
     bool isMSDPEnabled() const { return enableMSDP; }
     bool isMSPEnabled() const { return enableMSP; }
+    bool isMXPEnabled() const { return enableMXP; }
     bool isChannel102Enabled() const { return enableChannel102; }
+    void trackMXPElementDetection(const std::string&);
     void requestDiscordInfo();
     QString decodeOption(const unsigned char) const;
-    QAbstractSocket::SocketState getConnectionState() const { return socket.state(); }
+    QString formatShortTelnetCommand(const std::string& telnetCommand, const QString& commandName) const;
+    QAbstractSocket::SocketState getConnectionState() const { return mpSocket.state(); }
     std::tuple<QString, int, bool> getConnectionInfo() const;
     void setPostingTimeout(const int);
     int getPostingTimeout() const { return mTimeOut; }
     void loopbackTest(QByteArray& data) { processSocketData(data.data(), data.size(), true); }
+    void cancelLoginTimers();
 
 
     QMap<int, bool> supportedTelnetOptions;
     bool mResponseProcessed = true;
     double networkLatencyTime = 0.0;
     QElapsedTimer networkLatencyTimer;
-    bool mAlertOnNewData = true;
     bool mGA_Driver = false;
     bool mFORCE_GA_OFF = false;
     QPointer<dlgComposer> mpComposer;
@@ -275,6 +278,7 @@ private:
     void initStreamDecompressor();
     int decompressBuffer(char*& in_buffer, int& length, char* out_buffer);
     void reset();
+    void sendLoginAndPass();
 
     QByteArray prepareNewEnvironData(const QString&);
     QString getNewEnvironValueUser();
@@ -289,6 +293,13 @@ private:
     QString getNewEnviron256Colors();
     QString getNewEnvironUTF8();
     QString getNewEnvironOSCColorPalette();
+    QString getNewEnvironOSCHyperlinks();
+    QString getNewEnvironOSCHyperlinksSend();
+    QString getNewEnvironOSCHyperlinksPrompt();
+    QString getNewEnvironOSCHyperlinksStyleBasic();
+    QString getNewEnvironOSCHyperlinksStyleStates();
+    QString getNewEnvironOSCHyperlinksTooltip();
+    QString getNewEnvironOSCHyperlinksMenu();
     QString getNewEnvironScreenReader();
     QString getNewEnvironTruecolor();
     QString getNewEnvironTLS();
@@ -304,7 +315,7 @@ private:
     void sendIsMNESValues(const QByteArray&);
 
     void processTelnetCommand(const std::string& telnetCommand);
-    void sendTelnetOption(char type, char option);
+    void sendTelnetOption(char type, unsigned char option);
     void gotRest(std::string&);
     void gotPrompt(std::string&);
     void postData();
@@ -315,14 +326,22 @@ private:
     void promptTlsConnectionAvailable();
 #endif
     void sendNAWS(int width, int height);
+    QString parseGUIVersionFromJSON(const QJsonObject& json);
+    QString parseGUIUrlFromJSON(const QJsonObject& json);
+    void downloadAndInstallGUIPackage(const QString& packageName, const QString& fileName, const QString& url);
+    void handleGUIPackageInstallationAndUpgrade(QJsonDocument document);
+
     static std::pair<bool, bool> testReadReplayFile();
 
+    void trackKaVirNegotiation(unsigned char option);
+    void autoEnableMXPProcessor();
+    void autoEnableTTYPEVersion();
 
     QPointer<Host> mpHost;
 #if defined(QT_NO_SSL)
-    QTcpSocket socket;
+    QTcpSocket mpSocket;
 #else
-    QSslSocket socket;
+    QSslSocket mpSocket;
 #endif
     QHostAddress mHostAddress;
 //    QTextCodec* incomingDataCodec;
@@ -330,8 +349,8 @@ private:
     QTextCodec* outgoingDataCodec = nullptr;
 //    QTextDecoder* incomingDataDecoder;
     QTextEncoder* outgoingDataEncoder = nullptr;
-    QString hostName;
-    int hostPort = 0;
+    QString mHostName;
+    int mHostPort = 0;
     bool mWaitingForResponse = false;
     std::queue<int> mCommandQueue;
 
@@ -390,6 +409,7 @@ private:
     bool enableMSSP = false;
     bool enableMSDP = false;
     bool enableMSP = false;
+    bool enableMXP = false;
     bool enableChannel102 = false;
     bool mDontReconnect = false;
     bool mAutoReconnect = false;
@@ -417,6 +437,9 @@ private:
     // we can send NAWS data when it changes:
     int mNaws_x = 0;
     int mNaws_y = 0;
+
+    // KaVir protocol negotiation tracking
+    QVector<unsigned char> mNegotiationOrder;
 };
 
 #endif // MUDLET_CTELNET_H

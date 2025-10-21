@@ -1,7 +1,7 @@
 /***************************************************************************
  *   Copyright (C) 2008-2012 by Heiko Koehn - KoehnHeiko@googlemail.com    *
  *   Copyright (C) 2014 by Ahmed Charles - acharles@outlook.com            *
- *   Copyright (C) 2018, 2020, 2022-2023 by Stephen Lyons                  *
+ *   Copyright (C) 2018, 2020, 2022-2024 by Stephen Lyons                  *
  *                                               - slysven@virginmedia.com *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -27,6 +27,8 @@
 #include "Host.h"
 #include "TKey.h"
 
+#include <functional>
+
 KeyUnit::KeyUnit(Host* pHost)
 : mRunAllKeyMatches(false)
 , mpHost(pHost)
@@ -34,6 +36,27 @@ KeyUnit::KeyUnit(Host* pHost)
 , mModuleMember(false)
 {
     setupKeyNames();
+}
+
+KeyUnit::~KeyUnit()
+{
+    // Set mpHost to null on all keys (including children) to prevent them from trying to
+    // unregister themselves during destruction (which would modify the list
+    // we're iterating over and cause iterator invalidation)
+    for (auto key : mKeyRootNodeList) {
+        key->mpHost = nullptr;
+        // Also set mpHost to null on all children recursively
+        std::function<void(TKey*)> nullifyChildren = [&nullifyChildren](TKey* k) {
+            for (auto child : *k->mpMyChildrenList) {
+                child->mpHost = nullptr;
+                nullifyChildren(child);
+            }
+        };
+        nullifyChildren(key);
+    }
+    for (auto key : mKeyRootNodeList) {
+        delete key;
+    }
 }
 
 void KeyUnit::resetStats()
@@ -71,11 +94,16 @@ bool KeyUnit::processDataStream(const Qt::Key key, const Qt::KeyboardModifiers m
 {
     bool isMatchFound = false;
     for (auto keyObject : mKeyRootNodeList) {
+        // Skip null or invalid key objects during profile closing/destruction
+        // Skip null or invalid key objects during profile closing/destruction
+        if (!keyObject || !keyObject->isActive() || (keyObject->mpHost && keyObject->mpHost->isClosingDown())) {
+            continue;
+        }
+
         if (keyObject->match(key, modifiers, mRunAllKeyMatches)) {
             if (!mRunAllKeyMatches) {
                 return true;
             }
-
             isMatchFound = true;
         }
     }
@@ -120,13 +148,13 @@ std::vector<int> KeyUnit::findItems(const QString& name, const bool exactMatch, 
     std::vector<int> ids;
     const auto searchCaseSensitivity = caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive;
     if (exactMatch) {
-        for (auto& item : qAsConst(mKeyMap)) {
+        for (auto& item : std::as_const(mKeyMap)) {
             if (!item->getName().compare(name, searchCaseSensitivity)) {
                 ids.push_back(item->getID());
             }
         }
     } else {
-        for (auto& item : qAsConst(mKeyMap)) {
+        for (auto& item : std::as_const(mKeyMap)) {
             if (item->getName().contains(name, searchCaseSensitivity)) {
                 ids.push_back(item->getID());
             }

@@ -1,7 +1,7 @@
 /***************************************************************************
  *   Copyright (C) 2008-2013 by Heiko Koehn - KoehnHeiko@googlemail.com    *
  *   Copyright (C) 2014 by Ahmed Charles - acharles@outlook.com            *
- *   Copyright (C) 2019, 2022-2023 by Stephen Lyons                        *
+ *   Copyright (C) 2019, 2022-2024 by Stephen Lyons                        *
  *                                               - slysven@virginmedia.com *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -27,9 +27,26 @@
 #include "mudlet.h"
 #include "TTimer.h"
 
+#include <functional>
+
 TimerUnit::~TimerUnit()
 {
-    for (auto&& timer : qAsConst(mQTimerSet)) {
+    // Set mpHost to null on all timers (including children) to prevent them from trying to
+    // unregister themselves during destruction (which would modify the list
+    // we're iterating over and cause iterator invalidation)
+    for (auto timer : mTimerRootNodeList) {
+        timer->mpHost = nullptr;
+        // Also set mpHost to null on all children recursively
+        std::function<void(TTimer*)> nullifyChildren = [&nullifyChildren](TTimer* t) {
+            for (auto child : *t->mpMyChildrenList) {
+                child->mpHost = nullptr;
+                nullifyChildren(child);
+            }
+        };
+        nullifyChildren(timer);
+    }
+    // Delete all TTimer objects - each TTimer destructor will handle its own QTimer
+    for (auto timer : mTimerRootNodeList) {
         delete timer;
     }
 }
@@ -328,13 +345,13 @@ std::vector<int> TimerUnit::findItems(const QString& name, const bool exactMatch
     std::vector<int> ids;
     const auto searchCaseSensitivity = caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive;
     if (exactMatch) {
-        for (auto& item : qAsConst(mTimerMap)) {
+        for (auto& item : std::as_const(mTimerMap)) {
             if (!item->getName().compare(name, searchCaseSensitivity)) {
                 ids.push_back(item->getID());
             }
         }
     } else {
-        for (auto& item : qAsConst(mTimerMap)) {
+        for (auto& item : std::as_const(mTimerMap)) {
             if (item->getName().contains(name, searchCaseSensitivity)) {
                 ids.push_back(item->getID());
             }

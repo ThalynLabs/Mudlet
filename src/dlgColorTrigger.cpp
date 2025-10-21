@@ -63,9 +63,8 @@ dlgColorTrigger::dlgColorTrigger(QWidget* pParentWidget, TTrigger* pT, const boo
     connect(buttonBox->button(QDialogButtonBox::Reset), &QAbstractButton::clicked, this, &dlgColorTrigger::slot_defaultColorClicked);
     buttonBox->button(QDialogButtonBox::Reset)->setText(tr("Default"));
     buttonBox->button(QDialogButtonBox::Reset)->setToolTip(utils::richText(mIsBackground
-                                                                                ? tr("Click to make the color trigger when the text's background color has not been modified from its normal value.")
-                                                                                : tr("Click to make the color trigger when the text's foreground color has not been modified from its normal value.")));
-    connect(mSignalMapper, SIGNAL(mapped(int)), this, SLOT(slot_basicColorClicked(int)));
+                                                                                ? tr("Click to make the color trigger when the text's background color has not been modified from its normal value.")                                                                          : tr("Click to make the color trigger when the text's foreground color has not been modified from its normal value.")));
+    connect(mSignalMapper, &QSignalMapper::mappedInt, this, &dlgColorTrigger::slot_basicColorClicked);
 
     groupBox_basicColors->setToolTip(utils::richText(mIsBackground
                                                      ? tr("Click a color to make the trigger fire only when the text's background color matches the color number indicated.")
@@ -206,7 +205,7 @@ dlgColorTrigger::dlgColorTrigger(QWidget* pParentWidget, TTrigger* pT, const boo
 void dlgColorTrigger::setupBasicButton(QPushButton* pButton, const int ansiColor, const QColor& color, const QString& colorText)
 {
     // TODO: Eliminate use of QSignalMapper and use a lambda function
-    connect(pButton, SIGNAL(clicked()), mSignalMapper, SLOT(map()));
+    connect(pButton, &QPushButton::clicked, mSignalMapper, qOverload<>(&QSignalMapper::map));
     mSignalMapper->setMapping(pButton, ansiColor);
 
     if ((mIsBackground && (mpTrigger->mColorTriggerBgAnsi == ansiColor))

@@ -25,13 +25,12 @@
  ***************************************************************************/
 
 
-#include "pre_guard.h"
 #include <QClipboard>
 #include <QFuture>
 #include <QPointer>
 #include <QSaveFile>
 #include <pugixml.hpp>
-#include "post_guard.h"
+#include <memory>
 
 class QFile;
 class Host;
@@ -46,7 +45,7 @@ class TVar;
 class VarUnit;
 
 
-class XMLexport : public QObject
+class XMLexport : public QObject, public std::enable_shared_from_this<XMLexport>
 {
     Q_OBJECT
 
@@ -93,12 +92,12 @@ public:
 
 private:
     QPointer<Host> mpHost;
-    TTrigger* mpTrigger;
-    TTimer* mpTimer;
-    TAlias* mpAlias;
-    TAction* mpAction;
-    TScript* mpScript;
-    TKey* mpKey;
+    TTrigger* mpTrigger{nullptr};
+    TTimer* mpTimer{nullptr};
+    TAlias* mpAlias{nullptr};
+    TAction* mpAction{nullptr};
+    TScript* mpScript{nullptr};
+    TKey* mpKey{nullptr};
     pugi::xml_document mExportDoc;
 
     void writeTriggerPackage(const Host* pHost, pugi::xml_node& mMudletPackage, bool skipModuleMembers);

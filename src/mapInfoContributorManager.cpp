@@ -26,10 +26,10 @@ MapInfoContributorManager::MapInfoContributorManager(QObject* parent, Host* pH)
 : QObject(parent)
 , mpHost(pH)
 {
-    registerContributor(qsl("Short"), [=](int roomID, int selectionSize, int areaId, int displayAreaId, QColor& infoColor) {
+    registerContributor(qsl("Short"), [=, this](int roomID, int selectionSize, int areaId, int displayAreaId, QColor& infoColor) {
         return shortInfo(roomID, selectionSize, areaId, displayAreaId, infoColor);
     });
-    registerContributor(qsl("Full"), [=](int roomID, int selectionSize, int areaId, int displayAreaId, QColor& infoColor) {
+    registerContributor(qsl("Full"), [=, this](int roomID, int selectionSize, int areaId, int displayAreaId, QColor& infoColor) {
         return fullInfo(roomID, selectionSize, areaId, displayAreaId, infoColor);
     });
 }
@@ -52,7 +52,8 @@ bool MapInfoContributorManager::removeContributor(const QString& name)
     return contributors.remove(name) > 0;
 }
 
-bool MapInfoContributorManager::enableContributor(const QString &name) {
+bool MapInfoContributorManager::enableContributor(const QString &name)
+{
     if (!contributors.contains(name)) {
         return false;
     }
@@ -62,7 +63,8 @@ bool MapInfoContributorManager::enableContributor(const QString &name) {
     return true;
 }
 
-bool MapInfoContributorManager::disableContributor(const QString &name) {
+bool MapInfoContributorManager::disableContributor(const QString &name)
+{
     if (!contributors.contains(name)) {
         return false;
     }
@@ -84,8 +86,8 @@ QList<QString> &MapInfoContributorManager::getContributorKeys()
 
 MapInfoProperties MapInfoContributorManager::shortInfo(int roomID, int selectionSize, int areaId, int displayAreaId, QColor& infoColor)
 {
-    Q_UNUSED(selectionSize);
-    Q_UNUSED(displayAreaId);
+    Q_UNUSED(selectionSize)
+    Q_UNUSED(displayAreaId)
 
     QString infoText;
     TRoom* room = mpHost->mpMap->mpRoomDB->getRoom(roomID);
@@ -167,9 +169,9 @@ MapInfoProperties MapInfoContributorManager::fullInfo(int roomID, int selectionS
                                tr("Room%1ID:%1%2 Position%1on%1Map: (%3,%4,%5) ‑%1current player location")
                                     .arg(QChar(160),
                                         QString::number(roomID),
-                                        QString::number(room->x),
-                                        QString::number(room->y),
-                                        QString::number(room->z))));
+                                        QString::number(room->x()),
+                                        QString::number(room->y()),
+                                        QString::number(room->z()))));
             if (areaId != displayAreaId) {
                 isItalic = true;
             } else {
@@ -190,9 +192,9 @@ MapInfoProperties MapInfoContributorManager::fullInfo(int roomID, int selectionS
                                tr("Room%1ID:%1%2 Position%1on%1Map: (%3,%4,%5) ‑%1selected room")
                                     .arg(QChar(160),
                                         QString::number(roomID),
-                                        QString::number(room->x),
-                                        QString::number(room->y),
-                                        QString::number(room->z))));
+                                        QString::number(room->x()),
+                                        QString::number(room->y()),
+                                        QString::number(room->z()))));
             isBold = true;
             if (infoColor.lightness() > 127) {
                 color = QColor(255, 223, 191); // Slightly orange white
@@ -218,9 +220,9 @@ MapInfoProperties MapInfoContributorManager::fullInfo(int roomID, int selectionS
                                tr("Room%1ID:%1%2 Position%1on%1Map: (%3,%4,%5) ‑%1center of %n selected rooms", nullptr, selectionSize)
                                     .arg(QChar(160),
                                         QString::number(roomID),
-                                        QString::number(room->x),
-                                        QString::number(room->y),
-                                        QString::number(room->z))));
+                                        QString::number(room->x()),
+                                        QString::number(room->y()),
+                                        QString::number(room->z()))));
             isBold = true;
             if (infoColor.lightness() > 127) {
                 color = QColor(255, 223, 191); // Slightly orange white

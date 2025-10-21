@@ -26,11 +26,10 @@
 
 #include "TAstar.h"
 #if defined(INCLUDE_3DMAPPER)
-#include "glwidget.h"
+#include "glwidget_integration.h"
 #endif
 #include "utils.h"
 
-#include "pre_guard.h"
 #include <QApplication>
 #include <QColor>
 #include <QFont>
@@ -45,7 +44,6 @@
 #include <QVector3D>
 #include <stdlib.h>
 #include <optional>
-#include "post_guard.h"
 
 #define DIR_NORTH 1
 #define DIR_NORTHEAST 2
@@ -64,7 +62,7 @@
 class dlgMapper;
 class Host;
 #if defined(INCLUDE_3DMAPPER)
-class GLWidget;
+class QOpenGLWidget;
 #endif
 class TArea;
 class TRoom;
@@ -108,10 +106,11 @@ public:
                        bool temporary = false,
                        qreal zoom = 30.0,
                        int fontSize = 50,
-                       std::optional<QString> fontName = std::nullopt);
+                       std::optional<QString> fontName = std::nullopt,
+                       QColor outline = Qt::black);
     void deleteMapLabel(int area, int labelID);
     bool addRoom(int id = 0);
-    bool setRoomArea(int id, int area, bool isToDeferAreaRelatedRecalculations = false);
+    bool setRoomArea(int id, int area, bool deferAreaRecalculations = false);
     void deleteArea(int id);
     int createNewRoomID(int minimumId = 1);
     void logError(QString& msg);
@@ -245,7 +244,7 @@ public:
         {DIR_OUT, DIR_IN}};
 
 #if defined(INCLUDE_3DMAPPER)
-    QPointer<GLWidget> mpM;
+    QPointer<QOpenGLWidget> mpM;
 #endif
     QPointer<dlgMapper> mpMapper;
     QMap<int, int> roomidToIndex;

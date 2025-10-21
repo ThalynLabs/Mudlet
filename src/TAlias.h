@@ -25,18 +25,18 @@
 
 #include "Tree.h"
 
-#include "pre_guard.h"
 #include <QApplication>
 #include <QDebug>
 #include <QPointer>
 #include <QSharedPointer>
-#include "post_guard.h"
 
 #include <pcre.h>
 
 class Host;
 
 #define MAX_CAPTURE_GROUPS 33
+
+using NameGroupMatches = QVector<QPair<QString, QString>>;
 
 class TAlias : public Tree<TAlias>
 {
@@ -61,6 +61,12 @@ public:
     void setRegexCode(const QString&);
     void setCommand(const QString& command) { mCommand = command; }
     QString getCommand() const { return mCommand; }
+    QString packageName(TAlias* pAlias);
+    QString moduleName(TAlias* pAlias);
+    bool checkIfNew();
+    void unmarkAsNew();
+
+
 
     bool match(const QString& toMatch);
     bool registerAlias();
@@ -78,6 +84,8 @@ public:
     QString mFuncName;
     bool exportItem = true;
     bool mRegisteredAnonymousLuaFunction = false;
+    QVector<NameGroupMatches> nameCaptures;
+    bool mIsNew = true;
 
 private:
     bool mNeedsToBeCompiled = true;
@@ -87,7 +95,7 @@ private:
 inline QDebug& operator<<(QDebug& debug, const TAlias* alias)
 {
     QDebugStateSaver saver(debug);
-    Q_UNUSED(saver);
+    Q_UNUSED(saver)
 
     if (!alias) {
         return debug << "TAlias(0x0) ";

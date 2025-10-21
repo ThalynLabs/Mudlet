@@ -25,12 +25,10 @@
 
 #include "Host.h"
 
-#include "pre_guard.h"
 #include "ui_package_manager.h"
 #include <QDialog>
 #include <QTableWidget>
 #include <QTextBrowser>
-#include "post_guard.h"
 
 class Host;
 
@@ -45,6 +43,9 @@ public:
     ~dlgPackageManager() override;
     void resetPackageTable();
 
+signals:
+    void packageManagerClosing(const QString& profileName);
+
 private slots:
     void slot_installPackage();
     void slot_removePackages();
@@ -52,6 +53,7 @@ private slots:
     void slot_toggleRemoveButton();
 
 private:
+    void closeEvent(QCloseEvent* event) override;
     void fillAdditionalDetails(const QMap<QString, QString>&);
 
     Host* mpHost = nullptr;

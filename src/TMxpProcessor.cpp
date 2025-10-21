@@ -21,9 +21,7 @@
  ***************************************************************************/
 
 #include "TMxpProcessor.h"
-#include "pre_guard.h"
 #include <QDebug>
-#include "post_guard.h"
 
 bool TMxpProcessor::setMode(const QString& code)
 {
@@ -145,12 +143,26 @@ void TMxpProcessor::enable()
     mMXP = true;
 }
 
-TMxpProcessingResult TMxpProcessor::processMxpInput(char& ch)
+void TMxpProcessor::disable()
 {
+    mMXP = false;
+}
+
+TMxpProcessingResult TMxpProcessor::processMxpInput(char& ch, bool resolveCustomEntities)
+{
+    if (ch == '<'
+    && mMxpTagBuilder.isInsideTag()
+    && !mMxpTagBuilder.isQuotedSequence()
+    && !mMxpTagBuilder.isInsideComment()) {
+        lastEntityValue = QStringLiteral("<") + QString::fromStdString(mMxpTagBuilder.getRawTagContent());
+        mMxpTagBuilder.resetForNewTag();
+        return HANDLER_INSERT_ENTITY_LIT;
+    }
+
     if (!mMxpTagBuilder.accept(ch) && mMxpTagBuilder.isInsideTag() && !mMxpTagBuilder.hasTag()) {
         return HANDLER_NEXT_CHAR;
     }
-
+    
     if (mMxpTagBuilder.hasTag()) {
         QScopedPointer<MxpTag> const tag(mMxpTagBuilder.buildTag());
 
@@ -163,9 +175,18 @@ TMxpProcessingResult TMxpProcessor::processMxpInput(char& ch)
         return result == MXP_TAG_COMMIT_LINE ? HANDLER_COMMIT_LINE : HANDLER_NEXT_CHAR;
     }
 
-    if (mEntityHandler.handle(ch)) {             // ch is part of an entity
+    if (mEntityHandler.handle(ch, resolveCustomEntities)) {             // ch is part of an entity
         if (mEntityHandler.isEntityResolved()) { // entity has been mapped (i.e. ch == ';')
-            ch = mEntityHandler.getResultAndReset();
+            lastEntityValue = mEntityHandler.getResultAndReset();
+            switch (mEntityHandler.getEntityType()) {
+                case ENTITY_TYPE_CUSTOM:
+                    return HANDLER_INSERT_ENTITY_CUST;
+                case ENTITY_TYPE_SYSTEM:
+                    // Note special handling for '\n' as a result of &newline;
+                    return lastEntityValue == qsl("\n") ? HANDLER_COMMIT_LINE : HANDLER_INSERT_ENTITY_SYS;
+                default:
+                    return HANDLER_INSERT_ENTITY_LIT;
+            }
         } else { // ask for the next char
             return HANDLER_NEXT_CHAR;
         }

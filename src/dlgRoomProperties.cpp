@@ -1,7 +1,8 @@
 /***************************************************************************
  *   Copyright (C) 2021 by Piotr Wilczynski - delwing@gmail.com            *
- *   Copyright (C) 2022-2023 by Stephen Lyons - slysven@virginmedia.com    *
- *   Copyright (C) 2022 by Lecker Kebap - Leris@mudlet.org                 *
+ *   Copyright (C) 2022-2023, 2025 by Stephen Lyons                        *
+ *                                               - slysven@virginmedia.com *
+ *   Copyright (C) 2022-2025 by Lecker Kebap - Leris@mudlet.org            *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -25,11 +26,9 @@
 #include "TMap.h"
 #include "TRoomDB.h"
 
-#include "pre_guard.h"
 #include <QColorDialog>
 #include <QMenu>
 #include <QPainter>
-#include "post_guard.h"
 
 
 dlgRoomProperties::dlgRoomProperties(Host* pHost, QWidget* pParentWidget)
@@ -90,6 +89,14 @@ void dlgRoomProperties::init(
         if (comboBox_roomSymbol->lineEdit()) {
             comboBox_roomSymbol->lineEdit()->selectAll();
         }
+    }
+    auto mapSymbolFont = mpHost->mpMap->mMapSymbolFont;
+    mapSymbolFont.setPointSize(qApp->font().pointSize());
+    if (!lineEdit_roomSymbol->isHidden()) {
+        lineEdit_roomSymbol->setFont(mapSymbolFont);
+    }
+    if (!comboBox_roomSymbol->isHidden()) {
+        comboBox_roomSymbol->setFont(mapSymbolFont);
     }
     initSymbolInstructions();
 
@@ -192,16 +199,17 @@ void dlgRoomProperties::initSymbolInstructions()
 
     QString instructions;
     if (mpSymbols.size() == 1) {
-        instructions = tr("Type one or more graphemes (\"visible characters\") to use as a symbol "
-                          "for all of the %n selected room(s), or enter a space to clear the symbol:",
+        //: room properties dialog, setting symbols
+        instructions = tr("Enter one or more characters to set a new symbol for %n room(s).  Clear to unset.",
                           // Intentional comment to separate arguments!
                           "%n is the total number of rooms involved.",
                           mpRooms.size());
     } else {
-        instructions = tr("To change the symbol for all of the %n selected room(s), please choose:\n"
-                          " • an existing symbol from the list below (sorted by most commonly used first)\n"
-                          " • enter one or more graphemes (\"visible characters\") as a new symbol\n"
-                          " • enter a space to clear any existing symbols",
+        //: room properties dialog, setting symbols
+        instructions = tr("To set the symbol for all %n room(s), please choose:\n"
+                          " • an existing symbol from the list,\n"
+                          " • enter one or more characters to set a new symbol,\n"
+                          " • clear to unset.",
                           // Intentional comment to separate arguments!
                           "This is for when applying a new room symbol to one or more rooms "
                           "and some have different symbols or no symbol at present. "
@@ -313,7 +321,7 @@ void dlgRoomProperties::accept()
     // Find symbol to return back
     const QString newSymbol = getNewSymbol();
     bool changeSymbol = true;
-    QColor const newSymbolColor = selectedSymbolColor;
+    const QColor newSymbolColor = selectedSymbolColor;
     bool changeSymbolColor = true;
     if (newSymbol == multipleValuesPlaceholder) {
         // We don't want to change then
@@ -332,7 +340,7 @@ void dlgRoomProperties::accept()
     // Find lock status to return back
     Qt::CheckState const newCheckState = checkBox_locked->checkState();
     bool changeLockStatus = true;
-    bool newLockStatus;
+    std::optional<bool> newLockStatus;
     if (newCheckState == Qt::PartiallyChecked) {
         // We don't want to change then
         changeLockStatus = false;
@@ -362,8 +370,8 @@ QString dlgRoomProperties::getNewSymbol()
     }
     QString newSymbolText = comboBox_roomSymbol->currentText();
     // Parse the initial text before the curly braces containing count
-    QRegularExpression const countStripper(qsl("^(.*) {.*}$"));
-    QRegularExpressionMatch const match = countStripper.match(newSymbolText);
+    const QRegularExpression countStripper(qsl("^(.*) {.*}$"));
+    const QRegularExpressionMatch match = countStripper.match(newSymbolText);
     if (match.hasMatch() && match.lastCapturedIndex() > 0) {
         return match.captured(1);
     }
@@ -381,8 +389,8 @@ int dlgRoomProperties::getNewWeight()
         return -1; // User did not want to select any weight, so we will do no change
     }
     // Parse an initial number out of what was selected or typed
-    QRegularExpression const countStripper(qsl("^\\s*(\\d+)"));
-    QRegularExpressionMatch const match = countStripper.match(newWeightText);
+    const QRegularExpression countStripper(qsl("^\\s*(\\d+)"));
+    const QRegularExpressionMatch match = countStripper.match(newWeightText);
     if (match.hasMatch() && match.lastCapturedIndex() > 0) {
         return match.captured(1).toInt();
     }
@@ -419,11 +427,11 @@ QFont dlgRoomProperties::getFontForPreview(QString symbolString)
     auto font = mpHost->mpMap->mMapSymbolFont;
     font.setPointSize(font.pointSize() * 0.9);
     if (!symbolString.isEmpty()) {
-        QFontMetrics const mapSymbolFontMetrics = QFontMetrics(font);
-        QVector<quint32> const codePoints = symbolString.toUcs4();
+        const QFontMetrics mapSymbolFontMetrics = QFontMetrics(font);
+        const QVector<quint32> codePoints = symbolString.toUcs4();
         QVector<bool> isUsable;
-        for (int i = 0; i < codePoints.size(); ++i) {
-            isUsable.append(mapSymbolFontMetrics.inFontUcs4(codePoints.at(i)));
+        for (const auto point : codePoints) {
+            isUsable.append(mapSymbolFontMetrics.inFontUcs4(point));
         }
         const bool needToFallback = isUsable.contains(false);
         if (needToFallback) {
@@ -511,10 +519,10 @@ void dlgRoomProperties::slot_openRoomColorSelector()
     connect(listWidget, &QListWidget::itemDoubleClicked, dialog, &QDialog::accept);
     connect(listWidget, &QListWidget::itemClicked, this, &dlgRoomProperties::slot_selectRoomColor);
     listWidget->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(listWidget, &QListWidget::customContextMenuRequested, this, [=]() {
+    connect(listWidget, &QListWidget::customContextMenuRequested, this, [=, this]() {
         QMenu menu;
         //: This action deletes a color from the list of all room colors
-        menu.addAction(tr("Delete room color"), this, [=]() {
+        menu.addAction(tr("Delete room color"), this, [=, this]() {
             auto selectedItem = listWidget->takeItem(listWidget->currentRow());
             auto color = selectedItem->text();
 

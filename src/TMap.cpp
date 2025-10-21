@@ -1,7 +1,7 @@
 /***************************************************************************
  *   Copyright (C) 2008-2013 by Heiko Koehn - KoehnHeiko@googlemail.com    *
  *   Copyright (C) 2014-2017 by Ahmed Charles - acharles@outlook.com       *
- *   Copyright (C) 2014-2023 by Stephen Lyons - slysven@virginmedia.com    *
+ *   Copyright (C) 2014-2024 by Stephen Lyons - slysven@virginmedia.com    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -33,7 +33,6 @@
 #include "mapInfoContributorManager.h"
 #include "mudlet.h"
 
-#include "pre_guard.h"
 #include <QElapsedTimer>
 #include <QFileDialog>
 #include <QJsonParseError>
@@ -41,7 +40,6 @@
 #include <QProgressDialog>
 #include <QPainter>
 #include <QBuffer>
-#include "post_guard.h"
 
 
 TMap::TMap(Host* pH, const QString& profileName)
@@ -72,7 +70,7 @@ TMap::~TMap()
         qWarning() << "TMap::~TMap() Instance being destroyed before it could display some messages,\n"
                    << "messages are:\n"
                    << "------------";
-        for (auto message : mStoredMessages) {
+        for (const auto& message : mStoredMessages) {
             qWarning() << message << "\n------------";
         }
     }
@@ -97,6 +95,7 @@ void TMap::mapClear()
     mNewMove = true;
     mVersion = mDefaultVersion;
     mUserData.clear();
+
     // mSaveVersion is not reset - so that any new Mudlet map file saves are to
     // whatever version was previously set/deduced
 
@@ -104,6 +103,12 @@ void TMap::mapClear()
     // only has the "Default Area" after TRoomDB::clearMapDB() has been run.
     if (mpMapper) {
         mpMapper->updateAreaComboBox();
+
+        auto map = mpMapper->mp2dMap;
+        if (map) {
+            map->mMultiSelectionListWidget.clear();
+            map->mMultiSelectionListWidget.hide();
+        }
     }
 }
 
@@ -129,7 +134,7 @@ void TMap::logError(QString& msg)
 //    mpHost->mLuaInterpreter.compileAndExecuteScript( script );
 //}
 
-bool TMap::setRoomArea(int id, int area, bool isToDeferAreaRelatedRecalculations)
+bool TMap::setRoomArea(int id, int area, bool deferAreaRecalculations)
 {
     TRoom* pR = mpRoomDB->getRoom(id);
     if (!pR) {
@@ -155,7 +160,7 @@ bool TMap::setRoomArea(int id, int area, bool isToDeferAreaRelatedRecalculations
         // to retain the API for the lua subsystem...
     }
 
-    const bool result = pR->setArea(area, isToDeferAreaRelatedRecalculations);
+    const bool result = pR->setArea(area, deferAreaRecalculations);
     if (result) {
         mMapGraphNeedsUpdate = true;
         setUnsaved(__func__);
@@ -180,9 +185,7 @@ bool TMap::setRoomCoordinates(int id, int x, int y, int z)
         return false;
     }
 
-    pR->x = x;
-    pR->y = y;
-    pR->z = z;
+    pR->setCoordinates(x, y, z);
 
     setUnsaved(__func__);
     return true;
@@ -219,15 +222,15 @@ QString TMap::connectExitStubByDirection(const int fromRoomId, const int dirType
     }
 
     const int reverseDir = scmReverseDirections.value(dirType);
-    QVector3D const unitVector = scmUnitVectors.value(dirType);
+    const QVector3D unitVector = scmUnitVectors.value(dirType);
     // QVector3D is composed of floating point values so we need to round them
     // if we want to assign them to integral variables without compiler warnings!
     const int ux = qRound(unitVector.x());
     const int uy = qRound(unitVector.y());
     const int uz = qRound(unitVector.z());
-    const int rx = pFromR->x;
-    const int ry = pFromR->y;
-    const int rz = pFromR->z;
+    const int rx = pFromR->x();
+    const int ry = pFromR->y();
+    const int rz = pFromR->z();
     int dx = 0;
     int dy = 0;
     int dz = 0;
@@ -251,20 +254,20 @@ QString TMap::connectExitStubByDirection(const int fromRoomId, const int dirType
         }
 
         if (uz) {
-            dz = pToR->z - rz;
+            dz = pToR->z() - rz;
             if (!compSign(dz, uz) || !dz) {
                 continue;
             }
 
         } else {
             //to avoid lower/upper floors from stealing stubs
-            if (pToR->z != rz) {
+            if (pToR->z() != rz) {
                 continue;
             }
         }
 
         if (ux) {
-            dx = pToR->x - rx;
+            dx = pToR->x() - rx;
             if (!compSign(dx, ux) || !dx) {
                 //we do !dx pRto make sure we have a component in the desired direction
                 continue;
@@ -272,13 +275,13 @@ QString TMap::connectExitStubByDirection(const int fromRoomId, const int dirType
 
         } else {
             //to avoid rooms on same plane from stealing stubs
-            if (pToR->x != rx) {
+            if (pToR->x() != rx) {
                 continue;
             }
         }
 
         if (uy) {
-            dy = pToR->y - ry;
+            dy = pToR->y() - ry;
             //if the sign is the SAME here we keep it b/c we flip our y coordinate.
             if (compSign(dy, uy) || !dy) {
                 continue;
@@ -286,7 +289,7 @@ QString TMap::connectExitStubByDirection(const int fromRoomId, const int dirType
 
         } else {
             //to avoid rooms on same plane from stealing stubs
-            if (pToR->y != ry) {
+            if (pToR->y() != ry) {
                 continue;
             }
         }
@@ -551,7 +554,7 @@ void TMap::audit()
                         // Note that two of the last three arguments here
                         // (false, 40.0) are not the defaults (true, 30.0) used
                         // now:
-                        const int newID = createMapLabel(areaID, l.text, l.pos.x(), l.pos.y(), l.pos.z(), l.fgColor, l.bgColor, true, false, false, 40.0, 50, std::nullopt);
+                        const int newID = createMapLabel(areaID, l.text, l.pos.x(), l.pos.y(), l.pos.z(), l.fgColor, l.bgColor, true, false, false, 40.0, 50, std::nullopt, l.fgColor);
                         if (newID > -1) {
                             if (mudlet::self()->showMapAuditErrors()) {
                                 const QString msg = tr("[ INFO ] - CONVERTING: old style label, areaID:%1 labelID:%2.").arg(areaID).arg(i);
@@ -588,9 +591,7 @@ void TMap::audit()
     QMapIterator<int, TArea*> itArea(mpRoomDB->getAreaMap());
     while (itArea.hasNext()) {
         itArea.next();
-        itArea.value()->determineAreaExits();
-        itArea.value()->calcSpan();
-        itArea.value()->mIsDirty = false;
+        itArea.value()->clean();
     }
 
     { // Blocked - just to limit the scope of infoMsg...!
@@ -599,13 +600,10 @@ void TMap::audit()
         appendErrorMsg(infoMsg);
     }
 
-    auto loadTime = mpHost->getLuaInterpreter()->condenseMapLoad();
-    if (loadTime != -1.0) {
-        const QString msg = tr("[  OK  ]  - Map loaded successfully (%1s).").arg(loadTime);
-        postMessage(msg);
-    }
+    mpHost->getLuaInterpreter()->condenseMapLoad();
 }
 
+// This may be duplicating TArea class functionality:
 QList<int> TMap::detectRoomCollisions(int id)
 {
     QList<int> collList;
@@ -614,9 +612,9 @@ QList<int> TMap::detectRoomCollisions(int id)
         return collList;
     }
     const int area = pR->getArea();
-    const int x = pR->x;
-    const int y = pR->y;
-    const int z = pR->z;
+    const int x = pR->x();
+    const int y = pR->y();
+    const int z = pR->z();
     TArea* pA = mpRoomDB->getArea(area);
     if (!pA) {
         return collList;
@@ -629,7 +627,7 @@ QList<int> TMap::detectRoomCollisions(int id)
         if (!pR) {
             continue;
         }
-        if (pR->x == x && pR->y == y && pR->z == z) {
+        if (pR->x() == x && pR->y() == y && pR->z() == z) {
             collList.push_back(checkRoomId);
         }
     }
@@ -1304,9 +1302,9 @@ bool TMap::serialize(QDataStream& ofs, int saveVersion)
             }
         }
         ofs << pR->getArea();
-        ofs << pR->x;
-        ofs << pR->y;
-        ofs << pR->z;
+        ofs << pR->x();
+        ofs << pR->y();
+        ofs << pR->z();
         ofs << pR->getNorth();
         ofs << pR->getNortheast();
         ofs << pR->getEast();
@@ -1344,7 +1342,7 @@ bool TMap::serialize(QDataStream& ofs, int saveVersion)
             qint8 oldCharacterCode = 0;
             if (pR->mSymbol.length()) {
                 // There is something for a symbol
-                QChar const firstChar = pR->mSymbol.at(0);
+                const QChar firstChar = pR->mSymbol.at(0);
                 if (pR->mSymbol.length() == 1 && firstChar.row() == 0 && firstChar.cell() > 32) {
                     // It is something that can be represented by the past unsigned short
                     oldCharacterCode = firstChar.toLatin1();
@@ -1585,7 +1583,7 @@ bool TMap::restore(QString location, bool downloadIfNotFound)
     QStringList entries;
 
     if (location.isEmpty()) {
-        folder = mudlet::getMudletPath(mudlet::profileMapsPath, mProfileName);
+        folder = mudlet::getMudletPath(enums::profileMapsPath, mProfileName);
         const QDir dir(folder);
         QStringList filters;
         filters << qsl("*.[dD][aA][tT]");
@@ -1768,7 +1766,7 @@ bool TMap::restore(QString location, bool downloadIfNotFound)
                     ifs >> pA->mUserData;
                 } else if (mVersion >= 17) {
                     ifs >> pA->mUserData;
-                    qreal const fallback_map2DZoom = pA->mUserData.take(QLatin1String("system.fallback_map2DZoom")).toDouble();
+                    const qreal fallback_map2DZoom = pA->mUserData.take(QLatin1String("system.fallback_map2DZoom")).toDouble();
                     pA->mLast2DMapZoom = (fallback_map2DZoom >= T2DMap::csmMinXYZoom) ? fallback_map2DZoom : T2DMap::csmDefaultXYZoom;
                 }
                 if (mVersion >= 21) {
@@ -1920,7 +1918,7 @@ bool TMap::retrieveMapFileStats(QString profile, QString* latestFileName = nullp
 
     QString folder;
     QStringList entries;
-    folder = mudlet::getMudletPath(mudlet::profileMapsPath, profile);
+    folder = mudlet::getMudletPath(enums::profileMapsPath, profile);
     QDir dir(folder);
     dir.setSorting(QDir::Time);
     entries = dir.entryList(QDir::Filters(QDir::Files | QDir::NoDotAndDotDot), QDir::Time);
@@ -2158,7 +2156,7 @@ bool TMap::retrieveMapFileStats(QString profile, QString* latestFileName = nullp
 }
 
 //NOLINT(readability-make-member-function-const)
-int TMap::createMapLabel(int area, const QString& text, float x, float y, float z, QColor fg, QColor bg, bool showOnTop, bool noScaling, bool temporary, qreal zoom, int fontSize, std::optional<QString> fontName)
+int TMap::createMapLabel(int area, const QString& text, float x, float y, float z, QColor fg, QColor bg, bool showOnTop, bool noScaling, bool temporary, qreal zoom, int fontSize, std::optional<QString> fontName, QColor outline)
 {
     auto pA = mpRoomDB->getArea(area);
     if (!pA) {
@@ -2173,29 +2171,42 @@ int TMap::createMapLabel(int area, const QString& text, float x, float y, float 
     label.text = text;
     label.bgColor = bg;
     label.fgColor = fg;
+    label.outlineColor = outline;
     label.size = QSizeF(100, 100);
     label.pos = QVector3D(x, y, z);
     label.showOnTop = showOnTop;
     label.noScaling = noScaling;
     label.temporary = temporary;
 
-    QRectF const lr = QRectF(0, 0, 1000, 1000);
+    const QRectF lr = QRectF(0, 0, 2000, 2000);
     QPixmap pix(lr.size().toSize());
     pix.fill(Qt::transparent);
+
     QPainter lp(&pix);
     lp.fillRect(lr, label.bgColor);
-    QPen lpen;
-    lpen.setColor(label.fgColor);
-    QFont const font(fontName.has_value() ? fontName.value() : QString(), fontSize);
-    lp.setRenderHint(QPainter::TextAntialiasing, true);
-    lp.setPen(lpen);
+    lp.setRenderHint(QPainter::Antialiasing);
+
+    QFont font(fontName.has_value() ? fontName.value() : QString(), fontSize);
     lp.setFont(font);
+
+    QPen outlinePen(label.outlineColor);
+    outlinePen.setWidth(1);
+    lp.setPen(outlinePen);
+
     QRectF br;
-    lp.drawText(lr, Qt::AlignLeft | Qt::AlignTop, label.text, &br);
+
+    if (label.fgColor != label.outlineColor) {
+        lp.drawText(QRect(19, 70, 2000, 2000), Qt::AlignLeft | Qt::AlignTop, label.text, &br);
+        lp.drawText(QRect(21, 70, 2000, 2000), Qt::AlignLeft | Qt::AlignTop, label.text, &br);
+        lp.drawText(QRect(20, 69, 2000, 2000), Qt::AlignLeft | Qt::AlignTop, label.text, &br);
+        lp.drawText(QRect(20, 71, 2000, 2000), Qt::AlignLeft | Qt::AlignTop, label.text, &br);
+    }
+    lp.setPen(label.fgColor);
+    lp.drawText(QRect(20, 70, 2000, 2000), Qt::AlignLeft | Qt::AlignTop, label.text, &br);
 
     label.size = br.normalized().size();
     label.pix = pix.copy(br.normalized().topLeft().x(), br.normalized().topLeft().y(), br.normalized().width(), br.normalized().height());
-    QSizeF const s = QSizeF(label.size.width() / zoom, label.size.height() / zoom);
+    const QSizeF s = QSizeF(label.size.width() / zoom, label.size.height() / zoom);
     label.size = s;
     label.clickSize = s;
 
@@ -2229,8 +2240,8 @@ int TMap::createMapImageLabel(int area, QString imagePath, float x, float y, flo
     label.noScaling = false;
     label.temporary = temporary;
 
-    QRectF const drawRect = QRectF(0, 0, static_cast<qreal>(width * zoom), static_cast<qreal>(height * zoom));
-    QPixmap const imagePixmap = QPixmap(imagePath);
+    const QRectF drawRect = QRectF(0, 0, static_cast<qreal>(width * zoom), static_cast<qreal>(height * zoom));
+    const QPixmap imagePixmap = QPixmap(imagePath);
     QPixmap pix = QPixmap(drawRect.size().toSize());
     pix.fill(Qt::transparent);
     QPainter lp(&pix);
@@ -2292,7 +2303,11 @@ void TMap::set3DViewCenter(const int areaId, const int xPos, const int yPos, con
 {
 #if defined(INCLUDE_3DMAPPER)
     if (mpM) {
-        mpM->setViewCenter(areaId, xPos, yPos, zPos);
+        if (auto* glWidget = dynamic_cast<GLWidget*>(mpM.data())) {
+            glWidget->setViewCenter(areaId, xPos, yPos, zPos);
+        } else if (auto* modernWidget = dynamic_cast<ModernGLWidget*>(mpM.data())) {
+            modernWidget->setViewCenter(areaId, xPos, yPos, zPos);
+        }
     }
 #else
     Q_UNUSED(areaId)
@@ -2420,7 +2435,7 @@ void TMap::pushErrorMessagesToFile(const QString title, const bool isACleanup)
                        "\"%1\"\n"
                        "- look for the (last) report with the title:\n"
                        "\"%2\".")
-                    .arg(mudlet::getMudletPath(mudlet::profileLogErrorsFilePath, mProfileName), title));
+                    .arg(mudlet::getMudletPath(enums::profileLogErrorsFilePath, mProfileName), title));
     } else if (mIsFileViewingRecommended && mudlet::self()->showMapAuditErrors()) {
         postMessage(tr("[ INFO ]  - The equivalent to the above information about that last map\n"
                        "operation has been saved for review as the most recent report in\n"
@@ -2428,7 +2443,7 @@ void TMap::pushErrorMessagesToFile(const QString title, const bool isACleanup)
                        "\"%1\"\n"
                        "- look for the (last) report with the title:\n"
                        "\"%2\".")
-                    .arg(mudlet::getMudletPath(mudlet::profileLogErrorsFilePath, mProfileName), title));
+                    .arg(mudlet::getMudletPath(enums::profileLogErrorsFilePath, mProfileName), title));
     }
 
     mIsFileViewingRecommended = false;
@@ -2476,7 +2491,7 @@ void TMap::downloadMap(const QString& remoteUrl, const QString& localFileName)
 
     // Check to ensure we have a map directory to save the map files to.
     const QDir toProfileDir;
-    const QString toProfileDirPathString = mudlet::getMudletPath(mudlet::profileMapsPath, mProfileName);
+    const QString toProfileDirPathString = mudlet::getMudletPath(enums::profileMapsPath, mProfileName);
     if (!toProfileDir.mkpath(toProfileDirPathString)) {
         const QString errMsg = tr("[ ERROR ] - Unable to use or create directory to store map.\n"
                             "Please check that you have permissions/access to:\n"
@@ -2490,9 +2505,9 @@ void TMap::downloadMap(const QString& remoteUrl, const QString& localFileName)
 
     if (localFileName.isEmpty()) {
         if (url.toString().endsWith(QLatin1String("xml"))) {
-            mLocalMapFileName = mudlet::getMudletPath(mudlet::profileXmlMapPathFileName, mProfileName);
+            mLocalMapFileName = mudlet::getMudletPath(enums::profileXmlMapPathFileName, mProfileName);
         } else {
-            mLocalMapFileName = mudlet::getMudletPath(mudlet::profileMapPathFileName, mProfileName, qsl("map.dat"));
+            mLocalMapFileName = mudlet::getMudletPath(enums::profileMapPathFileName, mProfileName, qsl("map.dat"));
         }
     } else {
         mLocalMapFileName = localFileName;
@@ -2524,13 +2539,7 @@ void TMap::downloadMap(const QString& remoteUrl, const QString& localFileName)
     mpProgressDialog->setMinimumDuration(0); // Normally waits for 4 seconds before showing
 
     connect(mpNetworkReply, &QNetworkReply::downloadProgress, this, &TMap::slot_setDownloadProgress);
-    // Not used:    connect(mpNetworkReply, &QNetworkReply::readyRead, this, &TMap::slot_readyRead);
-#if (QT_VERSION) >= (QT_VERSION_CHECK(5, 15, 0))
     connect(mpNetworkReply, &QNetworkReply::errorOccurred, this, &TMap::slot_downloadError);
-#else
-    connect(mpNetworkReply, qOverload<QNetworkReply::NetworkError>(&QNetworkReply::error), this, &TMap::slot_downloadError);
-#endif
-    // Not used:    connect(mpNetworkReply, &QNetworkReply::sslErrors, this, &TMap::slot_sslErrors);
     connect(mpProgressDialog, &QProgressDialog::canceled, this, &TMap::slot_downloadCancel);
 
     mpProgressDialog->show();
@@ -2864,12 +2873,12 @@ std::pair<bool, QString> TMap::writeJsonMapFile(const QString& dest)
     QString destination{dest};
 
     if (destination.isEmpty()) {
-        const QString destFolder = mudlet::getMudletPath(mudlet::profileMapsPath, mProfileName);
+        const QString destFolder = mudlet::getMudletPath(enums::profileMapsPath, mProfileName);
         const QDir destDir(destFolder);
         if (!destDir.exists()) {
             destDir.mkdir(destFolder);
         }
-        destination = mudlet::getMudletPath(mudlet::profileDateTimeStampedJsonMapPathFileName, mProfileName, QDateTime::currentDateTime().toString(qsl("yyyy-MM-dd#HH-mm-ss")));
+        destination = mudlet::getMudletPath(enums::profileDateTimeStampedJsonMapPathFileName, mProfileName, QDateTime::currentDateTime().toString(qsl("yyyy-MM-dd#HH-mm-ss")));
     }
 
     if (!destination.endsWith(QLatin1String(".json"), Qt::CaseInsensitive)) {
@@ -3012,7 +3021,7 @@ std::pair<bool, QString> TMap::writeJsonMapFile(const QString& dest)
     }
     // Convert the array of all the mCustomEnvColors into a QJsonValue so we
     // can add it to the map object:
-    QJsonValue const mCustomEnvColorsValue{customEnvColorArray};
+    const QJsonValue mCustomEnvColorsValue{customEnvColorArray};
     mapObj.insert(QLatin1String("customEnvColors"), mCustomEnvColorsValue);
 
     mapObj.insert(QLatin1String("mapSymbolFontDetails"), mMapSymbolFont.toString());
@@ -3024,11 +3033,11 @@ std::pair<bool, QString> TMap::writeJsonMapFile(const QString& dest)
     QJsonObject playerRoomInnerColorObj;
     writeJsonColor(playerRoomOuterColorObj, mPlayerRoomOuterColor);
     writeJsonColor(playerRoomInnerColorObj, mPlayerRoomInnerColor);
-    QJsonValue const playerRoomOuterColorValue{playerRoomOuterColorObj};
-    QJsonValue const playerRoomInnerColorValue{playerRoomInnerColorObj};
+    const QJsonValue playerRoomOuterColorValue{playerRoomOuterColorObj};
+    const QJsonValue playerRoomInnerColorValue{playerRoomInnerColorObj};
     playerRoomColorsArray.append(playerRoomOuterColorValue);
     playerRoomColorsArray.append(playerRoomInnerColorValue);
-    QJsonValue const playerRoomColorsValue{playerRoomColorsArray};
+    const QJsonValue playerRoomColorsValue{playerRoomColorsArray};
     mapObj.insert(QLatin1String("playerRoomColors"), playerRoomColorsValue);
     mapObj.insert(QLatin1String("playerRoomStyle"), static_cast<double>(mPlayerRoomStyle));
     mapObj.insert(QLatin1String("playerRoomOuterDiameterPercentage"), static_cast<double>(mPlayerRoomOuterDiameterPercentage));
@@ -3074,10 +3083,10 @@ std::pair<bool, QString> TMap::readJsonMapFile(const QString& source, const bool
                     : qsl("could not open file \"%1\"").arg(source))};
     }
 
-    QByteArray const mapData = file.readAll();
+    const QByteArray mapData = file.readAll();
     file.close();
     QJsonParseError jsonErr;
-    QJsonDocument const doc(QJsonDocument::fromJson(mapData, &jsonErr));
+    const QJsonDocument doc(QJsonDocument::fromJson(mapData, &jsonErr));
     if (jsonErr.error != QJsonParseError::NoError) {
         return {false, (translatableTexts
                     ? tr("could not parse file, reason: \"%1\" at offset %2")
@@ -3165,7 +3174,7 @@ std::pair<bool, QString> TMap::readJsonMapFile(const QString& source, const bool
     QColor playerRoomInnerColor;
 
     if (mapObj.contains(QLatin1String("playerRoomColors")) && mapObj.value(QLatin1String("playerRoomColors")).isArray()) {
-        QJsonArray const playerRoomColorArray = mapObj.value(QLatin1String("playerRoomColors")).toArray();
+        const QJsonArray playerRoomColorArray = mapObj.value(QLatin1String("playerRoomColors")).toArray();
         if (playerRoomColorArray.size() == 2 && playerRoomColorArray.at(0).isObject() && playerRoomColorArray.at(1).isObject()) {
             playerRoomOuterColor = readJsonColor(playerRoomColorArray.at(0).toObject());
             playerRoomInnerColor = readJsonColor(playerRoomColorArray.at(1).toObject());
@@ -3191,7 +3200,7 @@ std::pair<bool, QString> TMap::readJsonMapFile(const QString& source, const bool
     if (mapObj.contains(QLatin1String("customEnvColors")) && mapObj.value(QLatin1String("customEnvColors")).isArray()) {
         const QJsonArray customEnvColorArray = mapObj.value(QLatin1String("customEnvColors")).toArray();
         if (!customEnvColorArray.isEmpty()) {
-            for (const auto& customEnvColorValue : qAsConst(customEnvColorArray)) {
+            for (const auto& customEnvColorValue : std::as_const(customEnvColorArray)) {
                 const QJsonObject customEnvColorObj{customEnvColorValue.toObject()};
                 if (customEnvColorObj.contains(QLatin1String("id"))
                     && ((customEnvColorObj.contains(QLatin1String("color32RGBA")) && customEnvColorObj.value(QLatin1String("color32RGBA")).isArray())
@@ -3322,10 +3331,10 @@ void TMap::writeJsonColor(QJsonObject& obj, const QColor& color)
     colorRGBAArray.append(static_cast<double>(color.blue()));
     if (color.alpha() < 255) {
         colorRGBAArray.append(static_cast<double>(color.alpha()));
-        QJsonValue const colorRGBAValue{colorRGBAArray};
+        const QJsonValue colorRGBAValue{colorRGBAArray};
         obj.insert(QLatin1String("color32RGBA"), colorRGBAValue);
     } else {
-        QJsonValue const colorRGBAValue{colorRGBAArray};
+        const QJsonValue colorRGBAValue{colorRGBAArray};
         obj.insert(QLatin1String("color24RGB"), colorRGBAValue);
     }
 }
@@ -3405,21 +3414,34 @@ bool TMap::incrementJsonProgressDialog(const bool isExportNotImport, const bool 
     return mpProgressDialog->wasCanceled();
 }
 
+/**
+ * Update the the 2D and 3D map visually.
+ *
+ * It ensures debouncing internally to ensure that bulk calls are efficient.
+ */
 void TMap::update()
 {
-#if defined(INCLUDE_3DMAPPER)
-    if (mpM) {
-        mpM->update();
-    }
-#endif
-    if (mpMapper) {
-        mpMapper->checkBox_showRoomNames->setVisible(getRoomNamesPresent());
-        mpMapper->checkBox_showRoomNames->setChecked(getRoomNamesShown());
+    static bool debounce;
+    if (!debounce) {
+        debounce = true;
+        QTimer::singleShot(0, this, [this]() {
+            debounce = false;
 
-        if (mpMapper->mp2dMap) {
-            mpMapper->mp2dMap->mNewMoveAction = true;
-            mpMapper->mp2dMap->update();
-        }
+#if defined(INCLUDE_3DMAPPER)
+            if (mpM) {
+                mpM->update();
+            }
+#endif
+            if (mpMapper) {
+                mpMapper->checkBox_showRoomNames->setVisible(getRoomNamesPresent());
+                mpMapper->checkBox_showRoomNames->setChecked(getRoomNamesShown());
+
+                if (mpMapper->mp2dMap) {
+                    mpMapper->mp2dMap->mNewMoveAction = true;
+                    mpMapper->mp2dMap->update();
+                }
+            }
+        });
     }
 }
 
@@ -3503,7 +3525,7 @@ void TMap::restore16ColorSet()
 void TMap::setUnsaved(const char* fromWhere)
 {
 #if !defined(DEBUG_MAPAUTOSAVE)
-    Q_UNUSED(fromWhere);
+    Q_UNUSED(fromWhere)
 #else
     QString nowString = QDateTime::currentDateTimeUtc().toString("HH:mm:ss.zzz");
     qDebug().nospace().noquote() << "TMap::setUnsaved(...) INFO - called at: " << nowString << " from: " << fromWhere << ".";

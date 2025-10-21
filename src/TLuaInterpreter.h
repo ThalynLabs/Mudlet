@@ -3,7 +3,7 @@
 
 /***************************************************************************
  *   Copyright (C) 2008-2013 by Heiko Koehn - KoehnHeiko@googlemail.com    *
- *   Copyright (C) 2013-2016, 2018-2023 by Stephen Lyons                   *
+ *   Copyright (C) 2013-2016, 2018-2023, 2025 by Stephen Lyons             *
  *                                               - slysven@virginmedia.com *
  *   Copyright (C) 2014 by Ahmed Charles - acharles@outlook.com            *
  *   Copyright (C) 2016-2018 by Ian Adkins - ieadkins@gmail.com            *
@@ -26,11 +26,11 @@
  ***************************************************************************/
 
 #include "TMap.h"
+#include "TMediaData.h"
 #include "TTextCodec.h"
 #include "TTrigger.h"
 #include "utils.h"
 
-#include "pre_guard.h"
 #include <QEvent>
 #include <QFileSystemWatcher>
 #include <QNetworkAccessManager>
@@ -46,12 +46,17 @@
 #ifdef QT_TEXTTOSPEECH_LIB
 #include <QTextToSpeech>
 #endif // QT_TEXTTOSPEECH_LIB
-#include "post_guard.h"
 
 extern "C" {
-    #include <lauxlib.h>
-    #include <lua.h>
-    #include <lualib.h>
+#if defined(INCLUDE_VERSIONED_LUA_HEADERS)
+#include <lua5.1/lauxlib.h>
+#include <lua5.1/lua.h>
+#include <lua5.1/lualib.h>
+#else
+#include <lauxlib.h>
+#include <lua.h>
+#include <lualib.h>
+#endif
 }
 
 #include <list>
@@ -88,6 +93,7 @@ public:
     void setMSDPTable(QString& key, const QString& string_data);
     void parseJSON(QString& key, const QString& string_data, const QString& protocol);
     void parseMSSP(const QString& string_data);
+    void handleIreComposerEdit(const QString& jsonData);
     void msdp2Lua(const char*);
     void initLuaGlobals();
     void initIndenterGlobals();
@@ -105,7 +111,7 @@ public:
     double condenseMapLoad();
     bool compile(const QString& code, QString& error, const QString& name);
     void setAtcpTable(const QString&, const QString&);
-    void signalMXPEvent(const QString& type, const QMap<QString, QString>& attrs, const QStringList& actions);
+    void signalMXPEvent(const QString& type, const QMap<QString, QString>& attrs, const QStringList& actions, const QString& caption = QString());
     void setGMCPTable(QString&, const QString&);
     void setMSSPTable(const QString&);
     void setChannel102Table(int& var, int& arg);
@@ -271,11 +277,16 @@ public:
     static int denyCurrentSend(lua_State*);
     static int tempBeginOfLineTrigger(lua_State*);
     static int tempExactMatchTrigger(lua_State*);
+#if defined(INCLUDE_3DMAPPER)
+    static int shiftMapPerspective(lua_State*);
+    static int setMapPerspective(lua_State*);
+#endif
     static int centerview(lua_State*);
     static int getAreaTable(lua_State*);
     static int getAreaTableSwap(lua_State*);
     static int getPath(lua_State*);
     static int getAreaRooms(lua_State*);
+    static int getAreaRooms1(lua_State*);
     static int clearCmdLine(lua_State*);
     static int printCmdLine(lua_State*);
     static int searchRoom(lua_State*);
@@ -288,6 +299,7 @@ public:
     static int feedTelnet(lua_State*);
     static int Wait(lua_State*);
     static int expandAlias(lua_State*);
+    static int sendCmdLine(lua_State*);
     static int sendRaw(lua_State*);
     static int echo(lua_State*);
     static int selectString(lua_State*); // Was select but I think it clashes with the Lua command with that name
@@ -356,6 +368,7 @@ public:
     static int setWindowWrap(lua_State*);
     static int getWindowWrap(lua_State*);
     static int setWindowWrapIndent(lua_State*);
+    static int setWindowWrapHangingIndent(lua_State*);
     static int resetFormat(lua_State*);
     static int moveCursorEnd(lua_State*);
     static int getLastLineNumber(lua_State*);
@@ -448,10 +461,22 @@ public:
     static int receiveMSP(lua_State*);
     static int loadMusicFile(lua_State*);
     static int loadSoundFile(lua_State*);
+    static int loadVideoFile(lua_State*);
     static int playMusicFile(lua_State*);
     static int playSoundFile(lua_State*);
+    static int playVideoFile(lua_State*);
+    static int getPlayingMusic(lua_State*);
+    static int getPlayingSounds(lua_State*);
+    static int getPlayingVideos(lua_State*);
+    static int getPausedSounds(lua_State*);
+    static int getPausedMusic(lua_State*);
+    static int getPausedVideos(lua_State*);
     static int stopMusic(lua_State*);
     static int stopSounds(lua_State*);
+    static int stopVideos(lua_State*);
+    static int pauseSounds(lua_State*);
+    static int pauseMusic(lua_State*);
+    static int pauseVideos(lua_State*);
     static int purgeMediaCache(lua_State*);
     static int setBorderSizes(lua_State*);
     static int setBorderTop(lua_State*);
@@ -478,6 +503,7 @@ public:
     static int enableClickthrough(lua_State*);
     static int disableClickthrough(lua_State*);
     static int startLogging(lua_State*);
+    static int appendLog(lua_State*);
     static int calcFontWidth(int size);
     static int calcFontHeight(int size);
     static int calcFontSize(lua_State*);
@@ -519,6 +545,7 @@ public:
     static int connectExitStub(lua_State*);
     static int getExitStubs(lua_State*);
     static int getExitStubs1(lua_State*);
+    static int getExitStubsNames(lua_State*);
     static int getModulePriority(lua_State*);
     static int setModulePriority(lua_State*);
     static int updateMap(lua_State*);
@@ -580,6 +607,7 @@ public:
     static int getColumnCount(lua_State*);
     static int getRowCount(lua_State*);
     static int getOS(lua_State*);
+    static int getProcessID(lua_State*);
     static int getClipboardText(lua_State*);
     static int setClipboardText(lua_State*);
     static int getAvailableFonts(lua_State*);
@@ -615,6 +643,9 @@ public:
     static int getDictionaryWordList(lua_State*);
     static int getTextFormat(lua_State*);
     static int getCharacterName(lua_State*);
+    static int getProfileInformation(lua_State*);
+    static int setProfileInformation(lua_State*);
+    static int clearProfileInformation(lua_State*);
     static int getWindowsCodepage(lua_State*);
     static int getHTTP(lua_State*);
     static int customHTTP(lua_State*);
@@ -660,6 +691,18 @@ public:
     static int clearMapSelection(lua_State*);
     static int findItems(lua_State*);
     static int holdingModifiers(lua_State*);
+    static int getProfiles(lua_State*);
+    static int loadProfile(lua_State*);
+    static int closeProfile(lua_State*);
+    static int getCollisionLocationsInArea(lua_State*);
+    static int exportAreaImage(lua_State*);
+    static int disableTimeStamps(lua_State*);
+    static int enableTimeStamps(lua_State*);
+    static int timeStampsEnabled(lua_State*);
+    static int aiChat(lua_State*);
+    static int aiPrompt(lua_State*);
+    static int aiPromptStream(lua_State*);
+    static int setActiveProfile(lua_State*);
     // PLACEMARKER: End of Lua functions declarations
     // check new functions against https://www.linguistic-antipatterns.com when creating them
 
@@ -734,16 +777,31 @@ private:
     static std::tuple<bool, int> getWatchId(lua_State*, Host&);
     static void pushMapLabelPropertiesToLua(lua_State*, const TMapLabel& label);
     static std::pair<int, TAction*> getTActionFromIdOrName(lua_State*, const int, const char*);
-    static int loadMediaFileAsOrderedArguments(lua_State*);
-    static int loadMediaFileAsTableArgument(lua_State*);
-    static int playMusicFileAsOrderedArguments(lua_State*);
-    static int playMusicFileAsTableArgument(lua_State*);
-    static int playSoundFileAsOrderedArguments(lua_State*);
-    static int playSoundFileAsTableArgument(lua_State*);
-    static int stopMusicAsOrderedArguments(lua_State*);
-    static int stopMusicAsTableArgument(lua_State*);
-    static int stopSoundsAsOrderedArguments(lua_State*);
-    static int stopSoundsAsTableArgument(lua_State*);
+    static int loadMediaFileAsOrderedArguments(lua_State*, const char*);
+    static int loadMediaFileAsTableArgument(lua_State*, const char*);
+    static int playMusicFileAsOrderedArguments(lua_State*, const char*);
+    static int playMusicFileAsTableArgument(lua_State*, const char*);
+    static int playSoundFileAsOrderedArguments(lua_State*, const char*);
+    static int playSoundFileAsTableArgument(lua_State*, const char*);
+    static int playVideoFileAsTableArgument(lua_State*, const char*);
+    static void processPlayingMediaTable(lua_State*, TMediaData&);
+    static int getPlayingMusicAsOrderedArguments(lua_State*, const char*);
+    static int getPlayingMusicAsTableArgument(lua_State*, const char*);
+    static int getPlayingSoundsAsOrderedArguments(lua_State*, const char*);
+    static int getPlayingSoundsAsTableArgument(lua_State*, const char*);
+    static int getPlayingVideosAsTableArgument(lua_State*, const char*);
+    static void processPausedMediaTable(lua_State*, TMediaData&);
+    static int getPausedSoundsAsTableArgument(lua_State*, const char*);
+    static int getPausedMusicAsTableArgument(lua_State*, const char*);
+    static int getPausedVideosAsTableArgument(lua_State*, const char*);
+    static int stopMusicAsOrderedArguments(lua_State*, const char*);
+    static int stopMusicAsTableArgument(lua_State*, const char*);
+    static int stopSoundsAsOrderedArguments(lua_State*, const char*);
+    static int stopSoundsAsTableArgument(lua_State*, const char*);
+    static int stopVideosAsTableArgument(lua_State*, const char*);
+    static int pauseSoundsAsTableArgument(lua_State*, const char*);
+    static int pauseMusicAsTableArgument(lua_State*, const char*);
+    static int pauseVideosAsTableArgument(lua_State*, const char*);
     static void parseCommandOrFunction(lua_State*, const char*, int&, QString&, int&);
     static void parseCommandsOrFunctionsTable(lua_State*, const char*, int&, QStringList&, QVector<int>&);
     static void parseHintsTable(lua_State*, const char*, int&, QStringList&);
@@ -759,7 +817,7 @@ private:
     void setupLanguageData();
     QString readScriptFile(const QString& path) const;
     void handleHttpOK(QNetworkReply*);
-#if defined(Q_OS_WIN32)
+#if defined(Q_OS_WINDOWS)
     void loadUtf8Filenames();
 #endif
 
@@ -769,6 +827,7 @@ private:
             lua_close(ptr);
         }
     };
+    void updateEditor();
 
 
     bool loadLuaModule(QQueue<QString>& resultMsgQueue, const QString& requirement, const QString& failureConsequence = QString(), const QString& description = QString(), const QString& luaModuleId = QString());
@@ -796,6 +855,8 @@ private:
 
     // Holds the list of places to look for the LuaGlobal.lua file:
     QStringList mPossiblePaths;
+
+    static std::pair<bool, QString> aiEnabled(lua_State*);
 };
 
 Host& getHostFromLua(lua_State*);

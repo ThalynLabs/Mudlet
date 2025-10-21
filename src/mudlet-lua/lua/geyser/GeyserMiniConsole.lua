@@ -21,7 +21,7 @@ end
 --- Replaces the currently selected text.
 -- @param with The text to use as a replacement.
 function Geyser.MiniConsole:replace (with)
-  replace(self.name, with)
+  return replace(self.name, with)
 end
 
 --- Replaces the entire line the cursor is on
@@ -130,16 +130,6 @@ end
 function Geyser.MiniConsole:disableHorizontalScrollBar()
   disableHorizontalScrollBar(self.name)
   self.horizontalScrollBar = false
-end
-
---- Enables scrolling in the miniconsole
-function Geyser.MiniConsole:enableScrolling()
-  enableScrolling(self.name)
-end
-
---- Disables scrolling in the miniconsole
-function Geyser.MiniConsole:disableScrolling()
-  disableScrolling(self.name)
 end
 
 --- Check if scrolling is enabled in the miniconsole

@@ -29,12 +29,11 @@
 
 #include "utils.h"
 
-#include "pre_guard.h"
 #include <QLabel>
 #include <QMovie>
 #include <QPointer>
 #include <QString>
-#include "post_guard.h"
+#include <QVideoWidget>
 
 class Host;
 class QMouseEvent;
@@ -75,6 +74,7 @@ public:
     int mEnterFunction = 0;
     int mLeaveFunction = 0;
     QMovie* mpMovie = nullptr;
+    QVideoWidget* mpVideoWidget = nullptr;
 
 private:
     void releaseFunc(const int existingFunction, const int newFunction);

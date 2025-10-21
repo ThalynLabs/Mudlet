@@ -1,5 +1,5 @@
 ############################################################################
-#    Copyright (C) 2013-2015, 2017-2018, 2020-2023 by Stephen Lyons        #
+#    Copyright (C) 2013-2015, 2017-2018, 2020-2025 by Stephen Lyons        #
 #                                                - slysven@virginmedia.com #
 #    Copyright (C) 2014 by Ahmed Charles - acharles@outlook.com            #
 #    Copyright (C) 2017 by Ian Adkins - ieadkins@gmail.com                 #
@@ -36,8 +36,14 @@
 #                                                                          #
 ############################################################################
 
-lessThan(QT_MAJOR_VERSION, 5)|if(lessThan(QT_MAJOR_VERSION,6):lessThan(QT_MINOR_VERSION, 14)) {
-    error("Mudlet requires Qt 5.14 or later")
+if(lessThan(QT_MAJOR_VERSION,6)) {
+    error("Mudlet requires Qt 6.8.2 or later")
+}
+if(equals(QT_MAJOR_VERSION,6):lessThan(QT_MINOR_VERSION,8)) {
+    error("Mudlet requires Qt 6.8.2 or later")
+}
+if(equals(QT_MAJOR_VERSION,6):equals(QT_MINOR_VERSION,8):lessThan(QT_PATCH_VERSION,2)) {
+    error("Mudlet requires Qt 6.8.2 or later")
 }
 
 # Including IRC Library
@@ -51,44 +57,36 @@ include(../3rdparty/communi/communi.pri)
 # that Qt tries to put in automatically for us for release builds, only the
 # last, ours, is supposed to apply but it can be confusing to see multiple
 # alternatives during compilations.
-!msvc {
-    QMAKE_CXXFLAGS_RELEASE ~= s/-O[0123s]//g
-    QMAKE_CFLAGS_RELEASE ~= s/-O[0123s]//g
+QMAKE_CXXFLAGS_RELEASE ~= s/-O[0123s]//g
+QMAKE_CFLAGS_RELEASE ~= s/-O[0123s]//g
 # NOW we can put ours in:
-    QMAKE_CXXFLAGS_RELEASE += -O3
-    QMAKE_CFLAGS_RELEASE += -O3
+QMAKE_CXXFLAGS_RELEASE += -O3
+QMAKE_CFLAGS_RELEASE += -O3
 # There is NO need to put in the -g option as it is done already for debug bugs
 # For gdb type debugging it helps if there is NO optimisations so use -O0.
-    QMAKE_CXXFLAGS_DEBUG += -O0
-    QMAKE_CFLAGS_DEBUG += -O0
-}
+QMAKE_CXXFLAGS_DEBUG += -O0
+QMAKE_CFLAGS_DEBUG += -O0
 
-# enable C++17 for builds.
-lessThan(QT_MAJOR_VERSION, 5)|if(lessThan(QT_MAJOR_VERSION,6):lessThan(QT_MINOR_VERSION, 12)) {
-    QMAKE_CXXFLAGS += -std=c++17
-} else {
-    CONFIG += c++17
-}
-
-# MSVC specific flags. Enable multiprocessor MSVC builds.
-msvc:QMAKE_CXXFLAGS += -MP
+# c++20 for Qt 6
+CONFIG += c++20
 
 # Mac specific flags.
-macx:QMAKE_MACOSX_DEPLOYMENT_TARGET = 11.0
+macx:QMAKE_MACOSX_DEPLOYMENT_TARGET = 12.0
 
 # Used to force an include of winsock2.h BEFORE Qt tries to include winsock.h
-# from windows.h - only needed on Windows builds but we cannot use Q_OS_WIN32
+# from windows.h - only needed on Windows builds but we cannot use Q_OS_WINDOWS
 # for an #ifdef because we need a symbol that is defined BEFORE we include
 # any Qt header file!
 win32 {
     DEFINES += INCLUDE_WINSOCK2
 }
 
-QT += network uitools multimedia gui concurrent
+QT += network uitools multimedia multimediawidgets gui concurrent
 qtHaveModule(texttospeech) {
     QT += texttospeech
     !build_pass : message("Using TextToSpeech module")
 }
+
 greaterThan(QT_MAJOR_VERSION, 5) {
     QT += core5compat
 }
@@ -98,32 +96,48 @@ TEMPLATE = app
 # Define a variable for the Git executable
 GIT_EXECUTABLE = git
 
-# Run the command to get the short SHA1 hash of the current HEAD
-GIT_SHA1 = $$system($$GIT_EXECUTABLE rev-parse --short HEAD)
-
-# Use the result in your QMake project
-message("Git SHA1: " $$GIT_SHA1)
-
-########################## Version and Build setting ###########################
-# Set the current Mudlet Version, unfortunately the Qt documentation suggests
-# that only a #.#.# form without any other alphanumberic suffixes is required:
-VERSION = 4.17.2
-
-# if you are distributing modified code, it would be useful if you
-# put something distinguishing into the MUDLET_VERSION_BUILD environment
-# variable to make identification of the used version simple
-# the qmake BUILD variable is NOT built-in
-BUILD_TEST = $$(MUDLET_VERSION_BUILD)
-isEmpty( BUILD_TEST ) {
-# Possible values are:
-# "-dev" for the development build
-# "-ptb" for the public test build
-# "" for the release build
-   BUILD_TEST = "-dev-"$${GIT_SHA1}
+# Run the command to get the short SHA1 hash of the current HEAD, UNLESS there
+# is a Git SHA1 in the BRANCH_COMMIT enviromental variable (which has been set
+# by Mudlet's own CI/CB build system. This is to account for the manipulation
+# that happens during a build of a PR on Mudlet's own GitHub repository which
+# combines the PR state with that of the currently development branch such that
+# the HEAD of that branch does not match what git rev-parse HEAD would return:
+BUILD_COMMIT_TEST = $$(BUILD_COMMIT)
+BUILD_COMMIT_TEST = $$lower($$BUILD_COMMIT_TEST)
+!isEmpty( BUILD_COMMIT_TEST ) {
+  # Building a PR in the AppVeyor environment of Mudlet's own repository
+  GIT_SHA1 = $${BUILD_COMMIT_TEST}
+  # Report the above, for debugging purposes:
+  !build_pass:message("Git SHA1 set from the environment: " $${GIT_SHA1})
 } else {
-   BUILD_TEST = $${GIT_SHA1}
+  GIT_SHA1 = $$system($$GIT_EXECUTABLE rev-parse --short HEAD)
+  # Report the above, for debugging purposes:
+  !build_pass:message("Git SHA1 used: " $${GIT_SHA1})
 }
-write_file( app-build.txt, BUILD_TEST )
+
+
+# Set Mudlet version (update in CMakeLists.txt as well)
+VERSION = 4.19.1
+
+# Set BUILD based on environment variable MUDLET_VERSION_BUILD or default
+BUILD = $$(MUDLET_VERSION_BUILD)
+!isEmpty(BUILD) {
+    BUILD = $${BUILD}-$${GIT_SHA1}
+} else {
+    BUILD = "-dev-"$${GIT_SHA1}
+}
+
+# Write BUILD to app-build.txt, note that this adds a newline to the file
+write_file(app-build.txt, BUILD)
+
+# Log the value written to app-build.txt
+!build_pass {
+    isEmpty(BUILD) {
+        message("Value written to app-build.txt file: {nothing}")
+    } else {
+        message("Value written to app-build.txt file: " $${BUILD})
+    }
+}
 
 # As the above also modifies the splash screen image (so developers get reminded
 # what they are working with!) Packagers (e.g. for Linux distributions) will
@@ -137,7 +151,12 @@ isEmpty( WITH_VS_SCREEN_TEST ) | !equals(WITH_VS_SCREEN_TEST, "NO" ) {
 # Changing BUILD and VERSION values affects: ctelnet.cpp, main.cpp, mudlet.cpp
 # dlgAboutDialog.cpp and TLuaInterpreter.cpp.  It does NOT cause those files to
 # be automatically rebuilt so you will need to 'touch' them...!
-# Use APP_VERSION, APP_BUILD and APP_TARGET defines in the source code if needed.
+# Use APP_VERSION and APP_TARGET defines in the source code if needed.
+# APP_BUILD is going away (it is not currently used in the source code now as
+# Mudlet instead reads it from the resource file) however until the CI/CB system
+# is cleaned up to not use it in any way in the
+# /CI/travis.validate_deployment.sh script we probably have to
+# leave it in place:
 DEFINES += APP_VERSION=\\\"$${VERSION}\\\"
 DEFINES += APP_BUILD=\\\"$${BUILD}\\\"
 
@@ -152,6 +171,20 @@ macx {
 # NB. "cygwin-g++" although a subset of "unix" NOT "win32" DOES create
 # executables with an ".exe" extension!
 DEFINES += APP_TARGET=\\\"$${TARGET}$${TARGET_EXT}\\\"
+
+# Some use-cases - currently Windows builds in a MSYS2+Mingw-w64 environment
+# put the Lua 5.1 headers in a version numbered sub-directory of the main/normal
+# system "includes" (header files) location and if there are newer version files
+# they could be put in that main/normal location - in which case the wrong ones
+# will be used if we don't modify the '#include' lines.
+win32 {
+    MSYSTEM_TEST = $$(MSYSTEM)
+    # At some point in the future we might also want to check for CLANGARM64
+    # as GH Actions is going to add that...
+    equals(MSYSTEM_TEST, "MINGW64") | equals(MSYSTEM_TEST, "CLANG64") | equals(MSYSTEM_TEST, "UCRT64") {
+        DEFINES += INCLUDE_VERSIONED_LUA_HEADERS
+    }
+}
 
 ################## DejuVu and Ubuntu Fonts inclusion detection #################
 # To skip bundling Bitstream Vera Sans and Ubuntu Mono fonts with Mudlet,
@@ -207,6 +240,22 @@ isEmpty( 3DMAPPER_TEST ) | !equals(3DMAPPER_TEST, "NO" ) {
     DEFINES += INCLUDE_3DMAPPER
 }
 
+######################### Shader hot-reload toggle ############################
+# To enable shader hot-reloading, set the environment WITH_SHADER_HOT_RELOAD variable to "YES"
+# ie: export WITH_SHADER_HOT_RELOAD="YES" qmake
+#
+SHADER_HOT_RELOAD_TEST = $$upper($$(WITH_SHADER_HOT_RELOAD))
+equals(SHADER_HOT_RELOAD_TEST, "YES" ) {
+    DEFINES += USE_SHADER_HOT_RELOAD
+    !build_pass{
+        message("Shader hot-reloading is enabled in this configuration")
+    }
+} else {
+    !build_pass{
+        message("Shader hot-reloading is disabled in this configuration")
+    }
+}
+
 ######################## System QtKeyChain library #############################
 # To use a system provided QtKeyChain library set the environmental variable
 # WITH_OWN_QTKEYCHAIN variable to "NO". Note that this is only likely to be
@@ -218,17 +267,7 @@ isEmpty( 3DMAPPER_TEST ) | !equals(3DMAPPER_TEST, "NO" ) {
 # build will fail both at the compilation and the linking stages.
 OWN_QTKEYCHAIN_TEST = $$upper($$(WITH_OWN_QTKEYCHAIN))
 isEmpty( OWN_QTKEYCHAIN_TEST ) | !equals( OWN_QTKEYCHAIN_TEST, "NO" ) {
-  DEFINES += INCLUDE_OWN_QT5_KEYCHAIN
-}
-
-################ Alternative Windows build environment support #################
-# Developers using a full MSYS2/Mingw-w64 system, as documented at:
-# https://wiki.mudlet.org/w/Compiling_Mudlet#Compiling_on_Windows_7.2B_.28MSYS2_Alternative.29
-# will need some tweaks to names/paths for some libraries/header files, do this
-# by setting an environment variable WITH_MAIN_BUILD_SYSTEM variable to "NO".
-MAIN_BUILD_SYSTEM_TEST = $$upper($$(WITH_MAIN_BUILD_SYSTEM))
-isEmpty( MAIN_BUILD_SYSTEM_TEST ) | !equals( MAIN_BUILD_SYSTEM_TEST, "NO" ) {
-  DEFINES += INCLUDE_MAIN_BUILD_SYSTEM
+  DEFINES += INCLUDE_OWN_QT6_KEYCHAIN
 }
 
 ###################### Platform Specific Paths and related #####################
@@ -268,6 +307,41 @@ isEmpty( MAIN_BUILD_SYSTEM_TEST ) | !equals( MAIN_BUILD_SYSTEM_TEST, "NO" ) {
 # commands for suboptions - change the value to 2 to get a bit more detail
 # about the size or nature of the command:
 DEFINES+=DEBUG_TELNET=1
+#
+# * Produce qDebug() messages about the decoding of UTF-8 data when it is not
+# the single bytes of pure ASCII text:
+# DEFINES+=DEBUG_UTF8_PROCESSING
+#
+# * Produce qDebug() messages about the decoding of GB2312/GBK/GB18030 data when
+# it is not the single bytes of pure ASCII text:
+# DEFINES+=DEBUG_GB_PROCESSING
+#
+# * Produce qDebug() messages about the decoding of BIG5 data when it is not the
+# single bytes of pure ASCII text:
+# DEFINES+=DEBUG_BIG5_PROCESSING
+#
+# * Produce qDebug() messages about the decoding of EUC-KR data when it is not
+# the single bytes of pure ASCII text:
+# DEFINES+=DEBUG_EUC_KR_PROCESSING
+#
+# * Produce qDebug() messages about the decoding of ANSI SGR sequences:
+# DEFINES+=DEBUG_SGR_PROCESSING
+#
+# * Produce qDebug() messages about the decoding of ANSI OSC sequences:
+# DEFINES+=DEBUG_OSC_PROCESSING
+#
+# * Produce qDebug() messages about the decoding of ANSI MXP sequences although
+# there is not much against this item at present {only an announcement of the
+# type (?) of an `\x1b[?z` received}:
+# DEFINES+=DEBUG_MXP_PROCESSING
+#
+# * Enable the features associated with reporting problems in processing Unicode
+# codepoints that cannot be displayed on screen in a `TConsole`:
+# DEFINES+=DEBUG_CODEPOINT_PROBLEMS
+#
+# * Produce qDebug() messages about window handling operations like dock widget
+# transfers, profile switching, and detached window management:
+# DEFINES+=DEBUG_WINDOW_HANDLING
 
 unix:!macx {
 # Distribution packagers would be using PREFIX = /usr but this is accepted
@@ -330,48 +404,36 @@ unix:!macx {
     LUA_DEFAULT_DIR = $${DATADIR}/lua
 } else:win32 {
     MINGW_BASE_DIR_TEST = $$(MINGW_BASE_DIR)
-    contains( DEFINES, INCLUDE_MAIN_BUILD_SYSTEM ) {
-        # For CI builds or users/developers using the setup-windows-sdk.ps1 method:
-        isEmpty( MINGW_BASE_DIR_TEST ) {
-            MINGW_BASE_DIR_TEST = "C:\\Qt\\Tools\\mingw730_32"
-        }
-        LIBS +=  \
-            -L"$${MINGW_BASE_DIR_TEST}\\bin" \
-            -llua51 \
-            -lhunspell-1.6
-
-        INCLUDEPATH += \
-             "C:\\Libraries\\boost_1_83_0" \
-             "$${MINGW_BASE_DIR_TEST}\\include" \
-             "$${MINGW_BASE_DIR_TEST}\\lib\\include"
-
-    } else {
-        # For users/developers building with MSYS2 on Windows:
-        isEmpty( MINGW_BASE_DIR_TEST ) {
-            error($$escape_expand("Build aborted as environmental variable MINGW_BASE_DIR not set to the root of \\n"\
-"the Mingw32 or Mingw64 part (depending on the number of bits in your desired\\n"\
-"application build) typically this is one of:\\n"\
-"'C:\msys32\mingw32' {32 Bit Mudlet built on a 32 Bit Host}\\n"\
-"'C:\msys64\mingw32' {32 Bit Mudlet built on a 64 Bit Host}\\n"\
-"'C:\msys64\mingw32' {64 Bit Mudlet built on a 64 Bit Host}\\n"))
-        }
-        LIBS +=  \
-            -L$${MINGW_BASE_DIR_TEST}/bin \
-            -llua5.1 \
-            -llibhunspell-1.7
-
-        INCLUDEPATH += \
-             $${MINGW_BASE_DIR_TEST}/include/lua5.1 \
-             $${MINGW_BASE_DIR_TEST}/include/pugixml
+    isEmpty( MINGW_BASE_DIR_TEST ) {
+        # 32-BIT Build systems have been obsolete since 2020/05/15
+        # https://www.msys2.org/news/#2020-05-17-32-bit-msys2-no-longer-actively-supported
+        #
+        # 32-Bit Targets have now been dropped - whilst a temporary reprieve
+        # for some Qt libraries that Mudlet needed was granted they are no
+        # longer available:
+        # https://www.msys2.org/news/#2023-12-13-starting-to-drop-some-32-bit-packages
+        # although it might be possible for dedicated parties to build them
+        # locally for a while:
+        error($$escape_expand("Build aborted as environmental variable MINGW_BASE_DIR not set to the root of \\n"\
+        "the MINGW64/CLANG64/UCRT64 part typically this:\\n"\
+        "'C:\msys64\mingw64' {64 Bit (MINGW64) Mudlet built on a 64 Bit Host}\\n"))
     }
-
-    LIBS += \
-        -lpcre-1 \
+    # For users/developers building with MSYS2 on Windows:
+    # AND for CI building with MSYS2 for Windows in a GH Workflow:
+    LIBS +=  \
+        -L$${MINGW_BASE_DIR_TEST}/bin \
+        -llua5.1 \
+        -llibhunspell-1.7 \
+        -lpcre \
         -lzip \                 # for dlgPackageExporter
         -lz \                   # for ctelnet.cpp
         -lpugixml \
         -lws2_32 \
         -loleaut32
+
+    INCLUDEPATH += \
+        $${MINGW_BASE_DIR_TEST}/include/lua5.1 \
+        $${MINGW_BASE_DIR_TEST}/include/pugixml
 
     # Leave this unset - we do not need it on Windows:
     # LUA_DEFAULT_DIR =
@@ -411,11 +473,14 @@ macx {
 
 # use ccache if available
 BASE_CXX = $$QMAKE_CXX
-BASE_C = $$QMAKE_C
+BASE_C = $$QMAKE_CC
 # common linux location
-exists(/usr/bin/ccache)|exists(/usr/local/bin/ccache)|exists(C:/Program Files/ccache/ccache.exe) {
+
+exists(/usr/bin/ccache)|exists(/usr/local/bin/ccache)|exists(C:/Program Files/ccache/ccache.exe)|exists(/usr/bin/ccache.exe)|exists(C:\msys64\mingw64\bin\ccache.exe)|exists(C:\msys64\mingw32\bin\ccache.exe) {
     QMAKE_CXX = ccache $$BASE_CXX
-    QMAKE_C = ccache $$BASE_C
+    QMAKE_CC = ccache $$BASE_C
+} else {
+    message("Unable to find ccache in /usr/bin/ccache, /usr/local/bin/ccache, C:/Program Files/ccache/ccache.exe, /usr/bin/ccache.exe, C:\msys64\mingw64\bin\ccache.exe, or C:\msys64\mingw64\bin\ccache.exe")
 }
 
 # There does not seem to be an obvious pkg-config option for this one, it is
@@ -468,7 +533,7 @@ win32 {
         message("git submodule for required lua code formatter source code missing, executing 'git submodule update --init' to get it...")
         system("cd $${PWD}\.. & git submodule update --init 3rdparty/lcf")
     }
-    contains( DEFINES, "INCLUDE_OWN_QT5_KEYCHAIN" ) {
+    contains( DEFINES, "INCLUDE_OWN_QT6_KEYCHAIN" ) {
         !exists("$${PWD}/../3rdparty/qtkeychain/keychain.h") {
             message("git submodule for required QtKeychain source code missing, executing 'git submodule update --init' to get it...")
             system("cd $${PWD}\.. & git submodule update --init 3rdparty/qtkeychain")
@@ -483,7 +548,7 @@ win32 {
         message("git submodule for required lua code formatter source code missing, executing 'git submodule update --init' to get it...")
         system("cd $${PWD}/.. ; git submodule update --init 3rdparty/lcf")
     }
-    contains( DEFINES, "INCLUDE_OWN_QT5_KEYCHAIN" ) {
+    contains( DEFINES, "INCLUDE_OWN_QT6_KEYCHAIN" ) {
         !exists("$${PWD}/../3rdparty/qtkeychain/keychain.h") {
             message("git submodule for required QtKeychain source code missing, executing 'git submodule update --init' to get it...")
             system("cd $${PWD}/.. ; git submodule update --init 3rdparty/qtkeychain")
@@ -504,14 +569,6 @@ contains( DEFINES, INCLUDE_UPDATER ) {
             message("git submodule for optional but wanted Dblsqd updater missing from source code, executing 'git submodule update --init' to get it...")
             system("cd $${PWD}/.. ; git submodule update --init 3rdparty/dblsqd")
         }
-
-        # Sparkle glue code - only needed for MacOs
-        macx {
-            !exists("$${PWD}/../3rdparty/sparkle-glue/mixing-cocoa-and-qt.pro") {
-                message("git submodule for optional but wanted Sparkle glue missing from source code, executing 'git submodule update --init' to get it...")
-                system("cd $${PWD}/.. ; git submodule update --init 3rdparty/sparkle-glue")
-            }
-        }
     }
 }
 
@@ -527,7 +584,7 @@ exists("$${PWD}/../3rdparty/edbee-lib/edbee-lib/edbee-lib.pri") {
     error("Cannot locate lua code formatter submodule source code, build abandoned!")
 }
 
-contains( DEFINES, "INCLUDE_OWN_QT5_KEYCHAIN" ) {
+contains( DEFINES, "INCLUDE_OWN_QT6_KEYCHAIN" ) {
     exists("$${PWD}/../3rdparty/qtkeychain/qtkeychain.pri") {
         include("$${PWD}/../3rdparty/qtkeychain/qtkeychain.pri")
     } else {
@@ -542,14 +599,6 @@ contains( DEFINES, INCLUDE_UPDATER ) {
     } else {
         error("Cannot locate Dblsqd updater submodule source code, build abandoned!")
     }
-
-    macx {
-        # We do not actually have to do anything to include it here - it is
-        # pulled in by the Sparkle compilation below
-        !exists("$${PWD}/../3rdparty/sparkle-glue/mixing-cocoa-and-qt.pro") {
-            error("Cannot locate Sparkle glue library submodule source code, build abandoned!")
-        }
-    }
 }
 
 ################################## File Lists ##################################
@@ -557,8 +606,8 @@ SOURCES += \
     ActionUnit.cpp \
     AliasUnit.cpp \
     AltFocusMenuBarDisable.cpp \
-    DarkTheme.cpp \
     ctelnet.cpp \
+    DarkTheme.cpp \
     discord.cpp \
     dlgAboutDialog.cpp \
     dlgActionMainArea.cpp \
@@ -591,11 +640,13 @@ SOURCES += \
     FontManager.cpp \
     FileOpenHandler.cpp \
     GifTracker.cpp \
+    GMCPAuthenticator.cpp \
     TrailingWhitespaceMarker.cpp \
     Host.cpp \
     HostManager.cpp \
     ircmessageformatter.cpp \
     KeyUnit.cpp \
+    LlamaFileManager.cpp \
     LuaInterface.cpp \
     main.cpp \
     mapInfoContributorManager.cpp \
@@ -603,8 +654,21 @@ SOURCES += \
     MudletInstanceCoordinator.cpp \
     MxpTag.cpp \
     ScriptUnit.cpp \
+    SecureStringUtils.cpp \
+    CredentialManager.cpp \
     ShortcutsManager.cpp \
+    SingleLineTextEdit.cpp \
     T2DMap.cpp \
+    CustomLineDrawContextMenuHandler.cpp \
+    CustomLineDrawHandler.cpp \
+    CustomLineEditContextMenuHandler.cpp \
+    CustomLineEditHandler.cpp \
+    LabelInteractionHandler.cpp \
+    PanInteractionHandler.cpp \
+    RoomContextMenuHandler.cpp \
+    RoomMoveActivationHandler.cpp \
+    RoomMoveDragHandler.cpp \
+    SelectionRectangleHandler.cpp \
     TAccessibleTextEdit.cpp \
     TAction.cpp \
     TAlias.cpp \
@@ -626,14 +690,24 @@ SOURCES += \
     TScrollBox.cpp \
     TLinkStore.cpp \
     TLuaInterpreter.cpp \
+    TLuaInterpreterAI.cpp \
+    TLuaInterpreterDiscord.cpp \
+    TLuaInterpreterMapper.cpp \
+    TLuaInterpreterMedia.cpp \
+    TLuaInterpreterMudletObjects.cpp \
+    TLuaInterpreterNetworking.cpp \
+    TLuaInterpreterUI.cpp \
     TMainConsole.cpp \
     TMap.cpp \
     TMapLabel.cpp \
     TMedia.cpp \
+    TMediaPlaylist.cpp \
     TMxpBRTagHandler.cpp \
     TMxpElementDefinitionHandler.cpp \
     TMxpElementRegistry.cpp \
     TMxpEntityTagHandler.cpp \
+    TMxpExpireTagHandler.cpp \
+    TLuaInterpreterTextToSpeech.cpp \
     TMxpFormattingTagsHandler.cpp \
     TMxpColorTagHandler.cpp \
     TMxpCustomElementTagHandler.cpp \
@@ -651,6 +725,7 @@ SOURCES += \
     TMxpTagProcessor.cpp \
     TMxpVersionTagHandler.cpp \
     TMxpVarTagHandler.cpp \
+    TriggerHighlighter.cpp \
     TriggerUnit.cpp \
     TRoom.cpp \
     TRoomDB.cpp \
@@ -659,6 +734,7 @@ SOURCES += \
     TSplitterHandle.cpp \
     TStringUtils.cpp \
     TTabBar.cpp \
+    TDetachedWindow.cpp \
     TTextCodec.cpp \
     TTextEdit.cpp \
     TTimer.cpp \
@@ -674,7 +750,6 @@ HEADERS += \
     ../3rdparty/discord/rpc/include/discord_register.h \
     ../3rdparty/discord/rpc/include/discord_rpc.h \
     ActionUnit.h \
-    Announcer.h \
     AliasUnit.h \
     AltFocusMenuBarDisable.h \
     ctelnet.h \
@@ -710,21 +785,34 @@ HEADERS += \
     exitstreewidget.h \
     FileOpenHandler.h \
     GifTracker.h \
+    GMCPAuthenticator.h \
     TrailingWhitespaceMarker.h \
     Host.h \
     HostManager.h \
     ircmessageformatter.h \
     KeyUnit.h \
+    LlamaFileManager.h \
     LuaInterface.h \
     mapInfoContributorManager.h \
     mudlet.h \
     MudletInstanceCoordinator.h \
     MxpTag.h \
-    pre_guard.h \
-    post_guard.h \
     ScriptUnit.h \
+    SecureStringUtils.h \
+    CredentialManager.h \
     ShortcutsManager.h \
+    SingleLineTextEdit.h \
     T2DMap.h \
+    CustomLineDrawContextMenuHandler.h \
+    CustomLineDrawHandler.h \
+    CustomLineEditContextMenuHandler.h \
+    CustomLineEditHandler.h \
+    LabelInteractionHandler.h \
+    PanInteractionHandler.h \
+    RoomContextMenuHandler.h \
+    RoomMoveActivationHandler.h \
+    RoomMoveDragHandler.h \
+    SelectionRectangleHandler.h \
     TAccessibleConsole.h \
     TAccessibleTextEdit.h \
     TAction.h \
@@ -740,7 +828,6 @@ HEADERS += \
     TEncodingTable.h \
     TEntityHandler.h \
     TEntityResolver.h \
-    testdbg.h \
     TEvent.h \
     TFlipButton.h \
     TForkedProcess.h \
@@ -756,6 +843,7 @@ HEADERS += \
     TMatchState.h \
     TMedia.h \
     TMediaData.h \
+    TMediaPlaylist.h \
     TMxpBRTagHandler.h \
     TMxpClient.h \
     TMxpColorTagHandler.h \
@@ -767,6 +855,7 @@ HEADERS += \
     TMxpElementDefinitionHandler.h \
     TMxpElementRegistry.h \
     TMxpEntityTagHandler.h \
+    TMxpExpireTagHandler.h \
     TMxpContext.h \
     TMxpFormattingTagsHandler.h \
     TMxpMudlet.h \
@@ -788,7 +877,9 @@ HEADERS += \
     TSplitter.h \
     TSplitterHandle.h \
     TStringUtils.h \
+    TriggerHighlighter.h \
     TTabBar.h \
+    TDetachedWindow.h \
     TTextCodec.h \
     TTextEdit.h \
     TTimer.h \
@@ -804,22 +895,6 @@ HEADERS += \
     ../3rdparty/discord/rpc/include/discord_register.h \
     ../3rdparty/discord/rpc/include/discord_rpc.h
 
-macx|win32 {
-    macx {
-        SOURCES += AnnouncerMac.mm
-    }
-
-    win32 {
-        SOURCES += AnnouncerWindows.cpp \
-            uiawrapper.cpp
-
-        HEADERS += uiawrapper.h
-    }
-} else {
-    # Everything else
-    SOURCES += \
-        AnnouncerUnix.cpp
-}
 
 # This is for compiled UI files, not those used at runtime through the resource file.
 FORMS += \
@@ -865,9 +940,9 @@ contains(DEFINES, INCLUDE_FONTS) {
     RESOURCES += \
         mudlet_fonts_common.qrc
 
-    linux {
+    linux|freebsd {
         RESOURCES += \
-            mudlet_fonts_linux.qrc
+            mudlet_fonts_posix.qrc
     }
 
     !build_pass{
@@ -902,17 +977,39 @@ linux|macx|win32 {
 
 
 contains( DEFINES, INCLUDE_3DMAPPER ) {
-    HEADERS += glwidget.h
-    SOURCES += glwidget.cpp
+    HEADERS += glwidget.h \
+               modern_glwidget.h \
+               glwidget_integration.h \
+               CameraController.h \
+               GeometryManager.h \
+               RenderCommand.h \
+               RenderCommandQueue.h \
+               ResourceManager.h \
+               ShaderManager.h
+    SOURCES += glwidget.cpp \
+               modern_glwidget.cpp \
+               glwidget_integration.cpp \
+               CameraController.cpp \
+               GeometryManager.cpp \
+               RenderCommand.cpp \
+               RenderCommandQueue.cpp \
+               ResourceManager.cpp \
+               ShaderManager.cpp
+
+    # Enable shader hot-reloading when USE_SHADER_HOT_RELOAD is defined
+    contains( DEFINES, USE_SHADER_HOT_RELOAD ) {
+        DEFINES += MUDLET_SHADER_HOT_RELOAD=1
+    }
+
+    !build_pass{
+        message("The 3D mapper code with both OpenGL implementations is included in this configuration for runtime selection")
+    }
+
     QT += opengl
 
     win32 {
         LIBS += -lopengl32 \
                 -lglu32
-    }
-
-    !build_pass{
-        message("The 3D mapper code is included in this configuration")
     }
 } else {
     !build_pass{
@@ -920,12 +1017,12 @@ contains( DEFINES, INCLUDE_3DMAPPER ) {
     }
 }
 
-contains( DEFINES, "INCLUDE_OWN_QT5_KEYCHAIN" ) {
+contains( DEFINES, "INCLUDE_OWN_QT6_KEYCHAIN" ) {
     !build_pass{
         message("Including own copy of QtKeyChain library code in this configuration")
     }
 } else {
-    LIBS += -lqt5keychain
+    LIBS += -lqt6keychain
     !build_pass{
         message("Linking with system QtKeyChain library code in this configuration")
     }
@@ -1530,15 +1627,8 @@ macx {
         QMAKE_LFLAGS += -F $$SPARKLE_PATH
         QMAKE_OBJECTIVE_CFLAGS += -F $$SPARKLE_PATH
 
-        SOURCES += ../3rdparty/sparkle-glue/AutoUpdater.cpp
-
-        OBJECTIVE_SOURCES += ../3rdparty/sparkle-glue/SparkleAutoUpdater.mm \
-            ../3rdparty/sparkle-glue/CocoaInitializer.mm
-
-        HEADERS += ../3rdparty/sparkle-glue/AutoUpdater.h \
-            ../3rdparty/sparkle-glue/SparkleAutoUpdater.h \
-            ../3rdparty/sparkle-glue/CocoaInitializer.h
-
+        OBJECTIVE_SOURCES += sparkleupdater.mm
+        HEADERS += sparkleupdater.h
         # Copy Sparkle into the app bundle
         sparkle.path = Contents/Frameworks
         sparkle.files = $$SPARKLE_PATH/Sparkle.framework
@@ -1577,30 +1667,31 @@ win32 {
 # This is a list of files that we want to show up in the Qt Creator IDE that are
 # not otherwise used by the main project:
 OTHER_FILES += \
-    ../.appveyor.yml \
+    ../.ai/ai-instructions.md \
     ../.crowdin.yml \
+    ../.cursorrules \
     ../.devcontainer/Dockerfile \
     ../.devcontainer/devcontainer.json \
     ../.devcontainer/library-scripts/desktop-lite-debian.sh \
-    ../.github/CODE_OF_CONDUCT.md \
     ../.github/CODEOWNERS \
     ../.github/codeql/codeql-config.yml \
     ../.github/codespell-wordlist.txt \
-    ../.github/CONTRIBUTING.md \
+    ../.github/copilot-instructions.md \
     ../.github/dependabot.yml \
-    ../.github/FUNDING.yml \
     ../.github/ISSUE_TEMPLATE.md \
     ../.github/pr-labeler.yml \
     ../.github/PULL_REQUEST_TEMPLATE.md \
     ../.github/repo-metadata.yml \
-    ../.github/SUPPORT.md \
     ../.github/workflows/build-mudlet.yml \
+    ../.github/workflows/build-mudlet-win.yml \
     ../.github/workflows/clangtidy-diff-analysis.yml \
+    ../.github/workflows/clangtidy-post-comments.yml \
     ../.github/workflows/codeql-analysis.yml \
     ../.github/workflows/codespell-analysis.yml \
     ../.github/workflows/dangerjs.yml \
     ../.github/workflows/generate-changelog.yml \
     ../.github/workflows/generate-coder-attribution.yml \
+    ../.github/workflows/qridlayout-ordering.yml \
     ../.github/workflows/link-ptbs-to-dblsqd.yml \
     ../.github/workflows/performance-analysis.yml \
     ../.github/workflows/tag-pull-requests.yml \
@@ -1610,20 +1701,20 @@ OTHER_FILES += \
     ../.github/workflows/update-geyser-docs.yml \
     ../.github/workflows/update-translations.yml \
     ../.gitignore \
-    ../CI/appveyor.after_success.ps1 \
-    ../CI/appveyor.build.ps1 \
-    ../CI/appveyor.functions.ps1 \
-    ../CI/appveyor.install.ps1 \
-    ../CI/appveyor.set-build-info.ps1 \
-    ../CI/appveyor.validate_deployment.ps1 \
-    ../CI/copy-non-qt-win-dependencies.ps1 \
+    ../AGENTS.md \
+    ../CLAUDE.md \
+    ../CI/build-mudlet-for-windows.sh \
+    ../CI/deploy-mudlet-for-windows.sh \
+    ../CI/fix.grid.ui.ordering.js \
     ../CI/generate-changelog.lua \
-    ../CI/mudlet-deploy-key.enc \
-    ../CI/mudlet-deploy-key-windows.ppk \
+    ../CI/lua-5.1.5-so.patch \
+    ../CI/org.mudlet.mudlet.yml \
     ../CI/qt-silent-install.qs \
+    ../CI/register-windows-release.sh \
+    ../CI/package-mudlet-for-windows.sh \
+    ../CI/setup-windows-sdk.sh \
     ../CI/travis.after_success.sh \
     ../CI/travis.before_install.sh \
-    ../CI/travis.compile.sh \
     ../CI/travis.install.sh \
     ../CI/travis.linux.after_success.sh \
     ../CI/travis.linux.before_install.sh \
@@ -1634,13 +1725,21 @@ OTHER_FILES += \
     ../CI/travis.set-build-info.sh \
     ../CI/travis.validate_deployment.sh \
     ../CI/update-autocompletion.lua \
+    ../CI/validate-deployment-for-windows.sh \
     ../dangerfile.js \
     ../docker/.env.template \
     ../docker/docker-compose.override.linux.yml \
     ../docker/docker-compose.yml \
     ../docker/Dockerfile \
+    ../docs/AI-ASSISTANTS.md \
+    ../docs/CODE_OF_CONDUCT.md \
+    ../docs/CONTRIBUTING.md \
+    ../docs/FUNDING.yml \
+    ../docs/SUPPORT.md \
     ../test/CMakeLists.txt \
     ../test/GUIConsoleTests.mpackage \
+    ../test/CredentialManagerTest.cpp \
+    ../test/SecureStringUtilsTest.cpp \
     ../test/TEntityHandlerTest.cpp \
     ../test/TEntityResolverTest.cpp \
     ../test/TLinkStoreTest.cpp \
@@ -1652,6 +1751,7 @@ OTHER_FILES += \
     ../test/TMxpStubClient.h \
     ../test/TMxpTagParserTest.cpp \
     ../test/TMxpVersionTagTest.cpp \
+    ../test/TMxpElementDefinitionHandlerTest.cpp \
     mac-deploy.sh \
     mudlet-lua/genDoc.sh \
     mudlet-lua/lua/ldoc.css

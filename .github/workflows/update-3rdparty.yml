@@ -6,16 +6,62 @@ on:
     - cron: '0 0 * * fri'
 
 jobs:
+  update-mpkg-mpackage:
+    runs-on: ubuntu-latest
+    if: ${{ github.repository_owner == 'Mudlet' }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: development
+
+      - name: Download latest mpkg
+        uses: carlosperate/download-file-action@v2.0.2
+        with:
+          file-url: https://raw.githubusercontent.com/Mudlet/mudlet-package-repository/refs/heads/main/packages/mpkg.mpackage
+          file-name: mpkg.mpackage
+          location: src/
+
+      # strictly speaking this step isn't necessary since the PR action can filter as well, but it's easier
+      # to see in github UI's if PR creation was skipped when we have an explicit pre-check
+      - name: check if we have any updates
+        id: getdiff
+        run: |
+          echo "Checking for changes in src/mpkg.mpackage..."
+          if git diff --quiet "src/mpkg.mpackage"; then
+            echo "No changes detected in mpkg.mpackage"
+          else
+            echo "Changes detected in mpkg.mpackage"
+            echo "changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: send in a pull request
+        uses: peter-evans/create-pull-request@v7
+        if: steps.check-changes.outputs.changes == 'true'
+        with:
+          token: ${{ secrets.GH_PAT_UPDATE_3RDPARTY }}
+          add-paths: src/
+          branch: update-mpkg-mpackage
+          commit-message: (autocommit) Updated mpkg.mpackage to latest upstream
+          title: "Infrastructure: Update bundled mpkg.mpackage to latest upstream"
+          body: |
+            #### Brief overview of PR changes/additions
+            :crown: An automated PR to update mpkg.mpackage to the latest version.
+            #### Motivation for adding to Mudlet
+            Users are automatically updated to the latest version of mpkg.
+            #### Other info (issues closed, discussion etc)
+            _update triggered by ${{ github.ref }} ${{ github.sha }}_
+          author: mudlet-machine-account <mudlet-machine-account@users.noreply.github.com>
+
   update-iremapper-source:
     runs-on: ubuntu-latest
     if: ${{ github.repository_owner == 'Mudlet' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: development
 
       - name: Download latest IRE mapper
-        uses: carlosperate/download-file-action@v2.0.1
+        uses: carlosperate/download-file-action@v2.0.2
         with:
           file-url: https://raw.githubusercontent.com/IRE-Mudlet-Mapping/ire-mapping-script/gh-pages/downloads/mudlet-mapper.xml
           file-name: mudlet-mapper.xml
@@ -31,7 +77,7 @@ jobs:
           echo ::set-output name=lines_changed::$lines_changed
 
       - name: send in a pull request
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v7
         if: steps.getdiff.outputs.lines_changed > 0
         with:
           token: ${{ secrets.GH_PAT_UPDATE_3RDPARTY }}
@@ -48,53 +94,11 @@ jobs:
             _update triggered by ${{ github.ref }} ${{ github.sha }}_
           author: mudlet-machine-account <mudlet-machine-account@users.noreply.github.com>
 
-
-  update-sparkle-glue-fork:
-    runs-on: ubuntu-latest
-    if: ${{ github.repository_owner == 'Mudlet' }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: development
-          submodules: true
-          fetch-depth: 0
-
-      - name: update submodule to latest
-        run: git submodule update --remote 3rdparty/sparkle-glue/
-
-      # strictly speaking this step isn't necessary since the PR action can filter as well, but it's easier
-      # to see in github UI's if PR creation was skipped when we have an explicit pre-check
-      - name: check if we have any updates
-        id: getdiff
-        run: |
-          lines_changed=$(git diff --patch --unified=0 3rdparty/sparkle-glue | wc --lines)
-          echo "$lines_changed lines changed."
-          echo ::set-output name=lines_changed::$lines_changed
-
-      - name: send in a pull request
-        uses: peter-evans/create-pull-request@v5
-        if: steps.getdiff.outputs.lines_changed > 0
-        with:
-          token: ${{ secrets.GH_PAT_UPDATE_3RDPARTY }}
-          add-paths: 3rdparty/sparkle-glue
-          branch: update-sparkle-glue
-          commit-message: (autocommit) Updated sparkle-glue submodule to latest in our fork
-          title: "Infrastructure: Update sparkle-glue to latest in our fork"
-          body: |
-            #### Brief overview of PR changes/additions
-            :crown: An automated PR to update sparkle-glue to its latest in our fork.
-            #### Motivation for adding to Mudlet
-            Get new features, bugfixes, improvements! Stay modern.
-            #### Other info (issues closed, discussion etc)
-            _update triggered by ${{ github.ref }} ${{ github.sha }}_
-          author: mudlet-machine-account <mudlet-machine-account@users.noreply.github.com>
-
-
   update-dblsqd-fork:
     runs-on: ubuntu-latest
     if: ${{ github.repository_owner == 'Mudlet' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: development
           submodules: true
@@ -113,7 +117,7 @@ jobs:
           echo ::set-output name=lines_changed::$lines_changed
 
       - name: send in a pull request
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v7
         if: steps.getdiff.outputs.lines_changed > 0
         with:
           token: ${{ secrets.GH_PAT_UPDATE_3RDPARTY }}
@@ -135,7 +139,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.repository_owner == 'Mudlet' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: development
           submodules: true
@@ -157,7 +161,7 @@ jobs:
           echo ::set-output name=lines_changed::$lines_changed
 
       - name: send in a pull request
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v7
         if: steps.getdiff.outputs.lines_changed > 0
         with:
           token: ${{ secrets.GH_PAT_UPDATE_3RDPARTY }}
@@ -179,7 +183,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.repository_owner == 'Mudlet' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: development
 
@@ -197,7 +201,7 @@ jobs:
           echo ::set-output name=lines_changed::$lines_changed
 
       - name: send in a pull request
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v7
         if: steps.getdiff.outputs.lines_changed > 0
         with:
           token: ${{ secrets.GH_PAT_UPDATE_3RDPARTY }}
@@ -219,7 +223,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.repository_owner == 'Mudlet' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: development
 
@@ -237,7 +241,7 @@ jobs:
           echo ::set-output name=lines_changed::$lines_changed
 
       - name: send in a pull request
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v7
         if: steps.getdiff.outputs.lines_changed > 0
         with:
           token: ${{ secrets.GH_PAT_UPDATE_3RDPARTY }}
@@ -259,7 +263,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.repository_owner == 'Mudlet' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: development
 
@@ -277,7 +281,7 @@ jobs:
           echo ::set-output name=lines_changed::$lines_changed
 
       - name: send in a pull request
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v7
         if: steps.getdiff.outputs.lines_changed > 0
         with:
           token: ${{ secrets.GH_PAT_UPDATE_3RDPARTY }}

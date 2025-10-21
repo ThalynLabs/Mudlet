@@ -26,10 +26,9 @@
 #include "TMxpClient.h"
 #include "TMxpEvent.h"
 
-#include "pre_guard.h"
 #include <QList>
 #include <QQueue>
-#include "post_guard.h"
+#include <QStack>
 
 class Host;
 class TMediaData;
@@ -83,6 +82,10 @@ public:
 
     bool getLink(int id, QStringList** links, QStringList** hints) override;
 
+    // EXPIRE tag support
+    int setLink(const QStringList& links, const QStringList& hints, const QString& expireName) override;
+    void expireLinks(const QString& expireName) override;
+
     void playMedia(TMediaData& mediaData) override;
     void stopMedia(TMediaData& mediaData) override;
 
@@ -128,6 +131,10 @@ public:
 
     // Shouldn't be here, look for a better solution
     QQueue<TMxpEvent> mMxpEvents;
+
+    void setCaptionForSendEvent(const QString& caption) override;
+
+    QStack<TMxpEvent> mPendingSendEvents;
 
 private:
     Host* mpHost;

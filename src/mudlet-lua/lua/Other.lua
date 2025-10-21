@@ -100,8 +100,9 @@ SavedVariables = {}
 
 
 --- Sends a list of commands to the MUD. You can use this to send some things at once instead of having
---- to use multiple send() commands one after another.
+--- to use multiple send() commands one after another.  Optionally you can delay the sends using a number.
 ---
+--- @param seconds [optional] number of seconds to delay the sending of commands
 --- @param ... list of commands
 --- @param echoTheValue optional boolean flag (default value is true) which determine if value should
 ---   be echoed back on client.
@@ -116,6 +117,10 @@ SavedVariables = {}
 ---   send ("wield shield")
 ---   send ("say ha!")
 ---   </pre>
+---   with a time delay of 2 seconds between each command:
+---   <pre>
+---   sendAll(2, "stand", "wield shield", "say ha!")
+---   </pre>
 --- @usage Use sendAll and do not echo sent command on the main window.
 ---   <pre>
 ---   sendAll("stand", "wield shield", "say ha!", false)
@@ -123,15 +128,24 @@ SavedVariables = {}
 ---
 --- @see send
 function sendAll(...)
+  local time = 0
   local args = { ... }
   local echo = true
+
   if type(args[#args]) == 'boolean' then
     echo = table.remove(args, #args)
   end
-  for i, v in ipairs(args) do
-    if type(v) == 'string' then
-      send(v, echo)
+  if type(args[1]) == 'number' then
+    time = table.remove(args, 1)
+    for i, v in ipairs(args) do
+      if type(v) == 'string' then
+        tempTimer(time*i, function() send(v, echo) end, false)
+      end
     end
+    return
+  end
+  for i, v in ipairs(args) do
+    send(v, echo)
   end
 end
 
@@ -255,8 +269,11 @@ end
 ---
 --- @see remember
 function loadVars()
+  local _sep = ""
   if string.char(getMudletHomeDir():byte()) == "/" then
-    _sep = "/" else _sep = "\\"
+    _sep = "/"
+  else
+    _sep = "\\"
   end
   local l_SettingsFile = getMudletHomeDir() .. _sep .. "SavedVariables.lua"
   local lt_VariableHolder = {}
@@ -274,8 +291,11 @@ end
 ---
 --- @see loadVars
 function saveVars()
+  local _sep = ""
   if string.char(getMudletHomeDir():byte()) == "/" then
-    _sep = "/" else _sep = "\\"
+    _sep = "/"
+  else
+    _sep = "\\"
   end
   local l_SettingsFile = getMudletHomeDir() .. _sep .. "SavedVariables.lua"
   for k, _ in pairs(_saveTable) do
@@ -479,7 +499,7 @@ end
 
 --- <b><u>TODO</u></b> speedwalk(dirString, backwards, delay, optional show)
 function speedwalk(dirString, backwards, delay, show)
-  local dirString = dirString:lower()
+  dirString = dirString:lower()
   local walkdelay = delay
   if show ~= false then show = true end
   speedwalkShow = show
@@ -562,6 +582,10 @@ function _comp(a, b)
   return true
 end
 
+--- exposes _comp as compare as it's a global, has been for years, and is also
+--- extremely useful. But documenting it as _comp is inconsistent with the rest
+--- of the API
+compare = _comp
 
 
 --- <b><u>TODO</u></b> phpTable(...) - abuse to: http://richard.warburton.it
@@ -607,7 +631,8 @@ end
 
 --- <b><u>TODO</u></b> getColorWildcard(color)
 function getColorWildcard(color)
-  local color, results, startc, endc = tonumber(color), {}, nil, nil
+  color = tonumber(color)
+  local results, startc, endc = {}, nil, nil
 
   for i = 0, string.len(line) do
     selectSection(i, 1)
@@ -708,22 +733,6 @@ function deleteMultiline(maxLines)
     moveCursorUp()
   end
   return true
-end
-
-function shms(seconds, bool)
-  local seconds = tonumber(seconds)
-  assert(type(seconds) == "number", "Assertion failed for function 'shms' - Please supply a valid number.")
-
-  local s = seconds
-  local ss = string.format("%02d", math.fmod(s, 60))
-  local mm = string.format("%02d", math.fmod((s / 60 ), 60))
-  local hh = string.format("%02d", (s / (60 * 60)))
-
-  if bool then
-    cecho("<green>" .. s .. " <grey>seconds converts to: <green>" .. hh .. "<white>h,<green> " .. mm .. "<white>m <grey>and<green> " .. ss .. "<white>s.")
-  else
-    return hh, mm, ss
-  end
 end
 
 -- returns true if your Mudlet is older than the given version
@@ -1052,6 +1061,7 @@ function loadTranslations(packageName, fileName, languageCode, folder)
   folder = folder or io.exists("../translations/lua") and "../translations/lua/"
   folder = folder or io.exists("../../translations/lua") and "../../translations/lua/"
   folder = folder or io.exists(luaGlobalPath.."/../../translations/lua") and luaGlobalPath.."/../../translations/lua/"
+  folder = folder or io.exists(luaGlobalPath.."/../../../translations/lua") and luaGlobalPath.."/../../../translations/lua/"
   folder = folder or luaGlobalPath.."/translations/"
 
   assert(type(packageName) == "string", string.format("loadTranslations: bad argument #1 type (packageName as string expected, got %s)", type(packageName)))
@@ -1226,35 +1236,54 @@ function getConfig(...)
   local result = {}
 
   if #args == 0 then
+    -- Please sort this list alphabetically (case insensitive) as it helps to follow changes:
+    -- This list contains all configuration options that are available in both getConfig and setConfig
+    -- NOTE: Some options like "showMapInfo", "hideMapInfo" are setConfig-only write operations
+    -- Some options like "logDirectory", "specialForceMXPProcessorOn" are getConfig-only read operations  
     local list = {
-      "mapRoomSize", 
-      "mapExitSize", 
-      "mapRoundRooms", 
-      "showRoomIdsOnMap", 
-      "show3dMapView", 
-      "mapperPanelVisible", 
-      "mapShowRoomBorders", 
-      "enableGMCP", 
-      "enableMSDP", 
-      "enableMSSP", 
-      "enableMSP", 
-      "enableMTTS",
-      "enableMNES",
+      "advertiseScreenReader",
+      "ambiguousEAsianWidthCharacters",
+      "announceIncomingText",
       "askTlsAvailable", 
-      "inputLineStrictUnixEndings", 
-      "autoClearInputLine", 
-      "showSentText", 
-      "fixUnnecessaryLinebreaks", 
-      "specialForceCompressionOff", 
-      "specialForceGAOff", 
-      "specialForceCharsetNegotiationOff", 
-      "specialForceMxpNegotiationOff", 
-      "forceNewEnvironNegotiationOff", 
-      "compactInputLine", 
-      "announceIncomingText", 
-      "blankLinesBehaviour", 
-      "caretShortcut", 
-      "commandLineHistorySaveSize", 
+      "autoClearInputLine",
+      "blankLinesBehaviour",
+      "caretShortcut",
+      "commandLineHistorySaveSize",
+      "compactInputLine",
+      "controlCharacterHandling",
+      "editorAutoComplete",
+      "enableClosedCaption",
+      "enableGMCP",
+      "enableMNES",
+      "enableMSDP", 
+      "enableMSP",
+      "enableMSSP",
+      "enableMTTS",
+      "enableMXP",
+      "f3SearchEnabled",
+      "fixUnnecessaryLinebreaks",
+      "forceNewEnvironNegotiationOff",
+      "inputLineStrictUnixEndings",
+      "logDirectory",                    -- read-only in getConfig
+      "logInHTML",
+      "mapExitSize",
+      "mapperPanelVisible", 
+      "mapRoomSize",
+      "mapRoundRooms",
+      "mapShowRoomBorders",
+      "promptForMXPProcessorOn",
+      "promptForVersionInTTYPE",
+      "show3dMapView",
+      "showRoomIdsOnMap", 
+      "showSentText",
+      "showTabConnectionIndicators",
+      "showUpperLowerLevels",
+      "specialForceCharsetNegotiationOff",
+      "specialForceCompressionOff",
+      "specialForceGAOff",
+      "specialForceMxpNegotiationOff",
+      "specialForceMXPProcessorOn",      -- read-only in getConfig
+      "versionInTTYPE",
     }
     for _,v in ipairs(list) do
       result[v] = oldgetConfig(v)
@@ -1269,5 +1298,10 @@ function getConfig(...)
     return result
   end
 
-  return oldgetConfig(args[1])
+  -- Pass all arguments to the C++ function to support enhanced API
+  return oldgetConfig(unpack(args))
+end
+
+function openMudletHomeDir()
+  openUrl("file:" .. getMudletHomeDir())
 end

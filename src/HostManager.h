@@ -4,7 +4,8 @@
 /***************************************************************************
  *   Copyright (C) 2008-2011 by Heiko Koehn - KoehnHeiko@googlemail.com    *
  *   Copyright (C) 2014 by Ahmed Charles - acharles@outlook.com            *
- *   Copyright (C) 2016, 2018 by Stephen Lyons - slysven@virginmedia.com   *
+ *   Copyright (C) 2016, 2018, 2025 by Stephen Lyons                       *
+ *                                               - slysven@virginmedia.com *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -25,11 +26,9 @@
 
 #include "Host.h"
 
-#include "pre_guard.h"
 #include <QMap>
 #include <QString>
 #include <QSharedPointer>
-#include "post_guard.h"
 
 
 class TEvent;
@@ -41,8 +40,8 @@ class HostManager
     {
     public:
         Iter(HostManager* mgr, bool top);
-        bool operator!= (const Iter& other);
-        bool operator== (const Iter& other);
+        bool operator!= (const Iter& other) const;
+        bool operator== (const Iter& other) const;
         Iter& operator++();
         QSharedPointer<Host> operator*();
 
@@ -52,17 +51,18 @@ class HostManager
 
 
 public:
-    HostManager() = default; /* : mpActiveHost() - Not needed */
+    HostManager() = default;
 
     Host* getHost(const QString& hostname);
     bool addHost(const QString& name, const QString& port, const QString& login, const QString& pass);
     int getHostCount();
-    bool deleteHost(const QString&);
+    void deleteHost(const QString&);
     void postIrcMessage(const QString&, const QString&, const QString&);
     void postInterHostEvent(const Host*, const TEvent&, const bool = false);
     void changeAllHostColour(const Host*);
     Iter begin() { return Iter(this, true); }
     Iter end() { return Iter(this, false); }
+    bool hostLoaded(const QString& hostname) const;
 
 private:
     HostMap mHostPool;

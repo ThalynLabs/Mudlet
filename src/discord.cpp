@@ -22,11 +22,9 @@
 #include "discord.h"
 #include "mudlet.h"
 
-#include "pre_guard.h"
 #include <QtDebug>
 #include <QHash>
 #include <string.h>
-#include "post_guard.h"
 
 // Uncomment this to provide some additional qDebug() output:
 // #define DEBUG_DISCORD 1
@@ -65,7 +63,7 @@ Discord::Discord(QObject* parent)
 #if defined(Q_OS_WIN64)
     // Only defined on 64 bit Windows
     mpLibrary.reset(new QLibrary(qsl("discord-rpc64")));
-#elif defined(Q_OS_WIN32)
+#elif defined(Q_OS_WINDOWS)
     // Defined on both 32 and 64 bit Windows
     mpLibrary.reset(new QLibrary(qsl("discord-rpc32")));
 #else
@@ -259,7 +257,7 @@ void Discord::setParty(Host* pHost, int partySize, int partyMax)
 
 void Discord::timerEvent(QTimerEvent* event)
 {
-    Q_UNUSED(event);
+    Q_UNUSED(event)
 
     if (mLoaded) {
         Discord_RunCallbacks();
@@ -535,7 +533,7 @@ QString Discord::deduceGameName(const QString& address)
 }
 
 // Returns true in First if this is a MUD we know about (and have an Icon for in
-// on the Mudlet Discord erver!) and the deduced name in Second - if the
+// on the Mudlet Discord server!) and the deduced name in Second - if the
 // first is true.
 QPair<bool, QString> Discord::gameIntegrationSupported(const QString& address)
 {

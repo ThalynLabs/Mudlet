@@ -27,12 +27,10 @@
 
 #include "TConsole.h"
 #include "TScrollBox.h"
-#include "pre_guard.h"
 #include <QFile>
 #include <QTextStream>
 #include <QWidget>
 #include <optional>
-#include "post_guard.h"
 
 #include <hunspell/hunspell.h>
 
@@ -48,6 +46,7 @@ public:
 
     void resizeEvent(QResizeEvent* event) override;
     void resetMainConsole();
+    void closeEvent(QCloseEvent*) override;
     TConsole* createMiniConsole(const QString& windowname, const QString& name, int x, int y, int width, int height);
     TScrollBox* createScrollBox(const QString& windowname, const QString& name, int x, int y, int width, int height);
     bool raiseWindow(const QString& name);
@@ -55,12 +54,13 @@ public:
     bool showWindow(const QString& name);
     bool hideWindow(const QString& name);
     bool printWindow(const QString& name, const QString& text);
+    bool clear(const QString& name);
     void setProfileName(const QString&) override;
     void selectCurrentLine(std::string&);
-    std::list<int> getFgColor(std::string& buf);
-    std::list<int> getBgColor(std::string& buf);
+    std::list<int> getFgColor(QString& buf);
+    std::list<int> getBgColor(QString& buf);
     QPair<quint8, TChar> getTextAttributes(const QString&) const;
-    void luaWrapLine(std::string& buf, int line);
+    void luaWrapLine(QString& buf, int line);
     QString getCurrentLine(std::string&);
     TConsole* createBuffer(const QString& name);
     std::pair<bool, QString> setUserWindowStyleSheet(const QString& name, const QString& userWindowStyleSheet);
@@ -137,7 +137,7 @@ signals:
 private:
     // Was public in Host class but made private there and cloned to here
     // (for main TConsole) to prevent it being changed without going through the
-    // process to load in the the changed dictionary:
+    // process to load in the changed dictionary:
     QString mSpellDic;
 
     // Cloned from Host
@@ -161,6 +161,7 @@ private:
     // for the ".aff" file - this member is for the per profile option only as
     // the shared one is held by the mudlet singleton class:
     QSet<QString> mWordSet_profile;
+    bool mEnableClose = false;
 };
 
 #endif // MUDLET_TMAINCONSOLE_H

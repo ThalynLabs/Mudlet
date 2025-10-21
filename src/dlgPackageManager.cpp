@@ -2,6 +2,7 @@
  *   Copyright (C) 2011 by Heiko Koehn - KoehnHeiko@googlemail.com         *
  *   Copyright (C) 2021 by Manuel Wegmann - wegmann.manuel@yahoo.com       *
  *   Copyright (C) 2022 by Stephen Lyons - slysven@virginmedia.com         *
+ *   Copyright (C) 2025 by Lecker Kebap - Leris@mudlet.org                 *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -24,11 +25,10 @@
 
 #include "mudlet.h"
 
-#include "pre_guard.h"
+#include <QCloseEvent>
 #include <QFileDialog>
 #include <QScrollBar>
 #include <QMessageBox>
-#include "post_guard.h"
 
 
 dlgPackageManager::dlgPackageManager(QWidget* parent, Host* pHost)
@@ -59,7 +59,6 @@ dlgPackageManager::dlgPackageManager(QWidget* parent, Host* pHost)
 
 dlgPackageManager::~dlgPackageManager()
 {
-    mpHost->mpPackageManager = nullptr;
 }
 
 void dlgPackageManager::resetPackageTable()
@@ -84,9 +83,10 @@ void dlgPackageManager::resetPackageTable()
         packageName->setText(mpHost->mInstalledPackages.at(i));
         auto packageInfo{mpHost->mPackageInfo.value(packageName->text())};
         auto iconName = packageInfo.value(qsl("icon"));
-        auto iconDir = iconName.isEmpty() ? qsl(":/icons/mudlet.png")
-                                          : mudlet::getMudletPath(mudlet::profileDataItemPath, mpHost->getName(), qsl("%1/.mudlet/Icon/%2").arg(packageName->text(), iconName));
-        packageName->setIcon(QIcon(iconDir));
+        if (!iconName.isEmpty()) {
+            auto iconDir = mudlet::getMudletPath(enums::profileDataItemPath, mpHost->getName(), qsl("%1/.mudlet/Icon/%2").arg(packageName->text(), iconName));
+            packageName->setIcon(QIcon(iconDir));
+        }
         auto title = packageInfo.value(qsl("title"));
         shortDescription->setText(title);
         packageTable->setItem(i, 0, packageName);
@@ -97,10 +97,16 @@ void dlgPackageManager::resetPackageTable()
 
 void dlgPackageManager::slot_installPackage()
 {
-    const QString fileName = QFileDialog::getOpenFileName(this, tr("Import Mudlet Package"), QDir::currentPath());
+    QSettings& settings = *mudlet::getQSettings();
+    QString lastDir = settings.value("lastFileDialogLocation", QDir::homePath()).toString();
+
+    const QString fileName = QFileDialog::getOpenFileName(this, tr("Import Mudlet Package"), lastDir);
     if (fileName.isEmpty()) {
         return;
     }
+
+    lastDir = QFileInfo(fileName).absolutePath();
+    settings.setValue("lastFileDialogLocation", lastDir);
 
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
@@ -108,21 +114,20 @@ void dlgPackageManager::slot_installPackage()
         return;
     }
 
-    mpHost->installPackage(fileName, 0);
+    mpHost->installPackage(fileName, enums::PackageModuleType::Package);
 }
 
 void dlgPackageManager::slot_removePackages()
 {
-    QModelIndexList const selection = packageTable->selectionModel()->selectedRows();
+    const QModelIndexList selection = packageTable->selectionModel()->selectedRows();
     QStringList removePackages;
-    for (int i = 0; i < selection.count(); i++) {
-        QModelIndex const index = selection.at(i);
+    for (const QModelIndex& index : selection) {
         auto package = packageTable->item(index.row(), 0);
         removePackages << package->text();
     }
 
-    for (int i = 0; i < removePackages.size(); i++) {
-        mpHost->uninstallPackage(removePackages.at(i), 0);
+    for (const QString& package : removePackages) {
+        mpHost->uninstallPackage(package, enums::PackageModuleType::Package);
     }
 
     additionalDetails->hide();
@@ -158,7 +163,7 @@ void dlgPackageManager::slot_itemClicked(QTableWidgetItem* pItem)
         packageDescription->hide();
     } else {
         packageDescription->show();
-        const QString packageDir = mudlet::self()->getMudletPath(mudlet::profileDataItemPath, mpHost->getName(), packageName);
+        const QString packageDir = mudlet::self()->getMudletPath(enums::profileDataItemPath, mpHost->getName(), packageName);
         description.replace(QLatin1String("$packagePath"), packageDir);
         packageDescription->setMarkdown(description);
     }
@@ -228,7 +233,7 @@ void dlgPackageManager::fillAdditionalDetails(const QMap<QString, QString>& pack
 
 void dlgPackageManager::slot_toggleRemoveButton()
 {
-    QModelIndexList const selection = packageTable->selectionModel()->selectedRows();
+    const QModelIndexList selection = packageTable->selectionModel()->selectedRows();
     const int selectionCount = selection.count();
     removeButton->setEnabled(selectionCount);
     if (selectionCount) {
@@ -238,4 +243,12 @@ void dlgPackageManager::slot_toggleRemoveButton()
         //: Message on button in package manager initially and when there is no packages to remove
         removeButton->setText(tr("Remove package"));
     }
+}
+
+void dlgPackageManager::closeEvent(QCloseEvent* event)
+{
+    if (mpHost) {
+        emit packageManagerClosing(mpHost->getName());
+    }
+    QDialog::closeEvent(event);
 }

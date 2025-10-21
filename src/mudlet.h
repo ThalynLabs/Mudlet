@@ -5,7 +5,7 @@
  *   Copyright (C) 2008-2013 by Heiko Koehn - KoehnHeiko@googlemail.com    *
  *   Copyright (C) 2014 by Ahmed Charles - acharles@outlook.com            *
  *   Copyright (C) 2016 by Chris Leacy - cleacy1972@gmail.com              *
- *   Copyright (C) 2015-2016, 2018-2019, 2021-2023 by Stephen Lyons        *
+ *   Copyright (C) 2015-2016, 2018-2019, 2021-2024 by Stephen Lyons        *
  *                                               - slysven@virginmedia.com *
  *   Copyright (C) 2016-2018 by Ian Adkins - ieadkins@gmail.com            *
  *   Copyright (C) 2022 by Thiago Jung Bauermann - bauermann@kolabnow.com  *
@@ -26,12 +26,13 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "Announcer.h"
-#include "MudletInstanceCoordinator.h"
 #include "discord.h"
 #include "FontManager.h"
 #include "HostManager.h"
+#include "LlamaFileManager.h"
+#include "MudletInstanceCoordinator.h"
 #include "ShortcutsManager.h"
+#include "TDetachedWindow.h"
 #include "TMediaData.h"
 #include "utils.h"
 #include <memory>
@@ -40,7 +41,6 @@
 #include "updater.h"
 #endif
 
-#include "pre_guard.h"
 #include "ui_main_window.h"
 #include "edbee/views/texttheme.h"
 #include <QAction>
@@ -55,18 +55,19 @@
 #include <QTextOption>
 #include <QTime>
 #include <QVersionNumber>
+#include <QWindow>
 #include "edbee/models/textautocompleteprovider.h"
-#if defined(INCLUDE_OWN_QT5_KEYCHAIN)
+#if defined(INCLUDE_OWN_QT6_KEYCHAIN)
 #include <../3rdparty/qtkeychain/keychain.h>
 #else
-#include <qt5keychain/keychain.h>
+#include <qt6keychain/keychain.h>
 #endif
 #include <optional>
 #include <hunspell/hunspell.hxx>
 #include <hunspell/hunspell.h>
 
 // for system physical memory info
-#if defined(Q_OS_WIN32)
+#if defined(Q_OS_WINDOWS)
 #include <Windows.h>
 #include <Psapi.h>
 #elif defined(Q_OS_MACOS)
@@ -91,7 +92,6 @@
 #else
 // Any other OS?
 #endif
-#include "post_guard.h"
 
 class QCloseEvent;
 class QMediaPlayer;
@@ -110,7 +110,12 @@ class QTimer;
 class dlgAboutDialog;
 class dlgConnectionProfiles;
 class dlgIRC;
+class dlgNotepad;
+class dlgPackageManager;
+class dlgModuleManager;
+class dlgPackageExporter;
 class dlgProfilePreferences;
+class dlgTriggerEditor;
 class Host;
 class ShortcutManager;
 class TConsole;
@@ -132,105 +137,8 @@ public:
     mudlet();
     ~mudlet() override;
 
-    enum Appearance {
-        systemSetting = 0,
-        light = 1,
-        dark = 2
-    };
-
-    enum controlsVisibilityFlag {
-        visibleNever = 0,
-        visibleOnlyWithoutLoadedProfile = 0x1,
-        visibleMaskNormally = 0x2,
-        visibleAlways = 0x3
-    };
-    Q_DECLARE_FLAGS(controlsVisibility, controlsVisibilityFlag)
-
-    enum mudletPathType {
-        // The root of all mudlet data for the user - does not end in a '/'
-        mainPath = 0,
-        // Takes one extra argument as a file (or directory) relating to
-        // (profile independent) mudlet data - may end with a '/' if the extra
-        // argument does:
-        mainDataItemPath,
-        // (Added for 3.5.0) a revised location to store Mudlet provided fonts:
-        mainFontsPath,
-        // The directory containing all the saved user's profiles - does not end
-        // in '/':
-        profilesPath,
-        // Takes one extra argument (profile name) that returns the base
-        // directory for that profile - does NOT end in a '/' unless the
-        // supplied profle name does:
-        profileHomePath,
-        // Takes one extra argument (profile name) that returns the directory
-        // for the profile game save media files - does NOT end in a '/'
-        profileMediaPath,
-        // Takes two extra arguments (profile name, mediaFileName) that returns
-        // the pathFile name for any media file:
-        profileMediaPathFileName,
-        // Takes one extra argument (profile name) that returns the directory
-        // for the profile game save XML files - ends in a '/':
-        profileXmlFilesPath,
-        // Takes one extra argument (profile name) that returns the directory
-        // for the profile game save maps files - does NOT end in a '/'
-        profileMapsPath,
-        // Takes two extra arguments (profile name, dataTime stamp) that returns
-        // the pathFile name for a dateTime stamped map file:
-        profileDateTimeStampedMapPathFileName,
-        // Takes two extra arguments (profile name, dataTime stamp) that returns
-        // the pathFile name for a dateTime stamped JSON map file:
-        profileDateTimeStampedJsonMapPathFileName,
-        // Takes two extra arguments (profile name, mapFileName) that returns
-        // the pathFile name for any map file:
-        profileMapPathFileName,
-        // Takes one extra argument (profile name) that returns the file
-        // location for the downloaded MMP map:
-        profileXmlMapPathFileName,
-        // Takes two extra arguments (profile name, data item) that gives a
-        // path file name for, typically a data item stored as a single item
-        // (binary) profile data) file (ideally these can be moved to a per
-        // profile QSettings file but that is a future pipe-dream on my part
-        // SlySven):
-        profileDataItemPath,
-        // Takes two extra arguments (profile name, package name) returns the
-        // per profile directory used to store (unpacked) package contents
-        // - ends with a '/':
-        profilePackagePath,
-        // Takes two extra arguments (profile name, package name) returns the
-        // filename of the XML file that contains the (per profile, unpacked)
-        // package mudlet items in that package/module:
-        profilePackagePathFileName,
-        // Takes one extra argument (profile name) that returns the directory
-        // that contains replays (*.dat files) and logs (*.html or *.txt) files
-        // for that profile - does NOT end in '/':
-        profileReplayAndLogFilesPath,
-        // Takes one extra argument (profile name) that returns the pathFileName
-        // to the map auditing report file that is appended to each time a
-        // map is loaded:
-        profileLogErrorsFilePath,
-        // Takes two extra arguments (profile name, theme name) that returns the
-        // pathFileName of the theme file used by the edbee editor - also
-        // handles the special case of the default theme "mudlet.thTheme" that
-        // is carried internally in the resource file:
-        editorWidgetThemePathFile,
-        // Returns the pathFileName to the external JSON file needed to process
-        // an edbee edtor widget theme:
-        editorWidgetThemeJsonFile,
-        // Returns the directory used to store module backups that is used in
-        // when saving/resyncing packages/modules - ends in a '/'
-        moduleBackupsPath,
-        // Returns path to Qt's own translation files
-        qtTranslationsPath,
-        // Takes one extra argument - a (dictionary) language code that should
-        // match a hunspell affix file name e.g. "en_US" in the default case
-        // to yield "en_US.aff" that is searched for in one or more OS dependent
-        // places - returns the path ending in a '/' to use to get the
-        // dictionaries from:
-        hunspellDictionaryPath
-    };
-
-
-    static QString getMudletPath(mudletPathType, const QString& extra1 = QString(), const QString& extra2 = QString());
+    static QString getMudletPath(enums::mudletPathType, const QString& extra1 = QString(), const QString& extra2 = QString());
+    static QSettings* getQSettings();
     // From https://stackoverflow.com/a/14678964/4805858 an answer to:
     // "How to find and replace string?" by "Czarek Tomczak":
     static bool loadEdbeeTheme(const QString& themeName, const QString& themeFile);
@@ -293,6 +201,7 @@ public:
     // as well as encourage translators to maintain it
     static const int scmTranslationGoldStar = 95;
     QString scmVersion;
+    QString confPath;
     // These have to be "inline" to satisfy the ODR (One Definition Rule):
     inline static bool smDebugMode = false;
     inline static bool smFirstLaunch = false;
@@ -301,12 +210,21 @@ public:
     inline static QPointer<QMainWindow> smpDebugArea;
     // mirror everything shown in any console to stdout. Helpful for CI environments
     inline static bool smMirrorToStdOut = false;
+    // adjust Mudlet settings to match Steam's requirements
+    inline static bool smSteamMode = false;
+    // This may need to be localised, it represents the format of the timestamp
+    inline static QString smTimeStampFormat = qsl("hh:mm:ss.zzz ");
+    // If localised this should be set to the same format and length as the
+    // smTimeStampFormat:
+    inline static QString smBlankTimeStamp = qsl("------------ ");
 
 
     void showEvent(QShowEvent*) override;
     void hideEvent(QHideEvent*) override;
 
 
+    void init();
+    void setupConfig();
     void activateProfile(Host*);
     void takeOwnershipOfInstanceCoordinator(std::unique_ptr<MudletInstanceCoordinator>);
     MudletInstanceCoordinator* getInstanceCoordinator();
@@ -314,7 +232,7 @@ public:
     QPair<bool, bool> addWordToSet(const QString&);
     void adjustMenuBarVisibility();
     void adjustToolBarVisibility();
-    void announce(const QString& text, const QString& processing = QString());
+    void announce(const QString& text, const QString& processing = QString(), bool isPlain = false);
     void attachDebugArea(const QString&);
     void checkUpdatesOnStart();
     void commitLayoutUpdates(bool flush = false);
@@ -322,16 +240,21 @@ public:
     void disableToolbarButtons();
     void doAutoLogin(const QString&);
     void enableToolbarButtons();
+    void updateMainWindowToolbarState();
+    void updateMainWindowTitle();
     void forceClose();
+    void armForceClose();
     Host* getActiveHost();
     QStringList getAvailableFonts();
     QList<QString> getAvailableTranslationCodes() const { return mTranslationsMap.keys(); }
     const QMap<QByteArray, QString>& getEncodingNamesMap() const { return mEncodingNameMap; }
     HostManager& getHostManager() { return mHostManager; }
+    ShortcutsManager* shortcutsManager() const { return mpShortcutsManager.data(); }
+    const QMap<QString, QPointer<TDetachedWindow>>& getDetachedWindows() const { return mDetachedWindows; }
+    QDockWidget* getMainWindowDockWidget(const QString& mapKey) const { return mMainWindowDockWidgetMap.value(mapKey); }
     std::optional<QSize> getImageSize(const QString&);
     const QString& getInterfaceLanguage() const { return mInterfaceLanguage; }
     int64_t getPhysicalMemoryTotal();
-    QSettings* getQSettings();
     const QLocale& getUserLocale() const { return mUserLocale; }
     QSet<QString> getWordSet();
     bool inDarkMode() const { return mDarkMode; }
@@ -339,13 +262,21 @@ public:
     // operating without either menubar or main toolbar showing.
     bool isControlsVisible() const;
     bool isGoingDown() { return mIsGoingDown; }
+    Host* loadProfile(const QString&, const bool, const QString& saveFileName = QString());
     bool loadReplay(Host*, const QString&, QString* pErrMsg = nullptr);
     bool loadWindowLayout();
-    controlsVisibility menuBarVisibility() const { return mMenuBarVisibility; }
+    enums::controlsVisibility menuBarVisibility() const { return mMenuBarVisibility; }
     bool migratePasswordsToProfileStorage();
     bool migratePasswordsToSecureStorage();
+    // Helper function to check if current version is >= specified version for backward compatibility
+    bool isVersionAtLeast(const QString& minVersion);
     void onlyShowProfiles(const QStringList&);
     bool openWebPage(const QString&);
+
+    // Profile validation and orphan detection
+    bool hasOrphanedProfiles();
+    QStringList getOrphanedProfiles();
+    void reattachOrphanedProfiles();
     // Both of these revises the contents of the .aff file and handle a .dic
     // file that has been updated externally/manually (to add or remove words)
     // - the first also puts the contents of the .dic file into the
@@ -366,7 +297,7 @@ public:
     void replayOver();
     bool replayStart();
     std::pair<bool, QString> resetProfileIcon(const QString&);
-#if defined(Q_OS_WIN32)
+#if defined(Q_OS_WINDOWS)
     void sanitizeUtf8Path(QString& originalLocation, const QString& fileName) const;
 #endif
     // This will save and replace the .dic file with just the words in the
@@ -376,46 +307,55 @@ public:
     bool saveWindowLayout();
     void scanForMudletTranslations(const QString&);
     void scanForQtTranslations(const QString&);
-    void setAppearance(Appearance, const bool& loading = false);
+    void setAppearance(enums::Appearance, const bool& loading = false);
     bool setClickthrough(Host*, const QString&, bool);
     void setEditorTextoptions(bool isTabsAndSpacesToBeShown, bool isLinesAndParagraphsToBeShown);
     void setEditorTreeWidgetIconSize(int);
-    void setEnableFullScreenMode(const bool);
     void setGlobalStyleSheet(const QString&);
     void setInterfaceLanguage(const QString&);
-    void setMenuBarVisibility(controlsVisibility);
+    void setMenuBarVisibility(enums::controlsVisibility);
     std::pair<bool, QString> setProfileIcon(const QString& profile, const QString& newIconPath);
     void setShowIconsOnMenu(const Qt::CheckState);
     void setShowMapAuditErrors(const bool);
-    void setupPreInstallPackages(const QString&);
+    void setInvertMapZoom(const bool);
+    void setShowTabConnectionIndicators(const bool);
+    void setupPreInstallPackages(const QString&, const QString&);
     void setToolBarIconSize(int);
-    void setToolBarVisibility(controlsVisibility);
+    void setToolBarVisibility(enums::controlsVisibility);
     void showChangelogIfUpdated();
     void slot_showConnectionDialog();
     bool showMapAuditErrors() const { return mShowMapAuditErrors; }
+    bool invertMapZoom() const { return mInvertMapZoom; }
+    bool showTabConnectionIndicators() const { return mShowTabConnectionIndicators; }
     // Brings up the preferences dialog and selects the tab whos objectName is
     // supplied:
     void showOptionsDialog(const QString&);
     void startAutoLogin(const QStringList&);
     bool storingPasswordsSecurely() const { return mStorePasswordsSecurely; }
-    controlsVisibility toolBarVisibility() const { return mToolbarVisibility; }
+    enums::controlsVisibility toolBarVisibility() const { return mToolbarVisibility; }
     void updateDiscordNamedIcon();
     void updateMultiViewControls();
     QPair<bool, QString> writeProfileData(const QString& profile, const QString& item, const QString& what);
     void writeSettings();
     bool muteAPI() const { return mMuteAPI; }
-    bool muteMCMP() const { return mMuteMCMP; }
-    bool muteMSP() const { return mMuteMSP; }
-    bool mediaMuted() const { return mMuteAPI && mMuteMCMP && mMuteMSP; }
-    bool mediaUnmuted() const { return !mMuteAPI && !mMuteMCMP && !mMuteMSP; }
+    bool muteGame() const { return mMuteGame; }
+    bool mediaMuted() const { return mMuteAPI && mMuteGame; }
+    bool mediaUnmuted() const { return !mMuteAPI && !mMuteGame; }
+    bool profileExists(const QString& profileName);
+    bool showSplitscreenTutorial();
+    void showedSplitscreenTutorial();
+    bool showMuteAllMediaTutorial();
+    void showedMuteAllMediaTutorial();
+    bool experiencedMudletPlayer();
 
-    Appearance mAppearance = Appearance::systemSetting;
+    enums::Appearance mAppearance = enums::Appearance::systemSetting;
     // 1 (of 2) needed to work around a (Windows/MacOs specific QStyleFactory)
     // issue:
     QString mBG_ONLY_STYLESHEET;
     // approximate max duration that 'Copy as image' is allowed to take
     // (seconds):
     int mCopyAsImageTimeout = 3;
+
     // A list of potential dictionary languages - probably will cover a much
     // wider range of languages compared to the translations - and is intended
     // for Dictionary identification - there is a request for users to submit
@@ -430,11 +370,6 @@ public:
     // are considered/used/stored
     QTextOption::Flags mEditorTextOptions = QTextOption::Flags();
     int mEditorTreeWidgetIconSize = 0;
-    // Currently tracks the "mudlet_option_use_smallscreen" file's existence but
-    // may eventually migrate solely to the "EnableFullScreenMode" in the main
-    // QSetting file - it is only stored as a file now to maintain backwards
-    // compatibility...
-    bool mEnableFullScreenMode = false;
     FontManager mFontManager;
     bool mHasSavedLayout = false;
     bool mIsLoadingLayout = false;
@@ -482,6 +417,18 @@ public:
     std::unique_ptr<MudletInstanceCoordinator> mInstanceCoordinator;
     // How many graphemes do we need before we run the spell checker on a "word" in the command line:
     int mMinLengthForSpellCheck = 3;
+    bool mDrawUpperLowerLevels = true;
+    bool mShowTabConnectionIndicators = true; // Global preference for showing connection status indicators on tabs
+
+    // AI integration methods
+    LlamafileManager* getAIManager() const { return mpLlamafileManager.get(); }
+    bool aiModelAvailable() const;
+    bool aiRunning() const;
+    QString getAIModelPath() const { return mAIModelPath; }
+    void setAIModelPath(const QString& path);
+    bool getAIAutoStart() const { return mAIAutoStart; }
+    void setAIAutoStart(bool autoStart);
+
 
 #if defined(INCLUDE_UPDATER)
     Updater* pUpdater = nullptr;
@@ -491,21 +438,23 @@ public:
 public slots:
     void slot_closeCurrentProfile();
     void slot_closeProfileRequested(int);
+    void slot_closeProfileByName(const QString& profileName);
     void slot_connectionDialogueFinished(const QString&, bool);
     void slot_disconnect();
     void slot_handleToolbarVisibilityChanged(bool);
     void slot_irc();
 #if defined(INCLUDE_UPDATER)
     void slot_manualUpdateCheck();
+    void slot_showFullChangelog();
 #endif
     void slot_mapper();
+    void slot_showMapperDialog(); // Enhanced mapper dialog with per-profile dock widgets
     void slot_moduleManager();
     void slot_mudletDiscord();
     void slot_multiView(const bool);
     void slot_muteMedia();
     void slot_muteAPI(const bool);
-    void slot_muteMCMP(const bool);
-    void slot_muteMSP(const bool);
+    void slot_muteGame(const bool);
     void slot_newDataOnHost(const QString&, bool isLowerPriorityChange = false);
     void slot_notes();
     void slot_openMappingScriptsPage();
@@ -514,38 +463,85 @@ public slots:
     void slot_processEventLoopHackTimerRun();
     void slot_profileDiscord();
     void slot_reconnect();
+    void slot_reattachAllDetachedWindows();
+    void slot_toggleAlwaysOnTop();
+    void slot_minimize();
+    void updateWindowMenu();
+    void slot_activateMainWindow();
+    void slot_activateDetachedWindow();
+    void slot_activateMainWindowProfile();
+    void slot_activateDetachedWindowProfile();
     void slot_replay();
     void slot_replaySpeedUp();
     void slot_replaySpeedDown();
     void slot_replayTimeChanged();
-    void slot_restoreMainMenu() { setMenuBarVisibility(visibleAlways); }
-    void slot_restoreMainToolBar() { setToolBarVisibility(visibleAlways); }
+    void slot_restoreMainMenu() { setMenuBarVisibility(enums::visibleAlways); }
+    void slot_restoreMainToolBar() { setToolBarVisibility(enums::visibleAlways); }
     void slot_showAboutDialog();
     void slot_showHelpDialogForum();
-// Not used:    void slot_showHelpDialogIrc();
+    void slot_showHelpDialogIrc();
     void slot_showHelpDialogVideo();
     void slot_tabChanged(int);
     void slot_timerFires();
     void slot_toggleFullScreenView();
     void slot_toggleMultiView();
-
+    void slot_toggleTimeStamp();
+    void slot_toggleReplay();
+    void slot_toggleLogging();
+    void slot_toggleEmergencyStop();
+    void slot_tabDetachRequested(int index, const QPoint& globalPos);
+    void slot_tabReattachRequested(const QString& tabName, int insertIndex = -1);
+    void slot_detachedWindowClosed(const QString& profileName);
+    void slot_profileDetachToWindow(const QString& profileName, TDetachedWindow* targetWindow);
+    void updateDetachedWindowToolbars();
+    static QIcon createConnectionStatusIcon(bool isConnected, bool isConnecting, bool hasError);
+    void updateMainWindowTabIndicators();
+    void updateMainWindowTabBarAutoHide();
+    void updateTabIndicators(); // Update all tab indicators (main window)
+    void updateDetachedWindowTabIndicators(); // Update all detached window tab indicators
+    void slot_showActionDialog();
+    void slot_showAliasDialog();
+    void slot_showEditorDialog();
+    void slot_showHelpDialog();
+    void slot_showKeyDialog();
+    void slot_showPreferencesDialog();
+    void slot_showScriptDialog();
+    static void restoreProfileFocus(const QString& profileName);
+    static void setupEditorFocusRestoration(dlgTriggerEditor* pEditor, const QString& profileName, QWidget* targetWindow = nullptr);
+    void setupNotepadFocusRestoration(dlgNotepad* pNotepad);
+    void setupPackageManagerFocusRestoration(dlgPackageManager* pPackageManager);
+    void setupModuleManagerFocusRestoration(dlgModuleManager* pModuleManager);
+    void setupPackageExporterFocusRestoration(dlgPackageExporter* pPackageExporter);
+    void setupPreferencesFocusRestoration(dlgProfilePreferences* pPreferences);
+    void slot_showTimerDialog();
+    void slot_showTabContextMenu(const QPoint& position);
+    void slot_toggleMainToolBar();
+    void slot_showMainToolBarContextMenu(const QPoint& position);
+    void synchronizeToolBarVisibility(bool visible);
+    void slot_showTriggerDialog();
+    void slot_showVariableDialog();
 
 protected:
     void closeEvent(QCloseEvent*) override;
+    void changeEvent(QEvent*) override;
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dragMoveEvent(QDragMoveEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
 
 
 signals:
     void signal_adjustAccessibleNames();
-    void signal_appearanceChanged(mudlet::Appearance);
+    void signal_appearanceChanged(enums::Appearance);
     void signal_editorTextOptionsChanged(QTextOption::Flags);
     void signal_enableFulScreenModeChanged(bool);
     void signal_guiLanguageChanged(const QString&);
     void signal_hostCreated(Host*, quint8);
     void signal_hostDestroyed(Host*, quint8);
-    void signal_menuBarVisibilityChanged(const mudlet::controlsVisibility);
+    void signal_menuBarVisibilityChanged(const enums::controlsVisibility);
     void signal_passwordMigratedToSecure(const QString&);
     void signal_passwordsMigratedToProfiles();
     void signal_passwordsMigratedToSecure();
+    void signal_characterPasswordsMigrated();
     void signal_profileActivated(Host *, quint8);
     void signal_profileMapReloadRequested(QList<QString>);
     void signal_setToolBarIconSize(int);
@@ -554,7 +550,11 @@ signals:
     void signal_showIconsOnMenusChanged(const Qt::CheckState);
     void signal_showMapAuditErrorsChanged(bool);
     void signal_tabChanged(const QString&);
-    void signal_toolBarVisibilityChanged(const mudlet::controlsVisibility);
+    void signal_toolBarVisibilityChanged(const enums::controlsVisibility);
+    void signal_windowStateChanged(const Qt::WindowStates);
+    void signal_aiStatusChanged(bool running);
+    void signal_aiModelChanged(const QString& modelPath);
+    void signal_showTabConnectionIndicatorsChanged(bool);
 
 
 private slots:
@@ -565,16 +565,6 @@ private slots:
 #if defined(INCLUDE_UPDATER)
     void slot_reportIssue();
 #endif
-    void slot_showActionDialog();
-    void slot_showAliasDialog();
-    void slot_showEditorDialog();
-    void slot_showHelpDialog();
-    void slot_showKeyDialog();
-    void slot_showPreferencesDialog();
-    void slot_showScriptDialog();
-    void slot_showTimerDialog();
-    void slot_showTriggerDialog();
-    void slot_showVariableDialog();
     void slot_tabMoved(const int oldPos, const int newPos);
     void slot_toggleCompactInputLine();
 #if defined(INCLUDE_UPDATER)
@@ -582,14 +572,18 @@ private slots:
     void slot_updateInstalled();
 #endif
     void slot_updateShortcuts();
+    void slot_windowStateChanged(const Qt::WindowStates);
+    void slot_aiStatusChanged(LlamafileManager::Status newStatus, LlamafileManager::Status oldStatus);
+    void slot_aiError(const QString& error);
+    void slot_refreshTabIndicatorsDelayed();
 
 
 private:
-    static bool desktopInDarkMode();
 
 
     void assignKeySequences();
     QString autodetectPreferredLanguage();
+    static bool needsCustomDarkTheme();
     void closeHost(const QString&);
     int getDictionaryWordCount(const QString &dictionaryPath);
     void goingDown() { mIsGoingDown = true; }
@@ -604,7 +598,16 @@ private:
     int scanWordList(QStringList&, QHash<QString, unsigned int>&);
     void setupTrayIcon();
     void reshowRequiredMainConsoles();
-    void toggleMuteForProtocol(bool state, QAction* toolbarAction, QAction* menuAction, TMediaData::MediaProtocol protocol, const QString& unmuteText, const QString& muteText);
+    void toggleMute(bool state, QAction* toolbarAction, QAction* menuAction, bool isAPINotGame, const QString& unmuteText, const QString& muteText);
+    dlgTriggerEditor* createMudletEditor();
+
+    // Profile detachment helper methods
+    void moveProfileFromMainToDetachedWindow(const QString& profileName, int tabIndex, TDetachedWindow* targetWindow);
+    void moveProfileBetweenDetachedWindows(const QString& profileName, TDetachedWindow* sourceWindow, TDetachedWindow* targetWindow);
+    void moveProfileFromDetachedToMainWindow(const QString& profileName, TDetachedWindow* sourceWindow);
+    int findTabIndex(const QString& profileName) const;
+    void cleanupDetachedWindowsMap(); // Remove null pointers from the map
+
 
     inline static QPointer<mudlet> smpSelf = nullptr;
 
@@ -635,9 +638,13 @@ private:
     QKeySequence mKeySequenceReconnect;
     QKeySequence mKeySequenceShowMap;
     QKeySequence mKeySequenceTriggers;
+    QKeySequence mKeySequenceToggleTimeStamp;
+    QKeySequence mKeySequenceToggleReplay;
+    QKeySequence mKeySequenceToggleLogging;
+    QKeySequence mKeySequenceToggleEmergencyStop;
     bool mIsGoingDown = false;
     // Whether multi-view is in effect:
-    controlsVisibility mMenuBarVisibility = visibleAlways;
+    enums::controlsVisibility mMenuBarVisibility = enums::visibleAlways;
     // Used to ensure that mudlet::slot_updateShortcuts() only runs once each
     // time the main if () logic changes state - will be true if the menu is
     // supposed to be visible, false if not and not have a value initially:
@@ -645,13 +652,13 @@ private:
     QString mMudletDiscordInvite = qsl("https://www.mudlet.org/chat");
     bool mMultiView = false;
     bool mMuteAPI = false;
-    bool mMuteMCMP = false;
-    bool mMuteMSP = false;
+    bool mMuteGame = false;
     QPointer<QAction> mpActionAbout;
     QPointer<QAction> mpActionAboutWithUpdates;
     QPointer<QAction> mpActionAliases;
     QPointer<QAction> mpActionButtons;
     QPointer<QAction> mpActionCloseProfile;
+    QPointer<QAction> mpActionCloseApplication;
     QPointer<QAction> mpActionConnect;
     QPointer<QAction> mpActionDisconnect;
     QPointer<QAction> mpActionDiscord;
@@ -665,8 +672,7 @@ private:
     QPointer<QAction> mpActionMultiView;
     QPointer<QAction> mpActionMuteMedia;
     QPointer<QAction> mpActionMuteAPI;
-    QPointer<QAction> mpActionMuteMCMP;
-    QPointer<QAction> mpActionMuteMSP;
+    QPointer<QAction> mpActionMuteGame;
     QPointer<QAction> mpActionNotes;
     QPointer<QAction> mpActionOptions;
     QPointer<QAction> mpActionPackageExporter;
@@ -680,9 +686,9 @@ private:
     QPointer<QAction> mpActionScripts;
     QPointer<QAction> mpActionSpeedDisplay;
     QPointer<QAction> mpActionTimers;
+    QPointer<QAction> mpActionToggleMainToolBar;
     QPointer<QAction> mpActionTriggers;
     QPointer<QAction> mpActionVariables;
-    Announcer* mpAnnouncer = nullptr;
     // This pair retains the path argument supplied to the corresponding
     // scanForXxxTranslations(...) method so it is available to the subsequent
     // loadTranslators(...) call
@@ -696,8 +702,11 @@ private:
     QHBoxLayout* mpHBoxLayout_profileContainer = nullptr;
     QPointer<QLabel> mpLabelReplaySpeedDisplay;
     QPointer<QLabel> mpLabelReplayTime;
+    QPointer<QWidget> mpFocusWidgetBeforeDeactivate;
     // a list of profiles currently being migrated to secure or profile storage
     QStringList mProfilePasswordsToMigrate;
+    // a list of character passwords currently being migrated to secure storage
+    QList<QPair<QString, QString>> mCharacterPasswordsToMigrate;
     QPointer<QShortcut> mpShortcutCloseProfile;
     QPointer<QShortcut> mpShortcutConnect;
     QPointer<QShortcut> mpShortcutDisconnect;
@@ -711,18 +720,23 @@ private:
     QPointer<QShortcut> mpShortcutReconnect;
     QPointer<QShortcut> mpShortcutShowMap;
     QPointer<QShortcut> mpShortcutTriggers;
+    QPointer<QShortcut> mpShortcutToggleTimeStamp;
+    QPointer<QShortcut> mpShortcutToggleReplay;
+    QPointer<QShortcut> mpShortcutToggleLogging;
+    QPointer<QShortcut> mpShortcutToggleEmergencyStop;
     QPointer<QTimer> mpTimerReplay;
     QPointer<QToolBar> mpToolBarReplay;
     QWidget* mpWidget_profileContainer = nullptr;
     // read-only value to see if the interface is light or dark. To set the value,
     // use setAppearance instead
     bool mShowMapAuditErrors = false;
+    bool mInvertMapZoom = false; // true = old behavior (inverted), false = modern behavior (non-inverted)
     QSplitter* mpSplitter_profileContainer = nullptr;
     bool mStorePasswordsSecurely = true;
     // Argument to QDateTime::toString(...) to format the elapsed time display
     // on the mpToolBarReplay:
     QString mTimeFormat;
-    controlsVisibility mToolbarVisibility = visibleAlways;
+    enums::controlsVisibility mToolbarVisibility = enums::visibleNever;
     QList<QPointer<QTranslator>> mTranslatorsLoadedList;
     // An encapsulation of the mInterfaceLanguage in a form that Qt uses to
     // hold all the details:
@@ -730,9 +744,54 @@ private:
     QMap<Host*, QToolBar*> mUserToolbarMap;
     // The collection of words in what mpHunspell_sharedDictionary points to:
     QSet<QString> mWordSet_shared;
+
+    // Window menu management for multiple windows
+    QList<QAction*> mWindowListActions;
+    QAction* mWindowListSeparator = nullptr;
+
+    // amount of times the shortcut has been shown help educate new users
+    int mScrollbackTutorialsShown = 0; // Cancel split screen
+    int mMuteAllMediaTutorialsShown = 0; // Mute all media
+    // show the tutorial maximum 3 times on a new Mudlet
+    static const int mScrollbackTutorialsMax = 3; // Split screen
+    static const int mMuteAllMediaTutorialsMax = 3; // Mute all media
+
+    // AI/LlamaFile integration
+    std::unique_ptr<LlamafileManager> mpLlamafileManager;
+    QString mAIModelPath;
+    bool mAIAutoStart = true;
+
+    // Helper methods for AI integration
+    void initializeAI();
+    void shutdownAI();
+    bool findAIModel();
+    void setupAIConfig();
+
+    // Helper method for detached windows cleanup
+    void saveDetachedWindowsGeometry();
+
+    // Detached windows for profiles
+    QMap<QString, QPointer<TDetachedWindow>> mDetachedWindows;
+
+    // Dock widget management for main window per-profile widgets
+    QMap<QString, QPointer<QDockWidget>> mMainWindowDockWidgetMap;
+    QMap<QString, bool> mMainWindowDockWidgetUserPreference; // User's show/hide preference for dock widgets
+    QPointer<QDockWidget> mpCurrentMapDockWidget;
+
+    // Helper methods for detached windows
+    void detachTab(int tabIndex, const QPoint& position);
+    void reattachTab(const QString& profileName, int insertIndex = -1);
+    TMainConsole* removeConsoleFromSplitter(const QString& profileName);
+    void addConsoleToSplitter(TMainConsole* console, int index = -1);
+
+    // Helper methods for main window dock widget management
+    void updateMainWindowDockWidgetVisibilityForProfile(const QString& profileName);
+    void transferDockWidgetToDetachedWindow(const QString& profileName, TDetachedWindow* detachedWindow);
+    void transferDockWidgetFromDetachedWindow(const QString& profileName, TDetachedWindow* detachedWindow);
+    void transferDockWidgetBetweenDetachedWindows(const QString& profileName, TDetachedWindow* sourceWindow, TDetachedWindow* targetWindow);
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(mudlet::controlsVisibility)
+
 
 class TConsoleMonitor : public QObject
 {

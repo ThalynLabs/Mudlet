@@ -26,11 +26,9 @@
  ***************************************************************************/
 
 
-#include "pre_guard.h"
 #include "ui_trigger_editor.h"
 #include <QPointer>
 #include <unordered_map>
-#include "post_guard.h"
 
 #include "TAction.h"
 #include "TAlias.h"
@@ -46,14 +44,14 @@
 #include "dlgTimersMainArea.h"
 #include "dlgTriggersMainArea.h"
 #include "dlgVarsMainArea.h"
+#include "SingleLineTextEdit.h"
 
-#include "pre_guard.h"
 #include <QDialog>
 #include <QFlag>
 #include <QListWidgetItem>
 #include <QScrollArea>
 #include <QTreeWidget>
-#include "post_guard.h"
+#include <QDesktopServices>
 
 // Edbee editor includes
 #include "edbee/edbee.h"
@@ -172,10 +170,12 @@ public:
         cmKeysView = 0x06,
         cmVarsView = 0x07
     };
+    Q_ENUM(EditorViewType)
 
     void closeEvent(QCloseEvent* event) override;
     void focusInEvent(QFocusEvent*) override;
     void focusOutEvent(QFocusEvent*) override;
+    void showEvent(QShowEvent* event) override;
     void enterEvent(TEnterEvent* event) override;
     bool eventFilter(QObject*, QEvent* event) override;
     bool event(QEvent* event) override;
@@ -227,6 +227,10 @@ public:
     void showCurrentTriggerItem();
     void hideSystemMessageArea();
     void showIDLabels(const bool);
+    void setDisplayFont(const QFont&);
+
+signals:
+    void editorClosing();
 
 public slots:
     void slot_toggleHiddenVariables(bool);
@@ -242,6 +246,7 @@ public slots:
     void slot_saveSelectedItem(QTreeWidgetItem* pItem);
     void slot_export();
     void slot_import();
+    void slot_createModule();
     void slot_viewStatsAction();
     void slot_toggleCentralDebugConsole();
     void slot_nextSection();
@@ -277,12 +282,12 @@ public slots:
     void slot_copyXml();
     void slot_pasteXml();
 // Not used:    void slot_choseActionIcon();
-    void slot_showSearchAreaResults(bool);
     void slot_showAllTriggerControls(const bool);
     void slot_rightSplitterMoved(const int pos, const int handle);
     void slot_scriptMainAreaDeleteHandler();
     void slot_scriptMainAreaAddHandler();
-    void slot_scriptMainAreaEditHandler(QListWidgetItem*);
+    void slot_scriptMainAreaEditHandler();
+    void slot_scriptMainAreaClearHandlerSelection(QListWidgetItem *);
     void slot_keyGrab();
     void slot_profileSaveAction();
     void slot_profileSaveAsAction();
@@ -293,6 +298,7 @@ public slots:
     void slot_updateStatusBar(const QString& statusText); // For the source code editor
     void slot_profileSaveStarted();
     void slot_profileSaveFinished();
+    void slot_editorThemeChanged();
 
 private slots:
     void slot_changeEditorTextOptions(QTextOption::Flags);
@@ -310,6 +316,10 @@ private slots:
     void slot_floatingChangedEditorItemsToolbar();
     void slot_restoreEditorActionsToolbar();
     void slot_restoreEditorItemsToolbar();
+    void slot_itemEdited();
+    void slot_searchSplitterMoved(const int pos, const int index);
+    void slot_clickedMessageBox(const QString&);
+    void slot_bannerDismissClicked();
 
 public:
     TConsole* mpErrorConsole = nullptr;
@@ -374,6 +384,14 @@ private:
     void exportActionToClipboard();
     void exportScriptToClipboard();
     void exportKeyToClipboard();
+
+    // Multi-selection export functions
+    void exportMultipleTriggersToClipboard(const QList<TTrigger*>& triggers);
+    void exportMultipleTimersToClipboard(const QList<TTimer*>& timers);
+    void exportMultipleAliasesToClipboard(const QList<TAlias*>& aliases);
+    void exportMultipleActionsToClipboard(const QList<TAction*>& actions);
+    void exportMultipleScriptsToClipboard(const QList<TScript*>& scripts);
+    void exportMultipleKeysToClipboard(const QList<TKey*>& keys);
 
     void clearDocument(edbee::TextEditorWidget* pEditorWidget, const QString& initialText = QString());
 
@@ -440,12 +458,21 @@ private:
     void runScheduledCleanReset();
     void autoSave();
     void setupPatternControls(const int type, dlgTriggerPatternEdit* pItem);
-    void key_grab_callback(const Qt::Key, const Qt::KeyboardModifiers);
+    void keyGrabCallback(const Qt::Key, const Qt::KeyboardModifiers);
     void setShortcuts(const bool active = true);
     void setShortcuts(QList<QAction*> actionList, const bool active = true);
 
+    bool showDeleteConfirmation(const QString& title, const QString& message);
     void showOrHideRestoreEditorActionsToolbarAction();
     void showOrHideRestoreEditorItemsToolbarAction();
+    void checkForMoreThanOneTriggerItem();
+    TTrigger* getTriggerFromTreeItem(QTreeWidgetItem* item);
+    TAlias* getAliasFromTreeItem(QTreeWidgetItem* item);
+    TScript* getScriptFromTreeItem(QTreeWidgetItem* item);
+    TTimer* getTimerFromTreeItem(QTreeWidgetItem* item);
+    TKey* getKeyFromTreeItem(QTreeWidgetItem* item);
+    TAction* getActionFromTreeItem(QTreeWidgetItem* item);
+
 
     // PLACEMARKER 3/3 save button texts need to be kept in sync
     std::unordered_map<QString, QString> mButtonShortcuts = {
@@ -470,7 +497,7 @@ private:
         {tr("Debug"),      tr("Ctrl+0")}
     };
 
-    std::unordered_map<QLineEdit*, bool> lineEditShouldMarkSpaces;
+    std::unordered_map<SingleLineTextEdit*, bool> lineEditShouldMarkSpaces;
 
     QToolBar* toolBar = nullptr;
     QToolBar* toolBar2 = nullptr;
@@ -495,7 +522,7 @@ private:
     EditorViewType mCurrentView = EditorViewType::cmUnknownView;
 
     QScrollArea* mpScrollArea = nullptr;
-    QWidget* HpatternList = nullptr;
+    QWidget* mpWidget_triggerItems = nullptr;
     // this widget holds the errors, trigger patterns, and all other widgets that aren't edbee
     // in it, as a workaround for an extra splitter getting created by Qt below the error msg otherwise
     QWidget *mpNonCodeWidgets = nullptr;
@@ -531,6 +558,7 @@ private:
     QAction* mSaveItem = nullptr;
 
     SearchOptions mSearchOptions = SearchOptionNone;
+    QSplitter* searchSplitter;
 
     // This has a menu which the following QActions are inserted into:
     QAction* mpAction_searchOptions = nullptr;
@@ -552,6 +580,7 @@ private:
     // We need to keep a record of this button as we have to disable it
     // for the "Variables" view:
     QAction* mpExportAction = nullptr;
+    QAction* mpCreateModuleAction = nullptr;
 
     // tracks the duration of the "Save Profile As" action so
     // autosave doesn't kick in
@@ -563,6 +592,11 @@ private:
     // profile autosave interval in minutes
     int mAutosaveInterval = 2;
 
+    // The space recorded for the left side for "items" in the trigger area
+    // so as to be able to fit the right side with the extra controls,
+    // determined the first time the area is shrunk down by the user:
+    int mTriggerMainAreaMinimumHeightToShowAll = 0;
+
     // tracks location of the splitter in the trigger editor for each tab
     QByteArray mTriggerEditorSplitterState;
     QByteArray mAliasEditorSplitterState;
@@ -571,17 +605,39 @@ private:
     QByteArray mKeyEditorSplitterState;
     QByteArray mTimerEditorSplitterState;
     QByteArray mVarEditorSplitterState;
+    QByteArray mSearchSplitterState;
 
     // approximate max duration "Copy as image" can take in seconds
     int mCopyAsImageMax = 0;
 
-    QString msgInfoAddAlias;
-    QString msgInfoAddTrigger;
-    QString msgInfoAddScript;
-    QString msgInfoAddTimer;
-    QString msgInfoAddButton;
-    QString msgInfoAddVar;
-    QString msgInfoAddKey;
+    struct introOption {
+        QString name;
+        QString headline;
+        QString contents;
+    };
+
+    struct introTextParts {
+        QString summary;
+        QVector<introOption> options;
+    };
+
+    QMap<EditorViewType, introTextParts> introAddItem;
+
+    void showIntro(const QString& = QString());
+
+    // Banner state tracking
+    QTimer* mpBannerUndoTimer = nullptr;
+    EditorViewType mLastDismissedBannerView = EditorViewType::cmUnknownView;
+    QString mLastDismissedBannerContent;
+
+    // Banner methods
+    void handleBannerDismiss();
+    void showBannerUndoToast();
+    void undoBannerDismiss();
+    void handlePermanentBannerDismiss();
+    bool bannerPermanentlyHidden(EditorViewType viewType);
+    void setBannerPermanentlyHidden(EditorViewType viewType, bool hidden);
+
     QString descActive;
     QString descInactive;
     QString descActiveFolder;

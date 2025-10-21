@@ -1,7 +1,7 @@
 /***************************************************************************
  *   Copyright (C) 2008-2013 by Heiko Koehn - KoehnHeiko@googlemail.com    *
  *   Copyright (C) 2014 by Ahmed Charles - acharles@outlook.com            *
- *   Copyright (C) 2022-2023 by Stephen Lyons - slysven@virginmedia.com    *
+ *   Copyright (C) 2022-2024 by Stephen Lyons - slysven@virginmedia.com    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -26,6 +26,29 @@
 #include "Host.h"
 #include "TConsole.h"
 #include "TTrigger.h"
+
+#include <functional>
+
+TriggerUnit::~TriggerUnit()
+{
+    // Set mpHost to null on all triggers (including children) to prevent them from trying to
+    // unregister themselves during destruction (which would modify the list
+    // we're iterating over and cause iterator invalidation)
+    for (auto trigger : mTriggerRootNodeList) {
+        trigger->mpHost = nullptr;
+        // Also set mpHost to null on all children recursively
+        std::function<void(TTrigger*)> nullifyChildren = [&nullifyChildren](TTrigger* t) {
+            for (auto child : *t->mpMyChildrenList) {
+                child->mpHost = nullptr;
+                nullifyChildren(child);
+            }
+        };
+        nullifyChildren(trigger);
+    }
+    for (auto trigger : mTriggerRootNodeList) {
+        delete trigger;
+    }
+}
 
 void TriggerUnit::resetStats()
 {
@@ -237,13 +260,15 @@ void TriggerUnit::processDataStream(const QString& data, int line)
         return;
     }
 
-#if defined(Q_OS_WIN32)
-    // strndup(3) - a safe strdup(3) does not seem to be available on mingw32 with GCC-4.9.2
-    char* subject = static_cast<char*>(malloc(strlen(data.toUtf8().data()) + 1));
-    strcpy(subject, data.toUtf8().data());
+#if defined(Q_OS_WINDOWS)
+    // strndup(3) - a safe strdup(3) does not seem to be available in the
+    // original mingw or the replacement mingw-w64 enmvironment we use:
+    char* subject = static_cast<char*>(malloc(strlen(data.toUtf8().constData()) + 1));
+    strcpy(subject, data.toUtf8().constData());
 #else
     char* subject = strndup(data.toUtf8().constData(), strlen(data.toUtf8().constData()));
 #endif
+
     for (auto trigger : mTriggerRootNodeList) {
         trigger->match(subject, data, line);
     }
@@ -293,13 +318,13 @@ std::vector<int> TriggerUnit::findItems(const QString& name, const bool exactMat
     std::vector<int> ids;
     const auto searchCaseSensitivity = caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive;
     if (exactMatch) {
-        for (auto& item : qAsConst(mTriggerMap)) {
+        for (auto& item : std::as_const(mTriggerMap)) {
             if (!item->getName().compare(name, searchCaseSensitivity)) {
                 ids.push_back(item->getID());
             }
         }
     } else {
-        for (auto& item : qAsConst(mTriggerMap)) {
+        for (auto& item : std::as_const(mTriggerMap)) {
             if (item->getName().contains(name, searchCaseSensitivity)) {
                 ids.push_back(item->getID());
             }

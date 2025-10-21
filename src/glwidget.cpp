@@ -29,9 +29,7 @@
 #include "TRoomDB.h"
 #include "dlgMapper.h"
 
-#include "pre_guard.h"
 #include <QtEvents>
-#include "post_guard.h"
 
 #include <QPainter>
 #ifdef Q_OS_MACOS
@@ -50,7 +48,12 @@ GLWidget::GLWidget(TMap* pMap, Host* pHost, QWidget *parent)
 , mpMap(pMap)
 , mpHost(pHost)
 {
+    if (mpHost->mBgColor_2.alpha() < 255) {
+    setAttribute(Qt::WA_OpaquePaintEvent, false);
+    setAttribute(Qt::WA_AlwaysStackOnTop);
+    } else {
     setAttribute(Qt::WA_OpaquePaintEvent);
+    }
 }
 
 QSize GLWidget::minimumSizeHint() const
@@ -223,7 +226,7 @@ void GLWidget::slot_setCameraPositionZ(int angle)
 
 void GLWidget::initializeGL()
 {
-    QColor const color(QColorConstants::Black);
+    const QColor color(mpHost->mBgColor_2);
     glClearColor(color.redF(), color.greenF(), color.blueF(), color.alphaF());
     xRot = 1;
     yRot = 5;
@@ -251,6 +254,9 @@ void GLWidget::setViewCenter(int areaId, int xPos, int yPos, int zPos)
 
 void GLWidget::paintGL()
 {
+    // Start frame timing
+    mFrameTimer.start();
+
     if (!mpMap) {
         return;
     }
@@ -292,9 +298,9 @@ void GLWidget::paintGL()
             return;
         }
         mAID = pRID->getArea();
-        ox = pRID->x;
-        oy = pRID->y;
-        oz = pRID->z;
+        ox = pRID->x();
+        oy = pRID->y();
+        oz = pRID->z();
         mMapCenterX = ox;
         mMapCenterY = oy;
         mMapCenterZ = oz;
@@ -323,7 +329,8 @@ void GLWidget::paintGL()
     glClearDepth(1.0);
     glDepthFunc(GL_LESS);
 
-    glClearColor(0.0, 0.0, 0.0, 1.0);
+    const QColor color(mpHost->mBgColor_2);
+    glClearColor(color.redF(), color.greenF(), color.blueF(), color.alphaF());
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
     GLfloat diffuseLight[] = {0.507, 0.507, 0.507, 1.0};
@@ -363,8 +370,6 @@ void GLWidget::paintGL()
     glEnable(GL_LINE_SMOOTH);
     glEnable(GL_LINE_STIPPLE);
     glLineWidth(1.0);
-    int quads = 0;
-    int verts = 0;
     float planeColor2[][4] = {{0.9, 0.5, 0.0, 1.0},
                                {165.0 / 255.0, 102.0 / 255.0, 167.0 / 255.0, 1.0},
                                {170.0 / 255.0, 10.0 / 255.0, 127.0 / 255.0, 1.0},
@@ -436,9 +441,9 @@ void GLWidget::paintGL()
             if (!pR) {
                 continue;
             }
-            auto rx = static_cast<float>(pR->x);
-            auto ry = static_cast<float>(pR->y);
-            auto rz = static_cast<float>(pR->z);
+            auto rx = static_cast<float>(pR->x());
+            auto ry = static_cast<float>(pR->y());
+            auto rz = static_cast<float>(pR->z());
             if (rz != zPlane) {
                 continue;
             }
@@ -463,7 +468,7 @@ void GLWidget::paintGL()
             exitList.push_back(pR->getNorthwest());
             exitList.push_back(pR->getUp());
             exitList.push_back(pR->getDown());
-            const int e = pR->z;
+            const int e = pR->z();
             const int ef = abs(e % 26);
             glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, planeColor[ef]);
             glMateriali(GL_FRONT, GL_SHININESS, 1);
@@ -500,11 +505,11 @@ void GLWidget::paintGL()
                     } else {
                         areaExit = false;
                     }
-                    auto ex = static_cast<float>(pExit->x);
-                    auto ey = static_cast<float>(pExit->y);
-                    auto ez = static_cast<float>(pExit->z);
-                    QVector3D const p1(ex, ey, ez);
-                    QVector3D const p2(rx, ry, rz);
+                    auto ex = static_cast<float>(pExit->x());
+                    auto ey = static_cast<float>(pExit->y());
+                    auto ez = static_cast<float>(pExit->z());
+                    const QVector3D p1(ex, ey, ez);
+                    const QVector3D p2(rx, ry, rz);
                     glLoadIdentity();
                     gluLookAt(px * 0.1 + xRot, py * 0.1 + yRot, pz * 0.1 + zRot, px * 0.1, py * 0.1, pz * 0.1, 0.0, 1.0, 0.0);
                     glScalef(0.1, 0.1, 0.1);
@@ -558,7 +563,6 @@ void GLWidget::paintGL()
                     }
                     glVertex3f(p2.x(), p2.y(), p2.z());
                     glEnd();
-                    verts++;
                     if (areaExit) {
                         glDisable(GL_BLEND);
                         glEnable(GL_LIGHTING);
@@ -597,7 +601,6 @@ void GLWidget::paintGL()
                         glMateriali(GL_FRONT, GL_SHININESS, 96);
 
                         glLoadName(k);
-                        quads++;
                         glBegin(GL_QUADS);
                         glNormal3f(0.57735, -0.57735, 0.57735);
                         glVertex3f(1.0 / scale, -1.0 / scale, 1.0 / scale);
@@ -804,7 +807,7 @@ void GLWidget::paintGL()
                                 }
                                 break;
                             }
-                            QColor const& _c = mpMap->mCustomEnvColors[env];
+                            const QColor& _c = mpMap->mCustomEnvColors[env];
                             glColor4ub(_c.red(), _c.green(), _c.blue(), 25);
                             mc3[0] = _c.redF();
                             mc3[1] = _c.greenF();
@@ -912,11 +915,11 @@ void GLWidget::paintGL()
                         areaExit = false;
                     }
 
-                    auto ex = static_cast<float>(pExit->x);
-                    auto ey = static_cast<float>(pExit->y);
-                    auto ez = static_cast<float>(pExit->z);
-                    QVector3D const p1(ex, ey, ez);
-                    QVector3D const p2(rx, ry, rz);
+                    auto ex = static_cast<float>(pExit->x());
+                    auto ey = static_cast<float>(pExit->y());
+                    auto ez = static_cast<float>(pExit->z());
+                    const QVector3D p1(ex, ey, ez);
+                    const QVector3D p2(rx, ry, rz);
                     glLoadIdentity();
                     gluLookAt(px * 0.1 + xRot, py * 0.1 + yRot, pz * 0.1 + zRot, px * 0.1, py * 0.1, pz * 0.1, 0.0, 1.0, 0.0);
                     glScalef(0.1, 0.1, 0.1);
@@ -972,7 +975,6 @@ void GLWidget::paintGL()
                     }
                     glVertex3f(p2.x(), p2.y(), p2.z());
                     glEnd();
-                    verts++;
                     if (areaExit) {
                         glDisable(GL_BLEND);
                         glEnable(GL_LIGHTING);
@@ -1007,7 +1009,6 @@ void GLWidget::paintGL()
                         }
 
                         glLoadName(k);
-                        quads++;
                         glBegin(GL_QUADS);
                         glNormal3f(0.57735, -0.57735, 0.57735);
                         glVertex3f(1.0 / scale, -1.0 / scale, 1.0 / scale);
@@ -1214,7 +1215,7 @@ void GLWidget::paintGL()
                                 }
                                 break;
                             }
-                            QColor const& _c = mpMap->mCustomEnvColors[env];
+                            const QColor& _c = mpMap->mCustomEnvColors[env];
                             glColor4ub(_c.red(), _c.green(), _c.blue(), 255);
                             mc3[0] = _c.redF();
                             mc3[1] = _c.greenF();
@@ -1317,7 +1318,6 @@ void GLWidget::paintGL()
         }
     }
 
-    quads = 0;
     zPlane = zmin;
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
@@ -1335,9 +1335,9 @@ void GLWidget::paintGL()
             if (!pR) {
                 continue;
             }
-            auto rx = static_cast<float>(pR->x);
-            auto ry = static_cast<float>(pR->y);
-            auto rz = static_cast<float>(pR->z);
+            auto rx = static_cast<float>(pR->x());
+            auto ry = static_cast<float>(pR->y());
+            auto rz = static_cast<float>(pR->z());
             if (rz != zPlane) {
                 continue;
             }
@@ -1353,7 +1353,7 @@ void GLWidget::paintGL()
                 }
             }
 
-            const int e = pR->z;
+            const int e = pR->z();
             const int ef = abs(e % 26);
             glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, planeColor[ef]);
             glMateriali(GL_FRONT, GL_SHININESS, 36); //gut:96
@@ -1400,7 +1400,7 @@ void GLWidget::paintGL()
                 }
 
                 glLoadName(currentRoomId);
-                quads++;
+
                 glBegin(GL_QUADS);
                 glNormal3f(0.57735, -0.57735, 0.57735);
                 glVertex3f(1.0 / scale, -1.0 / scale, 1.0 / scale);
@@ -1608,7 +1608,7 @@ void GLWidget::paintGL()
                         }
                         break;
                     }
-                    QColor const& _c = mpMap->mCustomEnvColors[env];
+                    const QColor& _c = mpMap->mCustomEnvColors[env];
                     glColor4ub(_c.red(), _c.green(), _c.blue(), 255);
                     mc3[0] = _c.redF();
                     mc3[1] = _c.greenF();
@@ -1705,7 +1705,6 @@ void GLWidget::paintGL()
             }
 
             glLoadName(currentRoomId);
-            quads++;
             glBegin(GL_QUADS);
             glNormal3f(0.57735, -0.57735, 0.57735);
             glVertex3f(1.0 / scale, -1.0 / scale, 1.0 / scale);
@@ -1911,7 +1910,7 @@ void GLWidget::paintGL()
                     }
                     break;
                 }
-                QColor const& _c = mpMap->mCustomEnvColors[env];
+                const QColor& _c = mpMap->mCustomEnvColors[env];
                 glColor4ub(_c.red(), _c.green(), _c.blue(), 255);
                 mc3[0] = _c.redF();
                 mc3[1] = _c.greenF();
@@ -2037,6 +2036,11 @@ void GLWidget::paintGL()
         zPlane += 1.0;
     }
     glFlush();
+
+    // End frame timing and store result
+    // Display instant frame time
+    qint64 frameTime = mFrameTimer.elapsed();
+    qDebug() << "[Legacy GLWidget] Frame time:" << frameTime << "ms";
 }
 
 void GLWidget::resizeGL(int w, int h)
@@ -2055,11 +2059,7 @@ void GLWidget::mousePressEvent(QMouseEvent* event)
         return;
     }
     if (event->buttons() & Qt::LeftButton) {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        auto eventPos = event->pos();
-#else
         auto eventPos = event->position().toPoint();
-#endif
         const int x = eventPos.x();
         const int y = height() - eventPos.y(); // the opengl origin is at bottom left
         GLuint buff[16] = {0};
@@ -2137,11 +2137,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent* event)
         return;
     }
     if (mPanMode) {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        auto eventPos = event->localPos();
-#else
         auto eventPos = event->position();
-#endif
         auto x = static_cast<float>(eventPos.x());
         auto y = static_cast<float>(height()) - static_cast<float>(eventPos.y()); // the opengl origin is at bottom left
         if ((mPanXStart - x) > 1.0f) {

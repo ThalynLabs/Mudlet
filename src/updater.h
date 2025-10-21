@@ -25,15 +25,11 @@
 #if defined (INCLUDE_UPDATER)
 #include "dblsqd/feed.h"
 #include "dblsqd/update_dialog.h"
+#include "sparkleupdater.h"
 #endif
 
-#ifdef Q_OS_MACOS
-#include "../3rdparty/sparkle-glue/AutoUpdater.h"
-#endif
 
-#include "pre_guard.h"
 #include <QObject>
-#include "post_guard.h"
 
 class Updater : public QObject
 {
@@ -46,13 +42,14 @@ public:
     void checkUpdatesOnStart();
     void manuallyCheckUpdates();
     void showChangelog() const;
+    void showFullChangelog() const;
     void setAutomaticUpdates(bool state);
     bool updateAutomatically() const;
     bool shouldShowChangelog();
 
 private:
     dblsqd::Feed* feed;
-    dblsqd::UpdateDialog* updateDialog;
+    dblsqd::UpdateDialog* updateDialog{nullptr};
     QPushButton* mpInstallOrRestart;
     bool mUpdateInstalled;
     QSettings* settings;
@@ -61,9 +58,10 @@ private:
 #if defined(Q_OS_LINUX)
     void setupOnLinux();
     void untarOnLinux(const QString& fileName);
-#elif defined(Q_OS_WIN32)
+#elif defined(Q_OS_WINDOWS)
     void setupOnWindows();
     void prepareSetupOnWindows(const QString& fileName);
+    bool is64BitCompatible() const;
 #elif defined(Q_OS_MACOS)
     void setupOnMacOS();
 #endif
@@ -77,7 +75,7 @@ private:
 #if defined(Q_OS_LINUX)
     QString unzippedBinaryName;
 #elif defined(Q_OS_MACOS)
-    AutoUpdater* msparkleUpdater;
+    SparkleUpdater* msparkleUpdater;
 #endif
 
 
