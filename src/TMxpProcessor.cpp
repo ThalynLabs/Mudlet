@@ -164,7 +164,6 @@ TMxpProcessingResult TMxpProcessor::processMxpInput(char& ch, bool resolveCustom
     if (!mMxpTagBuilder.accept(ch) && mMxpTagBuilder.isInsideTag() && !mMxpTagBuilder.hasTag()) {
         return HANDLER_NEXT_CHAR;
     }
-    
     if (mMxpTagBuilder.hasTag()) {
         QScopedPointer<MxpTag> const tag(mMxpTagBuilder.buildTag());
 
