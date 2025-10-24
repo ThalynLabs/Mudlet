@@ -14708,7 +14708,7 @@ tenta di nuovo quando sarà terminato.</translation>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="567"/>
       <source>Disable password masking</source>
-      <translation type="unfinished"/>
+      <translation>Disabilita maschera password</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="587"/>
