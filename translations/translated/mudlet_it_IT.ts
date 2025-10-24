@@ -11623,62 +11623,62 @@ Non è prevista NESSUNA GARANZIA, nella misura consentita dalla legge.</translat
     <message>
       <location filename="../src/ui/mapper.ui" line="921"/>
       <source>Height</source>
-      <translation type="unfinished"/>
+      <translation>Altezza</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="928"/>
       <source>Rot X</source>
-      <translation type="unfinished"/>
+      <translation>Ruota X</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="935"/>
       <source>Rot Y</source>
-      <translation type="unfinished"/>
+      <translation>Ruota Y</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="942"/>
       <source>Rot Z</source>
-      <translation type="unfinished"/>
+      <translation>Ruota Z</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="949"/>
       <source>Scale</source>
-      <translation type="unfinished"/>
+      <translation>Scala</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="977"/>
       <source>Adjust player icon height (-2.0 to +5.0 units)</source>
-      <translation type="unfinished"/>
+      <translation>Regola l'altezza dell'icona giocatore (da -2,0 a +5,0 unità)</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="1005"/>
       <source>Rotate player icon around X axis (-180° to +180°)</source>
-      <translation type="unfinished"/>
+      <translation>Ruota l'icona giocatore sull'asse X (da -180° a +180°)</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="1033"/>
       <source>Rotate player icon around Y axis (-180° to +180°)</source>
-      <translation type="unfinished"/>
+      <translation>Ruota l'icona giocatore sull'asse Y (da -180° a +180°)</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="1061"/>
       <source>Rotate player icon around Z axis (-180° to +180°)</source>
-      <translation type="unfinished"/>
+      <translation>Ruota l'icona giocatore sull'asse Y (da -180° a +180°)</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="1089"/>
       <source>Adjust player icon scale (0.001 to 0.02)</source>
-      <translation type="unfinished"/>
+      <translation>Regola la scala dell'icona giocatore (da 0,001 a 0,02)</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="1096"/>
       <source>Reset Player Icon</source>
-      <translation type="unfinished"/>
+      <translation>Reimposta Icona Giocatore</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="1099"/>
       <source>Reset player icon adjustments to default values</source>
-      <translation type="unfinished"/>
+      <translation>Ripristina l'icona del giocatore ai valori predefiniti</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="735"/>
@@ -14703,7 +14703,7 @@ tenta di nuovo quando sarà terminato.</translation>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="564"/>
       <source>&lt;p&gt;Disable password masking when servers request hidden input.&lt;/p&gt;&lt;p&gt;&lt;b&gt;Warning:&lt;/b&gt; This is not recommended for security reasons as passwords will be visible in plain text.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Disabilita la maschera password quando i server richiedono input nascosti.&lt;/p&gt;&lt;p&gt;&lt;b&gt;Attenzione:&lt;/b&gt; lascia l'opzione disabilitata per evitare che la password venga mostrata come testo semplice.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="567"/>
