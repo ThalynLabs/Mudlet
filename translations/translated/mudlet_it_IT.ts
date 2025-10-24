@@ -634,7 +634,7 @@ attendere prego...</translation>
     <message>
       <location filename="../src/TBuffer.cpp" line="2512"/>
       <source>Right-click for menu</source>
-      <translation type="unfinished"/>
+      <translation>Tasto destro per il menu</translation>
     </message>
     <message>
       <location filename="../src/dlgMapper.cpp" line="571"/>
@@ -686,7 +686,7 @@ attendere prego...</translation>
       <extracomment>2D Mapper context menu (drawing custom exit line) item
 ----------
 2D Mapper context menu (custom line editing) item</extracomment>
-      <translation type="unfinished"/>
+      <translation>Collega i punti alla griglia</translation>
     </message>
     <message>
       <location filename="../src/CustomLineDrawContextMenuHandler.cpp" line="94"/>
@@ -695,7 +695,7 @@ attendere prego...</translation>
       <extracomment>2D Mapper context menu (drawing custom exit line) item tooltip
 ----------
 2D Mapper context menu (custom line editing) item tooltip</extracomment>
-      <translation type="unfinished"/>
+      <translation>Collega i punti correnti e mantieni le modifiche alla linea personalizzata allineate alla griglia della mappa</translation>
     </message>
     <message>
       <location filename="../src/CustomLineDrawContextMenuHandler.cpp" line="97"/>
@@ -704,7 +704,7 @@ attendere prego...</translation>
       <extracomment>2D Mapper context menu (drawing custom exit line) item
 ----------
 2D Mapper context menu (custom line editing) item</extracomment>
-      <translation type="unfinished"/>
+      <translation>Sposta l'ultimo punto alla stanza di destinazione</translation>
     </message>
     <message>
       <location filename="../src/CustomLineDrawContextMenuHandler.cpp" line="101"/>
@@ -713,7 +713,7 @@ attendere prego...</translation>
       <extracomment>2D Mapper context menu (drawing custom exit line) item tooltip (enabled state)
 ----------
 2D Mapper context menu (custom line editing) item tooltip (enabled state)</extracomment>
-      <translation type="unfinished"/>
+      <translation>Collega il punto finale nella stanza di destinazione</translation>
     </message>
     <message>
       <location filename="../src/CustomLineDrawContextMenuHandler.cpp" line="105"/>
@@ -722,7 +722,7 @@ attendere prego...</translation>
       <extracomment>2D Mapper context menu (drawing custom exit line) item tooltip (disabled state)
 ----------
 2D Mapper context menu (custom line editing) item tooltip (disabled state)</extracomment>
-      <translation type="unfinished"/>
+      <translation>Seleziona una linea con una stanza di destinazione valida e almeno un punto collegabile</translation>
     </message>
     <message>
       <location filename="../src/CustomLineDrawContextMenuHandler.cpp" line="109"/>
@@ -989,7 +989,7 @@ attendere prego...</translation>
     <message>
       <location filename="../src/SelectionRectangleHandler.cpp" line="112"/>
       <source>Hold Shift to add rooms or labels to your current selection.</source>
-      <translation type="unfinished"/>
+      <translation>Tieni premuto Maiusc per aggiungere stanze o etichette alla selezione corrente.</translation>
     </message>
     <message>
       <location filename="../src/T2DMap.cpp" line="3101"/>
@@ -1057,7 +1057,7 @@ attendere prego...</translation>
     <message>
       <location filename="../src/T2DMap.cpp" line="3601"/>
       <source>Click to finish moving the selected room(s).</source>
-      <translation type="unfinished"/>
+      <translation>Fare clic per completare lo spostamento delle stanze selezionate.</translation>
     </message>
     <message>
       <location filename="../src/T2DMap.cpp" line="4697"/>
@@ -6374,7 +6374,7 @@ Utilizzi</translation>
     <message>
       <location filename="../src/dlgAboutDialog.cpp" line="1027"/>
       <source>&lt;h2&gt;&lt;u&gt;Sword 3D Model&lt;/u&gt;&lt;/h2&gt;&lt;h3&gt;Model obtained from &lt;a href=&quot;https://sketchfab.com/3d-models/sword-07463a2658e04d6ab8a42b5639a35d63&quot;&gt;Sketchfab&lt;/a&gt;&lt;br&gt;Author: &lt;a href=&quot;https://sketchfab.com/minghau&quot;&gt;minghauLoh&lt;/a&gt;&lt;br&gt;Licensed under &lt;a href=&quot;https://creativecommons.org/licenses/by/4.0/&quot;&gt;CC BY 4.0&lt;/a&gt;&lt;/h3&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;h2&gt;&lt;u&gt;Modello 3D Spada&lt;/u&gt;&lt;/h2&gt;&lt;h3&gt;Modello trovato sul sito &lt;a href=&quot;https://sketchfab.com/3d-models/sword-07463a2658e04d6ab8a42b5639a35d63&quot;&gt;Sketchfab&lt;/a&gt;&lt;br&gt;Autore: &lt;a href=&quot;https://sketchfab.com/minghau&quot;&gt;minghauLoh&lt;/a&gt;&lt;br&gt;Licenza &lt;a href=&quot;https://creativecommons.org/licenses/by/4.0/&quot;&gt;CC BY 4.0&lt;/a&gt;&lt;/h3&gt;</translation>
     </message>
     <message>
       <location filename="../src/dlgAboutDialog.cpp" line="1092"/>
@@ -7919,7 +7919,7 @@ Altro materiale utile come link alla documentazione ai post dei forum:
     <message>
       <location filename="../src/dlgProfilePreferences.cpp" line="908"/>
       <source>CHARSET: Character Encoding Standard</source>
-      <translation type="unfinished"/>
+      <translation>CHARSET: Standard Codifica Caratteri</translation>
     </message>
     <message>
       <location filename="../src/dlgProfilePreferences.cpp" line="918"/>
@@ -7929,7 +7929,7 @@ Altro materiale utile come link alla documentazione ai post dei forum:
     <message>
       <location filename="../src/dlgProfilePreferences.cpp" line="948"/>
       <source>NEW-ENVIRON: Client Variables Standard</source>
-      <translation type="unfinished"/>
+      <translation>NEW-ENVIRON: Standard Variabili Client</translation>
     </message>
     <message>
       <location filename="../src/dlgProfilePreferences.cpp" line="1835"/>
@@ -9432,12 +9432,12 @@ Timer da eliminare:
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="4500"/>
       <source>table_variable</source>
-      <translation type="unfinished"/>
+      <translation>tabella_variabile</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="4500"/>
       <source>variable_name</source>
-      <translation type="unfinished"/>
+      <translation>variable_name</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="5064"/>
@@ -11613,12 +11613,12 @@ Non è prevista NESSUNA GARANZIA, nella misura consentita dalla legge.</translat
     <message>
       <location filename="../src/ui/mapper.ui" line="911"/>
       <source>Player Icon Adjustments:</source>
-      <translation type="unfinished"/>
+      <translation>Correzioni icona giocatore:</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="914"/>
       <source>QLabel { font-weight: bold; }</source>
-      <translation type="unfinished"/>
+      <translation>QLabel { font-weight: bold; }</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="921"/>
@@ -15140,12 +15140,12 @@ you can use it but there could be issues with aligning columns of text</source>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="2525"/>
       <source>&lt;p&gt;When enabled, rooms on floors above and below the current level will be drawn with a lighter color to show the map layout context.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Quando abilitato, le stanze sui piani adiacenti al livello corrente saranno disegnate con un colore più chiaro per mostrare più chiaramente il contesto della mappa.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="2528"/>
       <source>Draw rooms on upper and lower levels</source>
-      <translation type="unfinished"/>
+      <translation>Mostra le stanze sui livelli adiacenti</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="2577"/>
