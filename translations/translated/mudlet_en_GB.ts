@@ -8570,8 +8570,8 @@ Bold HTML tags are used to emphasis that the value is destination room&apos;s we
       <comment>%n is the total number of rooms involved.</comment>
       <extracomment>room properties dialog, setting symbols</extracomment>
       <translation>
-        <numerusform>Enter one or more characters to set a new symbol for %n room(s).  Clear to unset.</numerusform>
-        <numerusform>Enter one or more characters to set a new symbol for %n room(s).  Clear to unset.</numerusform>
+        <numerusform>Enter one or more characters to set a new symbol for %n room.  Clear to unset.</numerusform>
+        <numerusform>Enter one or more characters to set a new symbol for all %n rooms.  Clear to unset.</numerusform>
       </translation>
     </message>
     <message numerus="yes">
