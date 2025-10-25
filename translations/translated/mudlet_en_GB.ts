@@ -8583,11 +8583,11 @@ Bold HTML tags are used to emphasis that the value is destination room&apos;s we
       <comment>This is for when applying a new room symbol to one or more rooms and some have different symbols or no symbol at present. %n is the total number of rooms involved.</comment>
       <extracomment>room properties dialog, setting symbols</extracomment>
       <translation>
-        <numerusform>To set the symbol for all %n room(s), please choose:
+        <numerusform>To set the symbol for %n room, please choose:
  • an existing symbol from the list,
  • enter one or more characters to set a new symbol,
  • clear to unset.</numerusform>
-        <numerusform>To set the symbol for all %n room(s), please choose:
+        <numerusform>To set the symbol for all %n rooms, please choose:
  • an existing symbol from the list,
  • enter one or more characters to set a new symbol,
  • clear to unset.</numerusform>
