@@ -634,7 +634,7 @@ please wait...</translation>
     <message>
       <location filename="../src/TBuffer.cpp" line="2512"/>
       <source>Right-click for menu</source>
-      <translation type="unfinished"/>
+      <translation>Right-click for menu</translation>
     </message>
     <message>
       <location filename="../src/dlgMapper.cpp" line="571"/>
@@ -686,7 +686,7 @@ please wait...</translation>
       <extracomment>2D Mapper context menu (drawing custom exit line) item
 ----------
 2D Mapper context menu (custom line editing) item</extracomment>
-      <translation type="unfinished"/>
+      <translation>Snap points to grid</translation>
     </message>
     <message>
       <location filename="../src/CustomLineDrawContextMenuHandler.cpp" line="94"/>
@@ -695,7 +695,7 @@ please wait...</translation>
       <extracomment>2D Mapper context menu (drawing custom exit line) item tooltip
 ----------
 2D Mapper context menu (custom line editing) item tooltip</extracomment>
-      <translation type="unfinished"/>
+      <translation>Snap current points and keep custom line edits aligned to the map grid</translation>
     </message>
     <message>
       <location filename="../src/CustomLineDrawContextMenuHandler.cpp" line="97"/>
@@ -704,7 +704,7 @@ please wait...</translation>
       <extracomment>2D Mapper context menu (drawing custom exit line) item
 ----------
 2D Mapper context menu (custom line editing) item</extracomment>
-      <translation type="unfinished"/>
+      <translation>Move last point to target room</translation>
     </message>
     <message>
       <location filename="../src/CustomLineDrawContextMenuHandler.cpp" line="101"/>
@@ -713,7 +713,7 @@ please wait...</translation>
       <extracomment>2D Mapper context menu (drawing custom exit line) item tooltip (enabled state)
 ----------
 2D Mapper context menu (custom line editing) item tooltip (enabled state)</extracomment>
-      <translation type="unfinished"/>
+      <translation>Snap the final point to the destination room</translation>
     </message>
     <message>
       <location filename="../src/CustomLineDrawContextMenuHandler.cpp" line="105"/>
@@ -722,7 +722,7 @@ please wait...</translation>
       <extracomment>2D Mapper context menu (drawing custom exit line) item tooltip (disabled state)
 ----------
 2D Mapper context menu (custom line editing) item tooltip (disabled state)</extracomment>
-      <translation type="unfinished"/>
+      <translation>Select a line with a valid target room and at least one adjustable point</translation>
     </message>
     <message>
       <location filename="../src/CustomLineDrawContextMenuHandler.cpp" line="109"/>
@@ -989,7 +989,7 @@ please wait...</translation>
     <message>
       <location filename="../src/SelectionRectangleHandler.cpp" line="112"/>
       <source>Hold Shift to add rooms or labels to your current selection.</source>
-      <translation type="unfinished"/>
+      <translation>Hold Shift to add rooms or labels to your current selection.</translation>
     </message>
     <message>
       <location filename="../src/T2DMap.cpp" line="3101"/>
@@ -1057,7 +1057,7 @@ please wait...</translation>
     <message>
       <location filename="../src/T2DMap.cpp" line="3601"/>
       <source>Click to finish moving the selected room(s).</source>
-      <translation type="unfinished"/>
+      <translation>Click to finish moving the selected room(s).</translation>
     </message>
     <message>
       <location filename="../src/T2DMap.cpp" line="4697"/>
@@ -6298,7 +6298,7 @@ Count</translation>
     <message>
       <location filename="../src/dlgAboutDialog.cpp" line="1027"/>
       <source>&lt;h2&gt;&lt;u&gt;Sword 3D Model&lt;/u&gt;&lt;/h2&gt;&lt;h3&gt;Model obtained from &lt;a href=&quot;https://sketchfab.com/3d-models/sword-07463a2658e04d6ab8a42b5639a35d63&quot;&gt;Sketchfab&lt;/a&gt;&lt;br&gt;Author: &lt;a href=&quot;https://sketchfab.com/minghau&quot;&gt;minghauLoh&lt;/a&gt;&lt;br&gt;Licensed under &lt;a href=&quot;https://creativecommons.org/licenses/by/4.0/&quot;&gt;CC BY 4.0&lt;/a&gt;&lt;/h3&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;h2&gt;&lt;u&gt;Sword 3D Model&lt;/u&gt;&lt;/h2&gt;&lt;h3&gt;Model obtained from &lt;a href=&quot;https://sketchfab.com/3d-models/sword-07463a2658e04d6ab8a42b5639a35d63&quot;&gt;Sketchfab&lt;/a&gt;&lt;br&gt;Author: &lt;a href=&quot;https://sketchfab.com/minghau&quot;&gt;minghauLoh&lt;/a&gt;&lt;br&gt;Licensed under &lt;a href=&quot;https://creativecommons.org/licenses/by/4.0/&quot;&gt;CC BY 4.0&lt;/a&gt;&lt;/h3&gt;</translation>
     </message>
     <message>
       <location filename="../src/dlgAboutDialog.cpp" line="1092"/>
@@ -7843,7 +7843,7 @@ Further reading material, e.g., links to documentation or forum posts.
     <message>
       <location filename="../src/dlgProfilePreferences.cpp" line="908"/>
       <source>CHARSET: Character Encoding Standard</source>
-      <translation type="unfinished"/>
+      <translation>CHARSET: Character Encoding Standard</translation>
     </message>
     <message>
       <location filename="../src/dlgProfilePreferences.cpp" line="918"/>
@@ -7853,7 +7853,7 @@ Further reading material, e.g., links to documentation or forum posts.
     <message>
       <location filename="../src/dlgProfilePreferences.cpp" line="948"/>
       <source>NEW-ENVIRON: Client Variables Standard</source>
-      <translation type="unfinished"/>
+      <translation>NEW-ENVIRON: Client Variables Standard</translation>
     </message>
     <message>
       <location filename="../src/dlgProfilePreferences.cpp" line="1835"/>
@@ -8569,7 +8569,10 @@ Bold HTML tags are used to emphasis that the value is destination room&apos;s we
       <source>Enter one or more characters to set a new symbol for %n room(s).  Clear to unset.</source>
       <comment>%n is the total number of rooms involved.</comment>
       <extracomment>room properties dialog, setting symbols</extracomment>
-      <translation type="unfinished"/>
+      <translation>
+        <numerusform>Enter one or more characters to set a new symbol for %n room(s).  Clear to unset.</numerusform>
+        <numerusform>Enter one or more characters to set a new symbol for %n room(s).  Clear to unset.</numerusform>
+      </translation>
     </message>
     <message numerus="yes">
       <location filename="../src/dlgRoomProperties.cpp" line="209"/>
@@ -8579,7 +8582,16 @@ Bold HTML tags are used to emphasis that the value is destination room&apos;s we
  • clear to unset.</source>
       <comment>This is for when applying a new room symbol to one or more rooms and some have different symbols or no symbol at present. %n is the total number of rooms involved.</comment>
       <extracomment>room properties dialog, setting symbols</extracomment>
-      <translation type="unfinished"/>
+      <translation>
+        <numerusform>To set the symbol for all %n room(s), please choose:
+ • an existing symbol from the list,
+ • enter one or more characters to set a new symbol,
+ • clear to unset.</numerusform>
+        <numerusform>To set the symbol for all %n room(s), please choose:
+ • an existing symbol from the list,
+ • enter one or more characters to set a new symbol,
+ • clear to unset.</numerusform>
+      </translation>
     </message>
     <message>
       <location filename="../src/dlgRoomProperties.cpp" line="487"/>
@@ -9349,12 +9361,12 @@ Items to be deleted:
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="4500"/>
       <source>table_variable</source>
-      <translation type="unfinished"/>
+      <translation>table_variable</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="4500"/>
       <source>variable_name</source>
-      <translation type="unfinished"/>
+      <translation>variable_name</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="5064"/>
@@ -11511,72 +11523,72 @@ There is NO WARRANTY, to the extent permitted by law.</translation>
     <message>
       <location filename="../src/ui/mapper.ui" line="911"/>
       <source>Player Icon Adjustments:</source>
-      <translation type="unfinished"/>
+      <translation>Player Icon Adjustments:</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="914"/>
       <source>QLabel { font-weight: bold; }</source>
-      <translation type="unfinished"/>
+      <translation>QLabel { font-weight: bold; }</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="921"/>
       <source>Height</source>
-      <translation type="unfinished"/>
+      <translation>Height</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="928"/>
       <source>Rot X</source>
-      <translation type="unfinished"/>
+      <translation>Rot X</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="935"/>
       <source>Rot Y</source>
-      <translation type="unfinished"/>
+      <translation>Rot Y</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="942"/>
       <source>Rot Z</source>
-      <translation type="unfinished"/>
+      <translation>Rot Z</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="949"/>
       <source>Scale</source>
-      <translation type="unfinished"/>
+      <translation>Scale</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="977"/>
       <source>Adjust player icon height (-2.0 to +5.0 units)</source>
-      <translation type="unfinished"/>
+      <translation>Adjust player icon height (-2.0 to +5.0 units)</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="1005"/>
       <source>Rotate player icon around X axis (-180° to +180°)</source>
-      <translation type="unfinished"/>
+      <translation>Rotate player icon around X axis (-180° to +180°)</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="1033"/>
       <source>Rotate player icon around Y axis (-180° to +180°)</source>
-      <translation type="unfinished"/>
+      <translation>Rotate player icon around Y axis (-180° to +180°)</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="1061"/>
       <source>Rotate player icon around Z axis (-180° to +180°)</source>
-      <translation type="unfinished"/>
+      <translation>Rotate player icon around Z axis (-180° to +180°)</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="1089"/>
       <source>Adjust player icon scale (0.001 to 0.02)</source>
-      <translation type="unfinished"/>
+      <translation>Adjust player icon scale (0.001 to 0.02)</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="1096"/>
       <source>Reset Player Icon</source>
-      <translation type="unfinished"/>
+      <translation>Reset Player Icon</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="1099"/>
       <source>Reset player icon adjustments to default values</source>
-      <translation type="unfinished"/>
+      <translation>Reset player icon adjustments to default values</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="735"/>
@@ -14600,12 +14612,12 @@ try again when it has finished.</source>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="564"/>
       <source>&lt;p&gt;Disable password masking when servers request hidden input.&lt;/p&gt;&lt;p&gt;&lt;b&gt;Warning:&lt;/b&gt; This is not recommended for security reasons as passwords will be visible in plain text.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Disable password masking when servers request hidden input.&lt;/p&gt;&lt;p&gt;&lt;b&gt;Warning:&lt;/b&gt; This is not recommended for security reasons as passwords will be visible in plain text.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="567"/>
       <source>Disable password masking</source>
-      <translation type="unfinished"/>
+      <translation>Disable password masking</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="587"/>
@@ -15037,12 +15049,12 @@ you can use it but there could be issues with aligning columns of text</source>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="2525"/>
       <source>&lt;p&gt;When enabled, rooms on floors above and below the current level will be drawn with a lighter color to show the map layout context.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;When enabled, rooms on floors above and below the current level will be drawn with a lighter colour to show the map layout context.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="2528"/>
       <source>Draw rooms on upper and lower levels</source>
-      <translation type="unfinished"/>
+      <translation>Draw rooms on upper and lower levels</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="2577"/>
