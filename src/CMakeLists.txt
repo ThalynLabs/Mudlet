@@ -85,6 +85,7 @@ set(mudlet_SRCS
     dlgTriggerPatternEdit.cpp
     dlgTriggersMainArea.cpp
     dlgVarsMainArea.cpp
+    EditorUndoSystem.cpp
     EAction.cpp
     exitstreewidget.cpp
     FileOpenHandler.cpp
@@ -279,6 +280,7 @@ set(mudlet_HDRS
     dlgTriggerPatternEdit.h
     dlgTriggersMainArea.h
     dlgVarsMainArea.h
+    EditorUndoSystem.h
     EAction.h
     exitstreewidget.h
     FileOpenHandler.h

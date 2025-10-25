@@ -45,6 +45,7 @@
 #include "dlgTriggersMainArea.h"
 #include "dlgVarsMainArea.h"
 #include "SingleLineTextEdit.h"
+#include "EditorUndoSystem.h"
 
 #include <QDialog>
 #include <QFlag>
@@ -585,6 +586,13 @@ private:
     // Undo/redo actions for the text editor:
     QAction* mpUndoTextAction = nullptr;
     QAction* mpRedoTextAction = nullptr;
+
+    // Undo/redo actions for item operations:
+    QAction* mpUndoItemAction = nullptr;
+    QAction* mpRedoItemAction = nullptr;
+
+    // Undo system for item-level operations:
+    EditorUndoSystem* mpUndoSystem = nullptr;
 
     // tracks the duration of the "Save Profile As" action so
     // autosave doesn't kick in

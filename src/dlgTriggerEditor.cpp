@@ -425,6 +425,30 @@ dlgTriggerEditor::dlgTriggerEditor(Host* pH)
         mpSourceEditorEdbee->controller()->redo();
     });
 
+    // Initialize the undo system for item operations
+    mpUndoSystem = new EditorUndoSystem(mpHost, this);
+
+    // Create undo/redo actions for item operations
+    // Note: No keyboard shortcuts set here to avoid conflict with text editor undo/redo
+    // Focus-based smart undo/redo handling will be added in a future update
+    mpUndoItemAction = new QAction(QIcon::fromTheme(qsl("edit-undo"), QIcon(qsl(":/icons/edit-undo.png"))), tr("Undo Item Operation"), this);
+    mpUndoItemAction->setEnabled(false);
+    connect(mpUndoItemAction, &QAction::triggered, mpUndoSystem, &EditorUndoSystem::undo);
+    connect(mpUndoSystem, &EditorUndoSystem::canUndoChanged, mpUndoItemAction, &QAction::setEnabled);
+    connect(mpUndoSystem, &EditorUndoSystem::undoTextChanged, this, [this](const QString& text) {
+        mpUndoItemAction->setToolTip(utils::richText(text));
+        mpUndoItemAction->setStatusTip(text);
+    });
+
+    mpRedoItemAction = new QAction(QIcon::fromTheme(qsl("edit-redo"), QIcon(qsl(":/icons/edit-redo.png"))), tr("Redo Item Operation"), this);
+    mpRedoItemAction->setEnabled(false);
+    connect(mpRedoItemAction, &QAction::triggered, mpUndoSystem, &EditorUndoSystem::redo);
+    connect(mpUndoSystem, &EditorUndoSystem::canRedoChanged, mpRedoItemAction, &QAction::setEnabled);
+    connect(mpUndoSystem, &EditorUndoSystem::redoTextChanged, this, [this](const QString& text) {
+        mpRedoItemAction->setToolTip(utils::richText(text));
+        mpRedoItemAction->setStatusTip(text);
+    });
+
     auto* provider = new edbee::StringTextAutoCompleteProvider();
     //QScopedPointer<edbee::StringTextAutoCompleteProvider> provider(new edbee::StringTextAutoCompleteProvider);
 
@@ -777,6 +801,10 @@ dlgTriggerEditor::dlgTriggerEditor(Host* pH)
         mpSourceEditorEdbee->controller()->redo();
     });
     toolBar->addAction(redoToolbarAction);
+
+    // Add item operation undo/redo buttons (for add/delete/modify items)
+    toolBar->addAction(mpUndoItemAction);
+    toolBar->addAction(mpRedoItemAction);
 
     toolBar->addSeparator();
 
