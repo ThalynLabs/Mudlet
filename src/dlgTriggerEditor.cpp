@@ -407,6 +407,24 @@ dlgTriggerEditor::dlgTriggerEditor(Host* pH)
     mpSourceEditorArea->addAction(sourceFindPreviousAction);
     connect(sourceFindPreviousAction, &QAction::triggered, this, &dlgTriggerEditor::slot_sourceFindPrevious);
 
+    // Undo action for text editor
+    mpUndoTextAction = new QAction(this);
+    mpUndoTextAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    mpUndoTextAction->setShortcut(QKeySequence(QKeySequence::Undo)); // Ctrl+Z
+    mpSourceEditorArea->addAction(mpUndoTextAction);
+    connect(mpUndoTextAction, &QAction::triggered, this, [this]() {
+        mpSourceEditorEdbee->controller()->undo();
+    });
+
+    // Redo action for text editor
+    mpRedoTextAction = new QAction(this);
+    mpRedoTextAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    mpRedoTextAction->setShortcut(QKeySequence(QKeySequence::Redo)); // Ctrl+Y or Ctrl+Shift+Z
+    mpSourceEditorArea->addAction(mpRedoTextAction);
+    connect(mpRedoTextAction, &QAction::triggered, this, [this]() {
+        mpSourceEditorEdbee->controller()->redo();
+    });
+
     auto* provider = new edbee::StringTextAutoCompleteProvider();
     //QScopedPointer<edbee::StringTextAutoCompleteProvider> provider(new edbee::StringTextAutoCompleteProvider);
 
@@ -740,6 +758,25 @@ dlgTriggerEditor::dlgTriggerEditor(Host* pH)
     toolBar->addAction(mSaveItem);
     //: This is the toolbar that is initially placed at the top of the editor.
     toolBar->setWindowTitle(tr("Editor Toolbar - %1 - Actions").arg(hostName));
+
+    toolBar->addSeparator();
+
+    // Add undo/redo toolbar buttons
+    QAction* undoToolbarAction = new QAction(QIcon::fromTheme(qsl("edit-undo"), QIcon(qsl(":/icons/edit-undo.png"))), tr("Undo"), this);
+    undoToolbarAction->setToolTip(utils::richText(tr("Undo changes in the editor")));
+    undoToolbarAction->setStatusTip(tr("Undo the last change in the code editor"));
+    connect(undoToolbarAction, &QAction::triggered, this, [this]() {
+        mpSourceEditorEdbee->controller()->undo();
+    });
+    toolBar->addAction(undoToolbarAction);
+
+    QAction* redoToolbarAction = new QAction(QIcon::fromTheme(qsl("edit-redo"), QIcon(qsl(":/icons/edit-redo.png"))), tr("Redo"), this);
+    redoToolbarAction->setToolTip(utils::richText(tr("Redo changes in the editor")));
+    redoToolbarAction->setStatusTip(tr("Redo the last undone change in the code editor"));
+    connect(redoToolbarAction, &QAction::triggered, this, [this]() {
+        mpSourceEditorEdbee->controller()->redo();
+    });
+    toolBar->addAction(redoToolbarAction);
 
     toolBar->addSeparator();
 
@@ -11056,12 +11093,18 @@ void dlgTriggerEditor::slot_editorContextMenu()
     auto formatAction = new QAction(tr("Format All"), menu);
     // appropriate shortcuts are automatically supplied by edbee here
     if (qApp->testAttribute(Qt::AA_DontShowIconsInMenus)) {
+        menu->addAction(controller->createAction("undo", tr("Undo"), QIcon(), menu));
+        menu->addAction(controller->createAction("redo", tr("Redo"), QIcon(), menu));
+        menu->addSeparator();
         menu->addAction(controller->createAction("cut", tr("Cut"), QIcon(), menu));
         menu->addAction(controller->createAction("copy", tr("Copy"), QIcon(), menu));
         menu->addAction(controller->createAction("paste", tr("Paste"), QIcon(), menu));
         menu->addSeparator();
         menu->addAction(controller->createAction("sel_all", tr("Select All"), QIcon(), menu));
     } else {
+        menu->addAction(controller->createAction("undo", tr("Undo"), QIcon::fromTheme(qsl("edit-undo"), QIcon(qsl(":/icons/edit-undo.png"))), menu));
+        menu->addAction(controller->createAction("redo", tr("Redo"), QIcon::fromTheme(qsl("edit-redo"), QIcon(qsl(":/icons/edit-redo.png"))), menu));
+        menu->addSeparator();
         menu->addAction(controller->createAction("cut", tr("Cut"), QIcon::fromTheme(qsl("edit-cut"), QIcon(qsl(":/icons/edit-cut.png"))), menu));
         menu->addAction(controller->createAction("copy", tr("Copy"), QIcon::fromTheme(qsl("edit-copy"), QIcon(qsl(":/icons/edit-copy.png"))), menu));
         menu->addAction(controller->createAction("paste", tr("Paste"), QIcon::fromTheme(qsl("edit-paste"), QIcon(qsl(":/icons/edit-paste.png"))), menu));

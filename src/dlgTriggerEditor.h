@@ -582,6 +582,10 @@ private:
     QAction* mpExportAction = nullptr;
     QAction* mpCreateModuleAction = nullptr;
 
+    // Undo/redo actions for the text editor:
+    QAction* mpUndoTextAction = nullptr;
+    QAction* mpRedoTextAction = nullptr;
+
     // tracks the duration of the "Save Profile As" action so
     // autosave doesn't kick in
     bool mSavingAs = false;
