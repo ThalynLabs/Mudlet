@@ -1448,7 +1448,7 @@ void dlgTriggerEditor::slot_itemSelectedInSearchResults(QTreeWidgetItem* pItem)
                 switch (pItem->data(0, TypeRole).toInt()) {
                 case SearchResultIsScript:
                     mpSourceEditorEdbee->setFocus();
-                    controller->moveCaretTo(pItem->data(0, PatternOrLineRole).toInt(), pItem->data(0, PositionRole).toInt(), false);
+                    controller->moveCaretTo(static_cast<size_t>(pItem->data(0, PatternOrLineRole).toInt()), static_cast<size_t>(pItem->data(0, PositionRole).toInt()), false);
                     break;
                 case SearchResultIsName:
                     mpTriggersMainArea->lineEdit_trigger_name->setFocus(Qt::OtherFocusReason);
@@ -1502,7 +1502,7 @@ void dlgTriggerEditor::slot_itemSelectedInSearchResults(QTreeWidgetItem* pItem)
                 switch (pItem->data(0, TypeRole).toInt()) {
                 case SearchResultIsScript:
                     mpSourceEditorEdbee->setFocus();
-                    controller->moveCaretTo(pItem->data(0, PatternOrLineRole).toInt(), pItem->data(0, PositionRole).toInt(), false);
+                    controller->moveCaretTo(static_cast<size_t>(pItem->data(0, PatternOrLineRole).toInt()), static_cast<size_t>(pItem->data(0, PositionRole).toInt()), false);
                     controller->setAutoScrollToCaret(edbee::TextEditorController::AutoScrollWhenFocus);
                     break;
                 case SearchResultIsName:
@@ -1550,7 +1550,7 @@ void dlgTriggerEditor::slot_itemSelectedInSearchResults(QTreeWidgetItem* pItem)
                 switch (pItem->data(0, TypeRole).toInt()) {
                 case SearchResultIsScript:
                     mpSourceEditorEdbee->setFocus();
-                    controller->moveCaretTo(pItem->data(0, PatternOrLineRole).toInt(), pItem->data(0, PositionRole).toInt(), false);
+                    controller->moveCaretTo(static_cast<size_t>(pItem->data(0, PatternOrLineRole).toInt()), static_cast<size_t>(pItem->data(0, PositionRole).toInt()), false);
                     break;
                 case SearchResultIsName:
                     mpScriptsMainArea->lineEdit_script_name->setFocus(Qt::OtherFocusReason);
@@ -1601,7 +1601,7 @@ void dlgTriggerEditor::slot_itemSelectedInSearchResults(QTreeWidgetItem* pItem)
                 switch (pItem->data(0, TypeRole).toInt()) {
                 case SearchResultIsScript:
                     mpSourceEditorEdbee->setFocus();
-                    controller->moveCaretTo(pItem->data(0, PatternOrLineRole).toInt(), pItem->data(0, PositionRole).toInt(), false);
+                    controller->moveCaretTo(static_cast<size_t>(pItem->data(0, PatternOrLineRole).toInt()), static_cast<size_t>(pItem->data(0, PositionRole).toInt()), false);
                     break;
                 case SearchResultIsName:
                     mpActionsMainArea->lineEdit_action_name->setFocus(Qt::OtherFocusReason);
@@ -1665,7 +1665,7 @@ void dlgTriggerEditor::slot_itemSelectedInSearchResults(QTreeWidgetItem* pItem)
                 switch (pItem->data(0, TypeRole).toInt()) {
                 case SearchResultIsScript:
                     mpSourceEditorEdbee->setFocus();
-                    controller->moveCaretTo(pItem->data(0, PatternOrLineRole).toInt(), pItem->data(0, PositionRole).toInt(), false);
+                    controller->moveCaretTo(static_cast<size_t>(pItem->data(0, PatternOrLineRole).toInt()), static_cast<size_t>(pItem->data(0, PositionRole).toInt()), false);
                     break;
                 case SearchResultIsName:
                     mpTimersMainArea->lineEdit_timer_name->setFocus(Qt::OtherFocusReason);
@@ -1707,7 +1707,7 @@ void dlgTriggerEditor::slot_itemSelectedInSearchResults(QTreeWidgetItem* pItem)
                 switch (pItem->data(0, TypeRole).toInt()) {
                 case SearchResultIsScript:
                     mpSourceEditorEdbee->setFocus();
-                    controller->moveCaretTo(pItem->data(0, PatternOrLineRole).toInt(), pItem->data(0, PositionRole).toInt(), false);
+                    controller->moveCaretTo(static_cast<size_t>(pItem->data(0, PatternOrLineRole).toInt()), static_cast<size_t>(pItem->data(0, PositionRole).toInt()), false);
                     break;
                 case SearchResultIsName:
                     mpTriggersMainArea->lineEdit_trigger_name->setFocus(Qt::OtherFocusReason);
@@ -1766,7 +1766,7 @@ void dlgTriggerEditor::slot_itemSelectedInSearchResults(QTreeWidgetItem* pItem)
                     break;
                 case SearchResultIsValue:
                     mpSourceEditorEdbee->setFocus();
-                    controller->moveCaretTo(pItem->data(0, PatternOrLineRole).toInt(), pItem->data(0, PositionRole).toInt(), false);
+                    controller->moveCaretTo(static_cast<size_t>(pItem->data(0, PatternOrLineRole).toInt()), static_cast<size_t>(pItem->data(0, PositionRole).toInt()), false);
                     break;
                 default:
                     qDebug() << "dlgTriggerEditor::slot_item_selected_list(...) Called for a VAR type item but handler for element of type:"
