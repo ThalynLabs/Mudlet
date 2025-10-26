@@ -58,6 +58,7 @@ public:
     virtual void undo() = 0;
     virtual void redo() = 0;
     virtual QString text() const = 0;
+    virtual EditorViewType viewType() const = 0;
 
 protected:
     Host* mpHost;
@@ -72,6 +73,7 @@ public:
     void undo() override;
     void redo() override;
     QString text() const override;
+    EditorViewType viewType() const override { return mViewType; }
 
 private:
     EditorViewType mViewType;
@@ -99,6 +101,7 @@ public:
     void undo() override;
     void redo() override;
     QString text() const override;
+    EditorViewType viewType() const override { return mViewType; }
 
 private:
     EditorViewType mViewType;
@@ -117,6 +120,7 @@ public:
     void undo() override;
     void redo() override;
     QString text() const override;
+    EditorViewType viewType() const override { return mViewType; }
 
 private:
     EditorViewType mViewType;
@@ -154,6 +158,7 @@ signals:
     void canRedoChanged(bool canRedo);
     void undoTextChanged(const QString& text);
     void redoTextChanged(const QString& text);
+    void itemsChanged(EditorViewType viewType); // Emitted when items are added/deleted/modified
 
 private:
     void clearRedoStack();

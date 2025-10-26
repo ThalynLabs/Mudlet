@@ -198,6 +198,189 @@ QString getViewTypeName(EditorViewType viewType) {
     }
 }
 
+// Import a single trigger from XML string
+TTrigger* importTriggerFromXML(const QString& xmlSnapshot, TTrigger* pParent, Host* host) {
+    if (xmlSnapshot.isEmpty() || !host) {
+        return nullptr;
+    }
+
+    pugi::xml_document doc;
+    pugi::xml_parse_result result = doc.load_string(xmlSnapshot.toStdString().c_str());
+    if (!result) {
+        qWarning() << "importTriggerFromXML: Failed to parse XML:" << result.description();
+        return nullptr;
+    }
+
+    auto root = doc.child("TriggerSnapshot");
+    if (!root) {
+        qWarning() << "importTriggerFromXML: No TriggerSnapshot root element found";
+        return nullptr;
+    }
+
+    // Find the Trigger or TriggerGroup element
+    auto triggerNode = root.child("Trigger");
+    if (!triggerNode) {
+        triggerNode = root.child("TriggerGroup");
+    }
+    if (!triggerNode) {
+        qWarning() << "importTriggerFromXML: No Trigger/TriggerGroup element found";
+        return nullptr;
+    }
+
+    // Create new trigger
+    auto pT = new TTrigger(pParent, host);
+    host->getTriggerUnit()->registerTrigger(pT);
+
+    // Read attributes
+    pT->setIsActive(QString::fromStdString(triggerNode.attribute("isActive").value()) == "yes");
+    pT->setIsFolder(QString::fromStdString(triggerNode.attribute("isFolder").value()) == "yes");
+    pT->setTemporary(QString::fromStdString(triggerNode.attribute("isTempTrigger").value()) == "yes");
+    pT->mIsMultiline = QString::fromStdString(triggerNode.attribute("isMultiline").value()) == "yes";
+    pT->mPerlSlashGOption = QString::fromStdString(triggerNode.attribute("isPerlSlashGOption").value()) == "yes");
+    pT->mIsColorizerTrigger = QString::fromStdString(triggerNode.attribute("isColorizerTrigger").value()) == "yes";
+    pT->mFilterTrigger = QString::fromStdString(triggerNode.attribute("isFilterTrigger").value()) == "yes";
+    pT->mSoundTrigger = QString::fromStdString(triggerNode.attribute("isSoundTrigger").value()) == "yes";
+    pT->mColorTrigger = QString::fromStdString(triggerNode.attribute("isColorTrigger").value()) == "yes";
+
+    // Read child elements
+    for (auto node : triggerNode.children()) {
+        QString nodeName = QString::fromStdString(node.name());
+        QString nodeValue = QString::fromStdString(node.child_value());
+
+        if (nodeName == "name") {
+            pT->setName(nodeValue);
+        } else if (nodeName == "script") {
+            pT->setScript(nodeValue);
+        } else if (nodeName == "packageName") {
+            pT->mPackageName = nodeValue;
+        } else if (nodeName == "triggerType") {
+            pT->mTriggerType = nodeValue.toInt();
+        } else if (nodeName == "conditonLineDelta") {
+            pT->mConditionLineDelta = nodeValue.toInt();
+        } else if (nodeName == "mStayOpen") {
+            pT->mStayOpen = nodeValue.toInt();
+        } else if (nodeName == "mCommand") {
+            pT->mCommand = nodeValue;
+        } else if (nodeName == "mFgColor") {
+            pT->mFgColor = QColor::fromString(nodeValue);
+        } else if (nodeName == "mBgColor") {
+            pT->mBgColor = QColor::fromString(nodeValue);
+        } else if (nodeName == "colorTriggerFgColor") {
+            pT->mColorTriggerFgColor = QColor::fromString(nodeValue);
+        } else if (nodeName == "colorTriggerBgColor") {
+            pT->mColorTriggerBgColor = QColor::fromString(nodeValue);
+        } else if (nodeName == "mSoundFile") {
+            pT->mSoundFile = nodeValue;
+        } else if (nodeName == "regexCodeList") {
+            // Read pattern list
+            for (auto patternNode : node.children("string")) {
+                pT->mPatterns << QString::fromStdString(patternNode.child_value());
+            }
+        } else if (nodeName == "regexCodePropertyList") {
+            // Read pattern property list
+            for (auto propertyNode : node.children("integer")) {
+                pT->mPatternKinds << QString::fromStdString(propertyNode.child_value()).toInt();
+            }
+        }
+    }
+
+    // Set the regex patterns
+    if (!pT->mPatterns.isEmpty()) {
+        pT->setRegexCodeList(pT->mPatterns, pT->mPatternKinds);
+    }
+
+    return pT;
+}
+
+// Update an existing trigger from XML string
+bool updateTriggerFromXML(TTrigger* pT, const QString& xmlSnapshot) {
+    if (!pT || xmlSnapshot.isEmpty()) {
+        return false;
+    }
+
+    pugi::xml_document doc;
+    pugi::xml_parse_result result = doc.load_string(xmlSnapshot.toStdString().c_str());
+    if (!result) {
+        qWarning() << "updateTriggerFromXML: Failed to parse XML:" << result.description();
+        return false;
+    }
+
+    auto root = doc.child("TriggerSnapshot");
+    if (!root) {
+        return false;
+    }
+
+    auto triggerNode = root.child("Trigger");
+    if (!triggerNode) {
+        triggerNode = root.child("TriggerGroup");
+    }
+    if (!triggerNode) {
+        return false;
+    }
+
+    // Update attributes
+    pT->setIsActive(QString::fromStdString(triggerNode.attribute("isActive").value()) == "yes");
+    pT->setIsFolder(QString::fromStdString(triggerNode.attribute("isFolder").value()) == "yes");
+    pT->setTemporary(QString::fromStdString(triggerNode.attribute("isTempTrigger").value()) == "yes");
+    pT->mIsMultiline = QString::fromStdString(triggerNode.attribute("isMultiline").value()) == "yes";
+    pT->mPerlSlashGOption = QString::fromStdString(triggerNode.attribute("isPerlSlashGOption").value()) == "yes";
+    pT->mIsColorizerTrigger = QString::fromStdString(triggerNode.attribute("isColorizerTrigger").value()) == "yes";
+    pT->mFilterTrigger = QString::fromStdString(triggerNode.attribute("isFilterTrigger").value()) == "yes";
+    pT->mSoundTrigger = QString::fromStdString(triggerNode.attribute("isSoundTrigger").value()) == "yes";
+    pT->mColorTrigger = QString::fromStdString(triggerNode.attribute("isColorTrigger").value()) == "yes";
+
+    // Clear existing patterns
+    pT->mPatterns.clear();
+    pT->mPatternKinds.clear();
+
+    // Update child elements
+    for (auto node : triggerNode.children()) {
+        QString nodeName = QString::fromStdString(node.name());
+        QString nodeValue = QString::fromStdString(node.child_value());
+
+        if (nodeName == "name") {
+            pT->setName(nodeValue);
+        } else if (nodeName == "script") {
+            pT->setScript(nodeValue);
+        } else if (nodeName == "packageName") {
+            pT->mPackageName = nodeValue;
+        } else if (nodeName == "triggerType") {
+            pT->mTriggerType = nodeValue.toInt();
+        } else if (nodeName == "conditonLineDelta") {
+            pT->mConditionLineDelta = nodeValue.toInt();
+        } else if (nodeName == "mStayOpen") {
+            pT->mStayOpen = nodeValue.toInt();
+        } else if (nodeName == "mCommand") {
+            pT->mCommand = nodeValue;
+        } else if (nodeName == "mFgColor") {
+            pT->mFgColor = QColor::fromString(nodeValue);
+        } else if (nodeName == "mBgColor") {
+            pT->mBgColor = QColor::fromString(nodeValue);
+        } else if (nodeName == "colorTriggerFgColor") {
+            pT->mColorTriggerFgColor = QColor::fromString(nodeValue);
+        } else if (nodeName == "colorTriggerBgColor") {
+            pT->mColorTriggerBgColor = QColor::fromString(nodeValue);
+        } else if (nodeName == "mSoundFile") {
+            pT->mSoundFile = nodeValue;
+        } else if (nodeName == "regexCodeList") {
+            for (auto patternNode : node.children("string")) {
+                pT->mPatterns << QString::fromStdString(patternNode.child_value());
+            }
+        } else if (nodeName == "regexCodePropertyList") {
+            for (auto propertyNode : node.children("integer")) {
+                pT->mPatternKinds << QString::fromStdString(propertyNode.child_value()).toInt();
+            }
+        }
+    }
+
+    // Update the regex patterns
+    if (!pT->mPatterns.isEmpty()) {
+        pT->setRegexCodeList(pT->mPatterns, pT->mPatternKinds);
+    }
+
+    return true;
+}
+
 } // anonymous namespace
 
 // =============================================================================
@@ -319,9 +502,29 @@ void AddItemCommand::redo() {
     // On first redo, the item already exists (it was just created)
     // On subsequent redos, we need to recreate from snapshot
     if (!mFirstRedo && !mItemSnapshot.isEmpty()) {
-        // TODO: Implement item recreation from XML snapshot
-        // This requires extending XMLimport to support single-item import
-        qWarning() << "AddItemCommand::redo() - Item recreation from snapshot not yet implemented";
+        // Get parent trigger
+        TTrigger* pParent = nullptr;
+        if (mParentID != -1) {
+            pParent = mpHost->getTriggerUnit()->getTrigger(mParentID);
+        }
+
+        // Recreate the trigger from XML snapshot
+        switch (mViewType) {
+        case EditorViewType::cmTriggerView: {
+            TTrigger* pNewTrigger = importTriggerFromXML(mItemSnapshot, pParent, mpHost);
+            if (pNewTrigger) {
+                // Store the new ID (it may be different from original)
+                mItemID = pNewTrigger->getID();
+            } else {
+                qWarning() << "AddItemCommand::redo() - Failed to recreate trigger from snapshot";
+            }
+            break;
+        }
+        // TODO: Implement for other item types (aliases, timers, etc.)
+        default:
+            qWarning() << "AddItemCommand::redo() - Not yet implemented for this item type";
+            break;
+        }
     }
     mFirstRedo = false;
 }
@@ -348,9 +551,31 @@ DeleteItemCommand::DeleteItemCommand(EditorViewType viewType, const QList<Delete
 
 void DeleteItemCommand::undo() {
     // Restore all deleted items from their XML snapshots
-    // TODO: Implement item restoration from XML snapshots
-    // This requires extending XMLimport to support single-item import with specific parent/position
-    qWarning() << "DeleteItemCommand::undo() - Item restoration from snapshot not yet implemented";
+    // Process in reverse order to maintain tree structure (parents before children)
+    for (int i = mDeletedItems.size() - 1; i >= 0; --i) {
+        const auto& info = mDeletedItems[i];
+
+        switch (mViewType) {
+        case EditorViewType::cmTriggerView: {
+            // Get parent trigger
+            TTrigger* pParent = nullptr;
+            if (info.parentID != -1) {
+                pParent = mpHost->getTriggerUnit()->getTrigger(info.parentID);
+            }
+
+            // Restore the trigger from XML snapshot
+            TTrigger* pRestoredTrigger = importTriggerFromXML(info.xmlSnapshot, pParent, mpHost);
+            if (!pRestoredTrigger) {
+                qWarning() << "DeleteItemCommand::undo() - Failed to restore trigger" << info.itemName;
+            }
+            break;
+        }
+        // TODO: Implement for other item types (aliases, timers, etc.)
+        default:
+            qWarning() << "DeleteItemCommand::undo() - Not yet implemented for this item type";
+            break;
+        }
+    }
 }
 
 void DeleteItemCommand::redo() {
@@ -437,17 +662,46 @@ ModifyPropertyCommand::ModifyPropertyCommand(EditorViewType viewType, int itemID
 
 void ModifyPropertyCommand::undo() {
     // Restore item to old state from XML
-    // TODO: Implement property restoration from XML snapshot
-    // This requires being able to update an existing item's properties from XML
-    qWarning() << "ModifyPropertyCommand::undo() - Property restoration not yet implemented";
+    switch (mViewType) {
+    case EditorViewType::cmTriggerView: {
+        TTrigger* pTrigger = mpHost->getTriggerUnit()->getTrigger(mItemID);
+        if (pTrigger) {
+            if (!updateTriggerFromXML(pTrigger, mOldStateXML)) {
+                qWarning() << "ModifyPropertyCommand::undo() - Failed to restore trigger" << mItemName << "to old state";
+            }
+        } else {
+            qWarning() << "ModifyPropertyCommand::undo() - Trigger" << mItemName << "not found";
+        }
+        break;
+    }
+    // TODO: Implement for other item types (aliases, timers, etc.)
+    default:
+        qWarning() << "ModifyPropertyCommand::undo() - Not yet implemented for this item type";
+        break;
+    }
 }
 
 void ModifyPropertyCommand::redo() {
     // On first redo, changes are already applied
     // On subsequent redos, apply the new state
     if (!mFirstRedo) {
-        // TODO: Implement property update from XML snapshot
-        qWarning() << "ModifyPropertyCommand::redo() - Property update not yet implemented";
+        switch (mViewType) {
+        case EditorViewType::cmTriggerView: {
+            TTrigger* pTrigger = mpHost->getTriggerUnit()->getTrigger(mItemID);
+            if (pTrigger) {
+                if (!updateTriggerFromXML(pTrigger, mNewStateXML)) {
+                    qWarning() << "ModifyPropertyCommand::redo() - Failed to apply new state to trigger" << mItemName;
+                }
+            } else {
+                qWarning() << "ModifyPropertyCommand::redo() - Trigger" << mItemName << "not found";
+            }
+            break;
+        }
+        // TODO: Implement for other item types (aliases, timers, etc.)
+        default:
+            qWarning() << "ModifyPropertyCommand::redo() - Not yet implemented for this item type";
+            break;
+        }
     }
     mFirstRedo = false;
 }
@@ -493,10 +747,12 @@ void EditorUndoSystem::undo()
     auto cmd = std::move(mUndoStack.back());
     mUndoStack.pop_back();
 
+    EditorViewType affectedView = cmd->viewType();
     cmd->undo();
 
     mRedoStack.push_back(std::move(cmd));
     emitSignals();
+    emit itemsChanged(affectedView);
 }
 
 void EditorUndoSystem::redo()
@@ -508,10 +764,12 @@ void EditorUndoSystem::redo()
     auto cmd = std::move(mRedoStack.back());
     mRedoStack.pop_back();
 
+    EditorViewType affectedView = cmd->viewType();
     cmd->redo();
 
     mUndoStack.push_back(std::move(cmd));
     emitSignals();
+    emit itemsChanged(affectedView);
 }
 
 QString EditorUndoSystem::undoText() const
