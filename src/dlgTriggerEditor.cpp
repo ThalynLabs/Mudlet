@@ -35,6 +35,7 @@
 #include "TToolBar.h"
 #include "VarUnit.h"
 #include "XMLimport.h"
+#include "XMLexport.h"
 #include "dlgActionMainArea.h"
 #include "dlgAliasMainArea.h"
 #include "dlgColorTrigger.h"
@@ -57,6 +58,8 @@
 #include <QShortcut>
 #include <QShowEvent>
 #include <QToolBar>
+#include <sstream>
+#include <pugixml.hpp>
 
 using namespace std::chrono_literals;
 
@@ -3363,6 +3366,38 @@ void dlgTriggerEditor::delete_trigger()
         return;
     }
 
+    // Capture state of all items BEFORE deletion for undo
+    QList<DeleteItemCommand::DeletedItemInfo> deletedItems;
+    for (QTreeWidgetItem* pItem : selectedItems) {
+        TTrigger* pT = mpHost->getTriggerUnit()->getTrigger(pItem->data(0, Qt::UserRole).toInt());
+        if (pT) {
+            DeleteItemCommand::DeletedItemInfo info;
+            info.itemID = pT->getID();
+            info.itemName = pT->getName();
+
+            // Get parent ID
+            QTreeWidgetItem* pParentItem = pItem->parent();
+            if (pParentItem && pParentItem != mpTriggerBaseItem) {
+                info.parentID = pParentItem->data(0, Qt::UserRole).toInt();
+                info.positionInParent = pParentItem->indexOfChild(pItem);
+            } else {
+                info.parentID = -1;
+                info.positionInParent = treeWidget_triggers->indexOfTopLevelItem(pItem);
+            }
+
+            // Export trigger to XML snapshot
+            pugi::xml_document doc;
+            auto root = doc.append_child("TriggerSnapshot");
+            XMLexport exporter(pT);
+            exporter.writeTrigger(pT, root);
+            std::ostringstream oss;
+            doc.save(oss);
+            info.xmlSnapshot = QString::fromStdString(oss.str());
+
+            deletedItems.append(info);
+        }
+    }
+
     // Sort items by their position in tree (top to bottom) to delete correctly
     std::sort(selectedItems.begin(), selectedItems.end(), [this](QTreeWidgetItem* a, QTreeWidgetItem* b) {
         QModelIndex indexA = treeWidget_triggers->indexFromItem(a);
@@ -3387,6 +3422,16 @@ void dlgTriggerEditor::delete_trigger()
             }
             delete pT;
         }
+    }
+
+    // Push undo command for the deleted triggers
+    if (!deletedItems.isEmpty()) {
+        auto cmd = std::make_unique<DeleteItemCommand>(
+            EditorViewType::cmTriggerView,
+            deletedItems,
+            mpHost
+        );
+        mpUndoSystem->pushCommand(std::move(cmd));
     }
 
     // Set new selection
@@ -4464,6 +4509,20 @@ void dlgTriggerEditor::addTrigger(bool isFolder)
     mpCurrentTriggerItem = pNewItem;
     treeWidget_triggers->setCurrentItem(pNewItem);
     slot_triggerSelected(treeWidget_triggers->currentItem());
+
+    // Push undo command for the newly added trigger
+    int parentID = (pParentItem && pParentItem != mpTriggerBaseItem)
+                   ? pParentItem->data(0, Qt::UserRole).toInt()
+                   : -1;
+    auto cmd = std::make_unique<AddItemCommand>(
+        EditorViewType::cmTriggerView,
+        pNewTrigger->getID(),
+        parentID,
+        isFolder,
+        name,
+        mpHost
+    );
+    mpUndoSystem->pushCommand(std::move(cmd));
 }
 
 
@@ -5196,6 +5255,16 @@ void dlgTriggerEditor::saveTrigger()
     const int triggerID = pItem->data(0, Qt::UserRole).toInt();
     TTrigger* pT = mpHost->getTriggerUnit()->getTrigger(triggerID);
     if (pT) {
+        // Capture OLD state before modifications (for undo)
+        QString oldStateXML;
+        pugi::xml_document oldDoc;
+        auto oldRoot = oldDoc.append_child("TriggerSnapshot");
+        XMLexport oldExporter(pT);
+        oldExporter.writeTrigger(pT, oldRoot);
+        std::ostringstream oldOss;
+        oldDoc.save(oldOss);
+        oldStateXML = QString::fromStdString(oldOss.str());
+
         pT->setName(name);
         pT->setCommand(command);
         pT->setRegexCodeList(patterns, patternKinds);
@@ -5343,6 +5412,29 @@ void dlgTriggerEditor::saveTrigger()
             showError(pT->getError());
         }
         pItem->setData(0, Qt::AccessibleDescriptionRole, itemDescription);
+
+        // Capture NEW state after modifications (for redo)
+        QString newStateXML;
+        pugi::xml_document newDoc;
+        auto newRoot = newDoc.append_child("TriggerSnapshot");
+        XMLexport newExporter(pT);
+        newExporter.writeTrigger(pT, newRoot);
+        std::ostringstream newOss;
+        newDoc.save(newOss);
+        newStateXML = QString::fromStdString(newOss.str());
+
+        // Only push undo command if something actually changed
+        if (oldStateXML != newStateXML) {
+            auto cmd = std::make_unique<ModifyPropertyCommand>(
+                EditorViewType::cmTriggerView,
+                triggerID,
+                name,
+                oldStateXML,
+                newStateXML,
+                mpHost
+            );
+            mpUndoSystem->pushCommand(std::move(cmd));
+        }
     }
 }
 
