@@ -3427,7 +3427,7 @@ void dlgTriggerEditor::delete_trigger()
     // Push undo command for the deleted triggers
     if (!deletedItems.isEmpty()) {
         auto cmd = std::make_unique<DeleteItemCommand>(
-            EditorViewType::cmTriggerView,
+            ::EditorViewType::cmTriggerView,
             deletedItems,
             mpHost
         );
@@ -4515,7 +4515,7 @@ void dlgTriggerEditor::addTrigger(bool isFolder)
                    ? pParentItem->data(0, Qt::UserRole).toInt()
                    : -1;
     auto cmd = std::make_unique<AddItemCommand>(
-        EditorViewType::cmTriggerView,
+        ::EditorViewType::cmTriggerView,
         pNewTrigger->getID(),
         parentID,
         isFolder,
@@ -5426,7 +5426,7 @@ void dlgTriggerEditor::saveTrigger()
         // Only push undo command if something actually changed
         if (oldStateXML != newStateXML) {
             auto cmd = std::make_unique<ModifyPropertyCommand>(
-                EditorViewType::cmTriggerView,
+                ::EditorViewType::cmTriggerView,
                 triggerID,
                 name,
                 oldStateXML,

@@ -235,12 +235,16 @@ TTrigger* importTriggerFromXML(const QString& xmlSnapshot, TTrigger* pParent, Ho
     pT->setIsActive(QString::fromStdString(triggerNode.attribute("isActive").value()) == "yes");
     pT->setIsFolder(QString::fromStdString(triggerNode.attribute("isFolder").value()) == "yes");
     pT->setTemporary(QString::fromStdString(triggerNode.attribute("isTempTrigger").value()) == "yes");
-    pT->mIsMultiline = QString::fromStdString(triggerNode.attribute("isMultiline").value()) == "yes";
-    pT->mPerlSlashGOption = QString::fromStdString(triggerNode.attribute("isPerlSlashGOption").value()) == "yes");
-    pT->mIsColorizerTrigger = QString::fromStdString(triggerNode.attribute("isColorizerTrigger").value()) == "yes";
+    pT->setIsMultiline(QString::fromStdString(triggerNode.attribute("isMultiline").value()) == "yes");
+    pT->mPerlSlashGOption = QString::fromStdString(triggerNode.attribute("isPerlSlashGOption").value()) == "yes";
+    pT->setIsColorizerTrigger(QString::fromStdString(triggerNode.attribute("isColorizerTrigger").value()) == "yes");
     pT->mFilterTrigger = QString::fromStdString(triggerNode.attribute("isFilterTrigger").value()) == "yes";
     pT->mSoundTrigger = QString::fromStdString(triggerNode.attribute("isSoundTrigger").value()) == "yes";
     pT->mColorTrigger = QString::fromStdString(triggerNode.attribute("isColorTrigger").value()) == "yes";
+
+    // Temporary storage for pattern data
+    QStringList patterns;
+    QList<int> patternKinds;
 
     // Read child elements
     for (auto node : triggerNode.children()) {
@@ -254,39 +258,39 @@ TTrigger* importTriggerFromXML(const QString& xmlSnapshot, TTrigger* pParent, Ho
         } else if (nodeName == "packageName") {
             pT->mPackageName = nodeValue;
         } else if (nodeName == "triggerType") {
-            pT->mTriggerType = nodeValue.toInt();
+            pT->setTriggerType(nodeValue.toInt());
         } else if (nodeName == "conditonLineDelta") {
-            pT->mConditionLineDelta = nodeValue.toInt();
+            pT->setConditionLineDelta(nodeValue.toInt());
         } else if (nodeName == "mStayOpen") {
             pT->mStayOpen = nodeValue.toInt();
         } else if (nodeName == "mCommand") {
-            pT->mCommand = nodeValue;
+            pT->setCommand(nodeValue);
         } else if (nodeName == "mFgColor") {
-            pT->mFgColor = QColor::fromString(nodeValue);
+            pT->setColorizerFgColor(QColor::fromString(nodeValue));
         } else if (nodeName == "mBgColor") {
-            pT->mBgColor = QColor::fromString(nodeValue);
+            pT->setColorizerBgColor(QColor::fromString(nodeValue));
         } else if (nodeName == "colorTriggerFgColor") {
             pT->mColorTriggerFgColor = QColor::fromString(nodeValue);
         } else if (nodeName == "colorTriggerBgColor") {
             pT->mColorTriggerBgColor = QColor::fromString(nodeValue);
         } else if (nodeName == "mSoundFile") {
-            pT->mSoundFile = nodeValue;
+            pT->setSound(nodeValue);
         } else if (nodeName == "regexCodeList") {
             // Read pattern list
             for (auto patternNode : node.children("string")) {
-                pT->mPatterns << QString::fromStdString(patternNode.child_value());
+                patterns << QString::fromStdString(patternNode.child_value());
             }
         } else if (nodeName == "regexCodePropertyList") {
             // Read pattern property list
             for (auto propertyNode : node.children("integer")) {
-                pT->mPatternKinds << QString::fromStdString(propertyNode.child_value()).toInt();
+                patternKinds << QString::fromStdString(propertyNode.child_value()).toInt();
             }
         }
     }
 
     // Set the regex patterns
-    if (!pT->mPatterns.isEmpty()) {
-        pT->setRegexCodeList(pT->mPatterns, pT->mPatternKinds);
+    if (!patterns.isEmpty()) {
+        pT->setRegexCodeList(patterns, patternKinds);
     }
 
     return pT;
@@ -322,16 +326,16 @@ bool updateTriggerFromXML(TTrigger* pT, const QString& xmlSnapshot) {
     pT->setIsActive(QString::fromStdString(triggerNode.attribute("isActive").value()) == "yes");
     pT->setIsFolder(QString::fromStdString(triggerNode.attribute("isFolder").value()) == "yes");
     pT->setTemporary(QString::fromStdString(triggerNode.attribute("isTempTrigger").value()) == "yes");
-    pT->mIsMultiline = QString::fromStdString(triggerNode.attribute("isMultiline").value()) == "yes";
+    pT->setIsMultiline(QString::fromStdString(triggerNode.attribute("isMultiline").value()) == "yes");
     pT->mPerlSlashGOption = QString::fromStdString(triggerNode.attribute("isPerlSlashGOption").value()) == "yes";
-    pT->mIsColorizerTrigger = QString::fromStdString(triggerNode.attribute("isColorizerTrigger").value()) == "yes";
+    pT->setIsColorizerTrigger(QString::fromStdString(triggerNode.attribute("isColorizerTrigger").value()) == "yes");
     pT->mFilterTrigger = QString::fromStdString(triggerNode.attribute("isFilterTrigger").value()) == "yes";
     pT->mSoundTrigger = QString::fromStdString(triggerNode.attribute("isSoundTrigger").value()) == "yes";
     pT->mColorTrigger = QString::fromStdString(triggerNode.attribute("isColorTrigger").value()) == "yes";
 
-    // Clear existing patterns
-    pT->mPatterns.clear();
-    pT->mPatternKinds.clear();
+    // Temporary storage for pattern data
+    QStringList patterns;
+    QList<int> patternKinds;
 
     // Update child elements
     for (auto node : triggerNode.children()) {
@@ -345,37 +349,37 @@ bool updateTriggerFromXML(TTrigger* pT, const QString& xmlSnapshot) {
         } else if (nodeName == "packageName") {
             pT->mPackageName = nodeValue;
         } else if (nodeName == "triggerType") {
-            pT->mTriggerType = nodeValue.toInt();
+            pT->setTriggerType(nodeValue.toInt());
         } else if (nodeName == "conditonLineDelta") {
-            pT->mConditionLineDelta = nodeValue.toInt();
+            pT->setConditionLineDelta(nodeValue.toInt());
         } else if (nodeName == "mStayOpen") {
             pT->mStayOpen = nodeValue.toInt();
         } else if (nodeName == "mCommand") {
-            pT->mCommand = nodeValue;
+            pT->setCommand(nodeValue);
         } else if (nodeName == "mFgColor") {
-            pT->mFgColor = QColor::fromString(nodeValue);
+            pT->setColorizerFgColor(QColor::fromString(nodeValue));
         } else if (nodeName == "mBgColor") {
-            pT->mBgColor = QColor::fromString(nodeValue);
+            pT->setColorizerBgColor(QColor::fromString(nodeValue));
         } else if (nodeName == "colorTriggerFgColor") {
             pT->mColorTriggerFgColor = QColor::fromString(nodeValue);
         } else if (nodeName == "colorTriggerBgColor") {
             pT->mColorTriggerBgColor = QColor::fromString(nodeValue);
         } else if (nodeName == "mSoundFile") {
-            pT->mSoundFile = nodeValue;
+            pT->setSound(nodeValue);
         } else if (nodeName == "regexCodeList") {
             for (auto patternNode : node.children("string")) {
-                pT->mPatterns << QString::fromStdString(patternNode.child_value());
+                patterns << QString::fromStdString(patternNode.child_value());
             }
         } else if (nodeName == "regexCodePropertyList") {
             for (auto propertyNode : node.children("integer")) {
-                pT->mPatternKinds << QString::fromStdString(propertyNode.child_value()).toInt();
+                patternKinds << QString::fromStdString(propertyNode.child_value()).toInt();
             }
         }
     }
 
     // Update the regex patterns
-    if (!pT->mPatterns.isEmpty()) {
-        pT->setRegexCodeList(pT->mPatterns, pT->mPatternKinds);
+    if (!patterns.isEmpty()) {
+        pT->setRegexCodeList(patterns, patternKinds);
     }
 
     return true;
