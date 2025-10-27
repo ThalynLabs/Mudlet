@@ -142,6 +142,52 @@ private:
     QString mNewStateXML;
 };
 
+// Command for moving items between parents
+class MoveItemCommand : public EditorCommand {
+public:
+    MoveItemCommand(EditorViewType viewType, int itemID,
+                    int oldParentID, int newParentID,
+                    const QString& itemName,
+                    Host* host);
+
+    void undo() override;
+    void redo() override;
+    QString text() const override;
+    EditorViewType viewType() const override { return mViewType; }
+    QList<int> affectedItemIDs() const override { return {mItemID}; }
+    void remapItemID(int oldID, int newID) override;
+
+private:
+    EditorViewType mViewType;
+    int mItemID;
+    int mOldParentID;
+    int mNewParentID;
+    QString mItemName;
+};
+
+// Command for toggling active/inactive state
+class ToggleActiveCommand : public EditorCommand {
+public:
+    ToggleActiveCommand(EditorViewType viewType, int itemID,
+                        bool oldState, bool newState,
+                        const QString& itemName,
+                        Host* host);
+
+    void undo() override;
+    void redo() override;
+    QString text() const override;
+    EditorViewType viewType() const override { return mViewType; }
+    QList<int> affectedItemIDs() const override { return {mItemID}; }
+    void remapItemID(int oldID, int newID) override;
+
+private:
+    EditorViewType mViewType;
+    int mItemID;
+    bool mOldActiveState;
+    bool mNewActiveState;
+    QString mItemName;
+};
+
 // Main undo system class
 class EditorUndoSystem : public QObject {
     Q_OBJECT

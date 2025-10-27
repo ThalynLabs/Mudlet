@@ -253,6 +253,10 @@ void TTreeWidget::rowsInserted(const QModelIndex& parent, int start, int end)
         }
 
         int newParentID = parent.data(Qt::UserRole).toInt();
+
+        // Emit signal for undo system before performing the move
+        emit itemMoved(mChildID, mOldParentID, newParentID);
+
         if (mIsTriggerTree) {
             mpHost->getTriggerUnit()->reParentTrigger(mChildID, mOldParentID, newParentID, parentPosition, childPosition);
         } else if (mIsAliasTree) {

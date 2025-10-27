@@ -29,6 +29,9 @@
 class Host;
 
 
+class EditorUndoSystem;
+enum class EditorViewType;
+
 class TTreeWidget : public QTreeWidget
 {
     Q_OBJECT
@@ -58,6 +61,9 @@ public:
     void setIsKeyTree();
     void beginInsertRows(const QModelIndex& parent, int first, int last);
     void getAllChildren(QTreeWidgetItem*, QList<QTreeWidgetItem*>&);
+
+signals:
+    void itemMoved(int itemID, int oldParentID, int newParentID);
 
 private:
     bool mIsDropAction;

@@ -904,16 +904,22 @@ dlgTriggerEditor::dlgTriggerEditor(Host* pH)
     connect(comboBox_searchTerms, qOverload<int>(&QComboBox::activated), this, &dlgTriggerEditor::slot_searchMudletItems);
     connect(treeWidget_triggers, &QTreeWidget::itemClicked, this, &dlgTriggerEditor::slot_triggerSelected);
     connect(treeWidget_triggers, &QTreeWidget::itemSelectionChanged, this, &dlgTriggerEditor::slot_treeSelectionChanged);
+    connect(treeWidget_triggers, &TTreeWidget::itemMoved, this, &dlgTriggerEditor::slot_itemMoved);
     connect(treeWidget_keys, &QTreeWidget::itemClicked, this, &dlgTriggerEditor::slot_keySelected);
     connect(treeWidget_keys, &QTreeWidget::itemSelectionChanged, this, &dlgTriggerEditor::slot_treeSelectionChanged);
+    connect(treeWidget_keys, &TTreeWidget::itemMoved, this, &dlgTriggerEditor::slot_itemMoved);
     connect(treeWidget_timers, &QTreeWidget::itemClicked, this, &dlgTriggerEditor::slot_timerSelected);
     connect(treeWidget_timers, &QTreeWidget::itemSelectionChanged, this, &dlgTriggerEditor::slot_treeSelectionChanged);
+    connect(treeWidget_timers, &TTreeWidget::itemMoved, this, &dlgTriggerEditor::slot_itemMoved);
     connect(treeWidget_scripts, &QTreeWidget::itemClicked, this, &dlgTriggerEditor::slot_scriptsSelected);
     connect(treeWidget_scripts, &QTreeWidget::itemSelectionChanged, this, &dlgTriggerEditor::slot_treeSelectionChanged);
+    connect(treeWidget_scripts, &TTreeWidget::itemMoved, this, &dlgTriggerEditor::slot_itemMoved);
     connect(treeWidget_aliases, &QTreeWidget::itemClicked, this, &dlgTriggerEditor::slot_aliasSelected);
     connect(treeWidget_aliases, &QTreeWidget::itemSelectionChanged, this, &dlgTriggerEditor::slot_treeSelectionChanged);
+    connect(treeWidget_aliases, &TTreeWidget::itemMoved, this, &dlgTriggerEditor::slot_itemMoved);
     connect(treeWidget_actions, &QTreeWidget::itemClicked, this, &dlgTriggerEditor::slot_actionSelected);
     connect(treeWidget_actions, &QTreeWidget::itemSelectionChanged, this, &dlgTriggerEditor::slot_treeSelectionChanged);
+    connect(treeWidget_actions, &TTreeWidget::itemMoved, this, &dlgTriggerEditor::slot_itemMoved);
     connect(treeWidget_variables, &QTreeWidget::itemClicked, this, &dlgTriggerEditor::slot_variableSelected);
     connect(treeWidget_variables, &QTreeWidget::itemChanged, this, &dlgTriggerEditor::slot_variableChanged);
     connect(treeWidget_variables, &QTreeWidget::itemSelectionChanged, this, &dlgTriggerEditor::slot_treeSelectionChanged);
@@ -3536,7 +3542,10 @@ void dlgTriggerEditor::activeToggle_trigger()
         return;
     }
 
-    pT->setIsActive(!pT->shouldBeActive());
+    // Capture old state for undo
+    bool oldState = pT->shouldBeActive();
+    pT->setIsActive(!oldState);
+    bool newState = pT->isActive();
 
     if (pT->isFilterChain()) {
         if (pT->isActive()) {
@@ -3605,6 +3614,107 @@ void dlgTriggerEditor::activeToggle_trigger()
     if (pItem->childCount() > 0) {
         children_icon_triggers(pItem);
     }
+
+    // Push undo command for toggle operation
+    if (mpUndoSystem && oldState != newState) {
+        auto cmd = std::make_unique<ToggleActiveCommand>(
+            EditorViewType::cmTriggerView,
+            pT->getID(),
+            oldState,
+            newState,
+            pT->getName(),
+            mpHost
+        );
+        mpUndoSystem->pushCommand(std::move(cmd));
+    }
+}
+
+void dlgTriggerEditor::slot_itemMoved(int itemID, int oldParentID, int newParentID)
+{
+    if (!mpUndoSystem) {
+        return;
+    }
+
+    // Determine which view this move belongs to
+    EditorViewType viewType;
+    QString itemName;
+
+    // Check which tree widget has focus or which view is active
+    switch (mCurrentView) {
+    case EditorViewType::cmTriggerView: {
+        TTrigger* pT = mpHost->getTriggerUnit()->getTrigger(itemID);
+        if (pT) {
+            viewType = EditorViewType::cmTriggerView;
+            itemName = pT->getName();
+        } else {
+            return;
+        }
+        break;
+    }
+    case EditorViewType::cmAliasView: {
+        TAlias* pA = mpHost->getAliasUnit()->getAlias(itemID);
+        if (pA) {
+            viewType = EditorViewType::cmAliasView;
+            itemName = pA->getName();
+        } else {
+            return;
+        }
+        break;
+    }
+    case EditorViewType::cmTimerView: {
+        TTimer* pT = mpHost->getTimerUnit()->getTimer(itemID);
+        if (pT) {
+            viewType = EditorViewType::cmTimerView;
+            itemName = pT->getName();
+        } else {
+            return;
+        }
+        break;
+    }
+    case EditorViewType::cmScriptView: {
+        TScript* pS = mpHost->getScriptUnit()->getScript(itemID);
+        if (pS) {
+            viewType = EditorViewType::cmScriptView;
+            itemName = pS->getName();
+        } else {
+            return;
+        }
+        break;
+    }
+    case EditorViewType::cmKeysView: {
+        TKey* pK = mpHost->getKeyUnit()->getKey(itemID);
+        if (pK) {
+            viewType = EditorViewType::cmKeysView;
+            itemName = pK->getName();
+        } else {
+            return;
+        }
+        break;
+    }
+    case EditorViewType::cmActionView: {
+        TAction* pA = mpHost->getActionUnit()->getAction(itemID);
+        if (pA) {
+            viewType = EditorViewType::cmActionView;
+            itemName = pA->getName();
+        } else {
+            return;
+        }
+        break;
+    }
+    default:
+        return;
+    }
+
+    // Push move command to undo system
+    auto cmd = std::make_unique<MoveItemCommand>(
+        viewType,
+        itemID,
+        oldParentID,
+        newParentID,
+        itemName,
+        mpHost
+    );
+    mpUndoSystem->pushCommand(std::move(cmd));
 }
 
 void dlgTriggerEditor::children_icon_triggers(QTreeWidgetItem* pWidgetItemParent)

@@ -771,6 +771,276 @@ void ModifyPropertyCommand::remapItemID(int oldID, int newID) {
 }
 
 // =============================================================================
+// MoveItemCommand implementation
+// =============================================================================
+
+MoveItemCommand::MoveItemCommand(EditorViewType viewType, int itemID,
+                                 int oldParentID, int newParentID,
+                                 const QString& itemName,
+                                 Host* host)
+: EditorCommand(host)
+, mViewType(viewType)
+, mItemID(itemID)
+, mOldParentID(oldParentID)
+, mNewParentID(newParentID)
+, mItemName(itemName)
+{
+}
+
+void MoveItemCommand::undo() {
+    qDebug() << "[MoveItemCommand::undo] Moving item" << mItemID << "back from parent" << mNewParentID << "to parent" << mOldParentID;
+
+    switch (mViewType) {
+    case EditorViewType::cmTriggerView: {
+        mpHost->getTriggerUnit()->reParentTrigger(mItemID, mNewParentID, mOldParentID, -1, -1);
+        break;
+    }
+    case EditorViewType::cmAliasView: {
+        mpHost->getAliasUnit()->reParentAlias(mItemID, mNewParentID, mOldParentID, -1, -1);
+        break;
+    }
+    case EditorViewType::cmTimerView: {
+        mpHost->getTimerUnit()->reParentTimer(mItemID, mNewParentID, mOldParentID, -1, -1);
+        break;
+    }
+    case EditorViewType::cmScriptView: {
+        mpHost->getScriptUnit()->reParentScript(mItemID, mNewParentID, mOldParentID, -1, -1);
+        break;
+    }
+    case EditorViewType::cmKeysView: {
+        mpHost->getKeyUnit()->reParentKey(mItemID, mNewParentID, mOldParentID, -1, -1);
+        break;
+    }
+    case EditorViewType::cmActionView: {
+        mpHost->getActionUnit()->reParentAction(mItemID, mNewParentID, mOldParentID, -1, -1);
+        break;
+    }
+    default:
+        qWarning() << "MoveItemCommand::undo() - Unknown view type";
+        break;
+    }
+}
+
+void MoveItemCommand::redo() {
+    qDebug() << "[MoveItemCommand::redo] Moving item" << mItemID << "from parent" << mOldParentID << "to parent" << mNewParentID;
+
+    switch (mViewType) {
+    case EditorViewType::cmTriggerView: {
+        mpHost->getTriggerUnit()->reParentTrigger(mItemID, mOldParentID, mNewParentID, -1, -1);
+        break;
+    }
+    case EditorViewType::cmAliasView: {
+        mpHost->getAliasUnit()->reParentAlias(mItemID, mOldParentID, mNewParentID, -1, -1);
+        break;
+    }
+    case EditorViewType::cmTimerView: {
+        mpHost->getTimerUnit()->reParentTimer(mItemID, mOldParentID, mNewParentID, -1, -1);
+        break;
+    }
+    case EditorViewType::cmScriptView: {
+        mpHost->getScriptUnit()->reParentScript(mItemID, mOldParentID, mNewParentID, -1, -1);
+        break;
+    }
+    case EditorViewType::cmKeysView: {
+        mpHost->getKeyUnit()->reParentKey(mItemID, mOldParentID, mNewParentID, -1, -1);
+        break;
+    }
+    case EditorViewType::cmActionView: {
+        mpHost->getActionUnit()->reParentAction(mItemID, mOldParentID, mNewParentID, -1, -1);
+        break;
+    }
+    default:
+        qWarning() << "MoveItemCommand::redo() - Unknown view type";
+        break;
+    }
+}
+
+QString MoveItemCommand::text() const {
+    QString typeName = getViewTypeName(mViewType);
+    QString oldParentName = (mOldParentID == 0 || mOldParentID == -1) ? tr("root") : QString::number(mOldParentID);
+    QString newParentName = (mNewParentID == 0 || mNewParentID == -1) ? tr("root") : QString::number(mNewParentID);
+    return QObject::tr("Move %1 \"%2\"").arg(typeName, mItemName);
+}
+
+void MoveItemCommand::remapItemID(int oldID, int newID) {
+    qDebug() << "[MoveItemCommand::remapItemID] Called with oldID:" << oldID << "newID:" << newID << "| my mItemID:" << mItemID;
+    if (mItemID == oldID) {
+        qDebug() << "[MoveItemCommand::remapItemID] Remapping mItemID from" << oldID << "to" << newID;
+        mItemID = newID;
+    }
+    if (mOldParentID == oldID) {
+        qDebug() << "[MoveItemCommand::remapItemID] Remapping mOldParentID from" << oldID << "to" << newID;
+        mOldParentID = newID;
+    }
+    if (mNewParentID == oldID) {
+        qDebug() << "[MoveItemCommand::remapItemID] Remapping mNewParentID from" << oldID << "to" << newID;
+        mNewParentID = newID;
+    }
+}
+
+// =============================================================================
+// ToggleActiveCommand implementation
+// =============================================================================
+
+ToggleActiveCommand::ToggleActiveCommand(EditorViewType viewType, int itemID,
+                                         bool oldState, bool newState,
+                                         const QString& itemName,
+                                         Host* host)
+: EditorCommand(host)
+, mViewType(viewType)
+, mItemID(itemID)
+, mOldActiveState(oldState)
+, mNewActiveState(newState)
+, mItemName(itemName)
+{
+}
+
+void ToggleActiveCommand::undo() {
+    qDebug() << "[ToggleActiveCommand::undo] Restoring item" << mItemID << "active state to" << mOldActiveState;
+
+    switch (mViewType) {
+    case EditorViewType::cmTriggerView: {
+        TTrigger* pT = mpHost->getTriggerUnit()->getTrigger(mItemID);
+        if (pT) {
+            pT->setIsActive(mOldActiveState);
+        } else {
+            qWarning() << "ToggleActiveCommand::undo() - Trigger" << mItemID << "not found";
+        }
+        break;
+    }
+    case EditorViewType::cmAliasView: {
+        TAlias* pA = mpHost->getAliasUnit()->getAlias(mItemID);
+        if (pA) {
+            pA->setIsActive(mOldActiveState);
+        } else {
+            qWarning() << "ToggleActiveCommand::undo() - Alias" << mItemID << "not found";
+        }
+        break;
+    }
+    case EditorViewType::cmTimerView: {
+        TTimer* pT = mpHost->getTimerUnit()->getTimer(mItemID);
+        if (pT) {
+            pT->setIsActive(mOldActiveState);
+        } else {
+            qWarning() << "ToggleActiveCommand::undo() - Timer" << mItemID << "not found";
+        }
+        break;
+    }
+    case EditorViewType::cmScriptView: {
+        TScript* pS = mpHost->getScriptUnit()->getScript(mItemID);
+        if (pS) {
+            pS->setIsActive(mOldActiveState);
+        } else {
+            qWarning() << "ToggleActiveCommand::undo() - Script" << mItemID << "not found";
+        }
+        break;
+    }
+    case EditorViewType::cmKeysView: {
+        TKey* pK = mpHost->getKeyUnit()->getKey(mItemID);
+        if (pK) {
+            pK->setIsActive(mOldActiveState);
+        } else {
+            qWarning() << "ToggleActiveCommand::undo() - Key" << mItemID << "not found";
+        }
+        break;
+    }
+    case EditorViewType::cmActionView: {
+        TAction* pA = mpHost->getActionUnit()->getAction(mItemID);
+        if (pA) {
+            pA->setIsActive(mOldActiveState);
+        } else {
+            qWarning() << "ToggleActiveCommand::undo() - Action" << mItemID << "not found";
+        }
+        break;
+    }
+    default:
+        qWarning() << "ToggleActiveCommand::undo() - Unknown view type";
+        break;
+    }
+}
+
+void ToggleActiveCommand::redo() {
+    qDebug() << "[ToggleActiveCommand::redo] Setting item" << mItemID << "active state to" << mNewActiveState;
+
+    switch (mViewType) {
+    case EditorViewType::cmTriggerView: {
+        TTrigger* pT = mpHost->getTriggerUnit()->getTrigger(mItemID);
+        if (pT) {
+            pT->setIsActive(mNewActiveState);
+        } else {
+            qWarning() << "ToggleActiveCommand::redo() - Trigger" << mItemID << "not found";
+        }
+        break;
+    }
+    case EditorViewType::cmAliasView: {
+        TAlias* pA = mpHost->getAliasUnit()->getAlias(mItemID);
+        if (pA) {
+            pA->setIsActive(mNewActiveState);
+        } else {
+            qWarning() << "ToggleActiveCommand::redo() - Alias" << mItemID << "not found";
+        }
+        break;
+    }
+    case EditorViewType::cmTimerView: {
+        TTimer* pT = mpHost->getTimerUnit()->getTimer(mItemID);
+        if (pT) {
+            pT->setIsActive(mNewActiveState);
+        } else {
+            qWarning() << "ToggleActiveCommand::redo() - Timer" << mItemID << "not found";
+        }
+        break;
+    }
+    case EditorViewType::cmScriptView: {
+        TScript* pS = mpHost->getScriptUnit()->getScript(mItemID);
+        if (pS) {
+            pS->setIsActive(mNewActiveState);
+        } else {
+            qWarning() << "ToggleActiveCommand::redo() - Script" << mItemID << "not found";
+        }
+        break;
+    }
+    case EditorViewType::cmKeysView: {
+        TKey* pK = mpHost->getKeyUnit()->getKey(mItemID);
+        if (pK) {
+            pK->setIsActive(mNewActiveState);
+        } else {
+            qWarning() << "ToggleActiveCommand::redo() - Key" << mItemID << "not found";
+        }
+        break;
+    }
+    case EditorViewType::cmActionView: {
+        TAction* pA = mpHost->getActionUnit()->getAction(mItemID);
+        if (pA) {
+            pA->setIsActive(mNewActiveState);
+        } else {
+            qWarning() << "ToggleActiveCommand::redo() - Action" << mItemID << "not found";
+        }
+        break;
+    }
+    default:
+        qWarning() << "ToggleActiveCommand::redo() - Unknown view type";
+        break;
+    }
+}
+
+QString ToggleActiveCommand::text() const {
+    QString typeName = getViewTypeName(mViewType);
+    if (mNewActiveState) {
+        return QObject::tr("Activate %1 \"%2\"").arg(typeName, mItemName);
+    } else {
+        return QObject::tr("Deactivate %1 \"%2\"").arg(typeName, mItemName);
+    }
+}
+
+void ToggleActiveCommand::remapItemID(int oldID, int newID) {
+    qDebug() << "[ToggleActiveCommand::remapItemID] Called with oldID:" << oldID << "newID:" << newID << "| my mItemID:" << mItemID;
+    if (mItemID == oldID) {
+        qDebug() << "[ToggleActiveCommand::remapItemID] Remapping mItemID from" << oldID << "to" << newID;
+        mItemID = newID;
+    }
+}
+
+// =============================================================================
 // EditorUndoSystem implementation
 // =============================================================================
 
