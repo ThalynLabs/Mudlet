@@ -12416,6 +12416,32 @@ QTreeWidgetItem* findItemByID(QTreeWidgetItem* parent, int itemID)
 
 void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> affectedItemIDs)
 {
+    // Switch to the appropriate view if not already there
+    if (mCurrentView != viewType) {
+        switch (viewType) {
+        case EditorViewType::cmTriggerView:
+            slot_showTriggers();
+            break;
+        case EditorViewType::cmAliasView:
+            slot_showAliases();
+            break;
+        case EditorViewType::cmTimerView:
+            slot_showTimers();
+            break;
+        case EditorViewType::cmScriptView:
+            slot_showScripts();
+            break;
+        case EditorViewType::cmKeysView:
+            slot_showKeys();
+            break;
+        case EditorViewType::cmActionView:
+            slot_showActions();
+            break;
+        default:
+            break;
+        }
+    }
+
     // Refresh the appropriate tree widget when items are added/deleted/modified via undo/redo
     switch (viewType) {
     case EditorViewType::cmTriggerView: {
