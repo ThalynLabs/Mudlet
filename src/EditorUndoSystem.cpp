@@ -296,6 +296,24 @@ TTrigger* importTriggerFromXML(const QString& xmlSnapshot, TTrigger* pParent, Ho
     // Compile and validate the trigger to ensure error states are computed
     pT->compileAll();
 
+    // Recursively import child triggers
+    for (auto childNode : triggerNode.children()) {
+        QString childNodeName = QString::fromStdString(childNode.name());
+        if (childNodeName == "Trigger" || childNodeName == "TriggerGroup") {
+            // Create XML snapshot for the child
+            pugi::xml_document childDoc;
+            auto childRoot = childDoc.append_child("TriggerSnapshot");
+            childRoot.append_copy(childNode);
+
+            std::ostringstream oss;
+            childDoc.save(oss);
+            QString childXML = QString::fromStdString(oss.str());
+
+            // Recursively import the child with current trigger as parent
+            importTriggerFromXML(childXML, pT, host);
+        }
+    }
+
     return pT;
 }
 
@@ -584,7 +602,7 @@ void DeleteItemCommand::undo() {
     // Restore all deleted items from their XML snapshots
     // Process in reverse order to maintain tree structure (parents before children)
     for (int i = mDeletedItems.size() - 1; i >= 0; --i) {
-        const auto& info = mDeletedItems[i];
+        auto& info = mDeletedItems[i];  // Non-const reference so we can update the ID
 
         switch (mViewType) {
         case EditorViewType::cmTriggerView: {
@@ -598,6 +616,9 @@ void DeleteItemCommand::undo() {
             TTrigger* pRestoredTrigger = importTriggerFromXML(info.xmlSnapshot, pParent, mpHost);
             if (!pRestoredTrigger) {
                 qWarning() << "DeleteItemCommand::undo() - Failed to restore trigger" << info.itemName;
+            } else {
+                // Update the stored ID to the new ID so redo can find it
+                info.itemID = pRestoredTrigger->getID();
             }
             break;
         }
