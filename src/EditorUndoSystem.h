@@ -60,7 +60,7 @@ protected:
 class AddItemCommand : public EditorCommand {
 public:
     AddItemCommand(EditorViewType viewType, int itemID, int parentID,
-                   bool isFolder, const QString& itemName, Host* host);
+                   int positionInParent, bool isFolder, const QString& itemName, Host* host);
 
     void undo() override;
     void redo() override;
@@ -79,6 +79,7 @@ private:
     int mItemID;
     int mOldItemID = -1; // Tracks old ID before redo, for ID remapping
     int mParentID;
+    int mPositionInParent;
     bool mIsFolder;
     QString mItemName;
     QString mItemSnapshot;
@@ -137,6 +138,7 @@ class MoveItemCommand : public EditorCommand {
 public:
     MoveItemCommand(EditorViewType viewType, int itemID,
                     int oldParentID, int newParentID,
+                    int oldPosition, int newPosition,
                     const QString& itemName,
                     Host* host);
 
@@ -152,6 +154,8 @@ private:
     int mItemID;
     int mOldParentID;
     int mNewParentID;
+    int mOldPosition;
+    int mNewPosition;
     QString mItemName;
 };
 

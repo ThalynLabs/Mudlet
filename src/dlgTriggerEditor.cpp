@@ -3864,7 +3864,7 @@ void dlgTriggerEditor::activeToggle_trigger()
     }
 }
 
-void dlgTriggerEditor::slot_itemMoved(int itemID, int oldParentID, int newParentID)
+void dlgTriggerEditor::slot_itemMoved(int itemID, int oldParentID, int newParentID, int oldPosition, int newPosition)
 {
     if (!mpUndoSystem) {
         return;
@@ -3946,6 +3946,8 @@ void dlgTriggerEditor::slot_itemMoved(int itemID, int oldParentID, int newParent
         itemID,
         oldParentID,
         newParentID,
+        oldPosition,
+        newPosition,
         itemName,
         mpHost
     );
@@ -4952,10 +4954,20 @@ void dlgTriggerEditor::addTrigger(bool isFolder)
     int parentID = (actualParent && actualParent != mpTriggerBaseItem)
                    ? actualParent->data(0, Qt::UserRole).toInt()
                    : -1;
+
+    // Get position of the newly added item in its parent
+    int positionInParent = 0;
+    if (actualParent) {
+        positionInParent = actualParent->indexOfChild(pNewItem);
+    } else {
+        positionInParent = treeWidget_triggers->indexOfTopLevelItem(pNewItem);
+    }
+
     auto cmd = std::make_unique<AddItemCommand>(
         EditorViewType::cmTriggerView,
         pNewTrigger->getID(),
         parentID,
+        positionInParent,
         isFolder,
         name,
         mpHost
@@ -5043,10 +5055,20 @@ void dlgTriggerEditor::addTimer(bool isFolder)
     int parentID = (actualParent && actualParent != mpTimerBaseItem)
                    ? actualParent->data(0, Qt::UserRole).toInt()
                    : -1;
+
+    // Get position of the newly added item in its parent
+    int positionInParent = 0;
+    if (actualParent) {
+        positionInParent = actualParent->indexOfChild(pNewItem);
+    } else {
+        positionInParent = treeWidget_timers->indexOfTopLevelItem(pNewItem);
+    }
+
     auto cmd = std::make_unique<AddItemCommand>(
         EditorViewType::cmTimerView,
         pNewTimer->getID(),
         parentID,
+        positionInParent,
         isFolder,
         name,
         mpHost
@@ -5197,10 +5219,20 @@ void dlgTriggerEditor::addKey(bool isFolder)
     int parentID = (actualParent && actualParent != mpKeyBaseItem)
                    ? actualParent->data(0, Qt::UserRole).toInt()
                    : -1;
+
+    // Get position of the newly added item in its parent
+    int positionInParent = 0;
+    if (actualParent) {
+        positionInParent = actualParent->indexOfChild(pNewItem);
+    } else {
+        positionInParent = treeWidget_keys->indexOfTopLevelItem(pNewItem);
+    }
+
     auto cmd = std::make_unique<AddItemCommand>(
         EditorViewType::cmKeysView,
         pNewKey->getID(),
         parentID,
+        positionInParent,
         isFolder,
         name,
         mpHost
@@ -5293,10 +5325,20 @@ void dlgTriggerEditor::addAlias(bool isFolder)
     int parentID = (actualParent && actualParent != mpAliasBaseItem)
                    ? actualParent->data(0, Qt::UserRole).toInt()
                    : -1;
+
+    // Get position of the newly added item in its parent
+    int positionInParent = 0;
+    if (actualParent) {
+        positionInParent = actualParent->indexOfChild(pNewItem);
+    } else {
+        positionInParent = treeWidget_aliases->indexOfTopLevelItem(pNewItem);
+    }
+
     auto cmd = std::make_unique<AddItemCommand>(
         EditorViewType::cmAliasView,
         pNewAlias->getID(),
         parentID,
+        positionInParent,
         isFolder,
         name,
         mpHost
@@ -5391,10 +5433,20 @@ void dlgTriggerEditor::addAction(bool isFolder)
     int parentID = (actualParent && actualParent != mpActionBaseItem)
                    ? actualParent->data(0, Qt::UserRole).toInt()
                    : -1;
+
+    // Get position of the newly added item in its parent
+    int positionInParent = 0;
+    if (actualParent) {
+        positionInParent = actualParent->indexOfChild(pNewItem);
+    } else {
+        positionInParent = treeWidget_actions->indexOfTopLevelItem(pNewItem);
+    }
+
     auto cmd = std::make_unique<AddItemCommand>(
         EditorViewType::cmActionView,
         pNewAction->getID(),
         parentID,
+        positionInParent,
         isFolder,
         name,
         mpHost
@@ -5478,10 +5530,20 @@ void dlgTriggerEditor::addScript(bool isFolder)
     int parentID = (actualParent && actualParent != mpScriptsBaseItem)
                    ? actualParent->data(0, Qt::UserRole).toInt()
                    : -1;
+
+    // Get position of the newly added item in its parent
+    int positionInParent = 0;
+    if (actualParent) {
+        positionInParent = actualParent->indexOfChild(pNewItem);
+    } else {
+        positionInParent = treeWidget_scripts->indexOfTopLevelItem(pNewItem);
+    }
+
     auto cmd = std::make_unique<AddItemCommand>(
         EditorViewType::cmScriptView,
         pNewScript->getID(),
         parentID,
+        positionInParent,
         isFolder,
         name,
         mpHost

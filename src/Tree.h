@@ -29,11 +29,7 @@
 #include <iostream>
 #include <list>
 
-// Enum to clarify insertion mode when adding children to tree nodes
-enum class TreeInsertMode {
-    Append,      // Add to end of children list
-    AtPosition   // Insert at specific position
-};
+#include "utils.h"
 
 template <class T>
 class Tree
@@ -51,7 +47,7 @@ public:
     int getID() const { return mID; }
     virtual void setID(const int id) { mID = id; }
     // New safer API using enum for insertion mode
-    void addChild(T* newChild, TreeInsertMode mode, int position = 0);
+    void addChild(T* newChild, TreeItemInsertMode mode, int position = 0);
     // Old API kept for backward compatibility (delegates to new API)
     void addChild(T* newChild, int parentPostion = -1, int parentPosition = -1);
     bool popChild(T* removeChild);
@@ -267,9 +263,9 @@ void Tree<T>::disableFamily()
 
 // New enum-based API implementation
 template <class T>
-void Tree<T>::addChild(T* newChild, TreeInsertMode mode, int position)
+void Tree<T>::addChild(T* newChild, TreeItemInsertMode mode, int position)
 {
-    if (mode == TreeInsertMode::Append || position >= static_cast<int>(mpMyChildrenList->size())) {
+    if (mode == TreeItemInsertMode::Append || position >= static_cast<int>(mpMyChildrenList->size())) {
         mpMyChildrenList->push_back(newChild);
     } else {
         // insert item at proper position
@@ -289,9 +285,9 @@ template <class T>
 void Tree<T>::addChild(T* newChild, int parentPosition, int childPosition)
 {
     if (parentPosition == -1 || childPosition == -1) {
-        addChild(newChild, TreeInsertMode::Append, 0);
+        addChild(newChild, TreeItemInsertMode::Append, 0);
     } else {
-        addChild(newChild, TreeInsertMode::AtPosition, childPosition);
+        addChild(newChild, TreeItemInsertMode::AtPosition, childPosition);
     }
 }
 

@@ -196,6 +196,9 @@ void TTreeWidget::rowsAboutToBeRemoved(const QModelIndex& parent, int start, int
     // so end is always the same as start (?)
     Q_UNUSED(end)
 
+    // Capture the position in the old parent for undo/redo
+    mOldPosition = start;
+
     if (parent.isValid()) {
         mOldParentID = parent.data(Qt::UserRole).toInt();
     } else {
@@ -256,13 +259,14 @@ void TTreeWidget::rowsInserted(const QModelIndex& parent, int start, int end)
 
         qDebug() << "[TTreeWidget::rowsInserted] ===== DRAG-DROP DETECTED =====";
         qDebug() << "[TTreeWidget::rowsInserted] mChildID:" << mChildID << "mOldParentID:" << mOldParentID << "newParentID:" << newParentID;
+        qDebug() << "[TTreeWidget::rowsInserted] mOldPosition:" << mOldPosition << "childPosition:" << childPosition;
         qDebug() << "[TTreeWidget::rowsInserted] parentPosition:" << parentPosition << "childPosition:" << childPosition;
         qDebug() << "[TTreeWidget::rowsInserted] Tree type - triggers:" << mIsTriggerTree << "aliases:" << mIsAliasTree
                  << "timers:" << mIsTimerTree << "scripts:" << mIsScriptTree << "keys:" << mIsKeyTree << "actions:" << mIsActionTree;
 
         // Emit signal for undo system before performing the move
         qDebug() << "[TTreeWidget::rowsInserted] Emitting itemMoved signal...";
-        emit itemMoved(mChildID, mOldParentID, newParentID);
+        emit itemMoved(mChildID, mOldParentID, newParentID, mOldPosition, childPosition);
         qDebug() << "[TTreeWidget::rowsInserted] Signal emitted, now calling reParent function...";
 
         if (mIsTriggerTree) {
@@ -323,6 +327,7 @@ void TTreeWidget::rowsInserted(const QModelIndex& parent, int start, int end)
         // CHECK: These things are NOT hit if we have "return"-ed early, is this okay?
         mChildID = 0;
         mOldParentID = 0;
+        mOldPosition = 0;
         mIsDropAction = false;
     }
 

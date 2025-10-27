@@ -121,11 +121,11 @@ void TriggerUnit::addTriggerRootNode(TTrigger* pT, int parentPosition, int child
 }
 
 // New enum-based API implementation
-void TriggerUnit::reParentTrigger(int childID, int oldParentID, int newParentID, TriggerInsertMode mode, int position)
+void TriggerUnit::reParentTrigger(int childID, int oldParentID, int newParentID, TreeItemInsertMode mode, int position)
 {
     qDebug() << "[TriggerUnit::reParentTrigger] ===== REPARENTING TRIGGER =====";
     qDebug() << "[TriggerUnit::reParentTrigger] childID:" << childID << "oldParentID:" << oldParentID << "newParentID:" << newParentID;
-    qDebug() << "[TriggerUnit::reParentTrigger] mode:" << (mode == TriggerInsertMode::AtPosition ? "AtPosition" : "Append") << "position:" << position;
+    qDebug() << "[TriggerUnit::reParentTrigger] mode:" << (mode == TreeItemInsertMode::AtPosition ? "AtPosition" : "Append") << "position:" << position;
 
     TTrigger* pOldParent = getTriggerPrivate(oldParentID);
     TTrigger* pNewParent = getTriggerPrivate(newParentID);
@@ -153,8 +153,8 @@ void TriggerUnit::reParentTrigger(int childID, int oldParentID, int newParentID,
     }
 
     // Convert enum mode to the internal flags
-    int parentPosition = (mode == TriggerInsertMode::AtPosition) ? 0 : -1;
-    int childPosition = (mode == TriggerInsertMode::AtPosition) ? position : -1;
+    int parentPosition = (mode == TreeItemInsertMode::AtPosition) ? 0 : -1;
+    int childPosition = (mode == TreeItemInsertMode::AtPosition) ? position : -1;
 
     if (pNewParent) {
         qDebug() << "[TriggerUnit::reParentTrigger] Adding child to new parent:" << pNewParent->getName();
@@ -175,9 +175,9 @@ void TriggerUnit::reParentTrigger(int childID, int oldParentID, int newParentID,
 void TriggerUnit::reParentTrigger(int childID, int oldParentID, int newParentID, int parentPosition, int childPosition)
 {
     if (parentPosition == -1 || childPosition == -1) {
-        reParentTrigger(childID, oldParentID, newParentID, TriggerInsertMode::Append, 0);
+        reParentTrigger(childID, oldParentID, newParentID, TreeItemInsertMode::Append, 0);
     } else {
-        reParentTrigger(childID, oldParentID, newParentID, TriggerInsertMode::AtPosition, childPosition);
+        reParentTrigger(childID, oldParentID, newParentID, TreeItemInsertMode::AtPosition, childPosition);
     }
 }
 

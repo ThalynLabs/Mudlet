@@ -34,6 +34,7 @@
 #include "ActionUnit.h"
 #include "XMLexport.h"
 #include "XMLimport.h"
+#include "utils.h"
 
 #include <QDebug>
 #include <sstream>
@@ -1338,11 +1339,12 @@ bool updateActionFromXML(TAction* pA, const QString& xmlSnapshot) {
 // =============================================================================
 
 AddItemCommand::AddItemCommand(EditorViewType viewType, int itemID, int parentID,
-                               bool isFolder, const QString& itemName, Host* host)
+                               int positionInParent, bool isFolder, const QString& itemName, Host* host)
 : EditorCommand(host)
 , mViewType(viewType)
 , mItemID(itemID)
 , mParentID(parentID)
+, mPositionInParent(positionInParent)
 , mIsFolder(isFolder)
 , mItemName(itemName)
 {
@@ -1466,7 +1468,7 @@ void AddItemCommand::redo() {
         // Recreate the trigger from XML snapshot
         switch (mViewType) {
         case EditorViewType::cmTriggerView: {
-            TTrigger* pNewTrigger = importTriggerFromXML(mItemSnapshot, pParent, mpHost, -1);
+            TTrigger* pNewTrigger = importTriggerFromXML(mItemSnapshot, pParent, mpHost, mPositionInParent);
             if (pNewTrigger) {
                 // Store the new ID (it may be different from original)
                 mItemID = pNewTrigger->getID();
@@ -1482,7 +1484,7 @@ void AddItemCommand::redo() {
             if (mParentID != -1) {
                 pAliasParent = mpHost->getAliasUnit()->getAlias(mParentID);
             }
-            TAlias* pNewAlias = importAliasFromXML(mItemSnapshot, pAliasParent, mpHost);
+            TAlias* pNewAlias = importAliasFromXML(mItemSnapshot, pAliasParent, mpHost, mPositionInParent);
             if (pNewAlias) {
                 mItemID = pNewAlias->getID();
                 if (mOldItemID != mItemID) {
@@ -1497,7 +1499,7 @@ void AddItemCommand::redo() {
             if (mParentID != -1) {
                 pTimerParent = mpHost->getTimerUnit()->getTimer(mParentID);
             }
-            TTimer* pNewTimer = importTimerFromXML(mItemSnapshot, pTimerParent, mpHost);
+            TTimer* pNewTimer = importTimerFromXML(mItemSnapshot, pTimerParent, mpHost, mPositionInParent);
             if (pNewTimer) {
                 mItemID = pNewTimer->getID();
                 if (mOldItemID != mItemID) {
@@ -1512,7 +1514,7 @@ void AddItemCommand::redo() {
             if (mParentID != -1) {
                 pScriptParent = mpHost->getScriptUnit()->getScript(mParentID);
             }
-            TScript* pNewScript = importScriptFromXML(mItemSnapshot, pScriptParent, mpHost);
+            TScript* pNewScript = importScriptFromXML(mItemSnapshot, pScriptParent, mpHost, mPositionInParent);
             if (pNewScript) {
                 mItemID = pNewScript->getID();
                 if (mOldItemID != mItemID) {
@@ -1527,7 +1529,7 @@ void AddItemCommand::redo() {
             if (mParentID != -1) {
                 pKeyParent = mpHost->getKeyUnit()->getKey(mParentID);
             }
-            TKey* pNewKey = importKeyFromXML(mItemSnapshot, pKeyParent, mpHost);
+            TKey* pNewKey = importKeyFromXML(mItemSnapshot, pKeyParent, mpHost, mPositionInParent);
             if (pNewKey) {
                 mItemID = pNewKey->getID();
                 if (mOldItemID != mItemID) {
@@ -1542,7 +1544,7 @@ void AddItemCommand::redo() {
             if (mParentID != -1) {
                 pActionParent = mpHost->getActionUnit()->getAction(mParentID);
             }
-            TAction* pNewAction = importActionFromXML(mItemSnapshot, pActionParent, mpHost);
+            TAction* pNewAction = importActionFromXML(mItemSnapshot, pActionParent, mpHost, mPositionInParent);
             if (pNewAction) {
                 mItemID = pNewAction->getID();
                 if (mOldItemID != mItemID) {
@@ -2072,6 +2074,7 @@ void ModifyPropertyCommand::remapItemID(int oldID, int newID) {
 
 MoveItemCommand::MoveItemCommand(EditorViewType viewType, int itemID,
                                  int oldParentID, int newParentID,
+                                 int oldPosition, int newPosition,
                                  const QString& itemName,
                                  Host* host)
 : EditorCommand(host)
@@ -2079,35 +2082,37 @@ MoveItemCommand::MoveItemCommand(EditorViewType viewType, int itemID,
 , mItemID(itemID)
 , mOldParentID(oldParentID)
 , mNewParentID(newParentID)
+, mOldPosition(oldPosition)
+, mNewPosition(newPosition)
 , mItemName(itemName)
 {
 }
 
 void MoveItemCommand::undo() {
-
+    // Move the item back to its original parent at its original position
     switch (mViewType) {
     case EditorViewType::cmTriggerView: {
-        mpHost->getTriggerUnit()->reParentTrigger(mItemID, mNewParentID, mOldParentID, -1, -1);
+        mpHost->getTriggerUnit()->reParentTrigger(mItemID, mNewParentID, mOldParentID, TreeItemInsertMode::AtPosition, mOldPosition);
         break;
     }
     case EditorViewType::cmAliasView: {
-        mpHost->getAliasUnit()->reParentAlias(mItemID, mNewParentID, mOldParentID, -1, -1);
+        mpHost->getAliasUnit()->reParentAlias(mItemID, mNewParentID, mOldParentID, TreeItemInsertMode::AtPosition, mOldPosition);
         break;
     }
     case EditorViewType::cmTimerView: {
-        mpHost->getTimerUnit()->reParentTimer(mItemID, mNewParentID, mOldParentID, -1, -1);
+        mpHost->getTimerUnit()->reParentTimer(mItemID, mNewParentID, mOldParentID, TreeItemInsertMode::AtPosition, mOldPosition);
         break;
     }
     case EditorViewType::cmScriptView: {
-        mpHost->getScriptUnit()->reParentScript(mItemID, mNewParentID, mOldParentID, -1, -1);
+        mpHost->getScriptUnit()->reParentScript(mItemID, mNewParentID, mOldParentID, TreeItemInsertMode::AtPosition, mOldPosition);
         break;
     }
     case EditorViewType::cmKeysView: {
-        mpHost->getKeyUnit()->reParentKey(mItemID, mNewParentID, mOldParentID, -1, -1);
+        mpHost->getKeyUnit()->reParentKey(mItemID, mNewParentID, mOldParentID, TreeItemInsertMode::AtPosition, mOldPosition);
         break;
     }
     case EditorViewType::cmActionView: {
-        mpHost->getActionUnit()->reParentAction(mItemID, mNewParentID, mOldParentID, -1, -1);
+        mpHost->getActionUnit()->reParentAction(mItemID, mNewParentID, mOldParentID, TreeItemInsertMode::AtPosition, mOldPosition);
         break;
     }
     default:
@@ -2117,30 +2122,30 @@ void MoveItemCommand::undo() {
 }
 
 void MoveItemCommand::redo() {
-
+    // Move the item to the new parent at the new position
     switch (mViewType) {
     case EditorViewType::cmTriggerView: {
-        mpHost->getTriggerUnit()->reParentTrigger(mItemID, mOldParentID, mNewParentID, -1, -1);
+        mpHost->getTriggerUnit()->reParentTrigger(mItemID, mOldParentID, mNewParentID, TreeItemInsertMode::AtPosition, mNewPosition);
         break;
     }
     case EditorViewType::cmAliasView: {
-        mpHost->getAliasUnit()->reParentAlias(mItemID, mOldParentID, mNewParentID, -1, -1);
+        mpHost->getAliasUnit()->reParentAlias(mItemID, mOldParentID, mNewParentID, TreeItemInsertMode::AtPosition, mNewPosition);
         break;
     }
     case EditorViewType::cmTimerView: {
-        mpHost->getTimerUnit()->reParentTimer(mItemID, mOldParentID, mNewParentID, -1, -1);
+        mpHost->getTimerUnit()->reParentTimer(mItemID, mOldParentID, mNewParentID, TreeItemInsertMode::AtPosition, mNewPosition);
         break;
     }
     case EditorViewType::cmScriptView: {
-        mpHost->getScriptUnit()->reParentScript(mItemID, mOldParentID, mNewParentID, -1, -1);
+        mpHost->getScriptUnit()->reParentScript(mItemID, mOldParentID, mNewParentID, TreeItemInsertMode::AtPosition, mNewPosition);
         break;
     }
     case EditorViewType::cmKeysView: {
-        mpHost->getKeyUnit()->reParentKey(mItemID, mOldParentID, mNewParentID, -1, -1);
+        mpHost->getKeyUnit()->reParentKey(mItemID, mOldParentID, mNewParentID, TreeItemInsertMode::AtPosition, mNewPosition);
         break;
     }
     case EditorViewType::cmActionView: {
-        mpHost->getActionUnit()->reParentAction(mItemID, mOldParentID, mNewParentID, -1, -1);
+        mpHost->getActionUnit()->reParentAction(mItemID, mOldParentID, mNewParentID, TreeItemInsertMode::AtPosition, mNewPosition);
         break;
     }
     default:

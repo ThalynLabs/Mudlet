@@ -59,12 +59,13 @@ public:
     void getAllChildren(QTreeWidgetItem*, QList<QTreeWidgetItem*>&);
 
 signals:
-    void itemMoved(int itemID, int oldParentID, int newParentID);
+    void itemMoved(int itemID, int oldParentID, int newParentID, int oldPosition, int newPosition);
 
 private:
     bool mIsDropAction;
     QPointer<Host> mpHost;
     int mOldParentID;
+    int mOldPosition;
     int mChildID;
     // TODO: replace these seven booleans with a single enum:
     bool mIsTriggerTree;

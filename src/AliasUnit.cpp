@@ -117,25 +117,67 @@ void AliasUnit::addAliasRootNode(TAlias* pT, int parentPosition, int childPositi
 
 void AliasUnit::reParentAlias(int childID, int oldParentID, int newParentID, int parentPosition, int childPosition)
 {
+    qDebug() << "[AliasUnit::reParentAlias] ===== REPARENTING ALIAS =====";
+    qDebug() << "[AliasUnit::reParentAlias] childID:" << childID << "oldParentID:" << oldParentID << "newParentID:" << newParentID;
+    qDebug() << "[AliasUnit::reParentAlias] parentPosition:" << parentPosition << "childPosition:" << childPosition;
+
     TAlias* pOldParent = getAliasPrivate(oldParentID);
     TAlias* pNewParent = getAliasPrivate(newParentID);
     TAlias* pChild = getAliasPrivate(childID);
+
+    qDebug() << "[AliasUnit::reParentAlias] pChild:" << pChild;
+    qDebug() << "[AliasUnit::reParentAlias] pOldParent:" << pOldParent;
+    qDebug() << "[AliasUnit::reParentAlias] pNewParent:" << pNewParent;
+
     if (!pChild) {
+        qDebug() << "[AliasUnit::reParentAlias] ERROR: pChild is null!";
         return;
     }
+
+    qDebug() << "[AliasUnit::reParentAlias] Child alias name:" << pChild->getName();
+    qDebug() << "[AliasUnit::reParentAlias] Root list size before removal:" << mAliasRootNodeList.size();
+
     if (pOldParent) {
+        qDebug() << "[AliasUnit::reParentAlias] Removing child from old parent";
         pOldParent->popChild(pChild);
     } else {
+        qDebug() << "[AliasUnit::reParentAlias] Removing child from root node list";
         mAliasRootNodeList.remove(pChild);
+        qDebug() << "[AliasUnit::reParentAlias] Root list size after removal:" << mAliasRootNodeList.size();
     }
+
     if (pNewParent) {
+        qDebug() << "[AliasUnit::reParentAlias] Adding child to new parent";
         pNewParent->addChild(pChild, parentPosition, childPosition);
         pChild->setParent(pNewParent);
-        //cout << "dumping family of newParent:"<<endl;
-        //pNewParent->Dump();
     } else {
+        qDebug() << "[AliasUnit::reParentAlias] Adding child to root node list";
         pChild->Tree<TAlias>::setParent(nullptr);
         addAliasRootNode(pChild, parentPosition, childPosition, true);
+        qDebug() << "[AliasUnit::reParentAlias] Root list size after addition:" << mAliasRootNodeList.size();
+
+        // Debug: show all aliases in root list
+        qDebug() << "[AliasUnit::reParentAlias] Root list contents:";
+        int pos = 0;
+        for (auto* alias : mAliasRootNodeList) {
+            qDebug() << "  Position" << pos << ":" << (alias ? alias->getName() : "NULL");
+            if (alias && alias->getID() == childID) {
+                qDebug() << "    ^^^ This is the alias we just added! (ID" << childID << ")";
+            }
+            pos++;
+        }
+    }
+    qDebug() << "[AliasUnit::reParentAlias] ===== REPARENTING COMPLETE =====";
+}
+
+void AliasUnit::reParentAlias(int childID, int oldParentID, int newParentID, TreeItemInsertMode mode, int position)
+{
+    qDebug() << "[AliasUnit::reParentAlias ENUM] mode:" << (mode == TreeItemInsertMode::Append ? "Append" : "AtPosition") << "position:" << position;
+    if (mode == TreeItemInsertMode::Append) {
+        reParentAlias(childID, oldParentID, newParentID, -1, -1);
+    } else {
+        // AtPosition mode - use 0 for parentPosition to enable position-based insertion
+        reParentAlias(childID, oldParentID, newParentID, 0, position);
     }
 }
 
