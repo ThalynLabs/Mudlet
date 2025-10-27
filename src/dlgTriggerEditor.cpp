@@ -452,6 +452,9 @@ dlgTriggerEditor::dlgTriggerEditor(Host* pH)
         mpRedoItemAction->setStatusTip(text);
     });
 
+    // Connect undo system to tree widget refresh
+    connect(mpUndoSystem, &EditorUndoSystem::itemsChanged, this, &dlgTriggerEditor::slot_itemsChanged);
+
     auto* provider = new edbee::StringTextAutoCompleteProvider();
     //QScopedPointer<edbee::StringTextAutoCompleteProvider> provider(new edbee::StringTextAutoCompleteProvider);
 
@@ -11715,6 +11718,62 @@ void dlgTriggerEditor::setDisplayFont(const QFont& newFont)
 void dlgTriggerEditor::slot_bannerDismissClicked()
 {
     handleBannerDismiss();
+}
+
+void dlgTriggerEditor::slot_itemsChanged(::EditorViewType viewType)
+{
+    // Refresh the appropriate tree widget when items are added/deleted/modified via undo/redo
+    switch (viewType) {
+    case ::EditorViewType::cmTriggerView: {
+        // Clear all children from the trigger base item
+        QList<QTreeWidgetItem*> children = mpTriggerBaseItem->takeChildren();
+        qDeleteAll(children);
+
+        // Repopulate the trigger tree
+        populateTriggers();
+
+        // Expand the base item to show the refreshed tree
+        mpTriggerBaseItem->setExpanded(true);
+        break;
+    }
+    case ::EditorViewType::cmTimerView: {
+        QList<QTreeWidgetItem*> children = mpTimerBaseItem->takeChildren();
+        qDeleteAll(children);
+        populateTimers();
+        mpTimerBaseItem->setExpanded(true);
+        break;
+    }
+    case ::EditorViewType::cmAliasView: {
+        QList<QTreeWidgetItem*> children = mpAliasBaseItem->takeChildren();
+        qDeleteAll(children);
+        populateAliases();
+        mpAliasBaseItem->setExpanded(true);
+        break;
+    }
+    case ::EditorViewType::cmScriptView: {
+        QList<QTreeWidgetItem*> children = mpScriptsBaseItem->takeChildren();
+        qDeleteAll(children);
+        populateScripts();
+        mpScriptsBaseItem->setExpanded(true);
+        break;
+    }
+    case ::EditorViewType::cmActionView: {
+        QList<QTreeWidgetItem*> children = mpActionBaseItem->takeChildren();
+        qDeleteAll(children);
+        populateActions();
+        mpActionBaseItem->setExpanded(true);
+        break;
+    }
+    case ::EditorViewType::cmKeysView: {
+        QList<QTreeWidgetItem*> children = mpKeyBaseItem->takeChildren();
+        qDeleteAll(children);
+        populateKeys();
+        mpKeyBaseItem->setExpanded(true);
+        break;
+    }
+    default:
+        break;
+    }
 }
 
 void dlgTriggerEditor::handleBannerDismiss()
