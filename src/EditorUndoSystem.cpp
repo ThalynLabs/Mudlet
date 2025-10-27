@@ -785,14 +785,24 @@ MoveItemCommand::MoveItemCommand(EditorViewType viewType, int itemID,
 , mNewParentID(newParentID)
 , mItemName(itemName)
 {
+    qDebug() << "[MoveItemCommand::CONSTRUCTOR] Created move command:";
+    qDebug() << "[MoveItemCommand::CONSTRUCTOR]   viewType:" << static_cast<int>(mViewType);
+    qDebug() << "[MoveItemCommand::CONSTRUCTOR]   itemID:" << mItemID;
+    qDebug() << "[MoveItemCommand::CONSTRUCTOR]   oldParentID:" << mOldParentID;
+    qDebug() << "[MoveItemCommand::CONSTRUCTOR]   newParentID:" << mNewParentID;
+    qDebug() << "[MoveItemCommand::CONSTRUCTOR]   itemName:" << mItemName;
 }
 
 void MoveItemCommand::undo() {
-    qDebug() << "[MoveItemCommand::undo] Moving item" << mItemID << "back from parent" << mNewParentID << "to parent" << mOldParentID;
+    qDebug() << "[MoveItemCommand::undo] ===== UNDO MOVE =====";
+    qDebug() << "[MoveItemCommand::undo] Moving item" << mItemID << "'" << mItemName << "' back from parent" << mNewParentID << "to parent" << mOldParentID;
+    qDebug() << "[MoveItemCommand::undo] viewType:" << static_cast<int>(mViewType);
 
     switch (mViewType) {
     case EditorViewType::cmTriggerView: {
+        qDebug() << "[MoveItemCommand::undo] Calling reParentTrigger(" << mItemID << "," << mNewParentID << "," << mOldParentID << ", -1, -1)";
         mpHost->getTriggerUnit()->reParentTrigger(mItemID, mNewParentID, mOldParentID, -1, -1);
+        qDebug() << "[MoveItemCommand::undo] reParentTrigger completed successfully";
         break;
     }
     case EditorViewType::cmAliasView: {
@@ -822,11 +832,15 @@ void MoveItemCommand::undo() {
 }
 
 void MoveItemCommand::redo() {
-    qDebug() << "[MoveItemCommand::redo] Moving item" << mItemID << "from parent" << mOldParentID << "to parent" << mNewParentID;
+    qDebug() << "[MoveItemCommand::redo] ===== REDO MOVE =====";
+    qDebug() << "[MoveItemCommand::redo] Moving item" << mItemID << "'" << mItemName << "' from parent" << mOldParentID << "to parent" << mNewParentID;
+    qDebug() << "[MoveItemCommand::redo] viewType:" << static_cast<int>(mViewType);
 
     switch (mViewType) {
     case EditorViewType::cmTriggerView: {
+        qDebug() << "[MoveItemCommand::redo] Calling reParentTrigger(" << mItemID << "," << mOldParentID << "," << mNewParentID << ", -1, -1)";
         mpHost->getTriggerUnit()->reParentTrigger(mItemID, mOldParentID, mNewParentID, -1, -1);
+        qDebug() << "[MoveItemCommand::redo] reParentTrigger completed successfully";
         break;
     }
     case EditorViewType::cmAliasView: {

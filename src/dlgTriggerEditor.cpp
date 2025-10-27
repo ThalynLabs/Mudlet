@@ -3631,7 +3631,13 @@ void dlgTriggerEditor::activeToggle_trigger()
 
 void dlgTriggerEditor::slot_itemMoved(int itemID, int oldParentID, int newParentID)
 {
+    qDebug() << "[dlgTriggerEditor::slot_itemMoved] ===== SLOT CALLED =====";
+    qDebug() << "[dlgTriggerEditor::slot_itemMoved] itemID:" << itemID << "oldParentID:" << oldParentID << "newParentID:" << newParentID;
+    qDebug() << "[dlgTriggerEditor::slot_itemMoved] mCurrentView:" << static_cast<int>(mCurrentView);
+    qDebug() << "[dlgTriggerEditor::slot_itemMoved] mpUndoSystem:" << mpUndoSystem;
+
     if (!mpUndoSystem) {
+        qDebug() << "[dlgTriggerEditor::slot_itemMoved] No undo system, returning";
         return;
     }
 
@@ -3639,14 +3645,19 @@ void dlgTriggerEditor::slot_itemMoved(int itemID, int oldParentID, int newParent
     EditorViewType viewType;
     QString itemName;
 
+    qDebug() << "[dlgTriggerEditor::slot_itemMoved] Determining view type from mCurrentView...";
+
     // Check which tree widget has focus or which view is active
     switch (mCurrentView) {
     case EditorViewType::cmTriggerView: {
+        qDebug() << "[dlgTriggerEditor::slot_itemMoved] Current view is Trigger, looking up trigger" << itemID;
         TTrigger* pT = mpHost->getTriggerUnit()->getTrigger(itemID);
         if (pT) {
             viewType = EditorViewType::cmTriggerView;
             itemName = pT->getName();
+            qDebug() << "[dlgTriggerEditor::slot_itemMoved] Found trigger:" << itemName;
         } else {
+            qDebug() << "[dlgTriggerEditor::slot_itemMoved] ERROR: Trigger" << itemID << "not found!";
             return;
         }
         break;
@@ -3702,8 +3713,16 @@ void dlgTriggerEditor::slot_itemMoved(int itemID, int oldParentID, int newParent
         break;
     }
     default:
+        qDebug() << "[dlgTriggerEditor::slot_itemMoved] ERROR: Unknown view type:" << static_cast<int>(mCurrentView);
         return;
     }
+
+    qDebug() << "[dlgTriggerEditor::slot_itemMoved] Creating MoveItemCommand...";
+    qDebug() << "[dlgTriggerEditor::slot_itemMoved]   viewType:" << static_cast<int>(viewType);
+    qDebug() << "[dlgTriggerEditor::slot_itemMoved]   itemID:" << itemID;
+    qDebug() << "[dlgTriggerEditor::slot_itemMoved]   oldParentID:" << oldParentID;
+    qDebug() << "[dlgTriggerEditor::slot_itemMoved]   newParentID:" << newParentID;
+    qDebug() << "[dlgTriggerEditor::slot_itemMoved]   itemName:" << itemName;
 
     // Push move command to undo system
     auto cmd = std::make_unique<MoveItemCommand>(
@@ -3714,7 +3733,9 @@ void dlgTriggerEditor::slot_itemMoved(int itemID, int oldParentID, int newParent
         itemName,
         mpHost
     );
+    qDebug() << "[dlgTriggerEditor::slot_itemMoved] MoveItemCommand created, pushing to undo system...";
     mpUndoSystem->pushCommand(std::move(cmd));
+    qDebug() << "[dlgTriggerEditor::slot_itemMoved] Command pushed successfully. ===== SLOT COMPLETE =====";
 }
 
 void dlgTriggerEditor::children_icon_triggers(QTreeWidgetItem* pWidgetItemParent)

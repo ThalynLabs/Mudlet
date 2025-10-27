@@ -122,24 +122,48 @@ void TriggerUnit::addTriggerRootNode(TTrigger* pT, int parentPosition, int child
 
 void TriggerUnit::reParentTrigger(int childID, int oldParentID, int newParentID, int parentPosition, int childPosition)
 {
+    qDebug() << "[TriggerUnit::reParentTrigger] ===== REPARENTING TRIGGER =====";
+    qDebug() << "[TriggerUnit::reParentTrigger] childID:" << childID << "oldParentID:" << oldParentID << "newParentID:" << newParentID;
+    qDebug() << "[TriggerUnit::reParentTrigger] parentPosition:" << parentPosition << "childPosition:" << childPosition;
+
     TTrigger* pOldParent = getTriggerPrivate(oldParentID);
     TTrigger* pNewParent = getTriggerPrivate(newParentID);
     TTrigger* pChild = getTriggerPrivate(childID);
+
+    qDebug() << "[TriggerUnit::reParentTrigger] pChild:" << pChild;
+    qDebug() << "[TriggerUnit::reParentTrigger] pOldParent:" << pOldParent;
+    qDebug() << "[TriggerUnit::reParentTrigger] pNewParent:" << pNewParent;
+
     if (!pChild) {
+        qDebug() << "[TriggerUnit::reParentTrigger] ERROR: Child trigger" << childID << "not found!";
         return;
     }
+
+    qDebug() << "[TriggerUnit::reParentTrigger] Child trigger name:" << pChild->getName();
+
     if (pOldParent) {
+        qDebug() << "[TriggerUnit::reParentTrigger] Removing child from old parent:" << pOldParent->getName();
         pOldParent->popChild(pChild);
+        qDebug() << "[TriggerUnit::reParentTrigger] Child removed from old parent";
     } else {
+        qDebug() << "[TriggerUnit::reParentTrigger] Removing child from root node list";
         mTriggerRootNodeList.remove(pChild);
+        qDebug() << "[TriggerUnit::reParentTrigger] Child removed from root list";
     }
+
     if (pNewParent) {
+        qDebug() << "[TriggerUnit::reParentTrigger] Adding child to new parent:" << pNewParent->getName();
         pNewParent->addChild(pChild, parentPosition, childPosition);
         pChild->setParent(pNewParent);
+        qDebug() << "[TriggerUnit::reParentTrigger] Child added to new parent";
     } else {
+        qDebug() << "[TriggerUnit::reParentTrigger] Adding child to root node list";
         pChild->Tree<TTrigger>::setParent(nullptr);
         addTriggerRootNode(pChild, parentPosition, childPosition, true);
+        qDebug() << "[TriggerUnit::reParentTrigger] Child added to root list";
     }
+
+    qDebug() << "[TriggerUnit::reParentTrigger] ===== REPARENTING COMPLETE =====";
 }
 
 void TriggerUnit::removeTriggerRootNode(TTrigger* pT)

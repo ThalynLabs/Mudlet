@@ -254,11 +254,21 @@ void TTreeWidget::rowsInserted(const QModelIndex& parent, int start, int end)
 
         int newParentID = parent.data(Qt::UserRole).toInt();
 
+        qDebug() << "[TTreeWidget::rowsInserted] ===== DRAG-DROP DETECTED =====";
+        qDebug() << "[TTreeWidget::rowsInserted] mChildID:" << mChildID << "mOldParentID:" << mOldParentID << "newParentID:" << newParentID;
+        qDebug() << "[TTreeWidget::rowsInserted] parentPosition:" << parentPosition << "childPosition:" << childPosition;
+        qDebug() << "[TTreeWidget::rowsInserted] Tree type - triggers:" << mIsTriggerTree << "aliases:" << mIsAliasTree
+                 << "timers:" << mIsTimerTree << "scripts:" << mIsScriptTree << "keys:" << mIsKeyTree << "actions:" << mIsActionTree;
+
         // Emit signal for undo system before performing the move
+        qDebug() << "[TTreeWidget::rowsInserted] Emitting itemMoved signal...";
         emit itemMoved(mChildID, mOldParentID, newParentID);
+        qDebug() << "[TTreeWidget::rowsInserted] Signal emitted, now calling reParent function...";
 
         if (mIsTriggerTree) {
+            qDebug() << "[TTreeWidget::rowsInserted] Calling reParentTrigger...";
             mpHost->getTriggerUnit()->reParentTrigger(mChildID, mOldParentID, newParentID, parentPosition, childPosition);
+            qDebug() << "[TTreeWidget::rowsInserted] reParentTrigger completed";
         } else if (mIsAliasTree) {
             mpHost->getAliasUnit()->reParentAlias(mChildID, mOldParentID, newParentID, parentPosition, childPosition);
         } else if (mIsKeyTree) {
