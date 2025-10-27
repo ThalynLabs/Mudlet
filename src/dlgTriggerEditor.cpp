@@ -11888,12 +11888,20 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
         mpCurrentTriggerItem = nullptr;
         qDebug() << "[slot_itemsChanged] mpCurrentTriggerItem set to nullptr";
 
+        // Block signals on the selection model to prevent it from emitting during tree deletion
+        // This prevents slot_triggerSelected from being called with dangling pointers
+        QItemSelectionModel* selModel = treeWidget_triggers->selectionModel();
+        selModel->blockSignals(true);
+
         // Clear all children from the trigger base item
         QList<QTreeWidgetItem*> children = mpTriggerBaseItem->takeChildren();
         qDebug() << "[slot_itemsChanged] About to delete" << children.size() << "tree items";
         qDeleteAll(children);
         qDebug() << "[slot_itemsChanged] Tree items deleted";
         qDebug() << "[slot_itemsChanged] mpCurrentTriggerItem after delete:" << mpCurrentTriggerItem;
+
+        // Unblock signals after deletion is complete
+        selModel->blockSignals(false);
 
         // Repopulate the trigger tree
         qDebug() << "[slot_itemsChanged] Calling populateTriggers()...";
@@ -11934,8 +11942,17 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
     case EditorViewType::cmTimerView: {
         mpCurrentTimerItem = nullptr;
 
+        // Block signals on the selection model to prevent it from emitting during tree deletion
+        // This prevents slot_timerSelected from being called with dangling pointers
+        QItemSelectionModel* selModel = treeWidget_timers->selectionModel();
+        selModel->blockSignals(true);
+
         QList<QTreeWidgetItem*> children = mpTimerBaseItem->takeChildren();
         qDeleteAll(children);
+
+        // Unblock signals after deletion is complete
+        selModel->blockSignals(false);
+
         populateTimers();
         mpTimerBaseItem->setExpanded(true);
 
@@ -11956,8 +11973,17 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
     case EditorViewType::cmAliasView: {
         mpCurrentAliasItem = nullptr;
 
+        // Block signals on the selection model to prevent it from emitting during tree deletion
+        // This prevents slot_aliasSelected from being called with dangling pointers
+        QItemSelectionModel* selModel = treeWidget_aliases->selectionModel();
+        selModel->blockSignals(true);
+
         QList<QTreeWidgetItem*> children = mpAliasBaseItem->takeChildren();
         qDeleteAll(children);
+
+        // Unblock signals after deletion is complete
+        selModel->blockSignals(false);
+
         populateAliases();
         mpAliasBaseItem->setExpanded(true);
 
@@ -11978,8 +12004,17 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
     case EditorViewType::cmScriptView: {
         mpCurrentScriptItem = nullptr;
 
+        // Block signals on the selection model to prevent it from emitting during tree deletion
+        // This prevents slot_scriptsSelected from being called with dangling pointers
+        QItemSelectionModel* selModel = treeWidget_scripts->selectionModel();
+        selModel->blockSignals(true);
+
         QList<QTreeWidgetItem*> children = mpScriptsBaseItem->takeChildren();
         qDeleteAll(children);
+
+        // Unblock signals after deletion is complete
+        selModel->blockSignals(false);
+
         populateScripts();
         mpScriptsBaseItem->setExpanded(true);
 
@@ -12000,8 +12035,17 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
     case EditorViewType::cmActionView: {
         mpCurrentActionItem = nullptr;
 
+        // Block signals on the selection model to prevent it from emitting during tree deletion
+        // This prevents slot_actionSelected from being called with dangling pointers
+        QItemSelectionModel* selModel = treeWidget_actions->selectionModel();
+        selModel->blockSignals(true);
+
         QList<QTreeWidgetItem*> children = mpActionBaseItem->takeChildren();
         qDeleteAll(children);
+
+        // Unblock signals after deletion is complete
+        selModel->blockSignals(false);
+
         populateActions();
         mpActionBaseItem->setExpanded(true);
 
@@ -12022,8 +12066,17 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
     case EditorViewType::cmKeysView: {
         mpCurrentKeyItem = nullptr;
 
+        // Block signals on the selection model to prevent it from emitting during tree deletion
+        // This prevents slot_keySelected from being called with dangling pointers
+        QItemSelectionModel* selModel = treeWidget_keys->selectionModel();
+        selModel->blockSignals(true);
+
         QList<QTreeWidgetItem*> children = mpKeyBaseItem->takeChildren();
         qDeleteAll(children);
+
+        // Unblock signals after deletion is complete
+        selModel->blockSignals(false);
+
         populateKeys();
         mpKeyBaseItem->setExpanded(true);
 
