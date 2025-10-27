@@ -19,6 +19,7 @@
 
 #include "EditorUndoSystem.h"
 
+#include "dlgTriggerEditor.h"
 #include "Host.h"
 #include "TTrigger.h"
 #include "TAlias.h"
@@ -857,8 +858,6 @@ void MoveItemCommand::redo() {
 
 QString MoveItemCommand::text() const {
     QString typeName = getViewTypeName(mViewType);
-    QString oldParentName = (mOldParentID == 0 || mOldParentID == -1) ? tr("root") : QString::number(mOldParentID);
-    QString newParentName = (mNewParentID == 0 || mNewParentID == -1) ? tr("root") : QString::number(mNewParentID);
     return QObject::tr("Move %1 \"%2\"").arg(typeName, mItemName);
 }
 

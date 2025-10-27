@@ -28,6 +28,7 @@
 
 class Host;
 class QTreeWidgetItem;
+class dlgTriggerEditor;
 
 // Forward declarations
 class TTrigger;
@@ -37,17 +38,8 @@ class TScript;
 class TKey;
 class TAction;
 
-// Editor view type enum (should match dlgTriggerEditor's enum)
-enum class EditorViewType {
-    cmTriggerView,
-    cmTimerView,
-    cmAliasView,
-    cmScriptView,
-    cmActionView,
-    cmKeysView,
-    cmVarsView,
-    cmUnknownView
-};
+// Use the EditorViewType enum from dlgTriggerEditor
+using EditorViewType = dlgTriggerEditor::EditorViewType;
 
 // Base command class
 class EditorCommand {

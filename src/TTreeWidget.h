@@ -28,10 +28,6 @@
 
 class Host;
 
-
-class EditorUndoSystem;
-enum class EditorViewType;
-
 class TTreeWidget : public QTreeWidget
 {
     Q_OBJECT
