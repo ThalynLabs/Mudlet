@@ -120,11 +120,12 @@ void TriggerUnit::addTriggerRootNode(TTrigger* pT, int parentPosition, int child
     }
 }
 
-void TriggerUnit::reParentTrigger(int childID, int oldParentID, int newParentID, int parentPosition, int childPosition)
+// New enum-based API implementation
+void TriggerUnit::reParentTrigger(int childID, int oldParentID, int newParentID, TriggerInsertMode mode, int position)
 {
     qDebug() << "[TriggerUnit::reParentTrigger] ===== REPARENTING TRIGGER =====";
     qDebug() << "[TriggerUnit::reParentTrigger] childID:" << childID << "oldParentID:" << oldParentID << "newParentID:" << newParentID;
-    qDebug() << "[TriggerUnit::reParentTrigger] parentPosition:" << parentPosition << "childPosition:" << childPosition;
+    qDebug() << "[TriggerUnit::reParentTrigger] mode:" << (mode == TriggerInsertMode::AtPosition ? "AtPosition" : "Append") << "position:" << position;
 
     TTrigger* pOldParent = getTriggerPrivate(oldParentID);
     TTrigger* pNewParent = getTriggerPrivate(newParentID);
@@ -151,6 +152,10 @@ void TriggerUnit::reParentTrigger(int childID, int oldParentID, int newParentID,
         qDebug() << "[TriggerUnit::reParentTrigger] Child removed from root list";
     }
 
+    // Convert enum mode to the internal flags
+    int parentPosition = (mode == TriggerInsertMode::AtPosition) ? 0 : -1;
+    int childPosition = (mode == TriggerInsertMode::AtPosition) ? position : -1;
+
     if (pNewParent) {
         qDebug() << "[TriggerUnit::reParentTrigger] Adding child to new parent:" << pNewParent->getName();
         pNewParent->addChild(pChild, parentPosition, childPosition);
@@ -164,6 +169,16 @@ void TriggerUnit::reParentTrigger(int childID, int oldParentID, int newParentID,
     }
 
     qDebug() << "[TriggerUnit::reParentTrigger] ===== REPARENTING COMPLETE =====";
+}
+
+// Old API for backward compatibility - delegates to new enum-based API
+void TriggerUnit::reParentTrigger(int childID, int oldParentID, int newParentID, int parentPosition, int childPosition)
+{
+    if (parentPosition == -1 || childPosition == -1) {
+        reParentTrigger(childID, oldParentID, newParentID, TriggerInsertMode::Append, 0);
+    } else {
+        reParentTrigger(childID, oldParentID, newParentID, TriggerInsertMode::AtPosition, childPosition);
+    }
 }
 
 void TriggerUnit::removeTriggerRootNode(TTrigger* pT)

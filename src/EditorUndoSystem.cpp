@@ -229,12 +229,53 @@ TTrigger* importTriggerFromXML(const QString& xmlSnapshot, TTrigger* pParent, Ho
 
     // Create new trigger without parent (so it doesn't auto-add to end)
     auto pT = new TTrigger(nullptr, host);
-    host->getTriggerUnit()->registerTrigger(pT);
 
     // Manually add to parent at the correct position
     if (pParent) {
+        qDebug() << "importTriggerFromXML: Adding trigger to parent at position" << position;
         pT->setParent(pParent);
-        pParent->addChild(pT, -1, position);
+        // Use explicit enum mode for clarity
+        pParent->addChild(pT, (position >= 0) ? TreeInsertMode::AtPosition : TreeInsertMode::Append, position);
+        host->getTriggerUnit()->registerTrigger(pT); // This will call addTrigger() since pT has a parent
+
+        // Verify position
+        auto children = pParent->getChildrenList();
+        int actualPos = 0;
+        for (auto* child : *children) {
+            if (child == pT) {
+                qDebug() << "importTriggerFromXML: Trigger actual position is" << actualPos << "in parent with" << children->size() << "children";
+                break;
+            }
+            actualPos++;
+        }
+    } else {
+        // Root level trigger - register first (adds to end of root list)
+        qDebug() << "importTriggerFromXML: Adding trigger to root at position" << position;
+        host->getTriggerUnit()->registerTrigger(pT);
+
+        // Now reposition it if a specific position was requested
+        auto rootListSize = host->getTriggerUnit()->getTriggerRootNodeList().size();
+        qDebug() << "importTriggerFromXML: Root list size after register:" << rootListSize;
+
+        if (position != -1 && position < rootListSize) {
+            // Use reParentTrigger with explicit AtPosition mode to insert at specific position
+            qDebug() << "importTriggerFromXML: Repositioning from end to position" << position;
+            host->getTriggerUnit()->reParentTrigger(pT->getID(), -1, -1, TriggerInsertMode::AtPosition, position);
+
+            // Verify final position in root list
+            auto finalRootList = host->getTriggerUnit()->getTriggerRootNodeList();
+            qDebug() << "importTriggerFromXML: After reposition, root list has" << finalRootList.size() << "items:";
+            int pos = 0;
+            for (auto* trigger : finalRootList) {
+                qDebug() << "  Position" << pos << ":" << (trigger ? QString("ID=%1").arg(trigger->getID()) : "NULL");
+                if (trigger && trigger->getID() == pT->getID()) {
+                    qDebug() << "    ^^^ This is the trigger we just added! (ID" << pT->getID() << ")";
+                }
+                pos++;
+            }
+        } else if (position >= rootListSize) {
+            qDebug() << "importTriggerFromXML: Position" << position << "is at or beyond list size" << rootListSize << "- leaving at end";
+        }
     }
 
     // Read attributes
@@ -453,8 +494,20 @@ TAlias* importAliasFromXML(const QString& xmlSnapshot, TAlias* pParent, Host* ho
 
     // Manually add to parent at the correct position
     if (pParent) {
+        qDebug() << "importAliasFromXML: Adding alias to parent at position" << position;
         pA->setParent(pParent);
-        pParent->addChild(pA, -1, position);
+        pParent->addChild(pA, (position >= 0) ? TreeInsertMode::AtPosition : TreeInsertMode::Append, position);
+
+        // Verify position
+        auto children = pParent->getChildrenList();
+        int actualPos = 0;
+        for (auto* child : *children) {
+            if (child == pA) {
+                qDebug() << "importAliasFromXML: Alias actual position is" << actualPos << "in parent with" << children->size() << "children";
+                break;
+            }
+            actualPos++;
+        }
     }
 
     // Read attributes
@@ -595,8 +648,20 @@ TTimer* importTimerFromXML(const QString& xmlSnapshot, TTimer* pParent, Host* ho
 
     // Manually add to parent at the correct position
     if (pParent) {
+        qDebug() << "importTimerFromXML: Adding timer to parent at position" << position;
         pT->setParent(pParent);
-        pParent->addChild(pT, -1, position);
+        pParent->addChild(pT, (position >= 0) ? TreeInsertMode::AtPosition : TreeInsertMode::Append, position);
+
+        // Verify position
+        auto children = pParent->getChildrenList();
+        int actualPos = 0;
+        for (auto* child : *children) {
+            if (child == pT) {
+                qDebug() << "importTimerFromXML: Timer actual position is" << actualPos << "in parent with" << children->size() << "children";
+                break;
+            }
+            actualPos++;
+        }
     }
 
     // Read attributes
@@ -737,8 +802,20 @@ TScript* importScriptFromXML(const QString& xmlSnapshot, TScript* pParent, Host*
 
     // Manually add to parent at the correct position
     if (pParent) {
+        qDebug() << "importScriptFromXML: Adding script to parent at position" << position;
         pS->setParent(pParent);
-        pParent->addChild(pS, -1, position);
+        pParent->addChild(pS, (position >= 0) ? TreeInsertMode::AtPosition : TreeInsertMode::Append, position);
+
+        // Verify position
+        auto children = pParent->getChildrenList();
+        int actualPos = 0;
+        for (auto* child : *children) {
+            if (child == pS) {
+                qDebug() << "importScriptFromXML: Script actual position is" << actualPos << "in parent with" << children->size() << "children";
+                break;
+            }
+            actualPos++;
+        }
     }
 
     // Read attributes
@@ -889,8 +966,20 @@ TKey* importKeyFromXML(const QString& xmlSnapshot, TKey* pParent, Host* host, in
 
     // Manually add to parent at the correct position
     if (pParent) {
+        qDebug() << "importKeyFromXML: Adding key to parent at position" << position;
         pK->setParent(pParent);
-        pParent->addChild(pK, -1, position);
+        pParent->addChild(pK, (position >= 0) ? TreeInsertMode::AtPosition : TreeInsertMode::Append, position);
+
+        // Verify position
+        auto children = pParent->getChildrenList();
+        int actualPos = 0;
+        for (auto* child : *children) {
+            if (child == pK) {
+                qDebug() << "importKeyFromXML: Key actual position is" << actualPos << "in parent with" << children->size() << "children";
+                break;
+            }
+            actualPos++;
+        }
     }
 
     // Read attributes
@@ -1033,8 +1122,20 @@ TAction* importActionFromXML(const QString& xmlSnapshot, TAction* pParent, Host*
 
     // Manually add to parent at the correct position
     if (pParent) {
+        qDebug() << "importActionFromXML: Adding action to parent at position" << position;
         pA->Tree<TAction>::setParent(pParent);
-        pParent->addChild(pA, -1, position);
+        pParent->addChild(pA, (position >= 0) ? TreeInsertMode::AtPosition : TreeInsertMode::Append, position);
+
+        // Verify position
+        auto children = pParent->getChildrenList();
+        int actualPos = 0;
+        for (auto* child : *children) {
+            if (child == pA) {
+                qDebug() << "importActionFromXML: Action actual position is" << actualPos << "in parent with" << children->size() << "children";
+                break;
+            }
+            actualPos++;
+        }
     }
 
     // Read attributes
@@ -1447,6 +1548,10 @@ void DeleteItemCommand::undo() {
     // Process in reverse order to maintain tree structure (parents before children)
     for (int i = mDeletedItems.size() - 1; i >= 0; --i) {
         auto& info = mDeletedItems[i];  // Non-const reference so we can update the ID
+
+        qDebug() << "DeleteItemCommand::undo() - Restoring item" << info.itemName
+                 << "at position" << info.positionInParent
+                 << "in parent" << info.parentID;
 
         switch (mViewType) {
         case EditorViewType::cmTriggerView: {

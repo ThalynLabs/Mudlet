@@ -3554,12 +3554,37 @@ void dlgTriggerEditor::delete_trigger()
 
             // Get parent ID
             QTreeWidgetItem* pParentItem = pItem->parent();
-            if (pParentItem && pParentItem != mpTriggerBaseItem) {
-                info.parentID = pParentItem->data(0, Qt::UserRole).toInt();
-                info.positionInParent = pParentItem->indexOfChild(pItem);
+            if (pParentItem) {
+                // Has a parent - could be base item or another trigger
+                if (pParentItem == mpTriggerBaseItem) {
+                    // Parent is the base "Triggers" folder - treat as top-level
+                    info.parentID = -1;
+                    info.positionInParent = mpTriggerBaseItem->indexOfChild(pItem);
+
+                    // Debug: show all children in base folder
+                    qDebug() << "delete_trigger: Base folder has" << mpTriggerBaseItem->childCount() << "children:";
+                    for (int i = 0; i < mpTriggerBaseItem->childCount(); i++) {
+                        auto* child = mpTriggerBaseItem->child(i);
+                        auto childTrigger = mpHost->getTriggerUnit()->getTrigger(child->data(0, Qt::UserRole).toInt());
+                        qDebug() << "  Position" << i << ":" << (childTrigger ? childTrigger->getName() : "NULL");
+                    }
+
+                    qDebug() << "delete_trigger: Capturing item" << info.itemName
+                             << "at position" << info.positionInParent;
+                } else {
+                    // Parent is another trigger
+                    info.parentID = pParentItem->data(0, Qt::UserRole).toInt();
+                    info.positionInParent = pParentItem->indexOfChild(pItem);
+                    qDebug() << "delete_trigger: Capturing child item" << info.itemName
+                             << "at position" << info.positionInParent
+                             << "in parent" << info.parentID;
+                }
             } else {
+                // No parent - true top-level item (shouldn't happen in practice)
                 info.parentID = -1;
                 info.positionInParent = treeWidget_triggers->indexOfTopLevelItem(pItem);
+                qDebug() << "delete_trigger: Capturing orphaned top-level item" << info.itemName
+                         << "at position" << info.positionInParent;
             }
 
             // Export trigger to XML snapshot
@@ -12442,6 +12467,11 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
         // Repopulate the trigger tree
         populateTriggers();
 
+        // Temporarily disable animation for instant expansion (looks better for undo/redo)
+        // Must be disabled before scrollToItem() which auto-expands parents
+        bool wasAnimated = treeWidget_triggers->isAnimated();
+        treeWidget_triggers->setAnimated(false);
+
         // Expand the base item to show the refreshed tree
         mpTriggerBaseItem->setExpanded(true);
 
@@ -12459,6 +12489,9 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
                 slot_triggerSelected(itemToSelect);
             }
         }
+
+        // Restore animation after all expansions are complete
+        treeWidget_triggers->setAnimated(wasAnimated);
         break;
     }
     case EditorViewType::cmTimerView: {
@@ -12476,6 +12509,10 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
         selModel->blockSignals(false);
 
         populateTimers();
+
+        // Temporarily disable animation for instant expansion (looks better for undo/redo)
+        bool wasAnimated = treeWidget_timers->isAnimated();
+        treeWidget_timers->setAnimated(false);
         mpTimerBaseItem->setExpanded(true);
 
         if (!affectedItemIDs.isEmpty()) {
@@ -12490,6 +12527,8 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
                 slot_timerSelected(itemToSelect);
             }
         }
+
+        treeWidget_timers->setAnimated(wasAnimated);
         break;
     }
     case EditorViewType::cmAliasView: {
@@ -12507,6 +12546,10 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
         selModel->blockSignals(false);
 
         populateAliases();
+
+        // Temporarily disable animation for instant expansion (looks better for undo/redo)
+        bool wasAnimated = treeWidget_aliases->isAnimated();
+        treeWidget_aliases->setAnimated(false);
         mpAliasBaseItem->setExpanded(true);
 
         if (!affectedItemIDs.isEmpty()) {
@@ -12521,6 +12564,8 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
                 slot_aliasSelected(itemToSelect);
             }
         }
+
+        treeWidget_aliases->setAnimated(wasAnimated);
         break;
     }
     case EditorViewType::cmScriptView: {
@@ -12538,6 +12583,10 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
         selModel->blockSignals(false);
 
         populateScripts();
+
+        // Temporarily disable animation for instant expansion (looks better for undo/redo)
+        bool wasAnimated = treeWidget_scripts->isAnimated();
+        treeWidget_scripts->setAnimated(false);
         mpScriptsBaseItem->setExpanded(true);
 
         if (!affectedItemIDs.isEmpty()) {
@@ -12552,6 +12601,8 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
                 slot_scriptsSelected(itemToSelect);
             }
         }
+
+        treeWidget_scripts->setAnimated(wasAnimated);
         break;
     }
     case EditorViewType::cmActionView: {
@@ -12569,6 +12620,10 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
         selModel->blockSignals(false);
 
         populateActions();
+
+        // Temporarily disable animation for instant expansion (looks better for undo/redo)
+        bool wasAnimated = treeWidget_actions->isAnimated();
+        treeWidget_actions->setAnimated(false);
         mpActionBaseItem->setExpanded(true);
 
         if (!affectedItemIDs.isEmpty()) {
@@ -12583,6 +12638,8 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
                 slot_actionSelected(itemToSelect);
             }
         }
+
+        treeWidget_actions->setAnimated(wasAnimated);
         break;
     }
     case EditorViewType::cmKeysView: {
@@ -12600,6 +12657,10 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
         selModel->blockSignals(false);
 
         populateKeys();
+
+        // Temporarily disable animation for instant expansion (looks better for undo/redo)
+        bool wasAnimated = treeWidget_keys->isAnimated();
+        treeWidget_keys->setAnimated(false);
         mpKeyBaseItem->setExpanded(true);
 
         if (!affectedItemIDs.isEmpty()) {
@@ -12614,6 +12675,8 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
                 slot_keySelected(itemToSelect);
             }
         }
+
+        treeWidget_keys->setAnimated(wasAnimated);
         break;
     }
     default:
