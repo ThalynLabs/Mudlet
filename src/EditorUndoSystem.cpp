@@ -653,6 +653,14 @@ QString DeleteItemCommand::text() const {
     }
 }
 
+QList<int> DeleteItemCommand::affectedItemIDs() const {
+    QList<int> ids;
+    for (const auto& info : mDeletedItems) {
+        ids.append(info.itemID);
+    }
+    return ids;
+}
+
 // =============================================================================
 // ModifyPropertyCommand implementation
 // =============================================================================
@@ -757,11 +765,12 @@ void EditorUndoSystem::undo()
     mUndoStack.pop_back();
 
     EditorViewType affectedView = cmd->viewType();
+    QList<int> affectedIDs = cmd->affectedItemIDs();
     cmd->undo();
 
     mRedoStack.push_back(std::move(cmd));
     emitSignals();
-    emit itemsChanged(affectedView);
+    emit itemsChanged(affectedView, affectedIDs);
 }
 
 void EditorUndoSystem::redo()
@@ -774,11 +783,12 @@ void EditorUndoSystem::redo()
     mRedoStack.pop_back();
 
     EditorViewType affectedView = cmd->viewType();
+    QList<int> affectedIDs = cmd->affectedItemIDs();
     cmd->redo();
 
     mUndoStack.push_back(std::move(cmd));
     emitSignals();
-    emit itemsChanged(affectedView);
+    emit itemsChanged(affectedView, affectedIDs);
 }
 
 QString EditorUndoSystem::undoText() const

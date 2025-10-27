@@ -11722,7 +11722,30 @@ void dlgTriggerEditor::slot_bannerDismissClicked()
     handleBannerDismiss();
 }
 
-void dlgTriggerEditor::slot_itemsChanged(::EditorViewType viewType)
+// Helper function to find a tree item by its ID recursively
+QTreeWidgetItem* findItemByID(QTreeWidgetItem* parent, int itemID)
+{
+    if (!parent) {
+        return nullptr;
+    }
+
+    // Check if this item matches
+    if (parent->data(0, Qt::UserRole).toInt() == itemID) {
+        return parent;
+    }
+
+    // Recursively search children
+    for (int i = 0; i < parent->childCount(); ++i) {
+        QTreeWidgetItem* found = findItemByID(parent->child(i), itemID);
+        if (found) {
+            return found;
+        }
+    }
+
+    return nullptr;
+}
+
+void dlgTriggerEditor::slot_itemsChanged(::EditorViewType viewType, QList<int> affectedItemIDs)
 {
     // Refresh the appropriate tree widget when items are added/deleted/modified via undo/redo
     switch (viewType) {
@@ -11739,6 +11762,16 @@ void dlgTriggerEditor::slot_itemsChanged(::EditorViewType viewType)
 
         // Expand the base item to show the refreshed tree
         mpTriggerBaseItem->setExpanded(true);
+
+        // Find and select the affected items
+        if (!affectedItemIDs.isEmpty()) {
+            QTreeWidgetItem* itemToSelect = findItemByID(mpTriggerBaseItem, affectedItemIDs.first());
+            if (itemToSelect) {
+                treeWidget_triggers->setCurrentItem(itemToSelect);
+                treeWidget_triggers->scrollToItem(itemToSelect);
+                slot_triggerSelected(itemToSelect);
+            }
+        }
         break;
     }
     case ::EditorViewType::cmTimerView: {
@@ -11748,6 +11781,15 @@ void dlgTriggerEditor::slot_itemsChanged(::EditorViewType viewType)
         qDeleteAll(children);
         populateTimers();
         mpTimerBaseItem->setExpanded(true);
+
+        if (!affectedItemIDs.isEmpty()) {
+            QTreeWidgetItem* itemToSelect = findItemByID(mpTimerBaseItem, affectedItemIDs.first());
+            if (itemToSelect) {
+                treeWidget_timers->setCurrentItem(itemToSelect);
+                treeWidget_timers->scrollToItem(itemToSelect);
+                slot_timerSelected(itemToSelect);
+            }
+        }
         break;
     }
     case ::EditorViewType::cmAliasView: {
@@ -11757,6 +11799,15 @@ void dlgTriggerEditor::slot_itemsChanged(::EditorViewType viewType)
         qDeleteAll(children);
         populateAliases();
         mpAliasBaseItem->setExpanded(true);
+
+        if (!affectedItemIDs.isEmpty()) {
+            QTreeWidgetItem* itemToSelect = findItemByID(mpAliasBaseItem, affectedItemIDs.first());
+            if (itemToSelect) {
+                treeWidget_aliases->setCurrentItem(itemToSelect);
+                treeWidget_aliases->scrollToItem(itemToSelect);
+                slot_aliasSelected(itemToSelect);
+            }
+        }
         break;
     }
     case ::EditorViewType::cmScriptView: {
@@ -11766,6 +11817,15 @@ void dlgTriggerEditor::slot_itemsChanged(::EditorViewType viewType)
         qDeleteAll(children);
         populateScripts();
         mpScriptsBaseItem->setExpanded(true);
+
+        if (!affectedItemIDs.isEmpty()) {
+            QTreeWidgetItem* itemToSelect = findItemByID(mpScriptsBaseItem, affectedItemIDs.first());
+            if (itemToSelect) {
+                treeWidget_scripts->setCurrentItem(itemToSelect);
+                treeWidget_scripts->scrollToItem(itemToSelect);
+                slot_scriptsSelected(itemToSelect);
+            }
+        }
         break;
     }
     case ::EditorViewType::cmActionView: {
@@ -11775,6 +11835,15 @@ void dlgTriggerEditor::slot_itemsChanged(::EditorViewType viewType)
         qDeleteAll(children);
         populateActions();
         mpActionBaseItem->setExpanded(true);
+
+        if (!affectedItemIDs.isEmpty()) {
+            QTreeWidgetItem* itemToSelect = findItemByID(mpActionBaseItem, affectedItemIDs.first());
+            if (itemToSelect) {
+                treeWidget_actions->setCurrentItem(itemToSelect);
+                treeWidget_actions->scrollToItem(itemToSelect);
+                slot_actionSelected(itemToSelect);
+            }
+        }
         break;
     }
     case ::EditorViewType::cmKeysView: {
@@ -11784,6 +11853,15 @@ void dlgTriggerEditor::slot_itemsChanged(::EditorViewType viewType)
         qDeleteAll(children);
         populateKeys();
         mpKeyBaseItem->setExpanded(true);
+
+        if (!affectedItemIDs.isEmpty()) {
+            QTreeWidgetItem* itemToSelect = findItemByID(mpKeyBaseItem, affectedItemIDs.first());
+            if (itemToSelect) {
+                treeWidget_keys->setCurrentItem(itemToSelect);
+                treeWidget_keys->scrollToItem(itemToSelect);
+                slot_keySelected(itemToSelect);
+            }
+        }
         break;
     }
     default:

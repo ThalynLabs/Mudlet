@@ -321,7 +321,7 @@ private slots:
     void slot_searchSplitterMoved(const int pos, const int index);
     void slot_clickedMessageBox(const QString&);
     void slot_bannerDismissClicked();
-    void slot_itemsChanged(::EditorViewType viewType);
+    void slot_itemsChanged(::EditorViewType viewType, QList<int> affectedItemIDs);
 
 public:
     TConsole* mpErrorConsole = nullptr;

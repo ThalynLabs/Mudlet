@@ -59,6 +59,7 @@ public:
     virtual void redo() = 0;
     virtual QString text() const = 0;
     virtual EditorViewType viewType() const = 0;
+    virtual QList<int> affectedItemIDs() const = 0; // Return IDs of items affected by this command
 
 protected:
     Host* mpHost;
@@ -74,6 +75,7 @@ public:
     void redo() override;
     QString text() const override;
     EditorViewType viewType() const override { return mViewType; }
+    QList<int> affectedItemIDs() const override { return {mItemID}; }
 
 private:
     EditorViewType mViewType;
@@ -101,6 +103,7 @@ public:
     void redo() override;
     QString text() const override;
     EditorViewType viewType() const override { return mViewType; }
+    QList<int> affectedItemIDs() const override;
 
 private:
     EditorViewType mViewType;
@@ -119,6 +122,7 @@ public:
     void redo() override;
     QString text() const override;
     EditorViewType viewType() const override { return mViewType; }
+    QList<int> affectedItemIDs() const override { return {mItemID}; }
 
 private:
     EditorViewType mViewType;
@@ -155,7 +159,7 @@ signals:
     void canRedoChanged(bool canRedo);
     void undoTextChanged(const QString& text);
     void redoTextChanged(const QString& text);
-    void itemsChanged(EditorViewType viewType); // Emitted when items are added/deleted/modified
+    void itemsChanged(EditorViewType viewType, QList<int> affectedItemIDs); // Emitted when items are added/deleted/modified
 
 private:
     void clearRedoStack();
