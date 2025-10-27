@@ -199,7 +199,7 @@ QString getViewTypeName(EditorViewType viewType) {
 }
 
 // Import a single trigger from XML string
-TTrigger* importTriggerFromXML(const QString& xmlSnapshot, TTrigger* pParent, Host* host) {
+TTrigger* importTriggerFromXML(const QString& xmlSnapshot, TTrigger* pParent, Host* host, int position = -1) {
     if (xmlSnapshot.isEmpty() || !host) {
         return nullptr;
     }
@@ -227,9 +227,15 @@ TTrigger* importTriggerFromXML(const QString& xmlSnapshot, TTrigger* pParent, Ho
         return nullptr;
     }
 
-    // Create new trigger
-    auto pT = new TTrigger(pParent, host);
+    // Create new trigger without parent (so it doesn't auto-add to end)
+    auto pT = new TTrigger(nullptr, host);
     host->getTriggerUnit()->registerTrigger(pT);
+
+    // Manually add to parent at the correct position
+    if (pParent) {
+        pT->setParent(pParent);
+        pParent->addChild(pT, -1, position);
+    }
 
     // Read attributes
     pT->setIsActive(QString::fromStdString(triggerNode.attribute("isActive").value()) == "yes");
@@ -309,8 +315,8 @@ TTrigger* importTriggerFromXML(const QString& xmlSnapshot, TTrigger* pParent, Ho
             childDoc.save(oss);
             QString childXML = QString::fromStdString(oss.str());
 
-            // Recursively import the child with current trigger as parent
-            importTriggerFromXML(childXML, pT, host);
+            // Recursively import the child with current trigger as parent (position -1 = append to end)
+            importTriggerFromXML(childXML, pT, host, -1);
         }
     }
 
@@ -414,7 +420,7 @@ bool updateTriggerFromXML(TTrigger* pT, const QString& xmlSnapshot) {
 // =============================================================================
 
 // Import a single alias from XML string
-TAlias* importAliasFromXML(const QString& xmlSnapshot, TAlias* pParent, Host* host) {
+TAlias* importAliasFromXML(const QString& xmlSnapshot, TAlias* pParent, Host* host, int position = -1) {
     if (xmlSnapshot.isEmpty() || !host) {
         return nullptr;
     }
@@ -441,9 +447,15 @@ TAlias* importAliasFromXML(const QString& xmlSnapshot, TAlias* pParent, Host* ho
         return nullptr;
     }
 
-    // Create new alias
-    auto pA = new TAlias(pParent, host);
+    // Create new alias without parent (so it doesn't auto-add to end)
+    auto pA = new TAlias(nullptr, host);
     host->getAliasUnit()->registerAlias(pA);
+
+    // Manually add to parent at the correct position
+    if (pParent) {
+        pA->setParent(pParent);
+        pParent->addChild(pA, -1, position);
+    }
 
     // Read attributes
     pA->setIsActive(QString::fromStdString(aliasNode.attribute("isActive").value()) == "yes");
@@ -550,7 +562,7 @@ bool updateAliasFromXML(TAlias* pA, const QString& xmlSnapshot) {
 // =============================================================================
 
 // Import a single timer from XML string
-TTimer* importTimerFromXML(const QString& xmlSnapshot, TTimer* pParent, Host* host) {
+TTimer* importTimerFromXML(const QString& xmlSnapshot, TTimer* pParent, Host* host, int position = -1) {
     if (xmlSnapshot.isEmpty() || !host) {
         return nullptr;
     }
@@ -577,9 +589,15 @@ TTimer* importTimerFromXML(const QString& xmlSnapshot, TTimer* pParent, Host* ho
         return nullptr;
     }
 
-    // Create new timer
-    auto pT = new TTimer(pParent, host);
+    // Create new timer without parent (so it doesn't auto-add to end)
+    auto pT = new TTimer(nullptr, host);
     host->getTimerUnit()->registerTimer(pT);
+
+    // Manually add to parent at the correct position
+    if (pParent) {
+        pT->setParent(pParent);
+        pParent->addChild(pT, -1, position);
+    }
 
     // Read attributes
     pT->setShouldBeActive(QString::fromStdString(timerNode.attribute("isActive").value()) == "yes");
@@ -686,7 +704,7 @@ bool updateTimerFromXML(TTimer* pT, const QString& xmlSnapshot) {
 // =============================================================================
 
 // Import a single script from XML string
-TScript* importScriptFromXML(const QString& xmlSnapshot, TScript* pParent, Host* host) {
+TScript* importScriptFromXML(const QString& xmlSnapshot, TScript* pParent, Host* host, int position = -1) {
     if (xmlSnapshot.isEmpty() || !host) {
         return nullptr;
     }
@@ -713,9 +731,15 @@ TScript* importScriptFromXML(const QString& xmlSnapshot, TScript* pParent, Host*
         return nullptr;
     }
 
-    // Create new script
-    auto pS = new TScript(pParent, host);
+    // Create new script without parent (so it doesn't auto-add to end)
+    auto pS = new TScript(nullptr, host);
     host->getScriptUnit()->registerScript(pS);
+
+    // Manually add to parent at the correct position
+    if (pParent) {
+        pS->setParent(pParent);
+        pParent->addChild(pS, -1, position);
+    }
 
     // Read attributes
     pS->setIsActive(QString::fromStdString(scriptNode.attribute("isActive").value()) == "yes");
@@ -832,7 +856,7 @@ bool updateScriptFromXML(TScript* pS, const QString& xmlSnapshot) {
 // =============================================================================
 
 // Import a single key from XML string
-TKey* importKeyFromXML(const QString& xmlSnapshot, TKey* pParent, Host* host) {
+TKey* importKeyFromXML(const QString& xmlSnapshot, TKey* pParent, Host* host, int position = -1) {
     if (xmlSnapshot.isEmpty() || !host) {
         return nullptr;
     }
@@ -859,9 +883,15 @@ TKey* importKeyFromXML(const QString& xmlSnapshot, TKey* pParent, Host* host) {
         return nullptr;
     }
 
-    // Create new key
-    auto pK = new TKey(pParent, host);
+    // Create new key without parent (so it doesn't auto-add to end)
+    auto pK = new TKey(nullptr, host);
     host->getKeyUnit()->registerKey(pK);
+
+    // Manually add to parent at the correct position
+    if (pParent) {
+        pK->setParent(pParent);
+        pParent->addChild(pK, -1, position);
+    }
 
     // Read attributes
     pK->setIsActive(QString::fromStdString(keyNode.attribute("isActive").value()) == "yes");
@@ -970,7 +1000,7 @@ bool updateKeyFromXML(TKey* pK, const QString& xmlSnapshot) {
 // =============================================================================
 
 // Import a single action from XML string
-TAction* importActionFromXML(const QString& xmlSnapshot, TAction* pParent, Host* host) {
+TAction* importActionFromXML(const QString& xmlSnapshot, TAction* pParent, Host* host, int position = -1) {
     if (xmlSnapshot.isEmpty() || !host) {
         return nullptr;
     }
@@ -997,9 +1027,15 @@ TAction* importActionFromXML(const QString& xmlSnapshot, TAction* pParent, Host*
         return nullptr;
     }
 
-    // Create new action
-    auto pA = new TAction(pParent, host);
+    // Create new action without parent (so it doesn't auto-add to end)
+    auto pA = new TAction(nullptr, host);
     host->getActionUnit()->registerAction(pA);
+
+    // Manually add to parent at the correct position
+    if (pParent) {
+        pA->Tree<TAction>::setParent(pParent);
+        pParent->addChild(pA, -1, position);
+    }
 
     // Read attributes
     pA->setIsActive(QString::fromStdString(actionNode.attribute("isActive").value()) == "yes");
@@ -1284,7 +1320,7 @@ void AddItemCommand::redo() {
         // Recreate the trigger from XML snapshot
         switch (mViewType) {
         case EditorViewType::cmTriggerView: {
-            TTrigger* pNewTrigger = importTriggerFromXML(mItemSnapshot, pParent, mpHost);
+            TTrigger* pNewTrigger = importTriggerFromXML(mItemSnapshot, pParent, mpHost, -1);
             if (pNewTrigger) {
                 // Store the new ID (it may be different from original)
                 mItemID = pNewTrigger->getID();
@@ -1420,8 +1456,8 @@ void DeleteItemCommand::undo() {
                 pParent = mpHost->getTriggerUnit()->getTrigger(info.parentID);
             }
 
-            // Restore the trigger from XML snapshot
-            TTrigger* pRestoredTrigger = importTriggerFromXML(info.xmlSnapshot, pParent, mpHost);
+            // Restore the trigger from XML snapshot at its original position
+            TTrigger* pRestoredTrigger = importTriggerFromXML(info.xmlSnapshot, pParent, mpHost, info.positionInParent);
             if (!pRestoredTrigger) {
                 qWarning() << "DeleteItemCommand::undo() - Failed to restore trigger" << info.itemName;
             } else {
@@ -1436,7 +1472,7 @@ void DeleteItemCommand::undo() {
                 pParent = mpHost->getAliasUnit()->getAlias(info.parentID);
             }
 
-            TAlias* pRestoredAlias = importAliasFromXML(info.xmlSnapshot, pParent, mpHost);
+            TAlias* pRestoredAlias = importAliasFromXML(info.xmlSnapshot, pParent, mpHost, info.positionInParent);
             if (!pRestoredAlias) {
                 qWarning() << "DeleteItemCommand::undo() - Failed to restore alias" << info.itemName;
             } else {
@@ -1450,7 +1486,7 @@ void DeleteItemCommand::undo() {
                 pParent = mpHost->getTimerUnit()->getTimer(info.parentID);
             }
 
-            TTimer* pRestoredTimer = importTimerFromXML(info.xmlSnapshot, pParent, mpHost);
+            TTimer* pRestoredTimer = importTimerFromXML(info.xmlSnapshot, pParent, mpHost, info.positionInParent);
             if (!pRestoredTimer) {
                 qWarning() << "DeleteItemCommand::undo() - Failed to restore timer" << info.itemName;
             } else {
@@ -1464,7 +1500,7 @@ void DeleteItemCommand::undo() {
                 pParent = mpHost->getScriptUnit()->getScript(info.parentID);
             }
 
-            TScript* pRestoredScript = importScriptFromXML(info.xmlSnapshot, pParent, mpHost);
+            TScript* pRestoredScript = importScriptFromXML(info.xmlSnapshot, pParent, mpHost, info.positionInParent);
             if (!pRestoredScript) {
                 qWarning() << "DeleteItemCommand::undo() - Failed to restore script" << info.itemName;
             } else {
@@ -1478,7 +1514,7 @@ void DeleteItemCommand::undo() {
                 pParent = mpHost->getKeyUnit()->getKey(info.parentID);
             }
 
-            TKey* pRestoredKey = importKeyFromXML(info.xmlSnapshot, pParent, mpHost);
+            TKey* pRestoredKey = importKeyFromXML(info.xmlSnapshot, pParent, mpHost, info.positionInParent);
             if (!pRestoredKey) {
                 qWarning() << "DeleteItemCommand::undo() - Failed to restore key" << info.itemName;
             } else {
@@ -1492,7 +1528,7 @@ void DeleteItemCommand::undo() {
                 pParent = mpHost->getActionUnit()->getAction(info.parentID);
             }
 
-            TAction* pRestoredAction = importActionFromXML(info.xmlSnapshot, pParent, mpHost);
+            TAction* pRestoredAction = importActionFromXML(info.xmlSnapshot, pParent, mpHost, info.positionInParent);
             if (!pRestoredAction) {
                 qWarning() << "DeleteItemCommand::undo() - Failed to restore action" << info.itemName;
             } else {
