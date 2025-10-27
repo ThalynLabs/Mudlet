@@ -40,6 +40,7 @@ class TTimer : public Tree<TTimer>
     friend class TimerUnit;
     friend class XMLexport;
     friend class XMLimport;
+    friend class DeleteItemCommand;
 
 public:
     ~TTimer() override;
@@ -121,9 +122,9 @@ private:
     QTime mTime;
     QString mCommand;
     QString mFuncName;
-    QPointer<Host> mpHost;
     bool mNeedsToBeCompiled = true;
     QTimer* mpQTimer;
+    QPointer<Host> mpHost;
     bool mModuleMember = false;
 };
 

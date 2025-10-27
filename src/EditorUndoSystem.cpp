@@ -235,7 +235,7 @@ TTrigger* importTriggerFromXML(const QString& xmlSnapshot, TTrigger* pParent, Ho
         qDebug() << "importTriggerFromXML: Adding trigger to parent at position" << position;
         pT->setParent(pParent);
         // Use explicit enum mode for clarity
-        pParent->addChild(pT, (position >= 0) ? TreeInsertMode::AtPosition : TreeInsertMode::Append, position);
+        pParent->addChild(pT, (position >= 0) ? TreeItemInsertMode::AtPosition : TreeItemInsertMode::Append, position);
         host->getTriggerUnit()->registerTrigger(pT); // This will call addTrigger() since pT has a parent
 
         // Verify position
@@ -260,7 +260,7 @@ TTrigger* importTriggerFromXML(const QString& xmlSnapshot, TTrigger* pParent, Ho
         if (position != -1 && position < rootListSize) {
             // Use reParentTrigger with explicit AtPosition mode to insert at specific position
             qDebug() << "importTriggerFromXML: Repositioning from end to position" << position;
-            host->getTriggerUnit()->reParentTrigger(pT->getID(), -1, -1, TriggerInsertMode::AtPosition, position);
+            host->getTriggerUnit()->reParentTrigger(pT->getID(), -1, -1, TreeItemInsertMode::AtPosition, position);
 
             // Verify final position in root list
             auto finalRootList = host->getTriggerUnit()->getTriggerRootNodeList();
@@ -496,7 +496,7 @@ TAlias* importAliasFromXML(const QString& xmlSnapshot, TAlias* pParent, Host* ho
     if (pParent) {
         qDebug() << "importAliasFromXML: Adding alias to parent at position" << position;
         pA->setParent(pParent);
-        pParent->addChild(pA, (position >= 0) ? TreeInsertMode::AtPosition : TreeInsertMode::Append, position);
+        pParent->addChild(pA, (position >= 0) ? TreeItemInsertMode::AtPosition : TreeItemInsertMode::Append, position);
 
         // Verify position
         auto children = pParent->getChildrenList();
@@ -507,6 +507,15 @@ TAlias* importAliasFromXML(const QString& xmlSnapshot, TAlias* pParent, Host* ho
                 break;
             }
             actualPos++;
+        }
+    } else {
+        // Root level alias - register first (adds to end of root list)
+        qDebug() << "importAliasFromXML: Adding alias to root at position" << position;
+
+        // Now reposition it if a specific position was requested
+        if (position != -1) {
+            qDebug() << "importAliasFromXML: Repositioning to position" << position;
+            host->getAliasUnit()->reParentAlias(pA->getID(), -1, -1, TreeItemInsertMode::AtPosition, position);
         }
     }
 
@@ -650,7 +659,7 @@ TTimer* importTimerFromXML(const QString& xmlSnapshot, TTimer* pParent, Host* ho
     if (pParent) {
         qDebug() << "importTimerFromXML: Adding timer to parent at position" << position;
         pT->setParent(pParent);
-        pParent->addChild(pT, (position >= 0) ? TreeInsertMode::AtPosition : TreeInsertMode::Append, position);
+        pParent->addChild(pT, (position >= 0) ? TreeItemInsertMode::AtPosition : TreeItemInsertMode::Append, position);
 
         // Verify position
         auto children = pParent->getChildrenList();
@@ -661,6 +670,15 @@ TTimer* importTimerFromXML(const QString& xmlSnapshot, TTimer* pParent, Host* ho
                 break;
             }
             actualPos++;
+        }
+    } else {
+        // Root level timer - register first (adds to end of root list)
+        qDebug() << "importTimerFromXML: Adding timer to root at position" << position;
+
+        // Now reposition it if a specific position was requested
+        if (position != -1) {
+            qDebug() << "importTimerFromXML: Repositioning to position" << position;
+            host->getTimerUnit()->reParentTimer(pT->getID(), -1, -1, TreeItemInsertMode::AtPosition, position);
         }
     }
 
@@ -804,7 +822,7 @@ TScript* importScriptFromXML(const QString& xmlSnapshot, TScript* pParent, Host*
     if (pParent) {
         qDebug() << "importScriptFromXML: Adding script to parent at position" << position;
         pS->setParent(pParent);
-        pParent->addChild(pS, (position >= 0) ? TreeInsertMode::AtPosition : TreeInsertMode::Append, position);
+        pParent->addChild(pS, (position >= 0) ? TreeItemInsertMode::AtPosition : TreeItemInsertMode::Append, position);
 
         // Verify position
         auto children = pParent->getChildrenList();
@@ -815,6 +833,15 @@ TScript* importScriptFromXML(const QString& xmlSnapshot, TScript* pParent, Host*
                 break;
             }
             actualPos++;
+        }
+    } else {
+        // Root level script - register first (adds to end of root list)
+        qDebug() << "importScriptFromXML: Adding script to root at position" << position;
+
+        // Now reposition it if a specific position was requested
+        if (position != -1) {
+            qDebug() << "importScriptFromXML: Repositioning to position" << position;
+            host->getScriptUnit()->reParentScript(pS->getID(), -1, -1, TreeItemInsertMode::AtPosition, position);
         }
     }
 
@@ -968,7 +995,7 @@ TKey* importKeyFromXML(const QString& xmlSnapshot, TKey* pParent, Host* host, in
     if (pParent) {
         qDebug() << "importKeyFromXML: Adding key to parent at position" << position;
         pK->setParent(pParent);
-        pParent->addChild(pK, (position >= 0) ? TreeInsertMode::AtPosition : TreeInsertMode::Append, position);
+        pParent->addChild(pK, (position >= 0) ? TreeItemInsertMode::AtPosition : TreeItemInsertMode::Append, position);
 
         // Verify position
         auto children = pParent->getChildrenList();
@@ -979,6 +1006,15 @@ TKey* importKeyFromXML(const QString& xmlSnapshot, TKey* pParent, Host* host, in
                 break;
             }
             actualPos++;
+        }
+    } else {
+        // Root level key - register first (adds to end of root list)
+        qDebug() << "importKeyFromXML: Adding key to root at position" << position;
+
+        // Now reposition it if a specific position was requested
+        if (position != -1) {
+            qDebug() << "importKeyFromXML: Repositioning to position" << position;
+            host->getKeyUnit()->reParentKey(pK->getID(), -1, -1, TreeItemInsertMode::AtPosition, position);
         }
     }
 
@@ -1124,7 +1160,7 @@ TAction* importActionFromXML(const QString& xmlSnapshot, TAction* pParent, Host*
     if (pParent) {
         qDebug() << "importActionFromXML: Adding action to parent at position" << position;
         pA->Tree<TAction>::setParent(pParent);
-        pParent->addChild(pA, (position >= 0) ? TreeInsertMode::AtPosition : TreeInsertMode::Append, position);
+        pParent->addChild(pA, (position >= 0) ? TreeItemInsertMode::AtPosition : TreeItemInsertMode::Append, position);
 
         // Verify position
         auto children = pParent->getChildrenList();
@@ -1135,6 +1171,15 @@ TAction* importActionFromXML(const QString& xmlSnapshot, TAction* pParent, Host*
                 break;
             }
             actualPos++;
+        }
+    } else {
+        // Root level action - register first (adds to end of root list)
+        qDebug() << "importActionFromXML: Adding action to root at position" << position;
+
+        // Now reposition it if a specific position was requested
+        if (position != -1) {
+            qDebug() << "importActionFromXML: Repositioning to position" << position;
+            host->getActionUnit()->reParentAction(pA->getID(), -1, -1, TreeItemInsertMode::AtPosition, position);
         }
     }
 
@@ -1653,6 +1698,108 @@ void DeleteItemCommand::redo() {
     // Note: When the command is first created, items are already deleted,
     // but we never call redo() at that point. The first time redo() is called is after
     // undo() has restored the items, so we need to delete them again.
+
+    // Important: Set mpHost to null before deleting to prevent items from trying to
+    // unregister themselves during destruction (which could cause iterator invalidation
+    // or access to partially-destroyed parent items)
+    for (const auto& info : mDeletedItems) {
+        switch (mViewType) {
+        case EditorViewType::cmTriggerView: {
+            TTrigger* trigger = mpHost->getTriggerUnit()->getTrigger(info.itemID);
+            if (trigger) {
+                // Nullify mpHost on trigger and all children recursively
+                trigger->mpHost = nullptr;
+                std::function<void(TTrigger*)> nullifyChildren = [&nullifyChildren](TTrigger* t) {
+                    for (auto child : *t->mpMyChildrenList) {
+                        child->mpHost = nullptr;
+                        nullifyChildren(child);
+                    }
+                };
+                nullifyChildren(trigger);
+            }
+            break;
+        }
+        case EditorViewType::cmAliasView: {
+            TAlias* alias = mpHost->getAliasUnit()->getAlias(info.itemID);
+            if (alias) {
+                // Nullify mpHost on alias and all children recursively
+                alias->mpHost = nullptr;
+                std::function<void(TAlias*)> nullifyChildren = [&nullifyChildren](TAlias* a) {
+                    for (auto child : *a->mpMyChildrenList) {
+                        child->mpHost = nullptr;
+                        nullifyChildren(child);
+                    }
+                };
+                nullifyChildren(alias);
+            }
+            break;
+        }
+        case EditorViewType::cmTimerView: {
+            TTimer* timer = mpHost->getTimerUnit()->getTimer(info.itemID);
+            if (timer) {
+                // Nullify mpHost on timer and all children recursively
+                timer->mpHost = nullptr;
+                std::function<void(TTimer*)> nullifyChildren = [&nullifyChildren](TTimer* t) {
+                    for (auto child : *t->mpMyChildrenList) {
+                        child->mpHost = nullptr;
+                        nullifyChildren(child);
+                    }
+                };
+                nullifyChildren(timer);
+            }
+            break;
+        }
+        case EditorViewType::cmScriptView: {
+            TScript* script = mpHost->getScriptUnit()->getScript(info.itemID);
+            if (script) {
+                // Nullify mpHost on script and all children recursively
+                script->mpHost = nullptr;
+                std::function<void(TScript*)> nullifyChildren = [&nullifyChildren](TScript* s) {
+                    for (auto child : *s->mpMyChildrenList) {
+                        child->mpHost = nullptr;
+                        nullifyChildren(child);
+                    }
+                };
+                nullifyChildren(script);
+            }
+            break;
+        }
+        case EditorViewType::cmKeysView: {
+            TKey* key = mpHost->getKeyUnit()->getKey(info.itemID);
+            if (key) {
+                // Nullify mpHost on key and all children recursively
+                key->mpHost = nullptr;
+                std::function<void(TKey*)> nullifyChildren = [&nullifyChildren](TKey* k) {
+                    for (auto child : *k->mpMyChildrenList) {
+                        child->mpHost = nullptr;
+                        nullifyChildren(child);
+                    }
+                };
+                nullifyChildren(key);
+            }
+            break;
+        }
+        case EditorViewType::cmActionView: {
+            TAction* action = mpHost->getActionUnit()->getAction(info.itemID);
+            if (action) {
+                // Nullify mpHost on action and all children recursively
+                action->mpHost = nullptr;
+                std::function<void(TAction*)> nullifyChildren = [&nullifyChildren](TAction* a) {
+                    for (auto child : *a->mpMyChildrenList) {
+                        child->mpHost = nullptr;
+                        nullifyChildren(child);
+                    }
+                };
+                nullifyChildren(action);
+            }
+            break;
+        }
+        default:
+            break;
+        }
+    }
+
+    // Now delete all the items (their destructors won't try to unregister since mpHost is null)
     for (const auto& info : mDeletedItems) {
         switch (mViewType) {
         case EditorViewType::cmTriggerView: {

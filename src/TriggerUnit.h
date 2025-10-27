@@ -23,6 +23,8 @@
  ***************************************************************************/
 
 
+#include "utils.h"
+
 #include <QMultiMap>
 #include <QPointer>
 #include <QString>
@@ -31,12 +33,6 @@
 
 class Host;
 class TTrigger;
-
-// Enum to clarify insertion mode when reparenting triggers
-enum class TriggerInsertMode {
-    Append,      // Add to end of parent's child list
-    AtPosition   // Insert at specific position
-};
 
 class TriggerUnit
 {
@@ -68,7 +64,7 @@ public:
     bool registerTrigger(TTrigger* pT);
     void unregisterTrigger(TTrigger* pT);
     // New safer API using enum for insertion mode
-    void reParentTrigger(int childID, int oldParentID, int newParentID, TriggerInsertMode mode, int position = 0);
+    void reParentTrigger(int childID, int oldParentID, int newParentID, TreeItemInsertMode mode, int position = 0);
     // Old API kept for backward compatibility (delegates to new API)
     void reParentTrigger(int childID, int oldParentID, int newParentID, int parentPosition = -1, int childPosition = -1);
     void processDataStream(const QString&, int);
