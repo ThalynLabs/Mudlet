@@ -3618,7 +3618,7 @@ void dlgTriggerEditor::activeToggle_trigger()
     // Push undo command for toggle operation
     if (mpUndoSystem && oldState != newState) {
         auto cmd = std::make_unique<ToggleActiveCommand>(
-            EditorViewType::cmTriggerView,
+            static_cast<::EditorViewType>(EditorViewType::cmTriggerView),
             pT->getID(),
             oldState,
             newState,
@@ -3707,7 +3707,7 @@ void dlgTriggerEditor::slot_itemMoved(int itemID, int oldParentID, int newParent
 
     // Push move command to undo system
     auto cmd = std::make_unique<MoveItemCommand>(
-        viewType,
+        static_cast<::EditorViewType>(viewType),
         itemID,
         oldParentID,
         newParentID,

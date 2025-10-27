@@ -19,7 +19,6 @@
 
 #include "EditorUndoSystem.h"
 
-#include "dlgTriggerEditor.h"
 #include "Host.h"
 #include "TTrigger.h"
 #include "TAlias.h"
