@@ -293,6 +293,9 @@ TTrigger* importTriggerFromXML(const QString& xmlSnapshot, TTrigger* pParent, Ho
         pT->setRegexCodeList(patterns, patternKinds);
     }
 
+    // Compile and validate the trigger to ensure error states are computed
+    pT->compileAll();
+
     return pT;
 }
 
@@ -381,6 +384,9 @@ bool updateTriggerFromXML(TTrigger* pT, const QString& xmlSnapshot) {
     if (!patterns.isEmpty()) {
         pT->setRegexCodeList(patterns, patternKinds);
     }
+
+    // Compile and validate the trigger to ensure error states are computed
+    pT->compileAll();
 
     return true;
 }

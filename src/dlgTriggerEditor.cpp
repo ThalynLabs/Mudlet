@@ -4514,8 +4514,10 @@ void dlgTriggerEditor::addTrigger(bool isFolder)
     slot_triggerSelected(treeWidget_triggers->currentItem());
 
     // Push undo command for the newly added trigger
-    int parentID = (pParentItem && pParentItem != mpTriggerBaseItem)
-                   ? pParentItem->data(0, Qt::UserRole).toInt()
+    // IMPORTANT: Use the actual parent of pNewItem, not pParentItem which was the selected item
+    QTreeWidgetItem* actualParent = pNewItem->parent();
+    int parentID = (actualParent && actualParent != mpTriggerBaseItem)
+                   ? actualParent->data(0, Qt::UserRole).toInt()
                    : -1;
     auto cmd = std::make_unique<AddItemCommand>(
         ::EditorViewType::cmTriggerView,
