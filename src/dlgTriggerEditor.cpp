@@ -2992,6 +2992,38 @@ void dlgTriggerEditor::delete_alias()
         return;
     }
 
+    // Capture state of all items BEFORE deletion for undo
+    QList<DeleteItemCommand::DeletedItemInfo> deletedItems;
+    for (QTreeWidgetItem* pItem : selectedItems) {
+        TAlias* pT = mpHost->getAliasUnit()->getAlias(pItem->data(0, Qt::UserRole).toInt());
+        if (pT) {
+            DeleteItemCommand::DeletedItemInfo info;
+            info.itemID = pT->getID();
+            info.itemName = pT->getName();
+
+            // Get parent ID
+            QTreeWidgetItem* pParentItem = pItem->parent();
+            if (pParentItem && pParentItem != mpAliasBaseItem) {
+                info.parentID = pParentItem->data(0, Qt::UserRole).toInt();
+                info.positionInParent = pParentItem->indexOfChild(pItem);
+            } else {
+                info.parentID = -1;
+                info.positionInParent = treeWidget_aliases->indexOfTopLevelItem(pItem);
+            }
+
+            // Export alias to XML snapshot
+            pugi::xml_document doc;
+            auto root = doc.append_child("AliasSnapshot");
+            XMLexport exporter(pT);
+            exporter.writeAlias(pT, root);
+            std::ostringstream oss;
+            doc.save(oss);
+            info.xmlSnapshot = QString::fromStdString(oss.str());
+
+            deletedItems.append(info);
+        }
+    }
+
     // Sort items by their position in tree (top to bottom) to delete correctly
     std::sort(selectedItems.begin(), selectedItems.end(), [this](QTreeWidgetItem* a, QTreeWidgetItem* b) {
         QModelIndex indexA = treeWidget_aliases->indexFromItem(a);
@@ -3016,6 +3048,16 @@ void dlgTriggerEditor::delete_alias()
             }
             delete pT;
         }
+    }
+
+    // Push undo command for the deleted aliases
+    if (!deletedItems.isEmpty()) {
+        auto cmd = std::make_unique<DeleteItemCommand>(
+            EditorViewType::cmAliasView,
+            deletedItems,
+            mpHost
+        );
+        mpUndoSystem->pushCommand(std::move(cmd));
     }
 
     // Set new selection
@@ -3065,6 +3107,38 @@ void dlgTriggerEditor::delete_action()
         return;
     }
 
+    // Capture state of all items BEFORE deletion for undo
+    QList<DeleteItemCommand::DeletedItemInfo> deletedItems;
+    for (QTreeWidgetItem* pItem : selectedItems) {
+        TAction* pT = mpHost->getActionUnit()->getAction(pItem->data(0, Qt::UserRole).toInt());
+        if (pT) {
+            DeleteItemCommand::DeletedItemInfo info;
+            info.itemID = pT->getID();
+            info.itemName = pT->getName();
+
+            // Get parent ID
+            QTreeWidgetItem* pParentItem = pItem->parent();
+            if (pParentItem && pParentItem != mpActionBaseItem) {
+                info.parentID = pParentItem->data(0, Qt::UserRole).toInt();
+                info.positionInParent = pParentItem->indexOfChild(pItem);
+            } else {
+                info.parentID = -1;
+                info.positionInParent = treeWidget_actions->indexOfTopLevelItem(pItem);
+            }
+
+            // Export action to XML snapshot
+            pugi::xml_document doc;
+            auto root = doc.append_child("ActionSnapshot");
+            XMLexport exporter(pT);
+            exporter.writeAction(pT, root);
+            std::ostringstream oss;
+            doc.save(oss);
+            info.xmlSnapshot = QString::fromStdString(oss.str());
+
+            deletedItems.append(info);
+        }
+    }
+
     // Sort items by their position in tree (top to bottom) to delete correctly
     std::sort(selectedItems.begin(), selectedItems.end(), [this](QTreeWidgetItem* a, QTreeWidgetItem* b) {
         QModelIndex indexA = treeWidget_actions->indexFromItem(a);
@@ -3096,6 +3170,16 @@ void dlgTriggerEditor::delete_action()
             }
             delete pT;
         }
+    }
+
+    // Push undo command for the deleted actions
+    if (!deletedItems.isEmpty()) {
+        auto cmd = std::make_unique<DeleteItemCommand>(
+            EditorViewType::cmActionView,
+            deletedItems,
+            mpHost
+        );
+        mpUndoSystem->pushCommand(std::move(cmd));
     }
 
     // Set new selection
@@ -3229,6 +3313,38 @@ void dlgTriggerEditor::delete_script()
         return;
     }
 
+    // Capture state of all items BEFORE deletion for undo
+    QList<DeleteItemCommand::DeletedItemInfo> deletedItems;
+    for (QTreeWidgetItem* pItem : selectedItems) {
+        TScript* pT = mpHost->getScriptUnit()->getScript(pItem->data(0, Qt::UserRole).toInt());
+        if (pT) {
+            DeleteItemCommand::DeletedItemInfo info;
+            info.itemID = pT->getID();
+            info.itemName = pT->getName();
+
+            // Get parent ID
+            QTreeWidgetItem* pParentItem = pItem->parent();
+            if (pParentItem && pParentItem != mpScriptsBaseItem) {
+                info.parentID = pParentItem->data(0, Qt::UserRole).toInt();
+                info.positionInParent = pParentItem->indexOfChild(pItem);
+            } else {
+                info.parentID = -1;
+                info.positionInParent = treeWidget_scripts->indexOfTopLevelItem(pItem);
+            }
+
+            // Export script to XML snapshot
+            pugi::xml_document doc;
+            auto root = doc.append_child("ScriptSnapshot");
+            XMLexport exporter(pT);
+            exporter.writeScript(pT, root);
+            std::ostringstream oss;
+            doc.save(oss);
+            info.xmlSnapshot = QString::fromStdString(oss.str());
+
+            deletedItems.append(info);
+        }
+    }
+
     // Sort items by their position in tree (top to bottom) to delete correctly
     std::sort(selectedItems.begin(), selectedItems.end(), [this](QTreeWidgetItem* a, QTreeWidgetItem* b) {
         QModelIndex indexA = treeWidget_scripts->indexFromItem(a);
@@ -3253,6 +3369,16 @@ void dlgTriggerEditor::delete_script()
             }
             delete pT;
         }
+    }
+
+    // Push undo command for the deleted scripts
+    if (!deletedItems.isEmpty()) {
+        auto cmd = std::make_unique<DeleteItemCommand>(
+            EditorViewType::cmScriptView,
+            deletedItems,
+            mpHost
+        );
+        mpUndoSystem->pushCommand(std::move(cmd));
     }
 
     // Set new selection
@@ -3302,6 +3428,38 @@ void dlgTriggerEditor::delete_key()
         return;
     }
 
+    // Capture state of all items BEFORE deletion for undo
+    QList<DeleteItemCommand::DeletedItemInfo> deletedItems;
+    for (QTreeWidgetItem* pItem : selectedItems) {
+        TKey* pT = mpHost->getKeyUnit()->getKey(pItem->data(0, Qt::UserRole).toInt());
+        if (pT) {
+            DeleteItemCommand::DeletedItemInfo info;
+            info.itemID = pT->getID();
+            info.itemName = pT->getName();
+
+            // Get parent ID
+            QTreeWidgetItem* pParentItem = pItem->parent();
+            if (pParentItem && pParentItem != mpKeyBaseItem) {
+                info.parentID = pParentItem->data(0, Qt::UserRole).toInt();
+                info.positionInParent = pParentItem->indexOfChild(pItem);
+            } else {
+                info.parentID = -1;
+                info.positionInParent = treeWidget_keys->indexOfTopLevelItem(pItem);
+            }
+
+            // Export key to XML snapshot
+            pugi::xml_document doc;
+            auto root = doc.append_child("KeySnapshot");
+            XMLexport exporter(pT);
+            exporter.writeKey(pT, root);
+            std::ostringstream oss;
+            doc.save(oss);
+            info.xmlSnapshot = QString::fromStdString(oss.str());
+
+            deletedItems.append(info);
+        }
+    }
+
     // Sort items by their position in tree (top to bottom) to delete correctly
     std::sort(selectedItems.begin(), selectedItems.end(), [this](QTreeWidgetItem* a, QTreeWidgetItem* b) {
         QModelIndex indexA = treeWidget_keys->indexFromItem(a);
@@ -3326,6 +3484,16 @@ void dlgTriggerEditor::delete_key()
             }
             delete pT;
         }
+    }
+
+    // Push undo command for the deleted keys
+    if (!deletedItems.isEmpty()) {
+        auto cmd = std::make_unique<DeleteItemCommand>(
+            EditorViewType::cmKeysView,
+            deletedItems,
+            mpHost
+        );
+        mpUndoSystem->pushCommand(std::move(cmd));
     }
 
     // Set new selection
@@ -3490,6 +3658,38 @@ void dlgTriggerEditor::delete_timer()
         return;
     }
 
+    // Capture state of all items BEFORE deletion for undo
+    QList<DeleteItemCommand::DeletedItemInfo> deletedItems;
+    for (QTreeWidgetItem* pItem : selectedItems) {
+        TTimer* pT = mpHost->getTimerUnit()->getTimer(pItem->data(0, Qt::UserRole).toInt());
+        if (pT) {
+            DeleteItemCommand::DeletedItemInfo info;
+            info.itemID = pT->getID();
+            info.itemName = pT->getName();
+
+            // Get parent ID
+            QTreeWidgetItem* pParentItem = pItem->parent();
+            if (pParentItem && pParentItem != mpTimerBaseItem) {
+                info.parentID = pParentItem->data(0, Qt::UserRole).toInt();
+                info.positionInParent = pParentItem->indexOfChild(pItem);
+            } else {
+                info.parentID = -1;
+                info.positionInParent = treeWidget_timers->indexOfTopLevelItem(pItem);
+            }
+
+            // Export timer to XML snapshot
+            pugi::xml_document doc;
+            auto root = doc.append_child("TimerSnapshot");
+            XMLexport exporter(pT);
+            exporter.writeTimer(pT, root);
+            std::ostringstream oss;
+            doc.save(oss);
+            info.xmlSnapshot = QString::fromStdString(oss.str());
+
+            deletedItems.append(info);
+        }
+    }
+
     // Sort items by their position in tree (top to bottom) to delete correctly
     std::sort(selectedItems.begin(), selectedItems.end(), [this](QTreeWidgetItem* a, QTreeWidgetItem* b) {
         QModelIndex indexA = treeWidget_timers->indexFromItem(a);
@@ -3514,6 +3714,16 @@ void dlgTriggerEditor::delete_timer()
             }
             delete pT;
         }
+    }
+
+    // Push undo command for the deleted timers
+    if (!deletedItems.isEmpty()) {
+        auto cmd = std::make_unique<DeleteItemCommand>(
+            EditorViewType::cmTimerView,
+            deletedItems,
+            mpHost
+        );
+        mpUndoSystem->pushCommand(std::move(cmd));
     }
 
     // Set new selection
