@@ -3008,7 +3008,7 @@ void dlgTriggerEditor::delete_alias()
                 info.positionInParent = pParentItem->indexOfChild(pItem);
             } else {
                 info.parentID = -1;
-                info.positionInParent = treeWidget_aliases->indexOfTopLevelItem(pItem);
+                info.positionInParent = mpAliasBaseItem->indexOfChild(pItem);
             }
 
             // Export alias to XML snapshot
@@ -3123,7 +3123,7 @@ void dlgTriggerEditor::delete_action()
                 info.positionInParent = pParentItem->indexOfChild(pItem);
             } else {
                 info.parentID = -1;
-                info.positionInParent = treeWidget_actions->indexOfTopLevelItem(pItem);
+                info.positionInParent = mpActionBaseItem->indexOfChild(pItem);
             }
 
             // Export action to XML snapshot
@@ -3329,7 +3329,7 @@ void dlgTriggerEditor::delete_script()
                 info.positionInParent = pParentItem->indexOfChild(pItem);
             } else {
                 info.parentID = -1;
-                info.positionInParent = treeWidget_scripts->indexOfTopLevelItem(pItem);
+                info.positionInParent = mpScriptsBaseItem->indexOfChild(pItem);
             }
 
             // Export script to XML snapshot
@@ -3444,7 +3444,7 @@ void dlgTriggerEditor::delete_key()
                 info.positionInParent = pParentItem->indexOfChild(pItem);
             } else {
                 info.parentID = -1;
-                info.positionInParent = treeWidget_keys->indexOfTopLevelItem(pItem);
+                info.positionInParent = mpKeyBaseItem->indexOfChild(pItem);
             }
 
             // Export key to XML snapshot
@@ -3699,7 +3699,7 @@ void dlgTriggerEditor::delete_timer()
                 info.positionInParent = pParentItem->indexOfChild(pItem);
             } else {
                 info.parentID = -1;
-                info.positionInParent = treeWidget_timers->indexOfTopLevelItem(pItem);
+                info.positionInParent = mpTimerBaseItem->indexOfChild(pItem);
             }
 
             // Export timer to XML snapshot

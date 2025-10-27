@@ -1799,12 +1799,14 @@ void DeleteItemCommand::redo() {
         }
     }
 
-    // Now delete all the items (their destructors won't try to unregister since mpHost is null)
+    // Now manually unregister and delete all items
+    // Since mpHost is null, destructors won't try to unregister, so we must do it manually
     for (const auto& info : mDeletedItems) {
         switch (mViewType) {
         case EditorViewType::cmTriggerView: {
             TTrigger* trigger = mpHost->getTriggerUnit()->getTrigger(info.itemID);
             if (trigger) {
+                mpHost->getTriggerUnit()->unregisterTrigger(trigger);
                 delete trigger;
             }
             break;
@@ -1812,6 +1814,7 @@ void DeleteItemCommand::redo() {
         case EditorViewType::cmAliasView: {
             TAlias* alias = mpHost->getAliasUnit()->getAlias(info.itemID);
             if (alias) {
+                mpHost->getAliasUnit()->unregisterAlias(alias);
                 delete alias;
             }
             break;
@@ -1819,6 +1822,7 @@ void DeleteItemCommand::redo() {
         case EditorViewType::cmTimerView: {
             TTimer* timer = mpHost->getTimerUnit()->getTimer(info.itemID);
             if (timer) {
+                mpHost->getTimerUnit()->unregisterTimer(timer);
                 delete timer;
             }
             break;
@@ -1826,6 +1830,7 @@ void DeleteItemCommand::redo() {
         case EditorViewType::cmScriptView: {
             TScript* script = mpHost->getScriptUnit()->getScript(info.itemID);
             if (script) {
+                mpHost->getScriptUnit()->unregisterScript(script);
                 delete script;
             }
             break;
@@ -1833,6 +1838,7 @@ void DeleteItemCommand::redo() {
         case EditorViewType::cmKeysView: {
             TKey* key = mpHost->getKeyUnit()->getKey(info.itemID);
             if (key) {
+                mpHost->getKeyUnit()->unregisterKey(key);
                 delete key;
             }
             break;
@@ -1840,6 +1846,7 @@ void DeleteItemCommand::redo() {
         case EditorViewType::cmActionView: {
             TAction* action = mpHost->getActionUnit()->getAction(info.itemID);
             if (action) {
+                mpHost->getActionUnit()->unregisterAction(action);
                 delete action;
             }
             break;
