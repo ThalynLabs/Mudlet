@@ -1274,7 +1274,6 @@ void AddItemCommand::redo() {
     if (!mItemSnapshot.isEmpty()) {
         // Track old ID for remapping purposes
         mOldItemID = mItemID;
-        qDebug() << "[AddItemCommand::redo] Recreating item, oldID:" << mOldItemID;
 
         // Get parent trigger
         TTrigger* pParent = nullptr;
@@ -1289,9 +1288,7 @@ void AddItemCommand::redo() {
             if (pNewTrigger) {
                 // Store the new ID (it may be different from original)
                 mItemID = pNewTrigger->getID();
-                qDebug() << "[AddItemCommand::redo] Item recreated, newID:" << mItemID;
                 if (mOldItemID != mItemID) {
-                    qDebug() << "[AddItemCommand::redo] ID CHANGED! oldID:" << mOldItemID << "-> newID:" << mItemID;
                 }
             } else {
                 qWarning() << "AddItemCommand::redo() - Failed to recreate trigger from snapshot";
@@ -1306,9 +1303,7 @@ void AddItemCommand::redo() {
             TAlias* pNewAlias = importAliasFromXML(mItemSnapshot, pAliasParent, mpHost);
             if (pNewAlias) {
                 mItemID = pNewAlias->getID();
-                qDebug() << "[AddItemCommand::redo] Alias recreated, newID:" << mItemID;
                 if (mOldItemID != mItemID) {
-                    qDebug() << "[AddItemCommand::redo] ID CHANGED! oldID:" << mOldItemID << "-> newID:" << mItemID;
                 }
             } else {
                 qWarning() << "AddItemCommand::redo() - Failed to recreate alias from snapshot";
@@ -1323,9 +1318,7 @@ void AddItemCommand::redo() {
             TTimer* pNewTimer = importTimerFromXML(mItemSnapshot, pTimerParent, mpHost);
             if (pNewTimer) {
                 mItemID = pNewTimer->getID();
-                qDebug() << "[AddItemCommand::redo] Timer recreated, newID:" << mItemID;
                 if (mOldItemID != mItemID) {
-                    qDebug() << "[AddItemCommand::redo] ID CHANGED! oldID:" << mOldItemID << "-> newID:" << mItemID;
                 }
             } else {
                 qWarning() << "AddItemCommand::redo() - Failed to recreate timer from snapshot";
@@ -1340,9 +1333,7 @@ void AddItemCommand::redo() {
             TScript* pNewScript = importScriptFromXML(mItemSnapshot, pScriptParent, mpHost);
             if (pNewScript) {
                 mItemID = pNewScript->getID();
-                qDebug() << "[AddItemCommand::redo] Script recreated, newID:" << mItemID;
                 if (mOldItemID != mItemID) {
-                    qDebug() << "[AddItemCommand::redo] ID CHANGED! oldID:" << mOldItemID << "-> newID:" << mItemID;
                 }
             } else {
                 qWarning() << "AddItemCommand::redo() - Failed to recreate script from snapshot";
@@ -1357,9 +1348,7 @@ void AddItemCommand::redo() {
             TKey* pNewKey = importKeyFromXML(mItemSnapshot, pKeyParent, mpHost);
             if (pNewKey) {
                 mItemID = pNewKey->getID();
-                qDebug() << "[AddItemCommand::redo] Key recreated, newID:" << mItemID;
                 if (mOldItemID != mItemID) {
-                    qDebug() << "[AddItemCommand::redo] ID CHANGED! oldID:" << mOldItemID << "-> newID:" << mItemID;
                 }
             } else {
                 qWarning() << "AddItemCommand::redo() - Failed to recreate key from snapshot";
@@ -1374,9 +1363,7 @@ void AddItemCommand::redo() {
             TAction* pNewAction = importActionFromXML(mItemSnapshot, pActionParent, mpHost);
             if (pNewAction) {
                 mItemID = pNewAction->getID();
-                qDebug() << "[AddItemCommand::redo] Action recreated, newID:" << mItemID;
                 if (mOldItemID != mItemID) {
-                    qDebug() << "[AddItemCommand::redo] ID CHANGED! oldID:" << mOldItemID << "-> newID:" << mItemID;
                 }
             } else {
                 qWarning() << "AddItemCommand::redo() - Failed to recreate action from snapshot";
@@ -1391,13 +1378,10 @@ void AddItemCommand::redo() {
 }
 
 void AddItemCommand::remapItemID(int oldID, int newID) {
-    qDebug() << "[AddItemCommand::remapItemID] Called with oldID:" << oldID << "newID:" << newID << "| my mItemID:" << mItemID << "mParentID:" << mParentID;
     if (mItemID == oldID) {
-        qDebug() << "[AddItemCommand::remapItemID] Remapping mItemID from" << oldID << "to" << newID;
         mItemID = newID;
     }
     if (mParentID == oldID) {
-        qDebug() << "[AddItemCommand::remapItemID] Remapping mParentID from" << oldID << "to" << newID;
         mParentID = newID;
     }
 }
@@ -1596,14 +1580,11 @@ QList<int> DeleteItemCommand::affectedItemIDs() const {
 }
 
 void DeleteItemCommand::remapItemID(int oldID, int newID) {
-    qDebug() << "[DeleteItemCommand::remapItemID] Called with oldID:" << oldID << "newID:" << newID;
     for (auto& info : mDeletedItems) {
         if (info.itemID == oldID) {
-            qDebug() << "[DeleteItemCommand::remapItemID] Remapping deleted item ID from" << oldID << "to" << newID;
             info.itemID = newID;
         }
         if (info.parentID == oldID) {
-            qDebug() << "[DeleteItemCommand::remapItemID] Remapping deleted item parent ID from" << oldID << "to" << newID;
             info.parentID = newID;
         }
     }
@@ -1785,9 +1766,7 @@ QString ModifyPropertyCommand::text() const {
 }
 
 void ModifyPropertyCommand::remapItemID(int oldID, int newID) {
-    qDebug() << "[ModifyPropertyCommand::remapItemID] Called with oldID:" << oldID << "newID:" << newID << "| my mItemID:" << mItemID;
     if (mItemID == oldID) {
-        qDebug() << "[ModifyPropertyCommand::remapItemID] Remapping mItemID from" << oldID << "to" << newID;
         mItemID = newID;
     }
 }
@@ -1807,24 +1786,13 @@ MoveItemCommand::MoveItemCommand(EditorViewType viewType, int itemID,
 , mNewParentID(newParentID)
 , mItemName(itemName)
 {
-    qDebug() << "[MoveItemCommand::CONSTRUCTOR] Created move command:";
-    qDebug() << "[MoveItemCommand::CONSTRUCTOR]   viewType:" << static_cast<int>(mViewType);
-    qDebug() << "[MoveItemCommand::CONSTRUCTOR]   itemID:" << mItemID;
-    qDebug() << "[MoveItemCommand::CONSTRUCTOR]   oldParentID:" << mOldParentID;
-    qDebug() << "[MoveItemCommand::CONSTRUCTOR]   newParentID:" << mNewParentID;
-    qDebug() << "[MoveItemCommand::CONSTRUCTOR]   itemName:" << mItemName;
 }
 
 void MoveItemCommand::undo() {
-    qDebug() << "[MoveItemCommand::undo] ===== UNDO MOVE =====";
-    qDebug() << "[MoveItemCommand::undo] Moving item" << mItemID << "'" << mItemName << "' back from parent" << mNewParentID << "to parent" << mOldParentID;
-    qDebug() << "[MoveItemCommand::undo] viewType:" << static_cast<int>(mViewType);
 
     switch (mViewType) {
     case EditorViewType::cmTriggerView: {
-        qDebug() << "[MoveItemCommand::undo] Calling reParentTrigger(" << mItemID << "," << mNewParentID << "," << mOldParentID << ", -1, -1)";
         mpHost->getTriggerUnit()->reParentTrigger(mItemID, mNewParentID, mOldParentID, -1, -1);
-        qDebug() << "[MoveItemCommand::undo] reParentTrigger completed successfully";
         break;
     }
     case EditorViewType::cmAliasView: {
@@ -1854,15 +1822,10 @@ void MoveItemCommand::undo() {
 }
 
 void MoveItemCommand::redo() {
-    qDebug() << "[MoveItemCommand::redo] ===== REDO MOVE =====";
-    qDebug() << "[MoveItemCommand::redo] Moving item" << mItemID << "'" << mItemName << "' from parent" << mOldParentID << "to parent" << mNewParentID;
-    qDebug() << "[MoveItemCommand::redo] viewType:" << static_cast<int>(mViewType);
 
     switch (mViewType) {
     case EditorViewType::cmTriggerView: {
-        qDebug() << "[MoveItemCommand::redo] Calling reParentTrigger(" << mItemID << "," << mOldParentID << "," << mNewParentID << ", -1, -1)";
         mpHost->getTriggerUnit()->reParentTrigger(mItemID, mOldParentID, mNewParentID, -1, -1);
-        qDebug() << "[MoveItemCommand::redo] reParentTrigger completed successfully";
         break;
     }
     case EditorViewType::cmAliasView: {
@@ -1897,17 +1860,13 @@ QString MoveItemCommand::text() const {
 }
 
 void MoveItemCommand::remapItemID(int oldID, int newID) {
-    qDebug() << "[MoveItemCommand::remapItemID] Called with oldID:" << oldID << "newID:" << newID << "| my mItemID:" << mItemID;
     if (mItemID == oldID) {
-        qDebug() << "[MoveItemCommand::remapItemID] Remapping mItemID from" << oldID << "to" << newID;
         mItemID = newID;
     }
     if (mOldParentID == oldID) {
-        qDebug() << "[MoveItemCommand::remapItemID] Remapping mOldParentID from" << oldID << "to" << newID;
         mOldParentID = newID;
     }
     if (mNewParentID == oldID) {
-        qDebug() << "[MoveItemCommand::remapItemID] Remapping mNewParentID from" << oldID << "to" << newID;
         mNewParentID = newID;
     }
 }
@@ -1930,7 +1889,6 @@ ToggleActiveCommand::ToggleActiveCommand(EditorViewType viewType, int itemID,
 }
 
 void ToggleActiveCommand::undo() {
-    qDebug() << "[ToggleActiveCommand::undo] Restoring item" << mItemID << "active state to" << mOldActiveState;
 
     switch (mViewType) {
     case EditorViewType::cmTriggerView: {
@@ -1994,7 +1952,6 @@ void ToggleActiveCommand::undo() {
 }
 
 void ToggleActiveCommand::redo() {
-    qDebug() << "[ToggleActiveCommand::redo] Setting item" << mItemID << "active state to" << mNewActiveState;
 
     switch (mViewType) {
     case EditorViewType::cmTriggerView: {
@@ -2067,9 +2024,7 @@ QString ToggleActiveCommand::text() const {
 }
 
 void ToggleActiveCommand::remapItemID(int oldID, int newID) {
-    qDebug() << "[ToggleActiveCommand::remapItemID] Called with oldID:" << oldID << "newID:" << newID << "| my mItemID:" << mItemID;
     if (mItemID == oldID) {
-        qDebug() << "[ToggleActiveCommand::remapItemID] Remapping mItemID from" << oldID << "to" << newID;
         mItemID = newID;
     }
 }
@@ -2138,7 +2093,6 @@ void EditorUndoSystem::redo()
         if (addCmd->didItemIDChange()) {
             int oldID = addCmd->getOldItemID();
             int newID = addCmd->getNewItemID();
-            qDebug() << "[EditorUndoSystem::redo] AddItemCommand changed ID, remapping from" << oldID << "to" << newID;
             remapItemIDs(oldID, newID);
         }
     }
@@ -2202,22 +2156,17 @@ void EditorUndoSystem::emitSignals()
 
 void EditorUndoSystem::remapItemIDs(int oldID, int newID)
 {
-    qDebug() << "[EditorUndoSystem::remapItemIDs] Remapping all commands from oldID:" << oldID << "to newID:" << newID;
-    qDebug() << "[EditorUndoSystem::remapItemIDs] Undo stack size:" << mUndoStack.size() << "Redo stack size:" << mRedoStack.size();
 
     // Update all commands in undo stack
     int undoCount = 0;
     for (auto& cmd : mUndoStack) {
-        qDebug() << "[EditorUndoSystem::remapItemIDs] Remapping command in undo stack #" << undoCount++;
         cmd->remapItemID(oldID, newID);
     }
 
     // Update all commands in redo stack
     int redoCount = 0;
     for (auto& cmd : mRedoStack) {
-        qDebug() << "[EditorUndoSystem::remapItemIDs] Remapping command in redo stack #" << redoCount++;
         cmd->remapItemID(oldID, newID);
     }
 
-    qDebug() << "[EditorUndoSystem::remapItemIDs] Remapping complete";
 }
