@@ -11911,11 +11911,13 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
             if (itemToSelect) {
                 qDebug() << "[slot_itemsChanged] Found item:" << itemToSelect << "- calling setCurrentItem()";
                 qDebug() << "[slot_itemsChanged] mpCurrentTriggerItem before setCurrentItem:" << mpCurrentTriggerItem;
-                // Block signals to prevent premature selection change cascades
-                qDebug() << "[slot_itemsChanged] Blocking signals before setCurrentItem()";
-                treeWidget_triggers->blockSignals(true);
+                // Block signals on the selection model to prevent premature selection change cascades
+                // Note: Must block on selectionModel(), not the widget itself, as the signal originates from QItemSelectionModel
+                qDebug() << "[slot_itemsChanged] Blocking selectionModel signals before setCurrentItem()";
+                QItemSelectionModel* selModel = treeWidget_triggers->selectionModel();
+                selModel->blockSignals(true);
                 treeWidget_triggers->setCurrentItem(itemToSelect);
-                treeWidget_triggers->blockSignals(false);
+                selModel->blockSignals(false);
                 qDebug() << "[slot_itemsChanged] setCurrentItem() returned, signals unblocked";
                 qDebug() << "[slot_itemsChanged] mpCurrentTriggerItem after setCurrentItem:" << mpCurrentTriggerItem;
                 treeWidget_triggers->scrollToItem(itemToSelect);
@@ -11940,10 +11942,11 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
         if (!affectedItemIDs.isEmpty()) {
             QTreeWidgetItem* itemToSelect = findItemByID(mpTimerBaseItem, affectedItemIDs.first());
             if (itemToSelect) {
-                // Block signals to prevent premature selection change cascades
-                treeWidget_timers->blockSignals(true);
+                // Block signals on selection model to prevent premature selection change cascades
+                QItemSelectionModel* selModel = treeWidget_timers->selectionModel();
+                selModel->blockSignals(true);
                 treeWidget_timers->setCurrentItem(itemToSelect);
-                treeWidget_timers->blockSignals(false);
+                selModel->blockSignals(false);
                 treeWidget_timers->scrollToItem(itemToSelect);
                 slot_timerSelected(itemToSelect);
             }
@@ -11961,10 +11964,11 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
         if (!affectedItemIDs.isEmpty()) {
             QTreeWidgetItem* itemToSelect = findItemByID(mpAliasBaseItem, affectedItemIDs.first());
             if (itemToSelect) {
-                // Block signals to prevent premature selection change cascades
-                treeWidget_aliases->blockSignals(true);
+                // Block signals on selection model to prevent premature selection change cascades
+                QItemSelectionModel* selModel = treeWidget_aliases->selectionModel();
+                selModel->blockSignals(true);
                 treeWidget_aliases->setCurrentItem(itemToSelect);
-                treeWidget_aliases->blockSignals(false);
+                selModel->blockSignals(false);
                 treeWidget_aliases->scrollToItem(itemToSelect);
                 slot_aliasSelected(itemToSelect);
             }
@@ -11982,10 +11986,11 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
         if (!affectedItemIDs.isEmpty()) {
             QTreeWidgetItem* itemToSelect = findItemByID(mpScriptsBaseItem, affectedItemIDs.first());
             if (itemToSelect) {
-                // Block signals to prevent premature selection change cascades
-                treeWidget_scripts->blockSignals(true);
+                // Block signals on selection model to prevent premature selection change cascades
+                QItemSelectionModel* selModel = treeWidget_scripts->selectionModel();
+                selModel->blockSignals(true);
                 treeWidget_scripts->setCurrentItem(itemToSelect);
-                treeWidget_scripts->blockSignals(false);
+                selModel->blockSignals(false);
                 treeWidget_scripts->scrollToItem(itemToSelect);
                 slot_scriptsSelected(itemToSelect);
             }
@@ -12003,10 +12008,11 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
         if (!affectedItemIDs.isEmpty()) {
             QTreeWidgetItem* itemToSelect = findItemByID(mpActionBaseItem, affectedItemIDs.first());
             if (itemToSelect) {
-                // Block signals to prevent premature selection change cascades
-                treeWidget_actions->blockSignals(true);
+                // Block signals on selection model to prevent premature selection change cascades
+                QItemSelectionModel* selModel = treeWidget_actions->selectionModel();
+                selModel->blockSignals(true);
                 treeWidget_actions->setCurrentItem(itemToSelect);
-                treeWidget_actions->blockSignals(false);
+                selModel->blockSignals(false);
                 treeWidget_actions->scrollToItem(itemToSelect);
                 slot_actionSelected(itemToSelect);
             }
@@ -12024,10 +12030,11 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
         if (!affectedItemIDs.isEmpty()) {
             QTreeWidgetItem* itemToSelect = findItemByID(mpKeyBaseItem, affectedItemIDs.first());
             if (itemToSelect) {
-                // Block signals to prevent premature selection change cascades
-                treeWidget_keys->blockSignals(true);
+                // Block signals on selection model to prevent premature selection change cascades
+                QItemSelectionModel* selModel = treeWidget_keys->selectionModel();
+                selModel->blockSignals(true);
                 treeWidget_keys->setCurrentItem(itemToSelect);
-                treeWidget_keys->blockSignals(false);
+                selModel->blockSignals(false);
                 treeWidget_keys->scrollToItem(itemToSelect);
                 slot_keySelected(itemToSelect);
             }
