@@ -12069,28 +12069,68 @@ void dlgTriggerEditor::handlePermanentBannerDismiss()
 
 bool dlgTriggerEditor::bannerPermanentlyHidden(EditorViewType viewType)
 {
-    const QMetaEnum metaEnum = QMetaEnum::fromType<EditorViewType>();
-    const char* enumName = metaEnum.valueToKey(static_cast<int>(viewType));
-
-    if (!enumName) {
+    QString enumName;
+    switch (viewType) {
+    case EditorViewType::cmTriggerView:
+        enumName = qsl("cmTriggerView");
+        break;
+    case EditorViewType::cmTimerView:
+        enumName = qsl("cmTimerView");
+        break;
+    case EditorViewType::cmAliasView:
+        enumName = qsl("cmAliasView");
+        break;
+    case EditorViewType::cmScriptView:
+        enumName = qsl("cmScriptView");
+        break;
+    case EditorViewType::cmActionView:
+        enumName = qsl("cmActionView");
+        break;
+    case EditorViewType::cmKeysView:
+        enumName = qsl("cmKeysView");
+        break;
+    case EditorViewType::cmVarsView:
+        enumName = qsl("cmVarsView");
+        break;
+    default:
         return false;
     }
 
     QSettings* settings = mudlet::getQSettings();
-    const QString key = qsl("Editor/banner_permanently_hidden/%1").arg(QString::fromLatin1(enumName).toLower());
+    const QString key = qsl("Editor/banner_permanently_hidden/%1").arg(enumName.toLower());
     return settings->value(key, false).toBool();
 }
 
 void dlgTriggerEditor::setBannerPermanentlyHidden(EditorViewType viewType, bool hidden)
 {
-    const QMetaEnum metaEnum = QMetaEnum::fromType<EditorViewType>();
-    const char* enumName = metaEnum.valueToKey(static_cast<int>(viewType));
-
-    if (!enumName) {
+    QString enumName;
+    switch (viewType) {
+    case EditorViewType::cmTriggerView:
+        enumName = qsl("cmTriggerView");
+        break;
+    case EditorViewType::cmTimerView:
+        enumName = qsl("cmTimerView");
+        break;
+    case EditorViewType::cmAliasView:
+        enumName = qsl("cmAliasView");
+        break;
+    case EditorViewType::cmScriptView:
+        enumName = qsl("cmScriptView");
+        break;
+    case EditorViewType::cmActionView:
+        enumName = qsl("cmActionView");
+        break;
+    case EditorViewType::cmKeysView:
+        enumName = qsl("cmKeysView");
+        break;
+    case EditorViewType::cmVarsView:
+        enumName = qsl("cmVarsView");
+        break;
+    default:
         return;
     }
 
     QSettings* settings = mudlet::getQSettings();
-    const QString key = qsl("Editor/banner_permanently_hidden/%1").arg(QString::fromLatin1(enumName).toLower());
+    const QString key = qsl("Editor/banner_permanently_hidden/%1").arg(enumName.toLower());
     settings->setValue(key, hidden);
 }
