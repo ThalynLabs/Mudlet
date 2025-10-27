@@ -233,49 +233,20 @@ TTrigger* importTriggerFromXML(const QString& xmlSnapshot, TTrigger* pParent, Ho
 
     // Manually add to parent at the correct position
     if (pParent) {
-        qDebug() << "importTriggerFromXML: Adding trigger to parent at position" << position;
         pT->setParent(pParent);
         // Use explicit enum mode for clarity
         pParent->addChild(pT, (position >= 0) ? TreeItemInsertMode::AtPosition : TreeItemInsertMode::Append, position);
         host->getTriggerUnit()->registerTrigger(pT); // This will call addTrigger() since pT has a parent
-
-        // Verify position
-        auto children = pParent->getChildrenList();
-        int actualPos = 0;
-        for (auto* child : *children) {
-            if (child == pT) {
-                qDebug() << "importTriggerFromXML: Trigger actual position is" << actualPos << "in parent with" << children->size() << "children";
-                break;
-            }
-            actualPos++;
-        }
     } else {
         // Root level trigger - register first (adds to end of root list)
-        qDebug() << "importTriggerFromXML: Adding trigger to root at position" << position;
         host->getTriggerUnit()->registerTrigger(pT);
 
         // Now reposition it if a specific position was requested
         auto rootListSize = host->getTriggerUnit()->getTriggerRootNodeList().size();
-        qDebug() << "importTriggerFromXML: Root list size after register:" << rootListSize;
 
         if (position != -1 && position < rootListSize) {
             // Use reParentTrigger with explicit AtPosition mode to insert at specific position
-            qDebug() << "importTriggerFromXML: Repositioning from end to position" << position;
             host->getTriggerUnit()->reParentTrigger(pT->getID(), -1, -1, TreeItemInsertMode::AtPosition, position);
-
-            // Verify final position in root list
-            auto finalRootList = host->getTriggerUnit()->getTriggerRootNodeList();
-            qDebug() << "importTriggerFromXML: After reposition, root list has" << finalRootList.size() << "items:";
-            int pos = 0;
-            for (auto* trigger : finalRootList) {
-                qDebug() << "  Position" << pos << ":" << (trigger ? QString("ID=%1").arg(trigger->getID()) : "NULL");
-                if (trigger && trigger->getID() == pT->getID()) {
-                    qDebug() << "    ^^^ This is the trigger we just added! (ID" << pT->getID() << ")";
-                }
-                pos++;
-            }
-        } else if (position >= rootListSize) {
-            qDebug() << "importTriggerFromXML: Position" << position << "is at or beyond list size" << rootListSize << "- leaving at end";
         }
     }
 
@@ -495,27 +466,11 @@ TAlias* importAliasFromXML(const QString& xmlSnapshot, TAlias* pParent, Host* ho
 
     // Manually add to parent at the correct position
     if (pParent) {
-        qDebug() << "importAliasFromXML: Adding alias to parent at position" << position;
         pA->setParent(pParent);
         pParent->addChild(pA, (position >= 0) ? TreeItemInsertMode::AtPosition : TreeItemInsertMode::Append, position);
-
-        // Verify position
-        auto children = pParent->getChildrenList();
-        int actualPos = 0;
-        for (auto* child : *children) {
-            if (child == pA) {
-                qDebug() << "importAliasFromXML: Alias actual position is" << actualPos << "in parent with" << children->size() << "children";
-                break;
-            }
-            actualPos++;
-        }
     } else {
-        // Root level alias - register first (adds to end of root list)
-        qDebug() << "importAliasFromXML: Adding alias to root at position" << position;
-
-        // Now reposition it if a specific position was requested
+        // Root level alias - now reposition it if a specific position was requested
         if (position != -1) {
-            qDebug() << "importAliasFromXML: Repositioning to position" << position;
             host->getAliasUnit()->reParentAlias(pA->getID(), -1, -1, TreeItemInsertMode::AtPosition, position);
         }
     }
@@ -658,27 +613,11 @@ TTimer* importTimerFromXML(const QString& xmlSnapshot, TTimer* pParent, Host* ho
 
     // Manually add to parent at the correct position
     if (pParent) {
-        qDebug() << "importTimerFromXML: Adding timer to parent at position" << position;
         pT->setParent(pParent);
         pParent->addChild(pT, (position >= 0) ? TreeItemInsertMode::AtPosition : TreeItemInsertMode::Append, position);
-
-        // Verify position
-        auto children = pParent->getChildrenList();
-        int actualPos = 0;
-        for (auto* child : *children) {
-            if (child == pT) {
-                qDebug() << "importTimerFromXML: Timer actual position is" << actualPos << "in parent with" << children->size() << "children";
-                break;
-            }
-            actualPos++;
-        }
     } else {
-        // Root level timer - register first (adds to end of root list)
-        qDebug() << "importTimerFromXML: Adding timer to root at position" << position;
-
-        // Now reposition it if a specific position was requested
+        // Root level timer - reposition it if a specific position was requested
         if (position != -1) {
-            qDebug() << "importTimerFromXML: Repositioning to position" << position;
             host->getTimerUnit()->reParentTimer(pT->getID(), -1, -1, TreeItemInsertMode::AtPosition, position);
         }
     }
@@ -821,27 +760,11 @@ TScript* importScriptFromXML(const QString& xmlSnapshot, TScript* pParent, Host*
 
     // Manually add to parent at the correct position
     if (pParent) {
-        qDebug() << "importScriptFromXML: Adding script to parent at position" << position;
         pS->setParent(pParent);
         pParent->addChild(pS, (position >= 0) ? TreeItemInsertMode::AtPosition : TreeItemInsertMode::Append, position);
-
-        // Verify position
-        auto children = pParent->getChildrenList();
-        int actualPos = 0;
-        for (auto* child : *children) {
-            if (child == pS) {
-                qDebug() << "importScriptFromXML: Script actual position is" << actualPos << "in parent with" << children->size() << "children";
-                break;
-            }
-            actualPos++;
-        }
     } else {
-        // Root level script - register first (adds to end of root list)
-        qDebug() << "importScriptFromXML: Adding script to root at position" << position;
-
-        // Now reposition it if a specific position was requested
+        // Root level script - reposition it if a specific position was requested
         if (position != -1) {
-            qDebug() << "importScriptFromXML: Repositioning to position" << position;
             host->getScriptUnit()->reParentScript(pS->getID(), -1, -1, TreeItemInsertMode::AtPosition, position);
         }
     }
@@ -994,27 +917,11 @@ TKey* importKeyFromXML(const QString& xmlSnapshot, TKey* pParent, Host* host, in
 
     // Manually add to parent at the correct position
     if (pParent) {
-        qDebug() << "importKeyFromXML: Adding key to parent at position" << position;
         pK->setParent(pParent);
         pParent->addChild(pK, (position >= 0) ? TreeItemInsertMode::AtPosition : TreeItemInsertMode::Append, position);
-
-        // Verify position
-        auto children = pParent->getChildrenList();
-        int actualPos = 0;
-        for (auto* child : *children) {
-            if (child == pK) {
-                qDebug() << "importKeyFromXML: Key actual position is" << actualPos << "in parent with" << children->size() << "children";
-                break;
-            }
-            actualPos++;
-        }
     } else {
-        // Root level key - register first (adds to end of root list)
-        qDebug() << "importKeyFromXML: Adding key to root at position" << position;
-
-        // Now reposition it if a specific position was requested
+        // Root level key - reposition it if a specific position was requested
         if (position != -1) {
-            qDebug() << "importKeyFromXML: Repositioning to position" << position;
             host->getKeyUnit()->reParentKey(pK->getID(), -1, -1, TreeItemInsertMode::AtPosition, position);
         }
     }
@@ -1159,27 +1066,11 @@ TAction* importActionFromXML(const QString& xmlSnapshot, TAction* pParent, Host*
 
     // Manually add to parent at the correct position
     if (pParent) {
-        qDebug() << "importActionFromXML: Adding action to parent at position" << position;
         pA->Tree<TAction>::setParent(pParent);
         pParent->addChild(pA, (position >= 0) ? TreeItemInsertMode::AtPosition : TreeItemInsertMode::Append, position);
-
-        // Verify position
-        auto children = pParent->getChildrenList();
-        int actualPos = 0;
-        for (auto* child : *children) {
-            if (child == pA) {
-                qDebug() << "importActionFromXML: Action actual position is" << actualPos << "in parent with" << children->size() << "children";
-                break;
-            }
-            actualPos++;
-        }
     } else {
-        // Root level action - register first (adds to end of root list)
-        qDebug() << "importActionFromXML: Adding action to root at position" << position;
-
-        // Now reposition it if a specific position was requested
+        // Root level action - reposition it if a specific position was requested
         if (position != -1) {
-            qDebug() << "importActionFromXML: Repositioning to position" << position;
             host->getActionUnit()->reParentAction(pA->getID(), -1, -1, TreeItemInsertMode::AtPosition, position);
         }
     }

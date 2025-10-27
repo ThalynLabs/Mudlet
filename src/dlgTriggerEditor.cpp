@@ -3560,24 +3560,10 @@ void dlgTriggerEditor::delete_trigger()
                     // Parent is the base "Triggers" folder - treat as top-level
                     info.parentID = -1;
                     info.positionInParent = mpTriggerBaseItem->indexOfChild(pItem);
-
-                    // Debug: show all children in base folder
-                    qDebug() << "delete_trigger: Base folder has" << mpTriggerBaseItem->childCount() << "children:";
-                    for (int i = 0; i < mpTriggerBaseItem->childCount(); i++) {
-                        auto* child = mpTriggerBaseItem->child(i);
-                        auto childTrigger = mpHost->getTriggerUnit()->getTrigger(child->data(0, Qt::UserRole).toInt());
-                        qDebug() << "  Position" << i << ":" << (childTrigger ? childTrigger->getName() : "NULL");
-                    }
-
-                    qDebug() << "delete_trigger: Capturing item" << info.itemName
-                             << "at position" << info.positionInParent;
                 } else {
                     // Parent is another trigger
                     info.parentID = pParentItem->data(0, Qt::UserRole).toInt();
                     info.positionInParent = pParentItem->indexOfChild(pItem);
-                    qDebug() << "delete_trigger: Capturing child item" << info.itemName
-                             << "at position" << info.positionInParent
-                             << "in parent" << info.parentID;
                 }
             } else {
                 // No parent - true top-level item (shouldn't happen in practice)
