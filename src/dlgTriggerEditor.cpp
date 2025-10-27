@@ -4043,11 +4043,17 @@ void dlgTriggerEditor::activeToggle_timer()
         return;
     }
 
+    // Capture old state for undo
+    bool oldState = pT->shouldBeActive();
+
     if (!pT->isOffsetTimer()) {
         pT->setIsActive(!pT->shouldBeActive());
     } else {
         pT->setShouldBeActive(!pT->shouldBeActive());
     }
+
+    // Capture new state after toggle
+    bool newState = pT->shouldBeActive();
 
     if (pT->isFolder()) {
         // disable or enable all timers in the respective branch
@@ -4134,6 +4140,19 @@ void dlgTriggerEditor::activeToggle_timer()
 
     if (pItem->childCount() > 0) {
         children_icon_timer(pItem);
+    }
+
+    // Push undo command for toggle operation
+    if (mpUndoSystem && oldState != newState) {
+        auto cmd = std::make_unique<ToggleActiveCommand>(
+            EditorViewType::cmTimerView,
+            pT->getID(),
+            oldState,
+            newState,
+            pT->getName(),
+            mpHost
+        );
+        mpUndoSystem->pushCommand(std::move(cmd));
     }
 }
 
@@ -4233,7 +4252,12 @@ void dlgTriggerEditor::activeToggle_alias()
     if (!pT) {
         return;
     }
+
+    // Capture old state for undo
+    bool oldState = pT->shouldBeActive();
     pT->setIsActive(!pT->shouldBeActive());
+    // Capture new state after toggle
+    bool newState = pT->isActive();
 
     if (pT->isFolder()) {
         if (pT->isActive()) {
@@ -4271,6 +4295,19 @@ void dlgTriggerEditor::activeToggle_alias()
 
     if (pItem->childCount() > 0) {
         children_icon_alias(pItem);
+    }
+
+    // Push undo command for toggle operation
+    if (mpUndoSystem && oldState != newState) {
+        auto cmd = std::make_unique<ToggleActiveCommand>(
+            EditorViewType::cmAliasView,
+            pT->getID(),
+            oldState,
+            newState,
+            pT->getName(),
+            mpHost
+        );
+        mpUndoSystem->pushCommand(std::move(cmd));
     }
 }
 
@@ -4352,7 +4389,11 @@ void dlgTriggerEditor::activeToggle_script()
         return;
     }
 
+    // Capture old state for undo
+    bool oldState = pT->shouldBeActive();
     pT->setIsActive(!pT->shouldBeActive());
+    // Capture new state after toggle
+    bool newState = pT->isActive();
 
     if (pT->isFolder()) {
         if (pT->isActive()) {
@@ -4389,6 +4430,19 @@ void dlgTriggerEditor::activeToggle_script()
     pItem->setData(0, Qt::AccessibleDescriptionRole, itemDescription);
     if (pItem->childCount() > 0) {
         children_icon_script(pItem);
+    }
+
+    // Push undo command for toggle operation
+    if (mpUndoSystem && oldState != newState) {
+        auto cmd = std::make_unique<ToggleActiveCommand>(
+            EditorViewType::cmScriptView,
+            pT->getID(),
+            oldState,
+            newState,
+            pT->getName(),
+            mpHost
+        );
+        mpUndoSystem->pushCommand(std::move(cmd));
     }
 }
 
@@ -4469,8 +4523,12 @@ void dlgTriggerEditor::activeToggle_action()
         return;
     }
 
+    // Capture old state for undo
+    bool oldState = pT->shouldBeActive();
     pT->setIsActive(!pT->shouldBeActive());
     pT->setDataChanged();
+    // Capture new state after toggle
+    bool newState = pT->isActive();
 
     if (pT->mpToolBar) {
         if (!pT->isActive()) {
@@ -4544,6 +4602,19 @@ void dlgTriggerEditor::activeToggle_action()
     mpHost->getActionUnit()->updateToolbar();
     if (pItem->childCount() > 0) {
         children_icon_action(pItem);
+    }
+
+    // Push undo command for toggle operation
+    if (mpUndoSystem && oldState != newState) {
+        auto cmd = std::make_unique<ToggleActiveCommand>(
+            EditorViewType::cmActionView,
+            pT->getID(),
+            oldState,
+            newState,
+            pT->getName(),
+            mpHost
+        );
+        mpUndoSystem->pushCommand(std::move(cmd));
     }
 }
 
@@ -4643,7 +4714,11 @@ void dlgTriggerEditor::activeToggle_key()
         return;
     }
 
+    // Capture old state for undo
+    bool oldState = pT->shouldBeActive();
     pT->setIsActive(!pT->shouldBeActive());
+    // Capture new state after toggle
+    bool newState = pT->isActive();
 
     if (pT->isFolder()) {
         if (pT->isActive()) {
@@ -4702,6 +4777,19 @@ void dlgTriggerEditor::activeToggle_key()
 
     if (pItem->childCount() > 0) {
         children_icon_key(pItem);
+    }
+
+    // Push undo command for toggle operation
+    if (mpUndoSystem && oldState != newState) {
+        auto cmd = std::make_unique<ToggleActiveCommand>(
+            EditorViewType::cmKeysView,
+            pT->getID(),
+            oldState,
+            newState,
+            pT->getName(),
+            mpHost
+        );
+        mpUndoSystem->pushCommand(std::move(cmd));
     }
 }
 
