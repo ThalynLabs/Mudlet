@@ -462,14 +462,17 @@ TAlias* importAliasFromXML(const QString& xmlSnapshot, TAlias* pParent, Host* ho
 
     // Create new alias without parent (so it doesn't auto-add to end)
     auto pA = new TAlias(nullptr, host);
-    host->getAliasUnit()->registerAlias(pA);
 
     // Manually add to parent at the correct position
     if (pParent) {
         pA->setParent(pParent);
         pParent->addChild(pA, (position >= 0) ? TreeItemInsertMode::AtPosition : TreeItemInsertMode::Append, position);
+        host->getAliasUnit()->registerAlias(pA); // This will call addAlias() since pA has a parent
     } else {
-        // Root level alias - now reposition it if a specific position was requested
+        // Root level alias - register first (adds to end of root list)
+        host->getAliasUnit()->registerAlias(pA);
+
+        // Now reposition it if a specific position was requested
         if (position != -1) {
             host->getAliasUnit()->reParentAlias(pA->getID(), -1, -1, TreeItemInsertMode::AtPosition, position);
         }
@@ -609,14 +612,17 @@ TTimer* importTimerFromXML(const QString& xmlSnapshot, TTimer* pParent, Host* ho
 
     // Create new timer without parent (so it doesn't auto-add to end)
     auto pT = new TTimer(nullptr, host);
-    host->getTimerUnit()->registerTimer(pT);
 
     // Manually add to parent at the correct position
     if (pParent) {
         pT->setParent(pParent);
         pParent->addChild(pT, (position >= 0) ? TreeItemInsertMode::AtPosition : TreeItemInsertMode::Append, position);
+        host->getTimerUnit()->registerTimer(pT); // This will call addTimer() since pT has a parent
     } else {
-        // Root level timer - reposition it if a specific position was requested
+        // Root level timer - register first (adds to end of root list)
+        host->getTimerUnit()->registerTimer(pT);
+
+        // Reposition it if a specific position was requested
         if (position != -1) {
             host->getTimerUnit()->reParentTimer(pT->getID(), -1, -1, TreeItemInsertMode::AtPosition, position);
         }
@@ -756,14 +762,17 @@ TScript* importScriptFromXML(const QString& xmlSnapshot, TScript* pParent, Host*
 
     // Create new script without parent (so it doesn't auto-add to end)
     auto pS = new TScript(nullptr, host);
-    host->getScriptUnit()->registerScript(pS);
 
     // Manually add to parent at the correct position
     if (pParent) {
         pS->setParent(pParent);
         pParent->addChild(pS, (position >= 0) ? TreeItemInsertMode::AtPosition : TreeItemInsertMode::Append, position);
+        host->getScriptUnit()->registerScript(pS); // This will call addScript() since pS has a parent
     } else {
-        // Root level script - reposition it if a specific position was requested
+        // Root level script - register first (adds to end of root list)
+        host->getScriptUnit()->registerScript(pS);
+
+        // Reposition it if a specific position was requested
         if (position != -1) {
             host->getScriptUnit()->reParentScript(pS->getID(), -1, -1, TreeItemInsertMode::AtPosition, position);
         }
@@ -913,14 +922,17 @@ TKey* importKeyFromXML(const QString& xmlSnapshot, TKey* pParent, Host* host, in
 
     // Create new key without parent (so it doesn't auto-add to end)
     auto pK = new TKey(nullptr, host);
-    host->getKeyUnit()->registerKey(pK);
 
     // Manually add to parent at the correct position
     if (pParent) {
         pK->setParent(pParent);
         pParent->addChild(pK, (position >= 0) ? TreeItemInsertMode::AtPosition : TreeItemInsertMode::Append, position);
+        host->getKeyUnit()->registerKey(pK); // This will call addKey() since pK has a parent
     } else {
-        // Root level key - reposition it if a specific position was requested
+        // Root level key - register first (adds to end of root list)
+        host->getKeyUnit()->registerKey(pK);
+
+        // Reposition it if a specific position was requested
         if (position != -1) {
             host->getKeyUnit()->reParentKey(pK->getID(), -1, -1, TreeItemInsertMode::AtPosition, position);
         }
@@ -1062,14 +1074,17 @@ TAction* importActionFromXML(const QString& xmlSnapshot, TAction* pParent, Host*
 
     // Create new action without parent (so it doesn't auto-add to end)
     auto pA = new TAction(nullptr, host);
-    host->getActionUnit()->registerAction(pA);
 
     // Manually add to parent at the correct position
     if (pParent) {
         pA->Tree<TAction>::setParent(pParent);
         pParent->addChild(pA, (position >= 0) ? TreeItemInsertMode::AtPosition : TreeItemInsertMode::Append, position);
+        host->getActionUnit()->registerAction(pA); // This will call addAction() since pA has a parent
     } else {
-        // Root level action - reposition it if a specific position was requested
+        // Root level action - register first (adds to end of root list)
+        host->getActionUnit()->registerAction(pA);
+
+        // Reposition it if a specific position was requested
         if (position != -1) {
             host->getActionUnit()->reParentAction(pA->getID(), -1, -1, TreeItemInsertMode::AtPosition, position);
         }
@@ -1486,10 +1501,6 @@ void DeleteItemCommand::undo() {
     // Process in reverse order to maintain tree structure (parents before children)
     for (int i = mDeletedItems.size() - 1; i >= 0; --i) {
         auto& info = mDeletedItems[i];  // Non-const reference so we can update the ID
-
-        qDebug() << "DeleteItemCommand::undo() - Restoring item" << info.itemName
-                 << "at position" << info.positionInParent
-                 << "in parent" << info.parentID;
 
         switch (mViewType) {
         case EditorViewType::cmTriggerView: {
