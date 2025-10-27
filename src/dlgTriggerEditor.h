@@ -26,7 +26,9 @@
  ***************************************************************************/
 
 
+#include "EditorViewType.h"
 #include "ui_trigger_editor.h"
+
 #include <QPointer>
 #include <unordered_map>
 
@@ -160,18 +162,6 @@ public:
     dlgTriggerEditor(Host*);
 
     Q_DECLARE_FLAGS(SearchOptions,SearchOption)
-
-    enum class EditorViewType {
-        cmUnknownView = 0,
-        cmTriggerView = 0x01,
-        cmTimerView = 0x02,
-        cmAliasView = 0x03,
-        cmScriptView = 0x04,
-        cmActionView = 0x05,
-        cmKeysView = 0x06,
-        cmVarsView = 0x07
-    };
-    Q_ENUM(EditorViewType)
 
     void closeEvent(QCloseEvent* event) override;
     void focusInEvent(QFocusEvent*) override;

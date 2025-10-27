@@ -20,6 +20,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include "EditorViewType.h"
+
 #include <QObject>
 #include <QString>
 #include <QList>
@@ -36,18 +38,6 @@ class TTimer;
 class TScript;
 class TKey;
 class TAction;
-
-// Editor view type enum (matches dlgTriggerEditor::EditorViewType values)
-enum class EditorViewType {
-    cmUnknownView = 0,
-    cmTriggerView = 0x01,
-    cmTimerView = 0x02,
-    cmAliasView = 0x03,
-    cmScriptView = 0x04,
-    cmActionView = 0x05,
-    cmKeysView = 0x06,
-    cmVarsView = 0x07
-};
 
 // Base command class
 class EditorCommand {
