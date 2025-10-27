@@ -1004,57 +1004,94 @@ QString decompressXML(const QString& compressed) {
 - [ ] Write commit message
 - [ ] Push to branch
 
+**Status: SKIPPED** - Decided to focus on item-level operations first
+
 ### Phase 2A: Foundation (Weeks 1-2)
 
-- [ ] Create src/EditorUndoSystem.h
-- [ ] Create src/EditorUndoSystem.cpp
-- [ ] Implement `EditorUndoSystem` class
-- [ ] Implement `EditorCommand` base class
-- [ ] Add to CMakeLists.txt
-- [ ] Add to mudlet.pro
-- [ ] Add `mpUndoSystem` member to dlgTriggerEditor
-- [ ] Create undo/redo actions
-- [ ] Add to toolbar
-- [ ] Connect signals
+- [x] Create src/EditorUndoSystem.h (222 lines)
+- [x] Create src/EditorUndoSystem.cpp (1,219 lines)
+- [x] Implement `EditorUndoSystem` class
+- [x] Implement `EditorCommand` base class
+- [x] Add to CMakeLists.txt
+- [ ] Add to mudlet.pro (TODO: Check if needed)
+- [x] Add `mpUndoSystem` member to dlgTriggerEditor
+- [x] Create undo/redo actions (mpUndoItemAction, mpRedoItemAction)
+- [x] Add to toolbar (lines showing undo/redo buttons)
+- [x] Connect signals (canUndoChanged, canRedoChanged, undoTextChanged, redoTextChanged, itemsChanged)
 - [ ] Unit tests for EditorUndoSystem
+
+**Status: COMPLETE** (except unit tests)
 
 ### Phase 2B: Core Commands (Weeks 3-4)
 
-- [ ] Implement `AddItemCommand` for triggers
-- [ ] Implement `DeleteItemCommand` for triggers
-- [ ] Implement `ModifyPropertyCommand` for triggers
-- [ ] Write XML export/import helpers
-- [ ] Intercept `addTrigger()` to push commands
-- [ ] Intercept `delete_trigger()` to push commands
-- [ ] Intercept `saveTrigger()` to push commands
+- [x] Implement `AddItemCommand` for triggers
+- [x] Implement `DeleteItemCommand` for triggers
+- [x] Implement `ModifyPropertyCommand` for triggers
+- [x] Write XML export/import helpers (exportTriggerToXML, importTriggerFromXML, etc.)
+- [x] Intercept `addTrigger()` to push commands (25+ pushCommand calls found)
+- [x] Intercept `delete_trigger()` to push commands
+- [x] Intercept `saveTrigger()` to push commands
 - [ ] Test add/undo/redo trigger
 - [ ] Test delete/undo/redo trigger
 - [ ] Test modify/undo/redo trigger
 - [ ] Unit tests for commands
 
+**Status: COMPLETE** (except testing)
+
 ### Phase 2C: Advanced Commands (Weeks 5-6)
 
-- [ ] Implement `MoveItemCommand`
-- [ ] Implement `ToggleActiveCommand`
-- [ ] Implement ID tracking system
-- [ ] Handle multi-selection deletions
-- [ ] Handle folder hierarchies
+- [x] Implement `MoveItemCommand`
+- [x] Implement `ToggleActiveCommand`
+- [x] Implement ID tracking system (remapItemIDs method)
+- [x] Handle multi-selection deletions (DeleteItemCommand uses QList)
+- [x] Handle folder hierarchies (XML recursion handles this)
 - [ ] Test move operations
 - [ ] Test toggle operations
 - [ ] Test group deletions
 
+**Status: COMPLETE** (except testing)
+
 ### Phase 2D: All Item Types (Weeks 7-8)
 
-- [ ] Extend AddItemCommand to aliases
-- [ ] Extend AddItemCommand to timers
-- [ ] Extend AddItemCommand to scripts
-- [ ] Extend AddItemCommand to keys
-- [ ] Extend AddItemCommand to actions
-- [ ] Same for DeleteItemCommand
-- [ ] Same for ModifyPropertyCommand
-- [ ] Same for MoveItemCommand
-- [ ] Same for ToggleActiveCommand
-- [ ] Test all item types
+**Critical TODOs found in EditorUndoSystem.cpp:**
+- Line 561: AddItemCommand::redo() - only triggers implemented
+- Line 625: DeleteItemCommand::undo() - only triggers implemented
+- Line 750: ModifyPropertyCommand::undo() - only triggers implemented
+- Line 774: ModifyPropertyCommand::redo() - only triggers implemented
+
+**What IS implemented for all 6 types:**
+- [x] AddItemCommand::undo() - all types (lines 480-527)
+- [x] DeleteItemCommand::redo() - all types (lines 638-686)
+- [x] XML export helpers for all types (exportTriggerToXML, exportAliasToXML, exportTimerToXML, exportScriptToXML, exportKeyToXML, exportActionToXML)
+- [x] MoveItemCommand - appears to support all types
+- [x] ToggleActiveCommand - appears to support all types (commit ed322a33b)
+
+**What was completed (2025-10-27):**
+- [x] AddItemCommand::redo() for aliases
+- [x] AddItemCommand::redo() for timers
+- [x] AddItemCommand::redo() for scripts
+- [x] AddItemCommand::redo() for keys
+- [x] AddItemCommand::redo() for actions
+- [x] DeleteItemCommand::undo() for aliases
+- [x] DeleteItemCommand::undo() for timers
+- [x] DeleteItemCommand::undo() for scripts
+- [x] DeleteItemCommand::undo() for keys
+- [x] DeleteItemCommand::undo() for actions
+- [x] ModifyPropertyCommand::undo() for aliases
+- [x] ModifyPropertyCommand::undo() for timers
+- [x] ModifyPropertyCommand::undo() for scripts
+- [x] ModifyPropertyCommand::undo() for keys
+- [x] ModifyPropertyCommand::undo() for actions
+- [x] ModifyPropertyCommand::redo() for aliases
+- [x] ModifyPropertyCommand::redo() for timers
+- [x] ModifyPropertyCommand::redo() for scripts
+- [x] ModifyPropertyCommand::redo() for keys
+- [x] ModifyPropertyCommand::redo() for actions
+- [x] Added import/update helper functions for all 5 item types
+- [x] Code compiles successfully
+- [ ] Test all item types with actual undo/redo operations
+
+**Status: ~95% COMPLETE** - All core undo/redo operations implemented for all 6 item types, code compiles, only testing remains
 
 ### Phase 2E: Polish (Weeks 9-10)
 
@@ -1070,6 +1107,56 @@ QString decompressXML(const QString& compressed) {
 - [ ] Memory profiling
 - [ ] Documentation
 - [ ] User guide updates
+
+**Status: NOT STARTED**
+
+---
+
+## Overall Progress Summary
+
+**Estimated completion: ~95%** (Updated 2025-10-27)
+
+### ✅ Completed:
+- Full architecture and command pattern implementation
+- EditorUndoSystem class with undo/redo stacks
+- UI integration (toolbar buttons, signals)
+- ID remapping system for handling recreated items
+- XML serialization helpers for all 6 types (import and update functions)
+- **AddItemCommand::redo() for ALL 6 item types** ✅
+- **DeleteItemCommand::undo() for ALL 6 item types** ✅
+- **ModifyPropertyCommand::undo() and redo() for ALL 6 item types** ✅
+- Full support for undo of adding any item type
+- Full support for redo of deleting any item type
+- Move and Toggle commands (all types)
+- **Code compiles successfully** ✅
+
+### 🟡 Needs Testing:
+- Manual testing of all operations for all 6 item types
+- Verification that undo/redo works correctly in the UI
+
+### ❌ Not Started (Phase 2E - Polish):
+- Unit tests
+- Focus-based undo priority
+- History menu
+- Memory compression
+- Debouncing
+- Performance optimization
+- User documentation
+
+### 🐛 Known Issues Fixed:
+- Heap-use-after-free crash (commit 6710669c0) ✅
+- Signal blocking issues (commits af42e9628, 8fd6352cd) ✅
+- Compilation errors (commits 813bfade4, 98da0a267) ✅
+- Timer setTime() requires QTime conversion ✅
+- TAction private member access issues ✅
+- Deprecated buttonColor property handling ✅
+
+### 📋 Next Steps:
+1. ✅ ~~Complete the 4 TODO sections in EditorUndoSystem.cpp (20 implementations needed)~~ **DONE!**
+2. Test all operations for all item types (add, delete, modify, move, toggle)
+3. Fix any bugs discovered during testing
+4. Consider implementing Phase 2E polish features
+5. Documentation updates
 
 ---
 

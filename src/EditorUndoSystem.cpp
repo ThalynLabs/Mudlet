@@ -409,6 +409,746 @@ bool updateTriggerFromXML(TTrigger* pT, const QString& xmlSnapshot) {
     return true;
 }
 
+// =============================================================================
+// ALIAS import/update functions
+// =============================================================================
+
+// Import a single alias from XML string
+TAlias* importAliasFromXML(const QString& xmlSnapshot, TAlias* pParent, Host* host) {
+    if (xmlSnapshot.isEmpty() || !host) {
+        return nullptr;
+    }
+
+    pugi::xml_document doc;
+    pugi::xml_parse_result result = doc.load_string(xmlSnapshot.toStdString().c_str());
+    if (!result) {
+        qWarning() << "importAliasFromXML: Failed to parse XML:" << result.description();
+        return nullptr;
+    }
+
+    auto root = doc.child("AliasSnapshot");
+    if (!root) {
+        qWarning() << "importAliasFromXML: No AliasSnapshot root element found";
+        return nullptr;
+    }
+
+    auto aliasNode = root.child("Alias");
+    if (!aliasNode) {
+        aliasNode = root.child("AliasGroup");
+    }
+    if (!aliasNode) {
+        qWarning() << "importAliasFromXML: No Alias/AliasGroup element found";
+        return nullptr;
+    }
+
+    // Create new alias
+    auto pA = new TAlias(pParent, host);
+    host->getAliasUnit()->registerAlias(pA);
+
+    // Read attributes
+    pA->setIsActive(QString::fromStdString(aliasNode.attribute("isActive").value()) == "yes");
+    pA->setIsFolder(QString::fromStdString(aliasNode.attribute("isFolder").value()) == "yes");
+    pA->setTemporary(QString::fromStdString(aliasNode.attribute("isTempAlias").value()) == "yes");
+
+    // Read child elements
+    for (auto node : aliasNode.children()) {
+        QString nodeName = QString::fromStdString(node.name());
+        QString nodeValue = QString::fromStdString(node.child_value());
+
+        if (nodeName == "name") {
+            pA->setName(nodeValue);
+        } else if (nodeName == "script") {
+            pA->setScript(nodeValue);
+        } else if (nodeName == "packageName") {
+            pA->mPackageName = nodeValue;
+        } else if (nodeName == "regex") {
+            pA->setRegexCode(nodeValue);
+        } else if (nodeName == "command") {
+            pA->setCommand(nodeValue);
+        }
+    }
+
+    // Compile the alias
+    pA->compileAll();
+
+    // Recursively import child aliases
+    for (auto childNode : aliasNode.children()) {
+        QString childNodeName = QString::fromStdString(childNode.name());
+        if (childNodeName == "Alias" || childNodeName == "AliasGroup") {
+            pugi::xml_document childDoc;
+            auto childRoot = childDoc.append_child("AliasSnapshot");
+            childRoot.append_copy(childNode);
+
+            std::ostringstream oss;
+            childDoc.save(oss);
+            QString childXML = QString::fromStdString(oss.str());
+
+            importAliasFromXML(childXML, pA, host);
+        }
+    }
+
+    return pA;
+}
+
+// Update an existing alias from XML string
+bool updateAliasFromXML(TAlias* pA, const QString& xmlSnapshot) {
+    if (!pA || xmlSnapshot.isEmpty()) {
+        return false;
+    }
+
+    pugi::xml_document doc;
+    pugi::xml_parse_result result = doc.load_string(xmlSnapshot.toStdString().c_str());
+    if (!result) {
+        qWarning() << "updateAliasFromXML: Failed to parse XML:" << result.description();
+        return false;
+    }
+
+    auto root = doc.child("AliasSnapshot");
+    if (!root) {
+        return false;
+    }
+
+    auto aliasNode = root.child("Alias");
+    if (!aliasNode) {
+        aliasNode = root.child("AliasGroup");
+    }
+    if (!aliasNode) {
+        return false;
+    }
+
+    // Update attributes
+    pA->setIsActive(QString::fromStdString(aliasNode.attribute("isActive").value()) == "yes");
+    pA->setIsFolder(QString::fromStdString(aliasNode.attribute("isFolder").value()) == "yes");
+    pA->setTemporary(QString::fromStdString(aliasNode.attribute("isTempAlias").value()) == "yes");
+
+    // Update child elements
+    for (auto node : aliasNode.children()) {
+        QString nodeName = QString::fromStdString(node.name());
+        QString nodeValue = QString::fromStdString(node.child_value());
+
+        if (nodeName == "name") {
+            pA->setName(nodeValue);
+        } else if (nodeName == "script") {
+            pA->setScript(nodeValue);
+        } else if (nodeName == "regex") {
+            pA->setRegexCode(nodeValue);
+        } else if (nodeName == "command") {
+            pA->setCommand(nodeValue);
+        } else if (nodeName == "packageName") {
+            pA->mPackageName = nodeValue;
+        }
+    }
+
+    // Compile the alias
+    pA->compileAll();
+
+    return true;
+}
+
+// =============================================================================
+// TIMER import/update functions
+// =============================================================================
+
+// Import a single timer from XML string
+TTimer* importTimerFromXML(const QString& xmlSnapshot, TTimer* pParent, Host* host) {
+    if (xmlSnapshot.isEmpty() || !host) {
+        return nullptr;
+    }
+
+    pugi::xml_document doc;
+    pugi::xml_parse_result result = doc.load_string(xmlSnapshot.toStdString().c_str());
+    if (!result) {
+        qWarning() << "importTimerFromXML: Failed to parse XML:" << result.description();
+        return nullptr;
+    }
+
+    auto root = doc.child("TimerSnapshot");
+    if (!root) {
+        qWarning() << "importTimerFromXML: No TimerSnapshot root element found";
+        return nullptr;
+    }
+
+    auto timerNode = root.child("Timer");
+    if (!timerNode) {
+        timerNode = root.child("TimerGroup");
+    }
+    if (!timerNode) {
+        qWarning() << "importTimerFromXML: No Timer/TimerGroup element found";
+        return nullptr;
+    }
+
+    // Create new timer
+    auto pT = new TTimer(pParent, host);
+    host->getTimerUnit()->registerTimer(pT);
+
+    // Read attributes
+    pT->setShouldBeActive(QString::fromStdString(timerNode.attribute("isActive").value()) == "yes");
+    pT->setIsFolder(QString::fromStdString(timerNode.attribute("isFolder").value()) == "yes");
+    pT->setTemporary(QString::fromStdString(timerNode.attribute("isTempTimer").value()) == "yes");
+
+    // Read child elements
+    for (auto node : timerNode.children()) {
+        QString nodeName = QString::fromStdString(node.name());
+        QString nodeValue = QString::fromStdString(node.child_value());
+
+        if (nodeName == "name") {
+            pT->setName(nodeValue);
+        } else if (nodeName == "script") {
+            pT->setScript(nodeValue);
+        } else if (nodeName == "packageName") {
+            pT->mPackageName = nodeValue;
+        } else if (nodeName == "command") {
+            pT->setCommand(nodeValue);
+        } else if (nodeName == "time") {
+            pT->setTime(QTime::fromString(nodeValue, "hh:mm:ss.zzz"));
+        }
+    }
+
+    // Compile the timer
+    pT->compileAll();
+
+    // Recursively import child timers
+    for (auto childNode : timerNode.children()) {
+        QString childNodeName = QString::fromStdString(childNode.name());
+        if (childNodeName == "Timer" || childNodeName == "TimerGroup") {
+            pugi::xml_document childDoc;
+            auto childRoot = childDoc.append_child("TimerSnapshot");
+            childRoot.append_copy(childNode);
+
+            std::ostringstream oss;
+            childDoc.save(oss);
+            QString childXML = QString::fromStdString(oss.str());
+
+            importTimerFromXML(childXML, pT, host);
+        }
+    }
+
+    return pT;
+}
+
+// Update an existing timer from XML string
+bool updateTimerFromXML(TTimer* pT, const QString& xmlSnapshot) {
+    if (!pT || xmlSnapshot.isEmpty()) {
+        return false;
+    }
+
+    pugi::xml_document doc;
+    pugi::xml_parse_result result = doc.load_string(xmlSnapshot.toStdString().c_str());
+    if (!result) {
+        qWarning() << "updateTimerFromXML: Failed to parse XML:" << result.description();
+        return false;
+    }
+
+    auto root = doc.child("TimerSnapshot");
+    if (!root) {
+        return false;
+    }
+
+    auto timerNode = root.child("Timer");
+    if (!timerNode) {
+        timerNode = root.child("TimerGroup");
+    }
+    if (!timerNode) {
+        return false;
+    }
+
+    // Update attributes
+    pT->setShouldBeActive(QString::fromStdString(timerNode.attribute("isActive").value()) == "yes");
+    pT->setIsFolder(QString::fromStdString(timerNode.attribute("isFolder").value()) == "yes");
+    pT->setTemporary(QString::fromStdString(timerNode.attribute("isTempTimer").value()) == "yes");
+
+    // Update child elements
+    for (auto node : timerNode.children()) {
+        QString nodeName = QString::fromStdString(node.name());
+        QString nodeValue = QString::fromStdString(node.child_value());
+
+        if (nodeName == "name") {
+            pT->setName(nodeValue);
+        } else if (nodeName == "script") {
+            pT->setScript(nodeValue);
+        } else if (nodeName == "command") {
+            pT->setCommand(nodeValue);
+        } else if (nodeName == "time") {
+            pT->setTime(QTime::fromString(nodeValue, "hh:mm:ss.zzz"));
+        } else if (nodeName == "packageName") {
+            pT->mPackageName = nodeValue;
+        }
+    }
+
+    // Compile the timer
+    pT->compileAll();
+
+    return true;
+}
+
+// =============================================================================
+// SCRIPT import/update functions
+// =============================================================================
+
+// Import a single script from XML string
+TScript* importScriptFromXML(const QString& xmlSnapshot, TScript* pParent, Host* host) {
+    if (xmlSnapshot.isEmpty() || !host) {
+        return nullptr;
+    }
+
+    pugi::xml_document doc;
+    pugi::xml_parse_result result = doc.load_string(xmlSnapshot.toStdString().c_str());
+    if (!result) {
+        qWarning() << "importScriptFromXML: Failed to parse XML:" << result.description();
+        return nullptr;
+    }
+
+    auto root = doc.child("ScriptSnapshot");
+    if (!root) {
+        qWarning() << "importScriptFromXML: No ScriptSnapshot root element found";
+        return nullptr;
+    }
+
+    auto scriptNode = root.child("Script");
+    if (!scriptNode) {
+        scriptNode = root.child("ScriptGroup");
+    }
+    if (!scriptNode) {
+        qWarning() << "importScriptFromXML: No Script/ScriptGroup element found";
+        return nullptr;
+    }
+
+    // Create new script
+    auto pS = new TScript(pParent, host);
+    host->getScriptUnit()->registerScript(pS);
+
+    // Read attributes
+    pS->setIsActive(QString::fromStdString(scriptNode.attribute("isActive").value()) == "yes");
+    pS->setIsFolder(QString::fromStdString(scriptNode.attribute("isFolder").value()) == "yes");
+
+    // Read child elements
+    QStringList eventHandlers;
+    for (auto node : scriptNode.children()) {
+        QString nodeName = QString::fromStdString(node.name());
+        QString nodeValue = QString::fromStdString(node.child_value());
+
+        if (nodeName == "name") {
+            pS->setName(nodeValue);
+        } else if (nodeName == "packageName") {
+            pS->mPackageName = nodeValue;
+        } else if (nodeName == "script") {
+            pS->setScript(nodeValue);
+        } else if (nodeName == "eventHandlerList") {
+            for (auto eventNode : node.children("string")) {
+                eventHandlers << QString::fromStdString(eventNode.child_value());
+            }
+        }
+    }
+
+    // Set event handlers
+    if (!eventHandlers.isEmpty()) {
+        pS->setEventHandlerList(eventHandlers);
+    }
+
+    // Compile the script
+    pS->compileAll();
+
+    // Recursively import child scripts
+    for (auto childNode : scriptNode.children()) {
+        QString childNodeName = QString::fromStdString(childNode.name());
+        if (childNodeName == "Script" || childNodeName == "ScriptGroup") {
+            pugi::xml_document childDoc;
+            auto childRoot = childDoc.append_child("ScriptSnapshot");
+            childRoot.append_copy(childNode);
+
+            std::ostringstream oss;
+            childDoc.save(oss);
+            QString childXML = QString::fromStdString(oss.str());
+
+            importScriptFromXML(childXML, pS, host);
+        }
+    }
+
+    return pS;
+}
+
+// Update an existing script from XML string
+bool updateScriptFromXML(TScript* pS, const QString& xmlSnapshot) {
+    if (!pS || xmlSnapshot.isEmpty()) {
+        return false;
+    }
+
+    pugi::xml_document doc;
+    pugi::xml_parse_result result = doc.load_string(xmlSnapshot.toStdString().c_str());
+    if (!result) {
+        qWarning() << "updateScriptFromXML: Failed to parse XML:" << result.description();
+        return false;
+    }
+
+    auto root = doc.child("ScriptSnapshot");
+    if (!root) {
+        return false;
+    }
+
+    auto scriptNode = root.child("Script");
+    if (!scriptNode) {
+        scriptNode = root.child("ScriptGroup");
+    }
+    if (!scriptNode) {
+        return false;
+    }
+
+    // Update attributes
+    pS->setIsActive(QString::fromStdString(scriptNode.attribute("isActive").value()) == "yes");
+    pS->setIsFolder(QString::fromStdString(scriptNode.attribute("isFolder").value()) == "yes");
+
+    // Update child elements
+    QStringList eventHandlers;
+    for (auto node : scriptNode.children()) {
+        QString nodeName = QString::fromStdString(node.name());
+        QString nodeValue = QString::fromStdString(node.child_value());
+
+        if (nodeName == "name") {
+            pS->setName(nodeValue);
+        } else if (nodeName == "script") {
+            pS->setScript(nodeValue);
+        } else if (nodeName == "packageName") {
+            pS->mPackageName = nodeValue;
+        } else if (nodeName == "eventHandlerList") {
+            for (auto eventNode : node.children("string")) {
+                eventHandlers << QString::fromStdString(eventNode.child_value());
+            }
+        }
+    }
+
+    // Set event handlers
+    if (!eventHandlers.isEmpty()) {
+        pS->setEventHandlerList(eventHandlers);
+    }
+
+    // Compile the script
+    pS->compileAll();
+
+    return true;
+}
+
+// =============================================================================
+// KEY import/update functions
+// =============================================================================
+
+// Import a single key from XML string
+TKey* importKeyFromXML(const QString& xmlSnapshot, TKey* pParent, Host* host) {
+    if (xmlSnapshot.isEmpty() || !host) {
+        return nullptr;
+    }
+
+    pugi::xml_document doc;
+    pugi::xml_parse_result result = doc.load_string(xmlSnapshot.toStdString().c_str());
+    if (!result) {
+        qWarning() << "importKeyFromXML: Failed to parse XML:" << result.description();
+        return nullptr;
+    }
+
+    auto root = doc.child("KeySnapshot");
+    if (!root) {
+        qWarning() << "importKeyFromXML: No KeySnapshot root element found";
+        return nullptr;
+    }
+
+    auto keyNode = root.child("Key");
+    if (!keyNode) {
+        keyNode = root.child("KeyGroup");
+    }
+    if (!keyNode) {
+        qWarning() << "importKeyFromXML: No Key/KeyGroup element found";
+        return nullptr;
+    }
+
+    // Create new key
+    auto pK = new TKey(pParent, host);
+    host->getKeyUnit()->registerKey(pK);
+
+    // Read attributes
+    pK->setIsActive(QString::fromStdString(keyNode.attribute("isActive").value()) == "yes");
+    pK->setIsFolder(QString::fromStdString(keyNode.attribute("isFolder").value()) == "yes");
+
+    // Read child elements
+    for (auto node : keyNode.children()) {
+        QString nodeName = QString::fromStdString(node.name());
+        QString nodeValue = QString::fromStdString(node.child_value());
+
+        if (nodeName == "name") {
+            pK->setName(nodeValue);
+        } else if (nodeName == "packageName") {
+            pK->mPackageName = nodeValue;
+        } else if (nodeName == "script") {
+            pK->setScript(nodeValue);
+        } else if (nodeName == "command") {
+            pK->setCommand(nodeValue);
+        } else if (nodeName == "keyCode") {
+            pK->setKeyCode(nodeValue.toInt());
+        } else if (nodeName == "keyModifier") {
+            pK->setKeyModifiers(nodeValue.toInt());
+        }
+    }
+
+    // Compile the key
+    pK->compileAll();
+
+    // Recursively import child keys
+    for (auto childNode : keyNode.children()) {
+        QString childNodeName = QString::fromStdString(childNode.name());
+        if (childNodeName == "Key" || childNodeName == "KeyGroup") {
+            pugi::xml_document childDoc;
+            auto childRoot = childDoc.append_child("KeySnapshot");
+            childRoot.append_copy(childNode);
+
+            std::ostringstream oss;
+            childDoc.save(oss);
+            QString childXML = QString::fromStdString(oss.str());
+
+            importKeyFromXML(childXML, pK, host);
+        }
+    }
+
+    return pK;
+}
+
+// Update an existing key from XML string
+bool updateKeyFromXML(TKey* pK, const QString& xmlSnapshot) {
+    if (!pK || xmlSnapshot.isEmpty()) {
+        return false;
+    }
+
+    pugi::xml_document doc;
+    pugi::xml_parse_result result = doc.load_string(xmlSnapshot.toStdString().c_str());
+    if (!result) {
+        qWarning() << "updateKeyFromXML: Failed to parse XML:" << result.description();
+        return false;
+    }
+
+    auto root = doc.child("KeySnapshot");
+    if (!root) {
+        return false;
+    }
+
+    auto keyNode = root.child("Key");
+    if (!keyNode) {
+        keyNode = root.child("KeyGroup");
+    }
+    if (!keyNode) {
+        return false;
+    }
+
+    // Update attributes
+    pK->setIsActive(QString::fromStdString(keyNode.attribute("isActive").value()) == "yes");
+    pK->setIsFolder(QString::fromStdString(keyNode.attribute("isFolder").value()) == "yes");
+
+    // Update child elements
+    for (auto node : keyNode.children()) {
+        QString nodeName = QString::fromStdString(node.name());
+        QString nodeValue = QString::fromStdString(node.child_value());
+
+        if (nodeName == "name") {
+            pK->setName(nodeValue);
+        } else if (nodeName == "script") {
+            pK->setScript(nodeValue);
+        } else if (nodeName == "command") {
+            pK->setCommand(nodeValue);
+        } else if (nodeName == "keyCode") {
+            pK->setKeyCode(nodeValue.toInt());
+        } else if (nodeName == "keyModifier") {
+            pK->setKeyModifiers(nodeValue.toInt());
+        } else if (nodeName == "packageName") {
+            pK->mPackageName = nodeValue;
+        }
+    }
+
+    // Compile the key
+    pK->compileAll();
+
+    return true;
+}
+
+// =============================================================================
+// ACTION import/update functions
+// =============================================================================
+
+// Import a single action from XML string
+TAction* importActionFromXML(const QString& xmlSnapshot, TAction* pParent, Host* host) {
+    if (xmlSnapshot.isEmpty() || !host) {
+        return nullptr;
+    }
+
+    pugi::xml_document doc;
+    pugi::xml_parse_result result = doc.load_string(xmlSnapshot.toStdString().c_str());
+    if (!result) {
+        qWarning() << "importActionFromXML: Failed to parse XML:" << result.description();
+        return nullptr;
+    }
+
+    auto root = doc.child("ActionSnapshot");
+    if (!root) {
+        qWarning() << "importActionFromXML: No ActionSnapshot root element found";
+        return nullptr;
+    }
+
+    auto actionNode = root.child("Action");
+    if (!actionNode) {
+        actionNode = root.child("ActionGroup");
+    }
+    if (!actionNode) {
+        qWarning() << "importActionFromXML: No Action/ActionGroup element found";
+        return nullptr;
+    }
+
+    // Create new action
+    auto pA = new TAction(pParent, host);
+    host->getActionUnit()->registerAction(pA);
+
+    // Read attributes
+    pA->setIsActive(QString::fromStdString(actionNode.attribute("isActive").value()) == "yes");
+    pA->setIsFolder(QString::fromStdString(actionNode.attribute("isFolder").value()) == "yes");
+    pA->mIsPushDownButton = QString::fromStdString(actionNode.attribute("isPushButton").value()) == "yes";
+    pA->mButtonFlat = QString::fromStdString(actionNode.attribute("isFlatButton").value()) == "yes";
+    pA->mUseCustomLayout = QString::fromStdString(actionNode.attribute("useCustomLayout").value()) == "yes";
+
+    // Read child elements
+    for (auto node : actionNode.children()) {
+        QString nodeName = QString::fromStdString(node.name());
+        QString nodeValue = QString::fromStdString(node.child_value());
+
+        if (nodeName == "name") {
+            pA->setName(nodeValue);
+        } else if (nodeName == "packageName") {
+            pA->mPackageName = nodeValue;
+        } else if (nodeName == "script") {
+            pA->setScript(nodeValue);
+        } else if (nodeName == "css") {
+            pA->css = nodeValue;
+        } else if (nodeName == "commandButtonUp") {
+            pA->setCommandButtonUp(nodeValue);
+        } else if (nodeName == "commandButtonDown") {
+            pA->setCommandButtonDown(nodeValue);
+        } else if (nodeName == "icon") {
+            pA->setIcon(nodeValue);
+        } else if (nodeName == "orientation") {
+            pA->mOrientation = nodeValue.toInt();
+        } else if (nodeName == "location") {
+            pA->mLocation = nodeValue.toInt();
+        } else if (nodeName == "buttonRotation") {
+            pA->mButtonRotation = nodeValue.toInt();
+        } else if (nodeName == "sizeX") {
+            pA->mSizeX = nodeValue.toInt();
+        } else if (nodeName == "sizeY") {
+            pA->mSizeY = nodeValue.toInt();
+        } else if (nodeName == "mButtonColumns") {
+            pA->mButtonColumns = nodeValue.toInt();
+        } else if (nodeName == "buttonColor") {
+            // Deprecated - skip this element
+        } else if (nodeName == "posX") {
+            pA->mPosX = nodeValue.toInt();
+        } else if (nodeName == "posY") {
+            pA->mPosY = nodeValue.toInt();
+        }
+    }
+
+    // Compile the action
+    pA->compileAll();
+
+    // Recursively import child actions
+    for (auto childNode : actionNode.children()) {
+        QString childNodeName = QString::fromStdString(childNode.name());
+        if (childNodeName == "Action" || childNodeName == "ActionGroup") {
+            pugi::xml_document childDoc;
+            auto childRoot = childDoc.append_child("ActionSnapshot");
+            childRoot.append_copy(childNode);
+
+            std::ostringstream oss;
+            childDoc.save(oss);
+            QString childXML = QString::fromStdString(oss.str());
+
+            importActionFromXML(childXML, pA, host);
+        }
+    }
+
+    return pA;
+}
+
+// Update an existing action from XML string
+bool updateActionFromXML(TAction* pA, const QString& xmlSnapshot) {
+    if (!pA || xmlSnapshot.isEmpty()) {
+        return false;
+    }
+
+    pugi::xml_document doc;
+    pugi::xml_parse_result result = doc.load_string(xmlSnapshot.toStdString().c_str());
+    if (!result) {
+        qWarning() << "updateActionFromXML: Failed to parse XML:" << result.description();
+        return false;
+    }
+
+    auto root = doc.child("ActionSnapshot");
+    if (!root) {
+        return false;
+    }
+
+    auto actionNode = root.child("Action");
+    if (!actionNode) {
+        actionNode = root.child("ActionGroup");
+    }
+    if (!actionNode) {
+        return false;
+    }
+
+    // Update attributes
+    pA->setIsActive(QString::fromStdString(actionNode.attribute("isActive").value()) == "yes");
+    pA->setIsFolder(QString::fromStdString(actionNode.attribute("isFolder").value()) == "yes");
+    pA->mIsPushDownButton = QString::fromStdString(actionNode.attribute("isPushButton").value()) == "yes";
+    pA->mButtonFlat = QString::fromStdString(actionNode.attribute("isFlatButton").value()) == "yes";
+    pA->mUseCustomLayout = QString::fromStdString(actionNode.attribute("useCustomLayout").value()) == "yes";
+
+    // Update child elements
+    for (auto node : actionNode.children()) {
+        QString nodeName = QString::fromStdString(node.name());
+        QString nodeValue = QString::fromStdString(node.child_value());
+
+        if (nodeName == "name") {
+            pA->setName(nodeValue);
+        } else if (nodeName == "script") {
+            pA->setScript(nodeValue);
+        } else if (nodeName == "css") {
+            pA->css = nodeValue;
+        } else if (nodeName == "commandButtonUp") {
+            pA->setCommandButtonUp(nodeValue);
+        } else if (nodeName == "commandButtonDown") {
+            pA->setCommandButtonDown(nodeValue);
+        } else if (nodeName == "icon") {
+            pA->setIcon(nodeValue);
+        } else if (nodeName == "orientation") {
+            pA->mOrientation = nodeValue.toInt();
+        } else if (nodeName == "location") {
+            pA->mLocation = nodeValue.toInt();
+        } else if (nodeName == "buttonRotation") {
+            pA->mButtonRotation = nodeValue.toInt();
+        } else if (nodeName == "sizeX") {
+            pA->mSizeX = nodeValue.toInt();
+        } else if (nodeName == "sizeY") {
+            pA->mSizeY = nodeValue.toInt();
+        } else if (nodeName == "mButtonColumns") {
+            pA->mButtonColumns = nodeValue.toInt();
+        } else if (nodeName == "buttonColor") {
+            // Deprecated - skip this element
+        } else if (nodeName == "posX") {
+            pA->mPosX = nodeValue.toInt();
+        } else if (nodeName == "posY") {
+            pA->mPosY = nodeValue.toInt();
+        } else if (nodeName == "packageName") {
+            pA->mPackageName = nodeValue;
+        }
+    }
+
+    // Compile the action
+    pA->compileAll();
+
+    return true;
+}
+
 } // anonymous namespace
 
 // =============================================================================
@@ -558,9 +1298,93 @@ void AddItemCommand::redo() {
             }
             break;
         }
-        // TODO: Implement for other item types (aliases, timers, etc.)
+        case EditorViewType::cmAliasView: {
+            TAlias* pAliasParent = nullptr;
+            if (mParentID != -1) {
+                pAliasParent = mpHost->getAliasUnit()->getAlias(mParentID);
+            }
+            TAlias* pNewAlias = importAliasFromXML(mItemSnapshot, pAliasParent, mpHost);
+            if (pNewAlias) {
+                mItemID = pNewAlias->getID();
+                qDebug() << "[AddItemCommand::redo] Alias recreated, newID:" << mItemID;
+                if (mOldItemID != mItemID) {
+                    qDebug() << "[AddItemCommand::redo] ID CHANGED! oldID:" << mOldItemID << "-> newID:" << mItemID;
+                }
+            } else {
+                qWarning() << "AddItemCommand::redo() - Failed to recreate alias from snapshot";
+            }
+            break;
+        }
+        case EditorViewType::cmTimerView: {
+            TTimer* pTimerParent = nullptr;
+            if (mParentID != -1) {
+                pTimerParent = mpHost->getTimerUnit()->getTimer(mParentID);
+            }
+            TTimer* pNewTimer = importTimerFromXML(mItemSnapshot, pTimerParent, mpHost);
+            if (pNewTimer) {
+                mItemID = pNewTimer->getID();
+                qDebug() << "[AddItemCommand::redo] Timer recreated, newID:" << mItemID;
+                if (mOldItemID != mItemID) {
+                    qDebug() << "[AddItemCommand::redo] ID CHANGED! oldID:" << mOldItemID << "-> newID:" << mItemID;
+                }
+            } else {
+                qWarning() << "AddItemCommand::redo() - Failed to recreate timer from snapshot";
+            }
+            break;
+        }
+        case EditorViewType::cmScriptView: {
+            TScript* pScriptParent = nullptr;
+            if (mParentID != -1) {
+                pScriptParent = mpHost->getScriptUnit()->getScript(mParentID);
+            }
+            TScript* pNewScript = importScriptFromXML(mItemSnapshot, pScriptParent, mpHost);
+            if (pNewScript) {
+                mItemID = pNewScript->getID();
+                qDebug() << "[AddItemCommand::redo] Script recreated, newID:" << mItemID;
+                if (mOldItemID != mItemID) {
+                    qDebug() << "[AddItemCommand::redo] ID CHANGED! oldID:" << mOldItemID << "-> newID:" << mItemID;
+                }
+            } else {
+                qWarning() << "AddItemCommand::redo() - Failed to recreate script from snapshot";
+            }
+            break;
+        }
+        case EditorViewType::cmKeysView: {
+            TKey* pKeyParent = nullptr;
+            if (mParentID != -1) {
+                pKeyParent = mpHost->getKeyUnit()->getKey(mParentID);
+            }
+            TKey* pNewKey = importKeyFromXML(mItemSnapshot, pKeyParent, mpHost);
+            if (pNewKey) {
+                mItemID = pNewKey->getID();
+                qDebug() << "[AddItemCommand::redo] Key recreated, newID:" << mItemID;
+                if (mOldItemID != mItemID) {
+                    qDebug() << "[AddItemCommand::redo] ID CHANGED! oldID:" << mOldItemID << "-> newID:" << mItemID;
+                }
+            } else {
+                qWarning() << "AddItemCommand::redo() - Failed to recreate key from snapshot";
+            }
+            break;
+        }
+        case EditorViewType::cmActionView: {
+            TAction* pActionParent = nullptr;
+            if (mParentID != -1) {
+                pActionParent = mpHost->getActionUnit()->getAction(mParentID);
+            }
+            TAction* pNewAction = importActionFromXML(mItemSnapshot, pActionParent, mpHost);
+            if (pNewAction) {
+                mItemID = pNewAction->getID();
+                qDebug() << "[AddItemCommand::redo] Action recreated, newID:" << mItemID;
+                if (mOldItemID != mItemID) {
+                    qDebug() << "[AddItemCommand::redo] ID CHANGED! oldID:" << mOldItemID << "-> newID:" << mItemID;
+                }
+            } else {
+                qWarning() << "AddItemCommand::redo() - Failed to recreate action from snapshot";
+            }
+            break;
+        }
         default:
-            qWarning() << "AddItemCommand::redo() - Not yet implemented for this item type";
+            qWarning() << "AddItemCommand::redo() - Unknown item type";
             break;
         }
     }
@@ -622,9 +1446,78 @@ void DeleteItemCommand::undo() {
             }
             break;
         }
-        // TODO: Implement for other item types (aliases, timers, etc.)
+        case EditorViewType::cmAliasView: {
+            TAlias* pParent = nullptr;
+            if (info.parentID != -1) {
+                pParent = mpHost->getAliasUnit()->getAlias(info.parentID);
+            }
+
+            TAlias* pRestoredAlias = importAliasFromXML(info.xmlSnapshot, pParent, mpHost);
+            if (!pRestoredAlias) {
+                qWarning() << "DeleteItemCommand::undo() - Failed to restore alias" << info.itemName;
+            } else {
+                info.itemID = pRestoredAlias->getID();
+            }
+            break;
+        }
+        case EditorViewType::cmTimerView: {
+            TTimer* pParent = nullptr;
+            if (info.parentID != -1) {
+                pParent = mpHost->getTimerUnit()->getTimer(info.parentID);
+            }
+
+            TTimer* pRestoredTimer = importTimerFromXML(info.xmlSnapshot, pParent, mpHost);
+            if (!pRestoredTimer) {
+                qWarning() << "DeleteItemCommand::undo() - Failed to restore timer" << info.itemName;
+            } else {
+                info.itemID = pRestoredTimer->getID();
+            }
+            break;
+        }
+        case EditorViewType::cmScriptView: {
+            TScript* pParent = nullptr;
+            if (info.parentID != -1) {
+                pParent = mpHost->getScriptUnit()->getScript(info.parentID);
+            }
+
+            TScript* pRestoredScript = importScriptFromXML(info.xmlSnapshot, pParent, mpHost);
+            if (!pRestoredScript) {
+                qWarning() << "DeleteItemCommand::undo() - Failed to restore script" << info.itemName;
+            } else {
+                info.itemID = pRestoredScript->getID();
+            }
+            break;
+        }
+        case EditorViewType::cmKeysView: {
+            TKey* pParent = nullptr;
+            if (info.parentID != -1) {
+                pParent = mpHost->getKeyUnit()->getKey(info.parentID);
+            }
+
+            TKey* pRestoredKey = importKeyFromXML(info.xmlSnapshot, pParent, mpHost);
+            if (!pRestoredKey) {
+                qWarning() << "DeleteItemCommand::undo() - Failed to restore key" << info.itemName;
+            } else {
+                info.itemID = pRestoredKey->getID();
+            }
+            break;
+        }
+        case EditorViewType::cmActionView: {
+            TAction* pParent = nullptr;
+            if (info.parentID != -1) {
+                pParent = mpHost->getActionUnit()->getAction(info.parentID);
+            }
+
+            TAction* pRestoredAction = importActionFromXML(info.xmlSnapshot, pParent, mpHost);
+            if (!pRestoredAction) {
+                qWarning() << "DeleteItemCommand::undo() - Failed to restore action" << info.itemName;
+            } else {
+                info.itemID = pRestoredAction->getID();
+            }
+            break;
+        }
         default:
-            qWarning() << "DeleteItemCommand::undo() - Not yet implemented for this item type";
+            qWarning() << "DeleteItemCommand::undo() - Unknown item type";
             break;
         }
     }
@@ -747,9 +1640,63 @@ void ModifyPropertyCommand::undo() {
         }
         break;
     }
-    // TODO: Implement for other item types (aliases, timers, etc.)
+    case EditorViewType::cmAliasView: {
+        TAlias* pAlias = mpHost->getAliasUnit()->getAlias(mItemID);
+        if (pAlias) {
+            if (!updateAliasFromXML(pAlias, mOldStateXML)) {
+                qWarning() << "ModifyPropertyCommand::undo() - Failed to restore alias" << mItemName << "to old state";
+            }
+        } else {
+            qWarning() << "ModifyPropertyCommand::undo() - Alias" << mItemName << "not found";
+        }
+        break;
+    }
+    case EditorViewType::cmTimerView: {
+        TTimer* pTimer = mpHost->getTimerUnit()->getTimer(mItemID);
+        if (pTimer) {
+            if (!updateTimerFromXML(pTimer, mOldStateXML)) {
+                qWarning() << "ModifyPropertyCommand::undo() - Failed to restore timer" << mItemName << "to old state";
+            }
+        } else {
+            qWarning() << "ModifyPropertyCommand::undo() - Timer" << mItemName << "not found";
+        }
+        break;
+    }
+    case EditorViewType::cmScriptView: {
+        TScript* pScript = mpHost->getScriptUnit()->getScript(mItemID);
+        if (pScript) {
+            if (!updateScriptFromXML(pScript, mOldStateXML)) {
+                qWarning() << "ModifyPropertyCommand::undo() - Failed to restore script" << mItemName << "to old state";
+            }
+        } else {
+            qWarning() << "ModifyPropertyCommand::undo() - Script" << mItemName << "not found";
+        }
+        break;
+    }
+    case EditorViewType::cmKeysView: {
+        TKey* pKey = mpHost->getKeyUnit()->getKey(mItemID);
+        if (pKey) {
+            if (!updateKeyFromXML(pKey, mOldStateXML)) {
+                qWarning() << "ModifyPropertyCommand::undo() - Failed to restore key" << mItemName << "to old state";
+            }
+        } else {
+            qWarning() << "ModifyPropertyCommand::undo() - Key" << mItemName << "not found";
+        }
+        break;
+    }
+    case EditorViewType::cmActionView: {
+        TAction* pAction = mpHost->getActionUnit()->getAction(mItemID);
+        if (pAction) {
+            if (!updateActionFromXML(pAction, mOldStateXML)) {
+                qWarning() << "ModifyPropertyCommand::undo() - Failed to restore action" << mItemName << "to old state";
+            }
+        } else {
+            qWarning() << "ModifyPropertyCommand::undo() - Action" << mItemName << "not found";
+        }
+        break;
+    }
     default:
-        qWarning() << "ModifyPropertyCommand::undo() - Not yet implemented for this item type";
+        qWarning() << "ModifyPropertyCommand::undo() - Unknown item type";
         break;
     }
 }
@@ -771,9 +1718,63 @@ void ModifyPropertyCommand::redo() {
         }
         break;
     }
-    // TODO: Implement for other item types (aliases, timers, etc.)
+    case EditorViewType::cmAliasView: {
+        TAlias* pAlias = mpHost->getAliasUnit()->getAlias(mItemID);
+        if (pAlias) {
+            if (!updateAliasFromXML(pAlias, mNewStateXML)) {
+                qWarning() << "ModifyPropertyCommand::redo() - Failed to apply new state to alias" << mItemName;
+            }
+        } else {
+            qWarning() << "ModifyPropertyCommand::redo() - Alias" << mItemName << "not found";
+        }
+        break;
+    }
+    case EditorViewType::cmTimerView: {
+        TTimer* pTimer = mpHost->getTimerUnit()->getTimer(mItemID);
+        if (pTimer) {
+            if (!updateTimerFromXML(pTimer, mNewStateXML)) {
+                qWarning() << "ModifyPropertyCommand::redo() - Failed to apply new state to timer" << mItemName;
+            }
+        } else {
+            qWarning() << "ModifyPropertyCommand::redo() - Timer" << mItemName << "not found";
+        }
+        break;
+    }
+    case EditorViewType::cmScriptView: {
+        TScript* pScript = mpHost->getScriptUnit()->getScript(mItemID);
+        if (pScript) {
+            if (!updateScriptFromXML(pScript, mNewStateXML)) {
+                qWarning() << "ModifyPropertyCommand::redo() - Failed to apply new state to script" << mItemName;
+            }
+        } else {
+            qWarning() << "ModifyPropertyCommand::redo() - Script" << mItemName << "not found";
+        }
+        break;
+    }
+    case EditorViewType::cmKeysView: {
+        TKey* pKey = mpHost->getKeyUnit()->getKey(mItemID);
+        if (pKey) {
+            if (!updateKeyFromXML(pKey, mNewStateXML)) {
+                qWarning() << "ModifyPropertyCommand::redo() - Failed to apply new state to key" << mItemName;
+            }
+        } else {
+            qWarning() << "ModifyPropertyCommand::redo() - Key" << mItemName << "not found";
+        }
+        break;
+    }
+    case EditorViewType::cmActionView: {
+        TAction* pAction = mpHost->getActionUnit()->getAction(mItemID);
+        if (pAction) {
+            if (!updateActionFromXML(pAction, mNewStateXML)) {
+                qWarning() << "ModifyPropertyCommand::redo() - Failed to apply new state to action" << mItemName;
+            }
+        } else {
+            qWarning() << "ModifyPropertyCommand::redo() - Action" << mItemName << "not found";
+        }
+        break;
+    }
     default:
-        qWarning() << "ModifyPropertyCommand::redo() - Not yet implemented for this item type";
+        qWarning() << "ModifyPropertyCommand::redo() - Unknown item type";
         break;
     }
 }
@@ -1110,8 +2111,9 @@ void EditorUndoSystem::undo()
     mUndoStack.pop_back();
 
     EditorViewType affectedView = cmd->viewType();
-    QList<int> affectedIDs = cmd->affectedItemIDs();
     cmd->undo();
+    // Get affected IDs after undo() completes, in case IDs changed (e.g., restored items may get new IDs)
+    QList<int> affectedIDs = cmd->affectedItemIDs();
 
     mRedoStack.push_back(std::move(cmd));
     emitSignals();
@@ -1128,7 +2130,6 @@ void EditorUndoSystem::redo()
     mRedoStack.pop_back();
 
     EditorViewType affectedView = cmd->viewType();
-    QList<int> affectedIDs = cmd->affectedItemIDs();
     cmd->redo();
 
     // Check if this was an AddItemCommand that changed the item ID
@@ -1141,6 +2142,9 @@ void EditorUndoSystem::redo()
             remapItemIDs(oldID, newID);
         }
     }
+
+    // Get affected IDs after redo() completes, in case IDs changed
+    QList<int> affectedIDs = cmd->affectedItemIDs();
 
     mUndoStack.push_back(std::move(cmd));
     emitSignals();

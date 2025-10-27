@@ -5967,6 +5967,16 @@ void dlgTriggerEditor::saveTimer()
     const int timerID = pItem->data(0, Qt::UserRole).toInt();
     TTimer* pT = mpHost->getTimerUnit()->getTimer(timerID);
     if (pT) {
+        // Capture OLD state before modifications (for undo)
+        QString oldStateXML;
+        pugi::xml_document oldDoc;
+        auto oldRoot = oldDoc.append_child("TimerSnapshot");
+        XMLexport oldExporter(pT);
+        oldExporter.writeTimer(pT, oldRoot);
+        std::ostringstream oldOss;
+        oldDoc.save(oldOss);
+        oldStateXML = QString::fromStdString(oldOss.str());
+
         pT->setName(name);
         const QString command = mpTimersMainArea->lineEdit_timer_command->text();
         const int hours = mpTimersMainArea->timeEdit_timer_hours->time().hour();
@@ -6066,6 +6076,29 @@ void dlgTriggerEditor::saveTimer()
             showError(pT->getError());
         }
         pItem->setData(0, Qt::AccessibleDescriptionRole, itemDescription);
+
+        // Capture NEW state after modifications (for redo)
+        QString newStateXML;
+        pugi::xml_document newDoc;
+        auto newRoot = newDoc.append_child("TimerSnapshot");
+        XMLexport newExporter(pT);
+        newExporter.writeTimer(pT, newRoot);
+        std::ostringstream newOss;
+        newDoc.save(newOss);
+        newStateXML = QString::fromStdString(newOss.str());
+
+        // Only push undo command if something actually changed
+        if (oldStateXML != newStateXML) {
+            auto cmd = std::make_unique<ModifyPropertyCommand>(
+                EditorViewType::cmTimerView,
+                timerID,
+                name,
+                oldStateXML,
+                newStateXML,
+                mpHost
+            );
+            mpUndoSystem->pushCommand(std::move(cmd));
+        }
     }
 }
 
@@ -6113,6 +6146,16 @@ void dlgTriggerEditor::saveAlias()
     const int triggerID = pItem->data(0, Qt::UserRole).toInt();
     TAlias* pT = mpHost->getAliasUnit()->getAlias(triggerID);
     if (pT) {
+        // Capture OLD state before modifications (for undo)
+        QString oldStateXML;
+        pugi::xml_document oldDoc;
+        auto oldRoot = oldDoc.append_child("AliasSnapshot");
+        XMLexport oldExporter(pT);
+        oldExporter.writeAlias(pT, oldRoot);
+        std::ostringstream oldOss;
+        oldDoc.save(oldOss);
+        oldStateXML = QString::fromStdString(oldOss.str());
+
         pT->setName(name);
         pT->setCommand(substitution);
         pT->setRegexCode(regex); // This could generate an error state if regex does not compile
@@ -6222,6 +6265,29 @@ void dlgTriggerEditor::saveAlias()
             showError(pT->getError());
         }
         pItem->setData(0, Qt::AccessibleDescriptionRole, itemDescription);
+
+        // Capture NEW state after modifications (for redo)
+        QString newStateXML;
+        pugi::xml_document newDoc;
+        auto newRoot = newDoc.append_child("AliasSnapshot");
+        XMLexport newExporter(pT);
+        newExporter.writeAlias(pT, newRoot);
+        std::ostringstream newOss;
+        newDoc.save(newOss);
+        newStateXML = QString::fromStdString(newOss.str());
+
+        // Only push undo command if something actually changed
+        if (oldStateXML != newStateXML) {
+            auto cmd = std::make_unique<ModifyPropertyCommand>(
+                EditorViewType::cmAliasView,
+                triggerID,
+                name,
+                oldStateXML,
+                newStateXML,
+                mpHost
+            );
+            mpUndoSystem->pushCommand(std::move(cmd));
+        }
     }
 }
 
@@ -6263,6 +6329,16 @@ void dlgTriggerEditor::saveAction()
     const int actionID = pItem->data(0, Qt::UserRole).toInt();
     TAction* pA = mpHost->getActionUnit()->getAction(actionID);
     if (pA) {
+        // Capture OLD state before modifications (for undo)
+        QString oldStateXML;
+        pugi::xml_document oldDoc;
+        auto oldRoot = oldDoc.append_child("ActionSnapshot");
+        XMLexport oldExporter(pA);
+        oldExporter.writeAction(pA, oldRoot);
+        std::ostringstream oldOss;
+        oldDoc.save(oldOss);
+        oldStateXML = QString::fromStdString(oldOss.str());
+
         // Check if data has been changed before it gets updated.
         bool actionDataChanged = false;
         if (pA->mLocation != location || pA->mOrientation != orientation || pA->css != mpActionsMainArea->plainTextEdit_action_css->toPlainText()) {
@@ -6375,6 +6451,29 @@ void dlgTriggerEditor::saveAction()
         if (pA->mLocation != 4 && pA->mpToolBar) {
             pA->mpToolBar->hide();
         }
+
+        // Capture NEW state after modifications (for redo)
+        QString newStateXML;
+        pugi::xml_document newDoc;
+        auto newRoot = newDoc.append_child("ActionSnapshot");
+        XMLexport newExporter(pA);
+        newExporter.writeAction(pA, newRoot);
+        std::ostringstream newOss;
+        newDoc.save(newOss);
+        newStateXML = QString::fromStdString(newOss.str());
+
+        // Only push undo command if something actually changed
+        if (oldStateXML != newStateXML) {
+            auto cmd = std::make_unique<ModifyPropertyCommand>(
+                EditorViewType::cmActionView,
+                actionID,
+                name,
+                oldStateXML,
+                newStateXML,
+                mpHost
+            );
+            mpUndoSystem->pushCommand(std::move(cmd));
+        }
     }
 
     mpHost->getActionUnit()->updateToolbar();
@@ -6441,6 +6540,16 @@ void dlgTriggerEditor::saveScript()
     if (!pT) {
         return;
     }
+
+    // Capture OLD state before modifications (for undo)
+    QString oldStateXML;
+    pugi::xml_document oldDoc;
+    auto oldRoot = oldDoc.append_child("ScriptSnapshot");
+    XMLexport oldExporter(pT);
+    oldExporter.writeScript(pT, oldRoot);
+    std::ostringstream oldOss;
+    oldDoc.save(oldOss);
+    oldStateXML = QString::fromStdString(oldOss.str());
 
     pT->setName(name);
     pT->setEventHandlerList(handlerList);
@@ -6546,6 +6655,29 @@ void dlgTriggerEditor::saveScript()
         showError(pT->getError());
     }
     pItem->setData(0, Qt::AccessibleDescriptionRole, itemDescription);
+
+    // Capture NEW state after modifications (for redo)
+    QString newStateXML;
+    pugi::xml_document newDoc;
+    auto newRoot = newDoc.append_child("ScriptSnapshot");
+    XMLexport newExporter(pT);
+    newExporter.writeScript(pT, newRoot);
+    std::ostringstream newOss;
+    newDoc.save(newOss);
+    newStateXML = QString::fromStdString(newOss.str());
+
+    // Only push undo command if something actually changed
+    if (oldStateXML != newStateXML) {
+        auto cmd = std::make_unique<ModifyPropertyCommand>(
+            EditorViewType::cmScriptView,
+            scriptID,
+            name,
+            oldStateXML,
+            newStateXML,
+            mpHost
+        );
+        mpUndoSystem->pushCommand(std::move(cmd));
+    }
 }
 
 void dlgTriggerEditor::clearEditorNotification() const
@@ -6813,6 +6945,16 @@ void dlgTriggerEditor::saveKey()
     const int triggerID = pItem->data(0, Qt::UserRole).toInt();
     TKey* pT = mpHost->getKeyUnit()->getKey(triggerID);
     if (pT) {
+        // Capture OLD state before modifications (for undo)
+        QString oldStateXML;
+        pugi::xml_document oldDoc;
+        auto oldRoot = oldDoc.append_child("KeySnapshot");
+        XMLexport oldExporter(pT);
+        oldExporter.writeKey(pT, oldRoot);
+        std::ostringstream oldOss;
+        oldDoc.save(oldOss);
+        oldStateXML = QString::fromStdString(oldOss.str());
+
         const QString old_name = pT->getName();
         pItem->setText(0, name);
         pT->setName(name);
@@ -6920,6 +7062,29 @@ void dlgTriggerEditor::saveKey()
             showError(pT->getError());
         }
         pItem->setData(0, Qt::AccessibleDescriptionRole, itemDescription);
+
+        // Capture NEW state after modifications (for redo)
+        QString newStateXML;
+        pugi::xml_document newDoc;
+        auto newRoot = newDoc.append_child("KeySnapshot");
+        XMLexport newExporter(pT);
+        newExporter.writeKey(pT, newRoot);
+        std::ostringstream newOss;
+        newDoc.save(newOss);
+        newStateXML = QString::fromStdString(newOss.str());
+
+        // Only push undo command if something actually changed
+        if (oldStateXML != newStateXML) {
+            auto cmd = std::make_unique<ModifyPropertyCommand>(
+                EditorViewType::cmKeysView,
+                triggerID,
+                name,
+                oldStateXML,
+                newStateXML,
+                mpHost
+            );
+            mpUndoSystem->pushCommand(std::move(cmd));
+        }
     }
 }
 
