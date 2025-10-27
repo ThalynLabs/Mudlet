@@ -514,6 +514,10 @@ void AddItemCommand::redo() {
     // but we never call redo() at that point. The first time redo() is called is after
     // undo() has deleted the item, so we always need to recreate it.
     if (!mItemSnapshot.isEmpty()) {
+        // Track old ID for remapping purposes
+        mOldItemID = mItemID;
+        qDebug() << "[AddItemCommand::redo] Recreating item, oldID:" << mOldItemID;
+
         // Get parent trigger
         TTrigger* pParent = nullptr;
         if (mParentID != -1) {
@@ -527,6 +531,10 @@ void AddItemCommand::redo() {
             if (pNewTrigger) {
                 // Store the new ID (it may be different from original)
                 mItemID = pNewTrigger->getID();
+                qDebug() << "[AddItemCommand::redo] Item recreated, newID:" << mItemID;
+                if (mOldItemID != mItemID) {
+                    qDebug() << "[AddItemCommand::redo] ID CHANGED! oldID:" << mOldItemID << "-> newID:" << mItemID;
+                }
             } else {
                 qWarning() << "AddItemCommand::redo() - Failed to recreate trigger from snapshot";
             }
@@ -537,6 +545,18 @@ void AddItemCommand::redo() {
             qWarning() << "AddItemCommand::redo() - Not yet implemented for this item type";
             break;
         }
+    }
+}
+
+void AddItemCommand::remapItemID(int oldID, int newID) {
+    qDebug() << "[AddItemCommand::remapItemID] Called with oldID:" << oldID << "newID:" << newID << "| my mItemID:" << mItemID << "mParentID:" << mParentID;
+    if (mItemID == oldID) {
+        qDebug() << "[AddItemCommand::remapItemID] Remapping mItemID from" << oldID << "to" << newID;
+        mItemID = newID;
+    }
+    if (mParentID == oldID) {
+        qDebug() << "[AddItemCommand::remapItemID] Remapping mParentID from" << oldID << "to" << newID;
+        mParentID = newID;
     }
 }
 
@@ -661,6 +681,20 @@ QList<int> DeleteItemCommand::affectedItemIDs() const {
     return ids;
 }
 
+void DeleteItemCommand::remapItemID(int oldID, int newID) {
+    qDebug() << "[DeleteItemCommand::remapItemID] Called with oldID:" << oldID << "newID:" << newID;
+    for (auto& info : mDeletedItems) {
+        if (info.itemID == oldID) {
+            qDebug() << "[DeleteItemCommand::remapItemID] Remapping deleted item ID from" << oldID << "to" << newID;
+            info.itemID = newID;
+        }
+        if (info.parentID == oldID) {
+            qDebug() << "[DeleteItemCommand::remapItemID] Remapping deleted item parent ID from" << oldID << "to" << newID;
+            info.parentID = newID;
+        }
+    }
+}
+
 // =============================================================================
 // ModifyPropertyCommand implementation
 // =============================================================================
@@ -728,6 +762,14 @@ QString ModifyPropertyCommand::text() const {
     return QObject::tr("Modify %1 \"%2\"").arg(typeName, mItemName);
 }
 
+void ModifyPropertyCommand::remapItemID(int oldID, int newID) {
+    qDebug() << "[ModifyPropertyCommand::remapItemID] Called with oldID:" << oldID << "newID:" << newID << "| my mItemID:" << mItemID;
+    if (mItemID == oldID) {
+        qDebug() << "[ModifyPropertyCommand::remapItemID] Remapping mItemID from" << oldID << "to" << newID;
+        mItemID = newID;
+    }
+}
+
 // =============================================================================
 // EditorUndoSystem implementation
 // =============================================================================
@@ -786,6 +828,17 @@ void EditorUndoSystem::redo()
     QList<int> affectedIDs = cmd->affectedItemIDs();
     cmd->redo();
 
+    // Check if this was an AddItemCommand that changed the item ID
+    // This happens when an item is deleted then recreated - the ID may change
+    if (auto* addCmd = dynamic_cast<AddItemCommand*>(cmd.get())) {
+        if (addCmd->didItemIDChange()) {
+            int oldID = addCmd->getOldItemID();
+            int newID = addCmd->getNewItemID();
+            qDebug() << "[EditorUndoSystem::redo] AddItemCommand changed ID, remapping from" << oldID << "to" << newID;
+            remapItemIDs(oldID, newID);
+        }
+    }
+
     mUndoStack.push_back(std::move(cmd));
     emitSignals();
     emit itemsChanged(affectedView, affectedIDs);
@@ -838,4 +891,26 @@ void EditorUndoSystem::emitSignals()
     emit canRedoChanged(canRedo());
     emit undoTextChanged(undoText());
     emit redoTextChanged(redoText());
+}
+
+void EditorUndoSystem::remapItemIDs(int oldID, int newID)
+{
+    qDebug() << "[EditorUndoSystem::remapItemIDs] Remapping all commands from oldID:" << oldID << "to newID:" << newID;
+    qDebug() << "[EditorUndoSystem::remapItemIDs] Undo stack size:" << mUndoStack.size() << "Redo stack size:" << mRedoStack.size();
+
+    // Update all commands in undo stack
+    int undoCount = 0;
+    for (auto& cmd : mUndoStack) {
+        qDebug() << "[EditorUndoSystem::remapItemIDs] Remapping command in undo stack #" << undoCount++;
+        cmd->remapItemID(oldID, newID);
+    }
+
+    // Update all commands in redo stack
+    int redoCount = 0;
+    for (auto& cmd : mRedoStack) {
+        qDebug() << "[EditorUndoSystem::remapItemIDs] Remapping command in redo stack #" << redoCount++;
+        cmd->remapItemID(oldID, newID);
+    }
+
+    qDebug() << "[EditorUndoSystem::remapItemIDs] Remapping complete";
 }

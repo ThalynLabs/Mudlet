@@ -60,6 +60,7 @@ public:
     virtual QString text() const = 0;
     virtual EditorViewType viewType() const = 0;
     virtual QList<int> affectedItemIDs() const = 0; // Return IDs of items affected by this command
+    virtual void remapItemID(int oldID, int newID) = 0; // Update stored IDs when items are recreated
 
 protected:
     Host* mpHost;
@@ -76,10 +77,17 @@ public:
     QString text() const override;
     EditorViewType viewType() const override { return mViewType; }
     QList<int> affectedItemIDs() const override { return {mItemID}; }
+    void remapItemID(int oldID, int newID) override;
+
+    // Check if item ID changed during redo (when item was recreated)
+    bool didItemIDChange() const { return mOldItemID != -1 && mOldItemID != mItemID; }
+    int getOldItemID() const { return mOldItemID; }
+    int getNewItemID() const { return mItemID; }
 
 private:
     EditorViewType mViewType;
     int mItemID;
+    int mOldItemID = -1; // Tracks old ID before redo, for ID remapping
     int mParentID;
     bool mIsFolder;
     QString mItemName;
@@ -104,6 +112,7 @@ public:
     QString text() const override;
     EditorViewType viewType() const override { return mViewType; }
     QList<int> affectedItemIDs() const override;
+    void remapItemID(int oldID, int newID) override;
 
 private:
     EditorViewType mViewType;
@@ -123,6 +132,7 @@ public:
     QString text() const override;
     EditorViewType viewType() const override { return mViewType; }
     QList<int> affectedItemIDs() const override { return {mItemID}; }
+    void remapItemID(int oldID, int newID) override;
 
 private:
     EditorViewType mViewType;
@@ -165,6 +175,7 @@ private:
     void clearRedoStack();
     void enforceUndoLimit();
     void emitSignals();
+    void remapItemIDs(int oldID, int newID); // Update all commands when an item ID changes
 
     std::vector<std::unique_ptr<EditorCommand>> mUndoStack;
     std::vector<std::unique_ptr<EditorCommand>> mRedoStack;
