@@ -11881,28 +11881,48 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
     // Refresh the appropriate tree widget when items are added/deleted/modified via undo/redo
     switch (viewType) {
     case EditorViewType::cmTriggerView: {
+        qDebug() << "[slot_itemsChanged] ===== TRIGGER VIEW REFRESH =====";
+        qDebug() << "[slot_itemsChanged] mpCurrentTriggerItem BEFORE clear:" << mpCurrentTriggerItem;
+
         // Clear the current item pointer to avoid use-after-free
         mpCurrentTriggerItem = nullptr;
+        qDebug() << "[slot_itemsChanged] mpCurrentTriggerItem set to nullptr";
 
         // Clear all children from the trigger base item
         QList<QTreeWidgetItem*> children = mpTriggerBaseItem->takeChildren();
+        qDebug() << "[slot_itemsChanged] About to delete" << children.size() << "tree items";
         qDeleteAll(children);
+        qDebug() << "[slot_itemsChanged] Tree items deleted";
+        qDebug() << "[slot_itemsChanged] mpCurrentTriggerItem after delete:" << mpCurrentTriggerItem;
 
         // Repopulate the trigger tree
+        qDebug() << "[slot_itemsChanged] Calling populateTriggers()...";
         populateTriggers();
+        qDebug() << "[slot_itemsChanged] populateTriggers() complete";
+        qDebug() << "[slot_itemsChanged] mpCurrentTriggerItem after populate:" << mpCurrentTriggerItem;
 
         // Expand the base item to show the refreshed tree
         mpTriggerBaseItem->setExpanded(true);
 
         // Find and select the affected items
         if (!affectedItemIDs.isEmpty()) {
+            qDebug() << "[slot_itemsChanged] Finding item with ID:" << affectedItemIDs.first();
             QTreeWidgetItem* itemToSelect = findItemByID(mpTriggerBaseItem, affectedItemIDs.first());
             if (itemToSelect) {
+                qDebug() << "[slot_itemsChanged] Found item:" << itemToSelect << "- calling setCurrentItem()";
+                qDebug() << "[slot_itemsChanged] mpCurrentTriggerItem before setCurrentItem:" << mpCurrentTriggerItem;
                 treeWidget_triggers->setCurrentItem(itemToSelect);
+                qDebug() << "[slot_itemsChanged] setCurrentItem() returned";
+                qDebug() << "[slot_itemsChanged] mpCurrentTriggerItem after setCurrentItem:" << mpCurrentTriggerItem;
                 treeWidget_triggers->scrollToItem(itemToSelect);
+                qDebug() << "[slot_itemsChanged] Calling slot_triggerSelected() directly";
                 slot_triggerSelected(itemToSelect);
+                qDebug() << "[slot_itemsChanged] slot_triggerSelected() returned";
+            } else {
+                qDebug() << "[slot_itemsChanged] Item not found!";
             }
         }
+        qDebug() << "[slot_itemsChanged] ===== TRIGGER VIEW REFRESH COMPLETE =====";
         break;
     }
     case EditorViewType::cmTimerView: {
