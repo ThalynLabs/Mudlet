@@ -4945,6 +4945,21 @@ void dlgTriggerEditor::addTimer(bool isFolder)
     mpCurrentTimerItem = pNewItem;
     treeWidget_timers->setCurrentItem(pNewItem);
     slot_timerSelected(treeWidget_timers->currentItem());
+
+    // Push undo command
+    QTreeWidgetItem* actualParent = pNewItem->parent();
+    int parentID = (actualParent && actualParent != mpTimerBaseItem)
+                   ? actualParent->data(0, Qt::UserRole).toInt()
+                   : -1;
+    auto cmd = std::make_unique<AddItemCommand>(
+        EditorViewType::cmTimerView,
+        pNewTimer->getID(),
+        parentID,
+        isFolder,
+        name,
+        mpHost
+    );
+    mpUndoSystem->pushCommand(std::move(cmd));
 }
 
 void dlgTriggerEditor::addVar(bool isFolder)
@@ -5084,6 +5099,21 @@ void dlgTriggerEditor::addKey(bool isFolder)
     mpCurrentKeyItem = pNewItem;
     treeWidget_keys->setCurrentItem(pNewItem);
     slot_keySelected(treeWidget_keys->currentItem());
+
+    // Push undo command
+    QTreeWidgetItem* actualParent = pNewItem->parent();
+    int parentID = (actualParent && actualParent != mpKeyBaseItem)
+                   ? actualParent->data(0, Qt::UserRole).toInt()
+                   : -1;
+    auto cmd = std::make_unique<AddItemCommand>(
+        EditorViewType::cmKeysView,
+        pNewKey->getID(),
+        parentID,
+        isFolder,
+        name,
+        mpHost
+    );
+    mpUndoSystem->pushCommand(std::move(cmd));
 }
 
 
@@ -5165,6 +5195,21 @@ void dlgTriggerEditor::addAlias(bool isFolder)
     mpCurrentAliasItem = pNewItem;
     treeWidget_aliases->setCurrentItem(pNewItem);
     slot_aliasSelected(treeWidget_aliases->currentItem());
+
+    // Push undo command
+    QTreeWidgetItem* actualParent = pNewItem->parent();
+    int parentID = (actualParent && actualParent != mpAliasBaseItem)
+                   ? actualParent->data(0, Qt::UserRole).toInt()
+                   : -1;
+    auto cmd = std::make_unique<AddItemCommand>(
+        EditorViewType::cmAliasView,
+        pNewAlias->getID(),
+        parentID,
+        isFolder,
+        name,
+        mpHost
+    );
+    mpUndoSystem->pushCommand(std::move(cmd));
 }
 
 void dlgTriggerEditor::addAction(bool isFolder)
@@ -5248,6 +5293,21 @@ void dlgTriggerEditor::addAction(bool isFolder)
     mpCurrentActionItem = pNewItem;
     treeWidget_actions->setCurrentItem(pNewItem);
     slot_actionSelected(treeWidget_actions->currentItem());
+
+    // Push undo command
+    QTreeWidgetItem* actualParent = pNewItem->parent();
+    int parentID = (actualParent && actualParent != mpActionBaseItem)
+                   ? actualParent->data(0, Qt::UserRole).toInt()
+                   : -1;
+    auto cmd = std::make_unique<AddItemCommand>(
+        EditorViewType::cmActionView,
+        pNewAction->getID(),
+        parentID,
+        isFolder,
+        name,
+        mpHost
+    );
+    mpUndoSystem->pushCommand(std::move(cmd));
 }
 
 
@@ -5320,6 +5380,21 @@ void dlgTriggerEditor::addScript(bool isFolder)
     mpCurrentScriptItem = pNewItem;
     treeWidget_scripts->setCurrentItem(pNewItem);
     slot_scriptsSelected(treeWidget_scripts->currentItem());
+
+    // Push undo command
+    QTreeWidgetItem* actualParent = pNewItem->parent();
+    int parentID = (actualParent && actualParent != mpScriptsBaseItem)
+                   ? actualParent->data(0, Qt::UserRole).toInt()
+                   : -1;
+    auto cmd = std::make_unique<AddItemCommand>(
+        EditorViewType::cmScriptView,
+        pNewScript->getID(),
+        parentID,
+        isFolder,
+        name,
+        mpHost
+    );
+    mpUndoSystem->pushCommand(std::move(cmd));
 }
 
 void dlgTriggerEditor::selectTriggerByID(int id)
