@@ -82,7 +82,6 @@ private:
     bool mIsFolder;
     QString mItemName;
     QString mItemSnapshot;
-    bool mFirstRedo = true;
 };
 
 // Command for deleting items
@@ -106,7 +105,6 @@ public:
 private:
     EditorViewType mViewType;
     QList<DeletedItemInfo> mDeletedItems;
-    bool mFirstRedo = true;
 };
 
 // Command for modifying item properties
@@ -128,7 +126,6 @@ private:
     QString mItemName;
     QString mOldStateXML;
     QString mNewStateXML;
-    bool mFirstRedo = true;
 };
 
 // Main undo system class

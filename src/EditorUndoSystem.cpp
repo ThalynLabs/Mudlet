@@ -503,9 +503,11 @@ void AddItemCommand::undo() {
 }
 
 void AddItemCommand::redo() {
-    // On first redo, the item already exists (it was just created)
-    // On subsequent redos, we need to recreate from snapshot
-    if (!mFirstRedo && !mItemSnapshot.isEmpty()) {
+    // Recreate the item from XML snapshot
+    // Note: When the command is first created, the item already exists (it was just added),
+    // but we never call redo() at that point. The first time redo() is called is after
+    // undo() has deleted the item, so we always need to recreate it.
+    if (!mItemSnapshot.isEmpty()) {
         // Get parent trigger
         TTrigger* pParent = nullptr;
         if (mParentID != -1) {
@@ -530,7 +532,6 @@ void AddItemCommand::redo() {
             break;
         }
     }
-    mFirstRedo = false;
 }
 
 QString AddItemCommand::text() const {
@@ -583,59 +584,58 @@ void DeleteItemCommand::undo() {
 }
 
 void DeleteItemCommand::redo() {
-    // On first redo, items are already deleted
-    // On subsequent redos, we need to delete them again
-    if (!mFirstRedo) {
-        for (const auto& info : mDeletedItems) {
-            switch (mViewType) {
-            case EditorViewType::cmTriggerView: {
-                TTrigger* trigger = mpHost->getTriggerUnit()->getTrigger(info.itemID);
-                if (trigger) {
-                    delete trigger;
-                }
-                break;
+    // Delete items again
+    // Note: When the command is first created, items are already deleted,
+    // but we never call redo() at that point. The first time redo() is called is after
+    // undo() has restored the items, so we need to delete them again.
+    for (const auto& info : mDeletedItems) {
+        switch (mViewType) {
+        case EditorViewType::cmTriggerView: {
+            TTrigger* trigger = mpHost->getTriggerUnit()->getTrigger(info.itemID);
+            if (trigger) {
+                delete trigger;
             }
-            case EditorViewType::cmAliasView: {
-                TAlias* alias = mpHost->getAliasUnit()->getAlias(info.itemID);
-                if (alias) {
-                    delete alias;
-                }
-                break;
+            break;
+        }
+        case EditorViewType::cmAliasView: {
+            TAlias* alias = mpHost->getAliasUnit()->getAlias(info.itemID);
+            if (alias) {
+                delete alias;
             }
-            case EditorViewType::cmTimerView: {
-                TTimer* timer = mpHost->getTimerUnit()->getTimer(info.itemID);
-                if (timer) {
-                    delete timer;
-                }
-                break;
+            break;
+        }
+        case EditorViewType::cmTimerView: {
+            TTimer* timer = mpHost->getTimerUnit()->getTimer(info.itemID);
+            if (timer) {
+                delete timer;
             }
-            case EditorViewType::cmScriptView: {
-                TScript* script = mpHost->getScriptUnit()->getScript(info.itemID);
-                if (script) {
-                    delete script;
-                }
-                break;
+            break;
+        }
+        case EditorViewType::cmScriptView: {
+            TScript* script = mpHost->getScriptUnit()->getScript(info.itemID);
+            if (script) {
+                delete script;
             }
-            case EditorViewType::cmKeysView: {
-                TKey* key = mpHost->getKeyUnit()->getKey(info.itemID);
-                if (key) {
-                    delete key;
-                }
-                break;
+            break;
+        }
+        case EditorViewType::cmKeysView: {
+            TKey* key = mpHost->getKeyUnit()->getKey(info.itemID);
+            if (key) {
+                delete key;
             }
-            case EditorViewType::cmActionView: {
-                TAction* action = mpHost->getActionUnit()->getAction(info.itemID);
-                if (action) {
-                    delete action;
-                }
-                break;
+            break;
+        }
+        case EditorViewType::cmActionView: {
+            TAction* action = mpHost->getActionUnit()->getAction(info.itemID);
+            if (action) {
+                delete action;
             }
-            default:
-                break;
-            }
+            break;
+        }
+        default:
+            break;
         }
     }
-    mFirstRedo = false;
 }
 
 QString DeleteItemCommand::text() const {
@@ -686,28 +686,27 @@ void ModifyPropertyCommand::undo() {
 }
 
 void ModifyPropertyCommand::redo() {
-    // On first redo, changes are already applied
-    // On subsequent redos, apply the new state
-    if (!mFirstRedo) {
-        switch (mViewType) {
-        case EditorViewType::cmTriggerView: {
-            TTrigger* pTrigger = mpHost->getTriggerUnit()->getTrigger(mItemID);
-            if (pTrigger) {
-                if (!updateTriggerFromXML(pTrigger, mNewStateXML)) {
-                    qWarning() << "ModifyPropertyCommand::redo() - Failed to apply new state to trigger" << mItemName;
-                }
-            } else {
-                qWarning() << "ModifyPropertyCommand::redo() - Trigger" << mItemName << "not found";
+    // Apply the new state
+    // Note: When the command is first created, changes are already applied,
+    // but we never call redo() at that point. The first time redo() is called is after
+    // undo() has restored the old state, so we need to apply the new state again.
+    switch (mViewType) {
+    case EditorViewType::cmTriggerView: {
+        TTrigger* pTrigger = mpHost->getTriggerUnit()->getTrigger(mItemID);
+        if (pTrigger) {
+            if (!updateTriggerFromXML(pTrigger, mNewStateXML)) {
+                qWarning() << "ModifyPropertyCommand::redo() - Failed to apply new state to trigger" << mItemName;
             }
-            break;
+        } else {
+            qWarning() << "ModifyPropertyCommand::redo() - Trigger" << mItemName << "not found";
         }
-        // TODO: Implement for other item types (aliases, timers, etc.)
-        default:
-            qWarning() << "ModifyPropertyCommand::redo() - Not yet implemented for this item type";
-            break;
-        }
+        break;
     }
-    mFirstRedo = false;
+    // TODO: Implement for other item types (aliases, timers, etc.)
+    default:
+        qWarning() << "ModifyPropertyCommand::redo() - Not yet implemented for this item type";
+        break;
+    }
 }
 
 QString ModifyPropertyCommand::text() const {

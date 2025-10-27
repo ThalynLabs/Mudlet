@@ -11725,6 +11725,9 @@ void dlgTriggerEditor::slot_itemsChanged(::EditorViewType viewType)
     // Refresh the appropriate tree widget when items are added/deleted/modified via undo/redo
     switch (viewType) {
     case ::EditorViewType::cmTriggerView: {
+        // Clear the current item pointer to avoid use-after-free
+        mpCurrentTriggerItem = nullptr;
+
         // Clear all children from the trigger base item
         QList<QTreeWidgetItem*> children = mpTriggerBaseItem->takeChildren();
         qDeleteAll(children);
@@ -11737,6 +11740,8 @@ void dlgTriggerEditor::slot_itemsChanged(::EditorViewType viewType)
         break;
     }
     case ::EditorViewType::cmTimerView: {
+        mpCurrentTimerItem = nullptr;
+
         QList<QTreeWidgetItem*> children = mpTimerBaseItem->takeChildren();
         qDeleteAll(children);
         populateTimers();
@@ -11744,6 +11749,8 @@ void dlgTriggerEditor::slot_itemsChanged(::EditorViewType viewType)
         break;
     }
     case ::EditorViewType::cmAliasView: {
+        mpCurrentAliasItem = nullptr;
+
         QList<QTreeWidgetItem*> children = mpAliasBaseItem->takeChildren();
         qDeleteAll(children);
         populateAliases();
@@ -11751,6 +11758,8 @@ void dlgTriggerEditor::slot_itemsChanged(::EditorViewType viewType)
         break;
     }
     case ::EditorViewType::cmScriptView: {
+        mpCurrentScriptItem = nullptr;
+
         QList<QTreeWidgetItem*> children = mpScriptsBaseItem->takeChildren();
         qDeleteAll(children);
         populateScripts();
@@ -11758,6 +11767,8 @@ void dlgTriggerEditor::slot_itemsChanged(::EditorViewType viewType)
         break;
     }
     case ::EditorViewType::cmActionView: {
+        mpCurrentActionItem = nullptr;
+
         QList<QTreeWidgetItem*> children = mpActionBaseItem->takeChildren();
         qDeleteAll(children);
         populateActions();
@@ -11765,6 +11776,8 @@ void dlgTriggerEditor::slot_itemsChanged(::EditorViewType viewType)
         break;
     }
     case ::EditorViewType::cmKeysView: {
+        mpCurrentKeyItem = nullptr;
+
         QList<QTreeWidgetItem*> children = mpKeyBaseItem->takeChildren();
         qDeleteAll(children);
         populateKeys();
