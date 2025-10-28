@@ -104,6 +104,7 @@ set(mudlet_SRCS
     MudletInstanceCoordinator.cpp
     MudletUndoStack.cpp
     MxpTag.cpp
+    commands/MudletToggleActiveCommand.cpp
     CredentialManager.cpp
     ScriptUnit.cpp
     SecureStringUtils.cpp
@@ -300,6 +301,7 @@ set(mudlet_HDRS
     MudletInstanceCoordinator.h
     MudletUndoStack.h
     MxpTag.h
+    commands/MudletToggleActiveCommand.h
     ScriptUnit.h
     SecureStringUtils.h
     ShortcutsManager.h

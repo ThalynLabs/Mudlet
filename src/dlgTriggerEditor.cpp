@@ -46,6 +46,7 @@
 #include "dlgTriggerPatternEdit.h"
 #include "SingleLineTextEdit.h"
 #include "TrailingWhitespaceMarker.h"
+#include "commands/MudletToggleActiveCommand.h"
 #include "mudlet.h"
 #include "utils.h"
 #include "edbee/models/textdocumentscopes.h"
@@ -4030,6 +4031,7 @@ void dlgTriggerEditor::activeToggle_trigger()
 
     // Push undo command for toggle operation
     if (mpUndoSystem && oldState != newState) {
+        // Push to old system
         auto cmd = std::make_unique<ToggleActiveCommand>(
             EditorViewType::cmTriggerView,
             pT->getID(),
@@ -4039,6 +4041,17 @@ void dlgTriggerEditor::activeToggle_trigger()
             mpHost
         );
         mpUndoSystem->pushCommand(std::move(cmd));
+
+        // Push to new Qt system (for validation during migration)
+        auto* qtCmd = new MudletToggleActiveCommand(
+            EditorViewType::cmTriggerView,
+            pT->getID(),
+            oldState,
+            newState,
+            pT->getName(),
+            mpHost
+        );
+        mpQtUndoStack->push(qtCmd);  // Qt takes ownership
     }
 }
 
@@ -4346,6 +4359,7 @@ void dlgTriggerEditor::activeToggle_timer()
 
     // Push undo command for toggle operation
     if (mpUndoSystem && oldState != newState) {
+        // Push to old system
         auto cmd = std::make_unique<ToggleActiveCommand>(
             EditorViewType::cmTimerView,
             pT->getID(),
@@ -4355,6 +4369,17 @@ void dlgTriggerEditor::activeToggle_timer()
             mpHost
         );
         mpUndoSystem->pushCommand(std::move(cmd));
+
+        // Push to new Qt system (for validation during migration)
+        auto* qtCmd = new MudletToggleActiveCommand(
+            EditorViewType::cmTimerView,
+            pT->getID(),
+            oldState,
+            newState,
+            pT->getName(),
+            mpHost
+        );
+        mpQtUndoStack->push(qtCmd);  // Qt takes ownership
     }
 }
 
@@ -4501,6 +4526,7 @@ void dlgTriggerEditor::activeToggle_alias()
 
     // Push undo command for toggle operation
     if (mpUndoSystem && oldState != newState) {
+        // Push to old system
         auto cmd = std::make_unique<ToggleActiveCommand>(
             EditorViewType::cmAliasView,
             pT->getID(),
@@ -4510,6 +4536,17 @@ void dlgTriggerEditor::activeToggle_alias()
             mpHost
         );
         mpUndoSystem->pushCommand(std::move(cmd));
+
+        // Push to new Qt system (for validation during migration)
+        auto* qtCmd = new MudletToggleActiveCommand(
+            EditorViewType::cmAliasView,
+            pT->getID(),
+            oldState,
+            newState,
+            pT->getName(),
+            mpHost
+        );
+        mpQtUndoStack->push(qtCmd);  // Qt takes ownership
     }
 }
 
@@ -4636,6 +4673,7 @@ void dlgTriggerEditor::activeToggle_script()
 
     // Push undo command for toggle operation
     if (mpUndoSystem && oldState != newState) {
+        // Push to old system
         auto cmd = std::make_unique<ToggleActiveCommand>(
             EditorViewType::cmScriptView,
             pT->getID(),
@@ -4645,6 +4683,17 @@ void dlgTriggerEditor::activeToggle_script()
             mpHost
         );
         mpUndoSystem->pushCommand(std::move(cmd));
+
+        // Push to new Qt system (for validation during migration)
+        auto* qtCmd = new MudletToggleActiveCommand(
+            EditorViewType::cmScriptView,
+            pT->getID(),
+            oldState,
+            newState,
+            pT->getName(),
+            mpHost
+        );
+        mpQtUndoStack->push(qtCmd);  // Qt takes ownership
     }
 }
 
@@ -4808,6 +4857,7 @@ void dlgTriggerEditor::activeToggle_action()
 
     // Push undo command for toggle operation
     if (mpUndoSystem && oldState != newState) {
+        // Push to old system
         auto cmd = std::make_unique<ToggleActiveCommand>(
             EditorViewType::cmActionView,
             pT->getID(),
@@ -4817,6 +4867,17 @@ void dlgTriggerEditor::activeToggle_action()
             mpHost
         );
         mpUndoSystem->pushCommand(std::move(cmd));
+
+        // Push to new Qt system (for validation during migration)
+        auto* qtCmd = new MudletToggleActiveCommand(
+            EditorViewType::cmActionView,
+            pT->getID(),
+            oldState,
+            newState,
+            pT->getName(),
+            mpHost
+        );
+        mpQtUndoStack->push(qtCmd);  // Qt takes ownership
     }
 }
 
@@ -4983,6 +5044,7 @@ void dlgTriggerEditor::activeToggle_key()
 
     // Push undo command for toggle operation
     if (mpUndoSystem && oldState != newState) {
+        // Push to old system
         auto cmd = std::make_unique<ToggleActiveCommand>(
             EditorViewType::cmKeysView,
             pT->getID(),
@@ -4992,6 +5054,17 @@ void dlgTriggerEditor::activeToggle_key()
             mpHost
         );
         mpUndoSystem->pushCommand(std::move(cmd));
+
+        // Push to new Qt system (for validation during migration)
+        auto* qtCmd = new MudletToggleActiveCommand(
+            EditorViewType::cmKeysView,
+            pT->getID(),
+            oldState,
+            newState,
+            pT->getName(),
+            mpHost
+        );
+        mpQtUndoStack->push(qtCmd);  // Qt takes ownership
     }
 }
 
