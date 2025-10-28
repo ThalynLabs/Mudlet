@@ -50,6 +50,13 @@ void MudletMoveItemCommand::undo()
 
 void MudletMoveItemCommand::redo()
 {
+    // Skip the first redo() which is automatically called by QUndoStack::push()
+    // The move has already been performed by TTreeWidget::rowsInserted()
+    if (mSkipFirstRedo) {
+        mSkipFirstRedo = false;
+        return;
+    }
+
     moveItem(mOldParentID, mNewParentID, mNewPosition);
 }
 

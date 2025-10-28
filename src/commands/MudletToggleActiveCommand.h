@@ -55,6 +55,7 @@ private:
     bool mOldActiveState;
     bool mNewActiveState;
     QString mItemName;
+    mutable bool mSkipFirstRedo = true;  // Skip initial redo() called by QUndoStack::push()
 };
 
 #endif // MUDLET_MUDLETTOGGLEACTIVECOMMAND_H

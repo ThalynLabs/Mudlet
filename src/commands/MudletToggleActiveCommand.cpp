@@ -46,6 +46,13 @@ void MudletToggleActiveCommand::undo()
 
 void MudletToggleActiveCommand::redo()
 {
+    // Skip the first redo() which is automatically called by QUndoStack::push()
+    // The state change has already been performed before pushing to the stack
+    if (mSkipFirstRedo) {
+        mSkipFirstRedo = false;
+        return;
+    }
+
     setItemActiveState(mItemID, mNewActiveState);
 }
 

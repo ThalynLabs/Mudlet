@@ -55,6 +55,7 @@ private:
     int mOldPosition;
     int mNewPosition;
     QString mItemName;
+    mutable bool mSkipFirstRedo = true;  // Skip initial redo() called by QUndoStack::push()
 };
 
 #endif // MUDLET_MUDLETMOVEITEMCOMMAND_H
