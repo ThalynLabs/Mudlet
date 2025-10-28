@@ -23,6 +23,7 @@
 #include "EditorViewType.h"
 
 #include <QList>
+#include <QMap>
 #include <QUndoStack>
 
 /*!
@@ -58,6 +59,10 @@ public:
     // Wrapper for push() to track when we're adding a new command vs undo/redo
     void pushCommand(QUndoCommand* cmd);
 
+    // Override beginMacro and endMacro to track macro operations
+    void beginMacro(const QString& text);
+    void endMacro();
+
 signals:
     /*!
      * \brief Emitted when items are modified by undo/redo operations
@@ -75,8 +80,15 @@ protected:
     using QUndoStack::command;
 
 private:
+    // Helper to emit itemsChanged for a command and its children (collects all items first)
+    void emitChangesForCommand(const QUndoCommand* cmd);
+
+    // Helper to recursively collect affected items from a command and its children
+    void collectAffectedItems(const QUndoCommand* cmd, QMap<EditorViewType, QList<int>>& affectedItemsByView);
+
     int mPreviousIndex = 0;  // Track previous index to determine undo vs redo
     bool mInPushOperation = false;  // Track if we're currently pushing a command
+    bool mInMacroPush = false;  // Track if we're in a macro push operation (beginMacro -> endMacro)
 };
 
 #endif // MUDLET_MUDLETUNDOSTACK_H

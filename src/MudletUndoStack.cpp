@@ -20,14 +20,16 @@
 #include "MudletUndoStack.h"
 #include "MudletCommand.h"
 
+#include <QDebug>
+
 MudletUndoStack::MudletUndoStack(QObject* parent)
     : QUndoStack(parent)
 {
     // Connect to indexChanged signal to emit itemsChanged after undo/redo
     connect(this, &QUndoStack::indexChanged, this, [this](int newIndex) {
-        // Skip emitting itemsChanged during push() operations
+        // Skip emitting itemsChanged during push() operations or macro push operations
         // The action has already been performed before pushing
-        if (mInPushOperation) {
+        if (mInPushOperation || mInMacroPush) {
             mPreviousIndex = newIndex;
             return;
         }
@@ -43,17 +45,75 @@ MudletUndoStack::MudletUndoStack(QObject* parent)
             affectedCommandIndex = mPreviousIndex - 1;
         }
 
-        // Emit itemsChanged for the affected command
+        // Emit itemsChanged for the affected command (including all children for macros)
         if (affectedCommandIndex >= 0 && affectedCommandIndex < count()) {
             const QUndoCommand* cmd = command(affectedCommandIndex);
-            if (auto* mudletCmd = dynamic_cast<const MudletCommand*>(cmd)) {
-                emit itemsChanged(mudletCmd->viewType(), mudletCmd->affectedItemIDs());
-            }
+            emitChangesForCommand(cmd);
         }
 
         // Update previous index for next change
         mPreviousIndex = newIndex;
     });
+}
+
+void MudletUndoStack::emitChangesForCommand(const QUndoCommand* cmd)
+{
+    if (!cmd) {
+        return;
+    }
+
+    // Collect all affected items by view type from this command and all children
+    QMap<EditorViewType, QList<int>> affectedItemsByView;
+    collectAffectedItems(cmd, affectedItemsByView);
+
+    // Only emit if we have valid items
+    // Emit itemsChanged once per view type with all affected IDs
+    for (auto it = affectedItemsByView.constBegin(); it != affectedItemsByView.constEnd(); ++it) {
+        const QList<int>& itemIDs = it.value();
+        if (!itemIDs.isEmpty()) {
+            // Double-check all IDs are valid before emitting
+            bool allValid = true;
+            for (int id : itemIDs) {
+                if (id <= 0) {
+                    allValid = false;
+                    qWarning() << "MudletUndoStack::emitChangesForCommand() - Invalid item ID" << id << "found, skipping emission";
+                    break;
+                }
+            }
+            if (allValid) {
+                emit itemsChanged(it.key(), itemIDs);
+            }
+        }
+    }
+}
+
+void MudletUndoStack::collectAffectedItems(const QUndoCommand* cmd, QMap<EditorViewType, QList<int>>& affectedItemsByView)
+{
+    if (!cmd) {
+        return;
+    }
+
+    // If this is a MudletCommand, collect its affected items
+    if (auto* mudletCmd = dynamic_cast<const MudletCommand*>(cmd)) {
+        EditorViewType viewType = mudletCmd->viewType();
+        QList<int> itemIDs = mudletCmd->affectedItemIDs();
+
+        // Add to the map, avoiding duplicates and invalid IDs
+        for (int id : itemIDs) {
+            // Skip invalid IDs (0 or negative)
+            if (id <= 0) {
+                continue;
+            }
+            if (!affectedItemsByView[viewType].contains(id)) {
+                affectedItemsByView[viewType].append(id);
+            }
+        }
+    }
+
+    // Recursively collect from child commands (for macros)
+    for (int i = 0; i < cmd->childCount(); ++i) {
+        collectAffectedItems(cmd->child(i), affectedItemsByView);
+    }
 }
 
 void MudletUndoStack::pushCommand(QUndoCommand* cmd)
@@ -62,6 +122,21 @@ void MudletUndoStack::pushCommand(QUndoCommand* cmd)
     mInPushOperation = true;
     push(cmd);
     mInPushOperation = false;
+}
+
+void MudletUndoStack::beginMacro(const QString& text)
+{
+    // Set flag to indicate we're starting a macro push operation
+    mInMacroPush = true;
+    QUndoStack::beginMacro(text);
+}
+
+void MudletUndoStack::endMacro()
+{
+    // Call the base implementation first
+    QUndoStack::endMacro();
+    // Clear the flag after the macro is complete
+    mInMacroPush = false;
 }
 
 void MudletUndoStack::remapItemIDs(int oldID, int newID)

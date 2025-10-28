@@ -4195,7 +4195,7 @@ void dlgTriggerEditor::slot_itemMoved(int itemID, int oldParentID, int newParent
         itemName,
         mpHost
     );
-    mpQtUndoStack->push(qtCmd);  // Qt takes ownership
+    mpQtUndoStack->pushCommand(qtCmd);  // Qt takes ownership
 }
 
 void dlgTriggerEditor::slot_batchMoveStarted()
