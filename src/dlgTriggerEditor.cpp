@@ -2994,33 +2994,59 @@ void dlgTriggerEditor::delete_alias()
 
     // Capture state of all items BEFORE deletion for undo
     QList<DeleteItemCommand::DeletedItemInfo> deletedItems;
+
+    // Recursive lambda to capture an alias and all its descendants
+    std::function<void(TAlias*, int, int)> captureAliasAndChildren = [&](TAlias* pT, int parentID, int positionInParent) {
+        if (!pT) {
+            return;
+        }
+
+        DeleteItemCommand::DeletedItemInfo info;
+        info.itemID = pT->getID();
+        info.itemName = pT->getName();
+        info.parentID = parentID;
+        info.positionInParent = positionInParent;
+
+        // Export alias to XML snapshot
+        pugi::xml_document doc;
+        auto root = doc.append_child("AliasSnapshot");
+        XMLexport exporter(pT);
+        exporter.writeAlias(pT, root);
+        std::ostringstream oss;
+        doc.save(oss);
+        info.xmlSnapshot = QString::fromStdString(oss.str());
+
+        deletedItems.append(info);
+
+        // Recursively capture all children
+        if (pT->mpMyChildrenList) {
+            int i = 0;
+            for (auto* pChild : *pT->mpMyChildrenList) {
+                captureAliasAndChildren(pChild, pT->getID(), i);
+                ++i;
+            }
+        }
+    };
+
+    // Capture each selected alias and all its descendants
     for (QTreeWidgetItem* pItem : selectedItems) {
         TAlias* pT = mpHost->getAliasUnit()->getAlias(pItem->data(0, Qt::UserRole).toInt());
         if (pT) {
-            DeleteItemCommand::DeletedItemInfo info;
-            info.itemID = pT->getID();
-            info.itemName = pT->getName();
+            // Determine parent ID and position
+            int parentID = -1;
+            int positionInParent = 0;
 
-            // Get parent ID
             QTreeWidgetItem* pParentItem = pItem->parent();
             if (pParentItem && pParentItem != mpAliasBaseItem) {
-                info.parentID = pParentItem->data(0, Qt::UserRole).toInt();
-                info.positionInParent = pParentItem->indexOfChild(pItem);
+                parentID = pParentItem->data(0, Qt::UserRole).toInt();
+                positionInParent = pParentItem->indexOfChild(pItem);
             } else {
-                info.parentID = -1;
-                info.positionInParent = mpAliasBaseItem->indexOfChild(pItem);
+                parentID = -1;
+                positionInParent = mpAliasBaseItem->indexOfChild(pItem);
             }
 
-            // Export alias to XML snapshot
-            pugi::xml_document doc;
-            auto root = doc.append_child("AliasSnapshot");
-            XMLexport exporter(pT);
-            exporter.writeAlias(pT, root);
-            std::ostringstream oss;
-            doc.save(oss);
-            info.xmlSnapshot = QString::fromStdString(oss.str());
-
-            deletedItems.append(info);
+            // Recursively capture this alias and all its children
+            captureAliasAndChildren(pT, parentID, positionInParent);
         }
     }
 
@@ -3109,33 +3135,59 @@ void dlgTriggerEditor::delete_action()
 
     // Capture state of all items BEFORE deletion for undo
     QList<DeleteItemCommand::DeletedItemInfo> deletedItems;
+
+    // Recursive lambda to capture an action and all its descendants
+    std::function<void(TAction*, int, int)> captureActionAndChildren = [&](TAction* pT, int parentID, int positionInParent) {
+        if (!pT) {
+            return;
+        }
+
+        DeleteItemCommand::DeletedItemInfo info;
+        info.itemID = pT->getID();
+        info.itemName = pT->getName();
+        info.parentID = parentID;
+        info.positionInParent = positionInParent;
+
+        // Export action to XML snapshot
+        pugi::xml_document doc;
+        auto root = doc.append_child("ActionSnapshot");
+        XMLexport exporter(pT);
+        exporter.writeAction(pT, root);
+        std::ostringstream oss;
+        doc.save(oss);
+        info.xmlSnapshot = QString::fromStdString(oss.str());
+
+        deletedItems.append(info);
+
+        // Recursively capture all children
+        if (pT->mpMyChildrenList) {
+            int i = 0;
+            for (auto* pChild : *pT->mpMyChildrenList) {
+                captureActionAndChildren(pChild, pT->getID(), i);
+                ++i;
+            }
+        }
+    };
+
+    // Capture each selected action and all its descendants
     for (QTreeWidgetItem* pItem : selectedItems) {
         TAction* pT = mpHost->getActionUnit()->getAction(pItem->data(0, Qt::UserRole).toInt());
         if (pT) {
-            DeleteItemCommand::DeletedItemInfo info;
-            info.itemID = pT->getID();
-            info.itemName = pT->getName();
+            // Determine parent ID and position
+            int parentID = -1;
+            int positionInParent = 0;
 
-            // Get parent ID
             QTreeWidgetItem* pParentItem = pItem->parent();
             if (pParentItem && pParentItem != mpActionBaseItem) {
-                info.parentID = pParentItem->data(0, Qt::UserRole).toInt();
-                info.positionInParent = pParentItem->indexOfChild(pItem);
+                parentID = pParentItem->data(0, Qt::UserRole).toInt();
+                positionInParent = pParentItem->indexOfChild(pItem);
             } else {
-                info.parentID = -1;
-                info.positionInParent = mpActionBaseItem->indexOfChild(pItem);
+                parentID = -1;
+                positionInParent = mpActionBaseItem->indexOfChild(pItem);
             }
 
-            // Export action to XML snapshot
-            pugi::xml_document doc;
-            auto root = doc.append_child("ActionSnapshot");
-            XMLexport exporter(pT);
-            exporter.writeAction(pT, root);
-            std::ostringstream oss;
-            doc.save(oss);
-            info.xmlSnapshot = QString::fromStdString(oss.str());
-
-            deletedItems.append(info);
+            // Recursively capture this action and all its children
+            captureActionAndChildren(pT, parentID, positionInParent);
         }
     }
 
@@ -3315,33 +3367,59 @@ void dlgTriggerEditor::delete_script()
 
     // Capture state of all items BEFORE deletion for undo
     QList<DeleteItemCommand::DeletedItemInfo> deletedItems;
+
+    // Recursive lambda to capture a script and all its descendants
+    std::function<void(TScript*, int, int)> captureScriptAndChildren = [&](TScript* pT, int parentID, int positionInParent) {
+        if (!pT) {
+            return;
+        }
+
+        DeleteItemCommand::DeletedItemInfo info;
+        info.itemID = pT->getID();
+        info.itemName = pT->getName();
+        info.parentID = parentID;
+        info.positionInParent = positionInParent;
+
+        // Export script to XML snapshot
+        pugi::xml_document doc;
+        auto root = doc.append_child("ScriptSnapshot");
+        XMLexport exporter(pT);
+        exporter.writeScript(pT, root);
+        std::ostringstream oss;
+        doc.save(oss);
+        info.xmlSnapshot = QString::fromStdString(oss.str());
+
+        deletedItems.append(info);
+
+        // Recursively capture all children
+        if (pT->mpMyChildrenList) {
+            int i = 0;
+            for (auto* pChild : *pT->mpMyChildrenList) {
+                captureScriptAndChildren(pChild, pT->getID(), i);
+                ++i;
+            }
+        }
+    };
+
+    // Capture each selected script and all its descendants
     for (QTreeWidgetItem* pItem : selectedItems) {
         TScript* pT = mpHost->getScriptUnit()->getScript(pItem->data(0, Qt::UserRole).toInt());
         if (pT) {
-            DeleteItemCommand::DeletedItemInfo info;
-            info.itemID = pT->getID();
-            info.itemName = pT->getName();
+            // Determine parent ID and position
+            int parentID = -1;
+            int positionInParent = 0;
 
-            // Get parent ID
             QTreeWidgetItem* pParentItem = pItem->parent();
             if (pParentItem && pParentItem != mpScriptsBaseItem) {
-                info.parentID = pParentItem->data(0, Qt::UserRole).toInt();
-                info.positionInParent = pParentItem->indexOfChild(pItem);
+                parentID = pParentItem->data(0, Qt::UserRole).toInt();
+                positionInParent = pParentItem->indexOfChild(pItem);
             } else {
-                info.parentID = -1;
-                info.positionInParent = mpScriptsBaseItem->indexOfChild(pItem);
+                parentID = -1;
+                positionInParent = mpScriptsBaseItem->indexOfChild(pItem);
             }
 
-            // Export script to XML snapshot
-            pugi::xml_document doc;
-            auto root = doc.append_child("ScriptSnapshot");
-            XMLexport exporter(pT);
-            exporter.writeScript(pT, root);
-            std::ostringstream oss;
-            doc.save(oss);
-            info.xmlSnapshot = QString::fromStdString(oss.str());
-
-            deletedItems.append(info);
+            // Recursively capture this script and all its children
+            captureScriptAndChildren(pT, parentID, positionInParent);
         }
     }
 
@@ -3430,33 +3508,59 @@ void dlgTriggerEditor::delete_key()
 
     // Capture state of all items BEFORE deletion for undo
     QList<DeleteItemCommand::DeletedItemInfo> deletedItems;
+
+    // Recursive lambda to capture a key and all its descendants
+    std::function<void(TKey*, int, int)> captureKeyAndChildren = [&](TKey* pT, int parentID, int positionInParent) {
+        if (!pT) {
+            return;
+        }
+
+        DeleteItemCommand::DeletedItemInfo info;
+        info.itemID = pT->getID();
+        info.itemName = pT->getName();
+        info.parentID = parentID;
+        info.positionInParent = positionInParent;
+
+        // Export key to XML snapshot
+        pugi::xml_document doc;
+        auto root = doc.append_child("KeySnapshot");
+        XMLexport exporter(pT);
+        exporter.writeKey(pT, root);
+        std::ostringstream oss;
+        doc.save(oss);
+        info.xmlSnapshot = QString::fromStdString(oss.str());
+
+        deletedItems.append(info);
+
+        // Recursively capture all children
+        if (pT->mpMyChildrenList) {
+            int i = 0;
+            for (auto* pChild : *pT->mpMyChildrenList) {
+                captureKeyAndChildren(pChild, pT->getID(), i);
+                ++i;
+            }
+        }
+    };
+
+    // Capture each selected key and all its descendants
     for (QTreeWidgetItem* pItem : selectedItems) {
         TKey* pT = mpHost->getKeyUnit()->getKey(pItem->data(0, Qt::UserRole).toInt());
         if (pT) {
-            DeleteItemCommand::DeletedItemInfo info;
-            info.itemID = pT->getID();
-            info.itemName = pT->getName();
+            // Determine parent ID and position
+            int parentID = -1;
+            int positionInParent = 0;
 
-            // Get parent ID
             QTreeWidgetItem* pParentItem = pItem->parent();
             if (pParentItem && pParentItem != mpKeyBaseItem) {
-                info.parentID = pParentItem->data(0, Qt::UserRole).toInt();
-                info.positionInParent = pParentItem->indexOfChild(pItem);
+                parentID = pParentItem->data(0, Qt::UserRole).toInt();
+                positionInParent = pParentItem->indexOfChild(pItem);
             } else {
-                info.parentID = -1;
-                info.positionInParent = mpKeyBaseItem->indexOfChild(pItem);
+                parentID = -1;
+                positionInParent = mpKeyBaseItem->indexOfChild(pItem);
             }
 
-            // Export key to XML snapshot
-            pugi::xml_document doc;
-            auto root = doc.append_child("KeySnapshot");
-            XMLexport exporter(pT);
-            exporter.writeKey(pT, root);
-            std::ostringstream oss;
-            doc.save(oss);
-            info.xmlSnapshot = QString::fromStdString(oss.str());
-
-            deletedItems.append(info);
+            // Recursively capture this key and all its children
+            captureKeyAndChildren(pT, parentID, positionInParent);
         }
     }
 
@@ -3545,44 +3649,64 @@ void dlgTriggerEditor::delete_trigger()
 
     // Capture state of all items BEFORE deletion for undo
     QList<DeleteItemCommand::DeletedItemInfo> deletedItems;
+
+    // Recursive lambda to capture a trigger and all its descendants
+    std::function<void(TTrigger*, int, int)> captureTriggerAndChildren = [&](TTrigger* pT, int parentID, int positionInParent) {
+        if (!pT) {
+            return;
+        }
+
+        DeleteItemCommand::DeletedItemInfo info;
+        info.itemID = pT->getID();
+        info.itemName = pT->getName();
+        info.parentID = parentID;
+        info.positionInParent = positionInParent;
+
+        // Export trigger to XML snapshot
+        pugi::xml_document doc;
+        auto root = doc.append_child("TriggerSnapshot");
+        XMLexport exporter(pT);
+        exporter.writeTrigger(pT, root);
+        std::ostringstream oss;
+        doc.save(oss);
+        info.xmlSnapshot = QString::fromStdString(oss.str());
+
+        deletedItems.append(info);
+
+        // Recursively capture all children
+        if (pT->mpMyChildrenList) {
+            int i = 0;
+            for (auto* pChild : *pT->mpMyChildrenList) {
+                captureTriggerAndChildren(pChild, pT->getID(), i);
+                ++i;
+            }
+        }
+    };
+
+    // Capture each selected trigger and all its descendants
     for (QTreeWidgetItem* pItem : selectedItems) {
         TTrigger* pT = mpHost->getTriggerUnit()->getTrigger(pItem->data(0, Qt::UserRole).toInt());
         if (pT) {
-            DeleteItemCommand::DeletedItemInfo info;
-            info.itemID = pT->getID();
-            info.itemName = pT->getName();
+            // Determine parent ID and position
+            int parentID = -1;
+            int positionInParent = 0;
 
-            // Get parent ID
             QTreeWidgetItem* pParentItem = pItem->parent();
             if (pParentItem) {
-                // Has a parent - could be base item or another trigger
                 if (pParentItem == mpTriggerBaseItem) {
-                    // Parent is the base "Triggers" folder - treat as top-level
-                    info.parentID = -1;
-                    info.positionInParent = mpTriggerBaseItem->indexOfChild(pItem);
+                    parentID = -1;
+                    positionInParent = mpTriggerBaseItem->indexOfChild(pItem);
                 } else {
-                    // Parent is another trigger
-                    info.parentID = pParentItem->data(0, Qt::UserRole).toInt();
-                    info.positionInParent = pParentItem->indexOfChild(pItem);
+                    parentID = pParentItem->data(0, Qt::UserRole).toInt();
+                    positionInParent = pParentItem->indexOfChild(pItem);
                 }
             } else {
-                // No parent - true top-level item (shouldn't happen in practice)
-                info.parentID = -1;
-                info.positionInParent = treeWidget_triggers->indexOfTopLevelItem(pItem);
-                qDebug() << "delete_trigger: Capturing orphaned top-level item" << info.itemName
-                         << "at position" << info.positionInParent;
+                parentID = -1;
+                positionInParent = treeWidget_triggers->indexOfTopLevelItem(pItem);
             }
 
-            // Export trigger to XML snapshot
-            pugi::xml_document doc;
-            auto root = doc.append_child("TriggerSnapshot");
-            XMLexport exporter(pT);
-            exporter.writeTrigger(pT, root);
-            std::ostringstream oss;
-            doc.save(oss);
-            info.xmlSnapshot = QString::fromStdString(oss.str());
-
-            deletedItems.append(info);
+            // Recursively capture this trigger and all its children
+            captureTriggerAndChildren(pT, parentID, positionInParent);
         }
     }
 
@@ -3671,33 +3795,59 @@ void dlgTriggerEditor::delete_timer()
 
     // Capture state of all items BEFORE deletion for undo
     QList<DeleteItemCommand::DeletedItemInfo> deletedItems;
+
+    // Recursive lambda to capture a timer and all its descendants
+    std::function<void(TTimer*, int, int)> captureTimerAndChildren = [&](TTimer* pT, int parentID, int positionInParent) {
+        if (!pT) {
+            return;
+        }
+
+        DeleteItemCommand::DeletedItemInfo info;
+        info.itemID = pT->getID();
+        info.itemName = pT->getName();
+        info.parentID = parentID;
+        info.positionInParent = positionInParent;
+
+        // Export timer to XML snapshot
+        pugi::xml_document doc;
+        auto root = doc.append_child("TimerSnapshot");
+        XMLexport exporter(pT);
+        exporter.writeTimer(pT, root);
+        std::ostringstream oss;
+        doc.save(oss);
+        info.xmlSnapshot = QString::fromStdString(oss.str());
+
+        deletedItems.append(info);
+
+        // Recursively capture all children
+        if (pT->mpMyChildrenList) {
+            int i = 0;
+            for (auto* pChild : *pT->mpMyChildrenList) {
+                captureTimerAndChildren(pChild, pT->getID(), i);
+                ++i;
+            }
+        }
+    };
+
+    // Capture each selected timer and all its descendants
     for (QTreeWidgetItem* pItem : selectedItems) {
         TTimer* pT = mpHost->getTimerUnit()->getTimer(pItem->data(0, Qt::UserRole).toInt());
         if (pT) {
-            DeleteItemCommand::DeletedItemInfo info;
-            info.itemID = pT->getID();
-            info.itemName = pT->getName();
+            // Determine parent ID and position
+            int parentID = -1;
+            int positionInParent = 0;
 
-            // Get parent ID
             QTreeWidgetItem* pParentItem = pItem->parent();
             if (pParentItem && pParentItem != mpTimerBaseItem) {
-                info.parentID = pParentItem->data(0, Qt::UserRole).toInt();
-                info.positionInParent = pParentItem->indexOfChild(pItem);
+                parentID = pParentItem->data(0, Qt::UserRole).toInt();
+                positionInParent = pParentItem->indexOfChild(pItem);
             } else {
-                info.parentID = -1;
-                info.positionInParent = mpTimerBaseItem->indexOfChild(pItem);
+                parentID = -1;
+                positionInParent = mpTimerBaseItem->indexOfChild(pItem);
             }
 
-            // Export timer to XML snapshot
-            pugi::xml_document doc;
-            auto root = doc.append_child("TimerSnapshot");
-            XMLexport exporter(pT);
-            exporter.writeTimer(pT, root);
-            std::ostringstream oss;
-            doc.save(oss);
-            info.xmlSnapshot = QString::fromStdString(oss.str());
-
-            deletedItems.append(info);
+            // Recursively capture this timer and all its children
+            captureTimerAndChildren(pT, parentID, positionInParent);
         }
     }
 

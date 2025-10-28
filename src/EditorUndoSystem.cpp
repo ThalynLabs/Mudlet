@@ -40,12 +40,42 @@
 #include <sstream>
 
 // =============================================================================
-// Helper functions for XML serialization
+// Helper functions for XML serialization and compression
 // =============================================================================
 
 namespace {
 
-// Export a single trigger to XML string
+// Typical compression ratio: 3-5× (2 KB → 400-600 bytes)
+QString compressXML(const QString& xml) {
+    if (xml.isEmpty()) {
+        return QString();
+    }
+
+    QByteArray compressed = qCompress(xml.toUtf8(), 9);
+    return QString::fromLatin1(compressed.toBase64());
+}
+
+QString decompressXML(const QString& data) {
+    if (data.isEmpty()) {
+        return QString();
+    }
+
+    // Backward compatibility: check if data is already raw XML
+    if (data.startsWith('<')) {
+        return data;
+    }
+
+    // Decompress Base64-encoded compressed data
+    QByteArray compressed = QByteArray::fromBase64(data.toLatin1());
+    QByteArray decompressed = qUncompress(compressed);
+    if (decompressed.isEmpty()) {
+        qWarning() << "EditorUndoSystem: Failed to decompress XML data";
+        return QString();
+    }
+
+    return QString::fromUtf8(decompressed);
+}
+
 QString exportTriggerToXML(TTrigger* trigger) {
     if (!trigger) {
         return QString();
@@ -59,7 +89,7 @@ QString exportTriggerToXML(TTrigger* trigger) {
 
     std::ostringstream oss;
     doc.save(oss);
-    return QString::fromStdString(oss.str());
+    return compressXML(QString::fromStdString(oss.str()));
 }
 
 // Export a single alias to XML string
@@ -76,7 +106,7 @@ QString exportAliasToXML(TAlias* alias) {
 
     std::ostringstream oss;
     doc.save(oss);
-    return QString::fromStdString(oss.str());
+    return compressXML(QString::fromStdString(oss.str()));
 }
 
 // Export a single timer to XML string
@@ -93,7 +123,7 @@ QString exportTimerToXML(TTimer* timer) {
 
     std::ostringstream oss;
     doc.save(oss);
-    return QString::fromStdString(oss.str());
+    return compressXML(QString::fromStdString(oss.str()));
 }
 
 // Export a single script to XML string
@@ -110,7 +140,7 @@ QString exportScriptToXML(TScript* script) {
 
     std::ostringstream oss;
     doc.save(oss);
-    return QString::fromStdString(oss.str());
+    return compressXML(QString::fromStdString(oss.str()));
 }
 
 // Export a single key to XML string
@@ -127,7 +157,7 @@ QString exportKeyToXML(TKey* key) {
 
     std::ostringstream oss;
     doc.save(oss);
-    return QString::fromStdString(oss.str());
+    return compressXML(QString::fromStdString(oss.str()));
 }
 
 // Export a single action to XML string
@@ -144,7 +174,7 @@ QString exportActionToXML(TAction* action) {
 
     std::ostringstream oss;
     doc.save(oss);
-    return QString::fromStdString(oss.str());
+    return compressXML(QString::fromStdString(oss.str()));
 }
 
 // Helper to get item name based on view type and ID
@@ -205,8 +235,15 @@ TTrigger* importTriggerFromXML(const QString& xmlSnapshot, TTrigger* pParent, Ho
         return nullptr;
     }
 
+    // Decompress XML
+    QString xml = decompressXML(xmlSnapshot);
+    if (xml.isEmpty()) {
+        qWarning() << "importTriggerFromXML: Failed to decompress XML";
+        return nullptr;
+    }
+
     pugi::xml_document doc;
-    pugi::xml_parse_result result = doc.load_string(xmlSnapshot.toStdString().c_str());
+    pugi::xml_parse_result result = doc.load_string(xml.toStdString().c_str());
     if (!result) {
         qWarning() << "importTriggerFromXML: Failed to parse XML:" << result.description();
         return nullptr;
@@ -438,8 +475,15 @@ TAlias* importAliasFromXML(const QString& xmlSnapshot, TAlias* pParent, Host* ho
         return nullptr;
     }
 
+    // Decompress XML
+    QString xml = decompressXML(xmlSnapshot);
+    if (xml.isEmpty()) {
+        qWarning() << "importAliasFromXML: Failed to decompress XML";
+        return nullptr;
+    }
+
     pugi::xml_document doc;
-    pugi::xml_parse_result result = doc.load_string(xmlSnapshot.toStdString().c_str());
+    pugi::xml_parse_result result = doc.load_string(xml.toStdString().c_str());
     if (!result) {
         qWarning() << "importAliasFromXML: Failed to parse XML:" << result.description();
         return nullptr;
@@ -588,8 +632,15 @@ TTimer* importTimerFromXML(const QString& xmlSnapshot, TTimer* pParent, Host* ho
         return nullptr;
     }
 
+    // Decompress XML
+    QString xml = decompressXML(xmlSnapshot);
+    if (xml.isEmpty()) {
+        qWarning() << "importTimerFromXML: Failed to decompress XML";
+        return nullptr;
+    }
+
     pugi::xml_document doc;
-    pugi::xml_parse_result result = doc.load_string(xmlSnapshot.toStdString().c_str());
+    pugi::xml_parse_result result = doc.load_string(xml.toStdString().c_str());
     if (!result) {
         qWarning() << "importTimerFromXML: Failed to parse XML:" << result.description();
         return nullptr;
@@ -738,8 +789,15 @@ TScript* importScriptFromXML(const QString& xmlSnapshot, TScript* pParent, Host*
         return nullptr;
     }
 
+    // Decompress XML
+    QString xml = decompressXML(xmlSnapshot);
+    if (xml.isEmpty()) {
+        qWarning() << "importScriptFromXML: Failed to decompress XML";
+        return nullptr;
+    }
+
     pugi::xml_document doc;
-    pugi::xml_parse_result result = doc.load_string(xmlSnapshot.toStdString().c_str());
+    pugi::xml_parse_result result = doc.load_string(xml.toStdString().c_str());
     if (!result) {
         qWarning() << "importScriptFromXML: Failed to parse XML:" << result.description();
         return nullptr;
@@ -898,8 +956,15 @@ TKey* importKeyFromXML(const QString& xmlSnapshot, TKey* pParent, Host* host, in
         return nullptr;
     }
 
+    // Decompress XML
+    QString xml = decompressXML(xmlSnapshot);
+    if (xml.isEmpty()) {
+        qWarning() << "importKeyFromXML: Failed to decompress XML";
+        return nullptr;
+    }
+
     pugi::xml_document doc;
-    pugi::xml_parse_result result = doc.load_string(xmlSnapshot.toStdString().c_str());
+    pugi::xml_parse_result result = doc.load_string(xml.toStdString().c_str());
     if (!result) {
         qWarning() << "importKeyFromXML: Failed to parse XML:" << result.description();
         return nullptr;
@@ -1050,8 +1115,15 @@ TAction* importActionFromXML(const QString& xmlSnapshot, TAction* pParent, Host*
         return nullptr;
     }
 
+    // Decompress XML
+    QString xml = decompressXML(xmlSnapshot);
+    if (xml.isEmpty()) {
+        qWarning() << "importActionFromXML: Failed to decompress XML";
+        return nullptr;
+    }
+
     pugi::xml_document doc;
-    pugi::xml_parse_result result = doc.load_string(xmlSnapshot.toStdString().c_str());
+    pugi::xml_parse_result result = doc.load_string(xml.toStdString().c_str());
     if (!result) {
         qWarning() << "importActionFromXML: Failed to parse XML:" << result.description();
         return nullptr;
@@ -1498,9 +1570,62 @@ DeleteItemCommand::DeleteItemCommand(EditorViewType viewType, const QList<Delete
 
 void DeleteItemCommand::undo() {
     // Restore all deleted items from their XML snapshots
-    // Process in reverse order to maintain tree structure (parents before children)
-    for (int i = mDeletedItems.size() - 1; i >= 0; --i) {
-        auto& info = mDeletedItems[i];  // Non-const reference so we can update the ID
+    // Sort items to restore in correct order:
+    // 1. Parents before children (items whose parent is not in deleted list come first)
+    // 2. Siblings in position order (lower position first)
+    QList<DeletedItemInfo> sortedItems = mDeletedItems;
+    std::sort(sortedItems.begin(), sortedItems.end(), [&sortedItems](const DeletedItemInfo& a, const DeletedItemInfo& b) {
+        // Check if parent is in the deleted list
+        bool aParentDeleted = std::any_of(sortedItems.begin(), sortedItems.end(),
+                                          [&a](const DeletedItemInfo& item) { return item.itemID == a.parentID; });
+        bool bParentDeleted = std::any_of(sortedItems.begin(), sortedItems.end(),
+                                          [&b](const DeletedItemInfo& item) { return item.itemID == b.parentID; });
+
+        // Items whose parent is not deleted come first
+        if (aParentDeleted != bParentDeleted) {
+            return !aParentDeleted; // a comes first if its parent is not deleted
+        }
+
+        // Within same parent, sort by position (ascending)
+        if (a.parentID == b.parentID) {
+            return a.positionInParent < b.positionInParent;
+        }
+
+        // Different parents, maintain original order
+        return false;
+    });
+
+    for (int i = 0; i < sortedItems.size(); ++i) {
+        auto& info = sortedItems[i];
+
+        // Skip items whose parent was also deleted - they'll be restored from parent's XML
+        bool skipRestore = false;
+        if (info.parentID != -1) {
+            bool parentWasDeleted = std::any_of(mDeletedItems.begin(), mDeletedItems.end(),
+                                                [&info](const DeletedItemInfo& item) {
+                                                    return item.itemID == info.parentID;
+                                                });
+            if (parentWasDeleted) {
+                skipRestore = true;
+            }
+        }
+
+        // Find the corresponding item in mDeletedItems to update the ID
+        auto it = std::find_if(mDeletedItems.begin(), mDeletedItems.end(),
+                               [&info](const DeletedItemInfo& item) {
+                                   return item.itemName == info.itemName && item.parentID == info.parentID;
+                               });
+        if (it == mDeletedItems.end()) {
+            qWarning() << "DeleteItemCommand::undo() - Could not find item in original list:" << info.itemName;
+            continue;
+        }
+        auto& originalInfo = *it;
+
+        if (skipRestore) {
+            // Item was restored from parent's XML, but we still need to find its new ID for redo
+            // This will be done after parent is restored
+            continue;
+        }
 
         switch (mViewType) {
         case EditorViewType::cmTriggerView: {
@@ -1508,6 +1633,10 @@ void DeleteItemCommand::undo() {
             TTrigger* pParent = nullptr;
             if (info.parentID != -1) {
                 pParent = mpHost->getTriggerUnit()->getTrigger(info.parentID);
+                if (!pParent) {
+                    qWarning() << "DeleteItemCommand::undo() - Parent trigger not found for" << info.itemName
+                               << "parentID=" << info.parentID;
+                }
             }
 
             // Restore the trigger from XML snapshot at its original position
@@ -1515,8 +1644,54 @@ void DeleteItemCommand::undo() {
             if (!pRestoredTrigger) {
                 qWarning() << "DeleteItemCommand::undo() - Failed to restore trigger" << info.itemName;
             } else {
-                // Update the stored ID to the new ID so redo can find it
-                info.itemID = pRestoredTrigger->getID();
+                int newID = pRestoredTrigger->getID();
+                int oldID = info.itemID;
+
+                // Update the stored ID in original list so redo can find it
+                originalInfo.itemID = newID;
+
+                // If ID changed, update all remaining items that reference this as their parent
+                if (newID != oldID) {
+                    for (int j = i + 1; j < sortedItems.size(); ++j) {
+                        if (sortedItems[j].parentID == oldID) {
+                            sortedItems[j].parentID = newID;
+
+                            // Also update in mDeletedItems so we can find it later
+                            auto childIt = std::find_if(mDeletedItems.begin(), mDeletedItems.end(),
+                                                        [&sortedItems, j, oldID](const DeletedItemInfo& item) {
+                                                            return item.itemName == sortedItems[j].itemName && item.parentID == oldID;
+                                                        });
+                            if (childIt != mDeletedItems.end()) {
+                                childIt->parentID = newID;
+                            }
+                        }
+                    }
+                }
+
+                // Walk the restored trigger's children and update their IDs in mDeletedItems
+                // (children were restored from XML, not individually)
+                std::function<void(TTrigger*, int)> updateChildIDs = [&](TTrigger* pT, int parentID) {
+                    if (!pT || !pT->mpMyChildrenList) {
+                        return;
+                    }
+                    for (auto* pChild : *pT->mpMyChildrenList) {
+                        // Find this child in mDeletedItems by name and parent ID
+                        auto childIt = std::find_if(mDeletedItems.begin(), mDeletedItems.end(),
+                                                     [pChild, parentID](const DeletedItemInfo& item) {
+                                                         return item.itemName == pChild->getName() && item.parentID == parentID;
+                                                     });
+                        if (childIt != mDeletedItems.end()) {
+                            int childOldID = childIt->itemID;
+                            int childNewID = pChild->getID();
+                            if (childOldID != childNewID) {
+                                childIt->itemID = childNewID;
+                                // Recursively update grandchildren
+                                updateChildIDs(pChild, childNewID);
+                            }
+                        }
+                    }
+                };
+                updateChildIDs(pRestoredTrigger, oldID);
             }
             break;
         }
@@ -1530,7 +1705,50 @@ void DeleteItemCommand::undo() {
             if (!pRestoredAlias) {
                 qWarning() << "DeleteItemCommand::undo() - Failed to restore alias" << info.itemName;
             } else {
-                info.itemID = pRestoredAlias->getID();
+                int newID = pRestoredAlias->getID();
+                int oldID = info.itemID;
+
+                originalInfo.itemID = newID;
+
+                // If ID changed, update all remaining items that reference this as their parent
+                if (newID != oldID) {
+                    for (int j = i + 1; j < sortedItems.size(); ++j) {
+                        if (sortedItems[j].parentID == oldID) {
+                            sortedItems[j].parentID = newID;
+
+                            // Also update in mDeletedItems so we can find it later
+                            auto childIt = std::find_if(mDeletedItems.begin(), mDeletedItems.end(),
+                                                        [&sortedItems, j, oldID](const DeletedItemInfo& item) {
+                                                            return item.itemName == sortedItems[j].itemName && item.parentID == oldID;
+                                                        });
+                            if (childIt != mDeletedItems.end()) {
+                                childIt->parentID = newID;
+                            }
+                        }
+                    }
+                }
+
+                // Walk the restored alias's children and update their IDs in mDeletedItems
+                std::function<void(TAlias*, int)> updateChildIDs = [&](TAlias* pA, int parentID) {
+                    if (!pA || !pA->mpMyChildrenList) {
+                        return;
+                    }
+                    for (auto* pChild : *pA->mpMyChildrenList) {
+                        auto childIt = std::find_if(mDeletedItems.begin(), mDeletedItems.end(),
+                                                     [pChild, parentID](const DeletedItemInfo& item) {
+                                                         return item.itemName == pChild->getName() && item.parentID == parentID;
+                                                     });
+                        if (childIt != mDeletedItems.end()) {
+                            int childOldID = childIt->itemID;
+                            int childNewID = pChild->getID();
+                            if (childOldID != childNewID) {
+                                childIt->itemID = childNewID;
+                                updateChildIDs(pChild, childNewID);
+                            }
+                        }
+                    }
+                };
+                updateChildIDs(pRestoredAlias, oldID);
             }
             break;
         }
@@ -1544,7 +1762,50 @@ void DeleteItemCommand::undo() {
             if (!pRestoredTimer) {
                 qWarning() << "DeleteItemCommand::undo() - Failed to restore timer" << info.itemName;
             } else {
-                info.itemID = pRestoredTimer->getID();
+                int newID = pRestoredTimer->getID();
+                int oldID = info.itemID;
+
+                originalInfo.itemID = newID;
+
+                // If ID changed, update all remaining items that reference this as their parent
+                if (newID != oldID) {
+                    for (int j = i + 1; j < sortedItems.size(); ++j) {
+                        if (sortedItems[j].parentID == oldID) {
+                            sortedItems[j].parentID = newID;
+
+                            // Also update in mDeletedItems so we can find it later
+                            auto childIt = std::find_if(mDeletedItems.begin(), mDeletedItems.end(),
+                                                        [&sortedItems, j, oldID](const DeletedItemInfo& item) {
+                                                            return item.itemName == sortedItems[j].itemName && item.parentID == oldID;
+                                                        });
+                            if (childIt != mDeletedItems.end()) {
+                                childIt->parentID = newID;
+                            }
+                        }
+                    }
+                }
+
+                // Walk the restored timer's children and update their IDs in mDeletedItems
+                std::function<void(TTimer*, int)> updateChildIDs = [&](TTimer* pT, int parentID) {
+                    if (!pT || !pT->mpMyChildrenList) {
+                        return;
+                    }
+                    for (auto* pChild : *pT->mpMyChildrenList) {
+                        auto childIt = std::find_if(mDeletedItems.begin(), mDeletedItems.end(),
+                                                     [pChild, parentID](const DeletedItemInfo& item) {
+                                                         return item.itemName == pChild->getName() && item.parentID == parentID;
+                                                     });
+                        if (childIt != mDeletedItems.end()) {
+                            int childOldID = childIt->itemID;
+                            int childNewID = pChild->getID();
+                            if (childOldID != childNewID) {
+                                childIt->itemID = childNewID;
+                                updateChildIDs(pChild, childNewID);
+                            }
+                        }
+                    }
+                };
+                updateChildIDs(pRestoredTimer, oldID);
             }
             break;
         }
@@ -1558,7 +1819,50 @@ void DeleteItemCommand::undo() {
             if (!pRestoredScript) {
                 qWarning() << "DeleteItemCommand::undo() - Failed to restore script" << info.itemName;
             } else {
-                info.itemID = pRestoredScript->getID();
+                int newID = pRestoredScript->getID();
+                int oldID = info.itemID;
+
+                originalInfo.itemID = newID;
+
+                // If ID changed, update all remaining items that reference this as their parent
+                if (newID != oldID) {
+                    for (int j = i + 1; j < sortedItems.size(); ++j) {
+                        if (sortedItems[j].parentID == oldID) {
+                            sortedItems[j].parentID = newID;
+
+                            // Also update in mDeletedItems so we can find it later
+                            auto childIt = std::find_if(mDeletedItems.begin(), mDeletedItems.end(),
+                                                        [&sortedItems, j, oldID](const DeletedItemInfo& item) {
+                                                            return item.itemName == sortedItems[j].itemName && item.parentID == oldID;
+                                                        });
+                            if (childIt != mDeletedItems.end()) {
+                                childIt->parentID = newID;
+                            }
+                        }
+                    }
+                }
+
+                // Walk the restored script's children and update their IDs in mDeletedItems
+                std::function<void(TScript*, int)> updateChildIDs = [&](TScript* pS, int parentID) {
+                    if (!pS || !pS->mpMyChildrenList) {
+                        return;
+                    }
+                    for (auto* pChild : *pS->mpMyChildrenList) {
+                        auto childIt = std::find_if(mDeletedItems.begin(), mDeletedItems.end(),
+                                                     [pChild, parentID](const DeletedItemInfo& item) {
+                                                         return item.itemName == pChild->getName() && item.parentID == parentID;
+                                                     });
+                        if (childIt != mDeletedItems.end()) {
+                            int childOldID = childIt->itemID;
+                            int childNewID = pChild->getID();
+                            if (childOldID != childNewID) {
+                                childIt->itemID = childNewID;
+                                updateChildIDs(pChild, childNewID);
+                            }
+                        }
+                    }
+                };
+                updateChildIDs(pRestoredScript, oldID);
             }
             break;
         }
@@ -1572,7 +1876,50 @@ void DeleteItemCommand::undo() {
             if (!pRestoredKey) {
                 qWarning() << "DeleteItemCommand::undo() - Failed to restore key" << info.itemName;
             } else {
-                info.itemID = pRestoredKey->getID();
+                int newID = pRestoredKey->getID();
+                int oldID = info.itemID;
+
+                originalInfo.itemID = newID;
+
+                // If ID changed, update all remaining items that reference this as their parent
+                if (newID != oldID) {
+                    for (int j = i + 1; j < sortedItems.size(); ++j) {
+                        if (sortedItems[j].parentID == oldID) {
+                            sortedItems[j].parentID = newID;
+
+                            // Also update in mDeletedItems so we can find it later
+                            auto childIt = std::find_if(mDeletedItems.begin(), mDeletedItems.end(),
+                                                        [&sortedItems, j, oldID](const DeletedItemInfo& item) {
+                                                            return item.itemName == sortedItems[j].itemName && item.parentID == oldID;
+                                                        });
+                            if (childIt != mDeletedItems.end()) {
+                                childIt->parentID = newID;
+                            }
+                        }
+                    }
+                }
+
+                // Walk the restored key's children and update their IDs in mDeletedItems
+                std::function<void(TKey*, int)> updateChildIDs = [&](TKey* pK, int parentID) {
+                    if (!pK || !pK->mpMyChildrenList) {
+                        return;
+                    }
+                    for (auto* pChild : *pK->mpMyChildrenList) {
+                        auto childIt = std::find_if(mDeletedItems.begin(), mDeletedItems.end(),
+                                                     [pChild, parentID](const DeletedItemInfo& item) {
+                                                         return item.itemName == pChild->getName() && item.parentID == parentID;
+                                                     });
+                        if (childIt != mDeletedItems.end()) {
+                            int childOldID = childIt->itemID;
+                            int childNewID = pChild->getID();
+                            if (childOldID != childNewID) {
+                                childIt->itemID = childNewID;
+                                updateChildIDs(pChild, childNewID);
+                            }
+                        }
+                    }
+                };
+                updateChildIDs(pRestoredKey, oldID);
             }
             break;
         }
@@ -1586,7 +1933,50 @@ void DeleteItemCommand::undo() {
             if (!pRestoredAction) {
                 qWarning() << "DeleteItemCommand::undo() - Failed to restore action" << info.itemName;
             } else {
-                info.itemID = pRestoredAction->getID();
+                int newID = pRestoredAction->getID();
+                int oldID = info.itemID;
+
+                originalInfo.itemID = newID;
+
+                // If ID changed, update all remaining items that reference this as their parent
+                if (newID != oldID) {
+                    for (int j = i + 1; j < sortedItems.size(); ++j) {
+                        if (sortedItems[j].parentID == oldID) {
+                            sortedItems[j].parentID = newID;
+
+                            // Also update in mDeletedItems so we can find it later
+                            auto childIt = std::find_if(mDeletedItems.begin(), mDeletedItems.end(),
+                                                        [&sortedItems, j, oldID](const DeletedItemInfo& item) {
+                                                            return item.itemName == sortedItems[j].itemName && item.parentID == oldID;
+                                                        });
+                            if (childIt != mDeletedItems.end()) {
+                                childIt->parentID = newID;
+                            }
+                        }
+                    }
+                }
+
+                // Walk the restored action's children and update their IDs in mDeletedItems
+                std::function<void(TAction*, int)> updateChildIDs = [&](TAction* pA, int parentID) {
+                    if (!pA || !pA->mpMyChildrenList) {
+                        return;
+                    }
+                    for (auto* pChild : *pA->mpMyChildrenList) {
+                        auto childIt = std::find_if(mDeletedItems.begin(), mDeletedItems.end(),
+                                                     [pChild, parentID](const DeletedItemInfo& item) {
+                                                         return item.itemName == pChild->getName() && item.parentID == parentID;
+                                                     });
+                        if (childIt != mDeletedItems.end()) {
+                            int childOldID = childIt->itemID;
+                            int childNewID = pChild->getID();
+                            if (childOldID != childNewID) {
+                                childIt->itemID = childNewID;
+                                updateChildIDs(pChild, childNewID);
+                            }
+                        }
+                    }
+                };
+                updateChildIDs(pRestoredAction, oldID);
             }
             break;
         }
