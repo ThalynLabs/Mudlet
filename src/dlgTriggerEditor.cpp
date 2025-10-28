@@ -430,9 +430,8 @@ dlgTriggerEditor::dlgTriggerEditor(Host* pH)
     connect(mpRedoAction, &QAction::triggered, this, &dlgTriggerEditor::slot_smartRedo);
 
     // Connect item undo system signals to update button states and tooltips
-    // Store connections for early disconnection in closeEvent
-    mItemUndoConnection = connect(mpUndoSystem, &EditorUndoSystem::canUndoChanged, this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
-    mItemRedoConnection = connect(mpUndoSystem, &EditorUndoSystem::canRedoChanged, this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
+    connect(mpUndoSystem, &EditorUndoSystem::canUndoChanged, this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
+    connect(mpUndoSystem, &EditorUndoSystem::canRedoChanged, this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
 
     connect(mpUndoSystem, &EditorUndoSystem::undoTextChanged, this, [this](const QString& text) {
         if (!text.isEmpty()) {
@@ -457,12 +456,11 @@ dlgTriggerEditor::dlgTriggerEditor(Host* pH)
     mpTextUndoStack = mpSourceEditorEdbee->controller()->textDocument()->textUndoStack();
 
     // Connect text editor undo stack signals to update button states
-    // Store connections so we can disconnect them early in closeEvent()
-    mTextUndoConnection = connect(mpTextUndoStack, &edbee::TextUndoStack::undoExecuted,
+    connect(mpTextUndoStack, &edbee::TextUndoStack::undoExecuted,
             this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
-    mTextRedoConnection = connect(mpTextUndoStack, &edbee::TextUndoStack::redoExecuted,
+    connect(mpTextUndoStack, &edbee::TextUndoStack::redoExecuted,
             this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
-    mTextChangeConnection = connect(mpTextUndoStack, &edbee::TextUndoStack::changeAdded,
+    connect(mpTextUndoStack, &edbee::TextUndoStack::changeAdded,
             this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
 
     // Set initial button states
@@ -1328,13 +1326,14 @@ void dlgTriggerEditor::slot_setTreeWidgetIconSize(const int s)
 
 void dlgTriggerEditor::closeEvent(QCloseEvent* event)
 {
-    // Disconnect ALL undo/redo signals BEFORE destruction begins
+    // Disconnect ALL signals from undo systems to this object BEFORE destruction begins
     // This prevents crashes from signals firing during object destruction
-    disconnect(mTextUndoConnection);
-    disconnect(mTextRedoConnection);
-    disconnect(mTextChangeConnection);
-    disconnect(mItemUndoConnection);
-    disconnect(mItemRedoConnection);
+    if (mpTextUndoStack) {
+        disconnect(mpTextUndoStack, nullptr, this, nullptr);
+    }
+    if (mpUndoSystem) {
+        disconnect(mpUndoSystem, nullptr, this, nullptr);
+    }
 
     emit editorClosing();
     writeSettings();
