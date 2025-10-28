@@ -55,6 +55,9 @@ public:
      */
     void remapItemIDs(int oldID, int newID);
 
+    // Wrapper for push() to track when we're adding a new command vs undo/redo
+    void pushCommand(QUndoCommand* cmd);
+
 signals:
     /*!
      * \brief Emitted when items are modified by undo/redo operations
@@ -73,6 +76,7 @@ protected:
 
 private:
     int mPreviousIndex = 0;  // Track previous index to determine undo vs redo
+    bool mInPushOperation = false;  // Track if we're currently pushing a command
 };
 
 #endif // MUDLET_MUDLETUNDOSTACK_H

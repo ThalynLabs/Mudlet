@@ -1411,6 +1411,9 @@ void dlgTriggerEditor::closeEvent(QCloseEvent* event)
     }
     if (mpQtUndoStack) {
         disconnect(mpQtUndoStack, nullptr, this, nullptr);
+        // Clear the Qt undo stack to release commands that hold Host* pointers
+        // This prevents use-after-free when Host is destroyed before this dialog
+        mpQtUndoStack->clear();
     }
 
     emit editorClosing();
@@ -4088,7 +4091,7 @@ void dlgTriggerEditor::activeToggle_trigger()
             pT->getName(),
             mpHost
         );
-        mpQtUndoStack->push(qtCmd);  // Qt takes ownership
+        mpQtUndoStack->pushCommand(qtCmd);  // Qt takes ownership
     }
 }
 
@@ -4435,7 +4438,7 @@ void dlgTriggerEditor::activeToggle_timer()
             pT->getName(),
             mpHost
         );
-        mpQtUndoStack->push(qtCmd);  // Qt takes ownership
+        mpQtUndoStack->pushCommand(qtCmd);  // Qt takes ownership
     }
 }
 
@@ -4602,7 +4605,7 @@ void dlgTriggerEditor::activeToggle_alias()
             pT->getName(),
             mpHost
         );
-        mpQtUndoStack->push(qtCmd);  // Qt takes ownership
+        mpQtUndoStack->pushCommand(qtCmd);  // Qt takes ownership
     }
 }
 
@@ -4749,7 +4752,7 @@ void dlgTriggerEditor::activeToggle_script()
             pT->getName(),
             mpHost
         );
-        mpQtUndoStack->push(qtCmd);  // Qt takes ownership
+        mpQtUndoStack->pushCommand(qtCmd);  // Qt takes ownership
     }
 }
 
@@ -4933,7 +4936,7 @@ void dlgTriggerEditor::activeToggle_action()
             pT->getName(),
             mpHost
         );
-        mpQtUndoStack->push(qtCmd);  // Qt takes ownership
+        mpQtUndoStack->pushCommand(qtCmd);  // Qt takes ownership
     }
 }
 
@@ -5120,7 +5123,7 @@ void dlgTriggerEditor::activeToggle_key()
             pT->getName(),
             mpHost
         );
-        mpQtUndoStack->push(qtCmd);  // Qt takes ownership
+        mpQtUndoStack->pushCommand(qtCmd);  // Qt takes ownership
     }
 }
 

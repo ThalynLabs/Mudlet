@@ -25,6 +25,13 @@ MudletUndoStack::MudletUndoStack(QObject* parent)
 {
     // Connect to indexChanged signal to emit itemsChanged after undo/redo
     connect(this, &QUndoStack::indexChanged, this, [this](int newIndex) {
+        // Skip emitting itemsChanged during push() operations
+        // The action has already been performed before pushing
+        if (mInPushOperation) {
+            mPreviousIndex = newIndex;
+            return;
+        }
+
         // Determine which command was affected based on index movement
         int affectedCommandIndex = -1;
 
@@ -47,6 +54,14 @@ MudletUndoStack::MudletUndoStack(QObject* parent)
         // Update previous index for next change
         mPreviousIndex = newIndex;
     });
+}
+
+void MudletUndoStack::pushCommand(QUndoCommand* cmd)
+{
+    // Set flag to indicate we're in a push operation
+    mInPushOperation = true;
+    push(cmd);
+    mInPushOperation = false;
 }
 
 void MudletUndoStack::remapItemIDs(int oldID, int newID)
