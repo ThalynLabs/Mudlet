@@ -430,8 +430,9 @@ dlgTriggerEditor::dlgTriggerEditor(Host* pH)
     connect(mpRedoAction, &QAction::triggered, this, &dlgTriggerEditor::slot_smartRedo);
 
     // Connect item undo system signals to update button states and tooltips
-    connect(mpUndoSystem, &EditorUndoSystem::canUndoChanged, this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
-    connect(mpUndoSystem, &EditorUndoSystem::canRedoChanged, this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
+    // Store connections for early disconnection in closeEvent
+    mItemUndoConnection = connect(mpUndoSystem, &EditorUndoSystem::canUndoChanged, this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
+    mItemRedoConnection = connect(mpUndoSystem, &EditorUndoSystem::canRedoChanged, this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
 
     connect(mpUndoSystem, &EditorUndoSystem::undoTextChanged, this, [this](const QString& text) {
         if (!text.isEmpty()) {
@@ -452,12 +453,16 @@ dlgTriggerEditor::dlgTriggerEditor(Host* pH)
         }
     });
 
+    // Store guarded pointer to text editor's undo stack for safe signal connections
+    mpTextUndoStack = mpSourceEditorEdbee->controller()->textDocument()->textUndoStack();
+
     // Connect text editor undo stack signals to update button states
-    connect(mpSourceEditorEdbee->controller()->textDocument()->textUndoStack(), &edbee::TextUndoStack::undoExecuted,
+    // Store connections so we can disconnect them early in closeEvent()
+    mTextUndoConnection = connect(mpTextUndoStack, &edbee::TextUndoStack::undoExecuted,
             this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
-    connect(mpSourceEditorEdbee->controller()->textDocument()->textUndoStack(), &edbee::TextUndoStack::redoExecuted,
+    mTextRedoConnection = connect(mpTextUndoStack, &edbee::TextUndoStack::redoExecuted,
             this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
-    connect(mpSourceEditorEdbee->controller()->textDocument()->textUndoStack(), &edbee::TextUndoStack::changeAdded,
+    mTextChangeConnection = connect(mpTextUndoStack, &edbee::TextUndoStack::changeAdded,
             this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
 
     // Set initial button states
@@ -1233,19 +1238,16 @@ void dlgTriggerEditor::slot_smartRedo()
 
 void dlgTriggerEditor::slot_updateUndoRedoButtonStates()
 {
-    // Check if EITHER the text editor OR the item undo system has undo/redo available
-    bool canUndoText = mpSourceEditorEdbee && mpSourceEditorEdbee->controller()
-                       && mpSourceEditorEdbee->controller()->textDocument()
-                       && mpSourceEditorEdbee->controller()->textDocument()->textUndoStack()
-                       && mpSourceEditorEdbee->controller()->textDocument()->textUndoStack()->canUndo();
+    // Early exit during shutdown - guards against accessing destroyed objects
+    if (!mpSourceEditorEdbee || !mpUndoAction || !mpRedoAction || !mpTextUndoStack) {
+        return;
+    }
 
+    // Check if EITHER the text editor OR the item undo system has undo/redo available
+    bool canUndoText = mpTextUndoStack->canUndo();
     bool canUndoItems = mpUndoSystem && mpUndoSystem->canUndo();
 
-    bool canRedoText = mpSourceEditorEdbee && mpSourceEditorEdbee->controller()
-                       && mpSourceEditorEdbee->controller()->textDocument()
-                       && mpSourceEditorEdbee->controller()->textDocument()->textUndoStack()
-                       && mpSourceEditorEdbee->controller()->textDocument()->textUndoStack()->canRedo();
-
+    bool canRedoText = mpTextUndoStack->canRedo();
     bool canRedoItems = mpUndoSystem && mpUndoSystem->canRedo();
 
     // Enable buttons if EITHER system has something to undo/redo
@@ -1326,6 +1328,14 @@ void dlgTriggerEditor::slot_setTreeWidgetIconSize(const int s)
 
 void dlgTriggerEditor::closeEvent(QCloseEvent* event)
 {
+    // Disconnect ALL undo/redo signals BEFORE destruction begins
+    // This prevents crashes from signals firing during object destruction
+    disconnect(mTextUndoConnection);
+    disconnect(mTextRedoConnection);
+    disconnect(mTextChangeConnection);
+    disconnect(mItemUndoConnection);
+    disconnect(mItemRedoConnection);
+
     emit editorClosing();
     writeSettings();
     event->accept();

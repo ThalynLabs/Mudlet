@@ -585,6 +585,16 @@ private:
     // Undo system for item-level operations:
     EditorUndoSystem* mpUndoSystem = nullptr;
 
+    // Guarded pointer to text editor's undo stack (for safe signal connections):
+    QPointer<edbee::TextUndoStack> mpTextUndoStack;
+
+    // Store connections so we can disconnect them in closeEvent before destruction
+    QMetaObject::Connection mTextUndoConnection;
+    QMetaObject::Connection mTextRedoConnection;
+    QMetaObject::Connection mTextChangeConnection;
+    QMetaObject::Connection mItemUndoConnection;
+    QMetaObject::Connection mItemRedoConnection;
+
     // tracks the duration of the "Save Profile As" action so
     // autosave doesn't kick in
     bool mSavingAs = false;
