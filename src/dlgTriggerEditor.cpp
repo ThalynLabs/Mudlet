@@ -410,47 +410,58 @@ dlgTriggerEditor::dlgTriggerEditor(Host* pH)
     mpSourceEditorArea->addAction(sourceFindPreviousAction);
     connect(sourceFindPreviousAction, &QAction::triggered, this, &dlgTriggerEditor::slot_sourceFindPrevious);
 
-    // Undo action for text editor
-    mpUndoTextAction = new QAction(this);
-    mpUndoTextAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    mpUndoTextAction->setShortcut(QKeySequence(QKeySequence::Undo)); // Ctrl+Z
-    mpSourceEditorArea->addAction(mpUndoTextAction);
-    connect(mpUndoTextAction, &QAction::triggered, this, [this]() {
-        mpSourceEditorEdbee->controller()->undo();
-    });
-
-    // Redo action for text editor
-    mpRedoTextAction = new QAction(this);
-    mpRedoTextAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    mpRedoTextAction->setShortcut(QKeySequence(QKeySequence::Redo)); // Ctrl+Y or Ctrl+Shift+Z
-    mpSourceEditorArea->addAction(mpRedoTextAction);
-    connect(mpRedoTextAction, &QAction::triggered, this, [this]() {
-        mpSourceEditorEdbee->controller()->redo();
-    });
-
     // Initialize the undo system for item operations
     mpUndoSystem = new EditorUndoSystem(mpHost, this);
 
-    // Create undo/redo actions for item operations
-    // Note: No keyboard shortcuts set here to avoid conflict with text editor undo/redo
-    // Focus-based smart undo/redo handling will be added in a future update
-    mpUndoItemAction = new QAction(QIcon::fromTheme(qsl("edit-undo"), QIcon(qsl(":/icons/edit-undo.png"))), tr("Undo Item Operation"), this);
-    mpUndoItemAction->setEnabled(false);
-    connect(mpUndoItemAction, &QAction::triggered, mpUndoSystem, &EditorUndoSystem::undo);
-    connect(mpUndoSystem, &EditorUndoSystem::canUndoChanged, mpUndoItemAction, &QAction::setEnabled);
+    // Create smart undo/redo actions with keyboard shortcuts
+    // These route to either text editor or item operations based on focus
+    mpUndoAction = new QAction(QIcon::fromTheme(qsl("edit-undo"), QIcon(qsl(":/icons/edit-undo.png"))), tr("Undo"), this);
+    mpUndoAction->setShortcut(QKeySequence(QKeySequence::Undo)); // Ctrl+Z
+    mpUndoAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    mpUndoAction->setEnabled(false);
+    this->addAction(mpUndoAction);
+    connect(mpUndoAction, &QAction::triggered, this, &dlgTriggerEditor::slot_smartUndo);
+
+    mpRedoAction = new QAction(QIcon::fromTheme(qsl("edit-redo"), QIcon(qsl(":/icons/edit-redo.png"))), tr("Redo"), this);
+    mpRedoAction->setShortcut(QKeySequence(QKeySequence::Redo)); // Ctrl+Y or Ctrl+Shift+Z
+    mpRedoAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    mpRedoAction->setEnabled(false);
+    this->addAction(mpRedoAction);
+    connect(mpRedoAction, &QAction::triggered, this, &dlgTriggerEditor::slot_smartRedo);
+
+    // Connect item undo system signals to update button states and tooltips
+    connect(mpUndoSystem, &EditorUndoSystem::canUndoChanged, this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
+    connect(mpUndoSystem, &EditorUndoSystem::canRedoChanged, this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
+
     connect(mpUndoSystem, &EditorUndoSystem::undoTextChanged, this, [this](const QString& text) {
-        mpUndoItemAction->setToolTip(utils::richText(text));
-        mpUndoItemAction->setStatusTip(text);
+        if (!text.isEmpty()) {
+            mpUndoAction->setToolTip(utils::richText(text));
+            mpUndoAction->setStatusTip(text);
+        } else {
+            mpUndoAction->setToolTip(utils::richText(tr("Undo")));
+            mpUndoAction->setStatusTip(tr("Undo"));
+        }
+    });
+    connect(mpUndoSystem, &EditorUndoSystem::redoTextChanged, this, [this](const QString& text) {
+        if (!text.isEmpty()) {
+            mpRedoAction->setToolTip(utils::richText(text));
+            mpRedoAction->setStatusTip(text);
+        } else {
+            mpRedoAction->setToolTip(utils::richText(tr("Redo")));
+            mpRedoAction->setStatusTip(tr("Redo"));
+        }
     });
 
-    mpRedoItemAction = new QAction(QIcon::fromTheme(qsl("edit-redo"), QIcon(qsl(":/icons/edit-redo.png"))), tr("Redo Item Operation"), this);
-    mpRedoItemAction->setEnabled(false);
-    connect(mpRedoItemAction, &QAction::triggered, mpUndoSystem, &EditorUndoSystem::redo);
-    connect(mpUndoSystem, &EditorUndoSystem::canRedoChanged, mpRedoItemAction, &QAction::setEnabled);
-    connect(mpUndoSystem, &EditorUndoSystem::redoTextChanged, this, [this](const QString& text) {
-        mpRedoItemAction->setToolTip(utils::richText(text));
-        mpRedoItemAction->setStatusTip(text);
-    });
+    // Connect text editor undo stack signals to update button states
+    connect(mpSourceEditorEdbee->controller()->textDocument()->textUndoStack(), &edbee::TextUndoStack::undoExecuted,
+            this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
+    connect(mpSourceEditorEdbee->controller()->textDocument()->textUndoStack(), &edbee::TextUndoStack::redoExecuted,
+            this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
+    connect(mpSourceEditorEdbee->controller()->textDocument()->textUndoStack(), &edbee::TextUndoStack::changeAdded,
+            this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
+
+    // Set initial button states
+    slot_updateUndoRedoButtonStates();
 
     // Connect undo system to tree widget refresh
     connect(mpUndoSystem, &EditorUndoSystem::itemsChanged, this, &dlgTriggerEditor::slot_itemsChanged);
@@ -791,26 +802,9 @@ dlgTriggerEditor::dlgTriggerEditor(Host* pH)
 
     toolBar->addSeparator();
 
-    // Add undo/redo toolbar buttons
-    QAction* undoToolbarAction = new QAction(QIcon::fromTheme(qsl("edit-undo"), QIcon(qsl(":/icons/edit-undo.png"))), tr("Undo"), this);
-    undoToolbarAction->setToolTip(utils::richText(tr("Undo changes in the editor")));
-    undoToolbarAction->setStatusTip(tr("Undo the last change in the code editor"));
-    connect(undoToolbarAction, &QAction::triggered, this, [this]() {
-        mpSourceEditorEdbee->controller()->undo();
-    });
-    toolBar->addAction(undoToolbarAction);
-
-    QAction* redoToolbarAction = new QAction(QIcon::fromTheme(qsl("edit-redo"), QIcon(qsl(":/icons/edit-redo.png"))), tr("Redo"), this);
-    redoToolbarAction->setToolTip(utils::richText(tr("Redo changes in the editor")));
-    redoToolbarAction->setStatusTip(tr("Redo the last undone change in the code editor"));
-    connect(redoToolbarAction, &QAction::triggered, this, [this]() {
-        mpSourceEditorEdbee->controller()->redo();
-    });
-    toolBar->addAction(redoToolbarAction);
-
-    // Add item operation undo/redo buttons (for add/delete/modify items)
-    toolBar->addAction(mpUndoItemAction);
-    toolBar->addAction(mpRedoItemAction);
+    // Add smart undo/redo toolbar buttons (route based on focus)
+    toolBar->addAction(mpUndoAction);
+    toolBar->addAction(mpRedoAction);
 
     toolBar->addSeparator();
 
@@ -1203,6 +1197,60 @@ void dlgTriggerEditor::slot_editorThemeChanged()
     for (int i = 0; i < 50; i++) {
         mTriggerPatternEdit.at(i)->singleLineTextEdit_pattern->setTheme(mpHost->mEditorTheme);
     }
+}
+
+void dlgTriggerEditor::slot_smartUndo()
+{
+    // Check what widget currently has focus
+    QWidget* focusWidget = QApplication::focusWidget();
+
+    // If the text editor has focus, undo text changes
+    if (focusWidget && (focusWidget == mpSourceEditorEdbee || mpSourceEditorEdbee->isAncestorOf(focusWidget))) {
+        mpSourceEditorEdbee->controller()->undo();
+    } else {
+        // Otherwise, undo item operations
+        if (mpUndoSystem && mpUndoSystem->canUndo()) {
+            mpUndoSystem->undo();
+        }
+    }
+}
+
+void dlgTriggerEditor::slot_smartRedo()
+{
+    // Check what widget currently has focus
+    QWidget* focusWidget = QApplication::focusWidget();
+
+    // If the text editor has focus, redo text changes
+    if (focusWidget && (focusWidget == mpSourceEditorEdbee || mpSourceEditorEdbee->isAncestorOf(focusWidget))) {
+        mpSourceEditorEdbee->controller()->redo();
+    } else {
+        // Otherwise, redo item operations
+        if (mpUndoSystem && mpUndoSystem->canRedo()) {
+            mpUndoSystem->redo();
+        }
+    }
+}
+
+void dlgTriggerEditor::slot_updateUndoRedoButtonStates()
+{
+    // Check if EITHER the text editor OR the item undo system has undo/redo available
+    bool canUndoText = mpSourceEditorEdbee && mpSourceEditorEdbee->controller()
+                       && mpSourceEditorEdbee->controller()->textDocument()
+                       && mpSourceEditorEdbee->controller()->textDocument()->textUndoStack()
+                       && mpSourceEditorEdbee->controller()->textDocument()->textUndoStack()->canUndo();
+
+    bool canUndoItems = mpUndoSystem && mpUndoSystem->canUndo();
+
+    bool canRedoText = mpSourceEditorEdbee && mpSourceEditorEdbee->controller()
+                       && mpSourceEditorEdbee->controller()->textDocument()
+                       && mpSourceEditorEdbee->controller()->textDocument()->textUndoStack()
+                       && mpSourceEditorEdbee->controller()->textDocument()->textUndoStack()->canRedo();
+
+    bool canRedoItems = mpUndoSystem && mpUndoSystem->canRedo();
+
+    // Enable buttons if EITHER system has something to undo/redo
+    mpUndoAction->setEnabled(canUndoText || canUndoItems);
+    mpRedoAction->setEnabled(canRedoText || canRedoItems);
 }
 
 void dlgTriggerEditor::slot_hideVariable(bool status)
@@ -8327,6 +8375,13 @@ void dlgTriggerEditor::fillout_form()
     populateKeys();
     mpKeyBaseItem->setExpanded(true);
     treeWidget_keys->setCurrentItem(mpKeyBaseItem);
+
+    // Clear undo stack after initial profile loading (only on first call)
+    // Only user actions after this point should be undo-able
+    if (mpUndoSystem && !mInitialLoadDone) {
+        mpUndoSystem->clear();
+        mInitialLoadDone = true;
+    }
 }
 
 void dlgTriggerEditor::populateKeys()

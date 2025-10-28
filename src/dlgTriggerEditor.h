@@ -291,6 +291,9 @@ public slots:
     void slot_profileSaveStarted();
     void slot_profileSaveFinished();
     void slot_editorThemeChanged();
+    void slot_smartUndo();
+    void slot_smartRedo();
+    void slot_updateUndoRedoButtonStates();
 
 private slots:
     void slot_changeEditorTextOptions(QTextOption::Flags);
@@ -575,13 +578,9 @@ private:
     QAction* mpExportAction = nullptr;
     QAction* mpCreateModuleAction = nullptr;
 
-    // Undo/redo actions for the text editor:
-    QAction* mpUndoTextAction = nullptr;
-    QAction* mpRedoTextAction = nullptr;
-
-    // Undo/redo actions for item operations:
-    QAction* mpUndoItemAction = nullptr;
-    QAction* mpRedoItemAction = nullptr;
+    // Smart undo/redo actions (route based on focus):
+    QAction* mpUndoAction = nullptr;
+    QAction* mpRedoAction = nullptr;
 
     // Undo system for item-level operations:
     EditorUndoSystem* mpUndoSystem = nullptr;
@@ -592,6 +591,9 @@ private:
 
     // keeps track of the dialog reset being queued
     bool mCleanResetQueued = false;
+
+    // tracks whether the initial profile load has completed (to avoid clearing undo stack on refreshes)
+    bool mInitialLoadDone = false;
 
     // profile autosave interval in minutes
     int mAutosaveInterval = 2;
