@@ -415,12 +415,9 @@ dlgTriggerEditor::dlgTriggerEditor(Host* pH)
     mpSourceEditorArea->addAction(sourceFindPreviousAction);
     connect(sourceFindPreviousAction, &QAction::triggered, this, &dlgTriggerEditor::slot_sourceFindPrevious);
 
-    // Initialize the undo system for item operations
-    mpUndoSystem = new EditorUndoSystem(mpHost, this);
-
-    // Initialize Qt-based undo stack (parallel system during migration)
-    mpQtUndoStack = new MudletUndoStack(this);
-    mpQtUndoStack->setUndoLimit(50); // Match existing system
+    // Initialize the undo system for item operations (using Qt's QUndoStack framework)
+    mpUndoStack = new MudletUndoStack(this);
+    mpUndoStack->setUndoLimit(50);
 
     // Create smart undo/redo actions with keyboard shortcuts
     // These route to either text editor or item operations based on focus
@@ -439,10 +436,10 @@ dlgTriggerEditor::dlgTriggerEditor(Host* pH)
     connect(mpRedoAction, &QAction::triggered, this, &dlgTriggerEditor::slot_smartRedo);
 
     // Connect item undo system signals to update button states and tooltips
-    connect(mpUndoSystem, &EditorUndoSystem::canUndoChanged, this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
-    connect(mpUndoSystem, &EditorUndoSystem::canRedoChanged, this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
+    connect(mpUndoStack, &QUndoStack::canUndoChanged, this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
+    connect(mpUndoStack, &QUndoStack::canRedoChanged, this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
 
-    connect(mpUndoSystem, &EditorUndoSystem::undoTextChanged, this, [this](const QString& text) {
+    connect(mpUndoStack, &QUndoStack::undoTextChanged, this, [this](const QString& text) {
         if (!text.isEmpty()) {
             mpUndoAction->setToolTip(utils::richText(text));
             mpUndoAction->setStatusTip(text);
@@ -451,55 +448,13 @@ dlgTriggerEditor::dlgTriggerEditor(Host* pH)
             mpUndoAction->setStatusTip(tr("Undo"));
         }
     });
-    connect(mpUndoSystem, &EditorUndoSystem::redoTextChanged, this, [this](const QString& text) {
+    connect(mpUndoStack, &QUndoStack::redoTextChanged, this, [this](const QString& text) {
         if (!text.isEmpty()) {
             mpRedoAction->setToolTip(utils::richText(text));
             mpRedoAction->setStatusTip(text);
         } else {
             mpRedoAction->setToolTip(utils::richText(tr("Redo")));
             mpRedoAction->setStatusTip(tr("Redo"));
-        }
-    });
-
-    // Connect Qt undo stack signals (same API as custom system)
-    // Note: During migration, both systems run in parallel for validation
-    connect(mpQtUndoStack, &QUndoStack::canUndoChanged, this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
-    connect(mpQtUndoStack, &QUndoStack::canRedoChanged, this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
-    connect(mpQtUndoStack, &QUndoStack::undoTextChanged, this, [this](const QString& text) {
-        // Currently unused during parallel migration - custom system handles tooltips
-        Q_UNUSED(text);
-    });
-    connect(mpQtUndoStack, &QUndoStack::redoTextChanged, this, [this](const QString& text) {
-        // Currently unused during parallel migration - custom system handles tooltips
-        Q_UNUSED(text);
-    });
-
-    // Create Qt test buttons for independent validation during migration
-    mpQtUndoTestAction = new QAction(QIcon::fromTheme(qsl("edit-undo"), QIcon(qsl(":/icons/edit-undo.png"))), tr("Qt Undo (Test)"), this);
-    mpQtUndoTestAction->setToolTip(tr("Test undo using Qt undo stack"));
-    mpQtUndoTestAction->setEnabled(false);
-    // Use lambda to ensure virtual dispatch (no override currently, but keeping consistent)
-    connect(mpQtUndoTestAction, &QAction::triggered, this, [this]() { mpQtUndoStack->undo(); });
-    connect(mpQtUndoStack, &QUndoStack::canUndoChanged, mpQtUndoTestAction, &QAction::setEnabled);
-    connect(mpQtUndoStack, &QUndoStack::undoTextChanged, this, [this](const QString& text) {
-        if (!text.isEmpty()) {
-            mpQtUndoTestAction->setToolTip(tr("Qt Undo (Test): %1").arg(text));
-        } else {
-            mpQtUndoTestAction->setToolTip(tr("Qt Undo (Test)"));
-        }
-    });
-
-    mpQtRedoTestAction = new QAction(QIcon::fromTheme(qsl("edit-redo"), QIcon(qsl(":/icons/edit-redo.png"))), tr("Qt Redo (Test)"), this);
-    mpQtRedoTestAction->setToolTip(tr("Test redo using Qt undo stack"));
-    mpQtRedoTestAction->setEnabled(false);
-    // Use lambda to ensure virtual dispatch calls MudletUndoStack::redo(), not QUndoStack::redo()
-    connect(mpQtRedoTestAction, &QAction::triggered, this, [this]() { mpQtUndoStack->redo(); });
-    connect(mpQtUndoStack, &QUndoStack::canRedoChanged, mpQtRedoTestAction, &QAction::setEnabled);
-    connect(mpQtUndoStack, &QUndoStack::redoTextChanged, this, [this](const QString& text) {
-        if (!text.isEmpty()) {
-            mpQtRedoTestAction->setToolTip(tr("Qt Redo (Test): %1").arg(text));
-        } else {
-            mpQtRedoTestAction->setToolTip(tr("Qt Redo (Test)"));
         }
     });
 
@@ -518,10 +473,7 @@ dlgTriggerEditor::dlgTriggerEditor(Host* pH)
     slot_updateUndoRedoButtonStates();
 
     // Connect undo system to tree widget refresh
-    connect(mpUndoSystem, &EditorUndoSystem::itemsChanged, this, &dlgTriggerEditor::slot_itemsChanged);
-
-    // Connect Qt undo stack to same slot (both systems use identical signal signature)
-    connect(mpQtUndoStack, &MudletUndoStack::itemsChanged, this, &dlgTriggerEditor::slot_itemsChanged);
+    connect(mpUndoStack, &MudletUndoStack::itemsChanged, this, &dlgTriggerEditor::slot_itemsChanged);
 
     auto* provider = new edbee::StringTextAutoCompleteProvider();
     //QScopedPointer<edbee::StringTextAutoCompleteProvider> provider(new edbee::StringTextAutoCompleteProvider);
@@ -862,12 +814,6 @@ dlgTriggerEditor::dlgTriggerEditor(Host* pH)
     // Add smart undo/redo toolbar buttons (route based on focus)
     toolBar->addAction(mpUndoAction);
     toolBar->addAction(mpRedoAction);
-
-    toolBar->addSeparator();
-
-    // Add Qt test buttons (for migration validation)
-    toolBar->addAction(mpQtUndoTestAction);
-    toolBar->addAction(mpQtRedoTestAction);
 
     toolBar->addSeparator();
 
@@ -1280,19 +1226,14 @@ void dlgTriggerEditor::slot_smartUndo()
     // This provides intuitive behavior - most recent change undoes first, regardless of focus
 
     bool canUndoText = mpTextUndoStack && mpTextUndoStack->canUndo();
-    bool canUndoItems = mpUndoSystem && mpUndoSystem->canUndo();
+    bool canUndoItems = mpUndoStack && mpUndoStack->canUndo();
 
     if (canUndoText) {
         // Undo text changes first (most recent edits in the script editor)
         mpSourceEditorEdbee->controller()->undo();
     } else if (canUndoItems) {
         // Once text stack is empty, undo item operations (add/delete/move triggers/aliases/etc)
-        mpUndoSystem->undo();
-
-        // Keep Qt undo stack in sync during migration validation
-        if (mpQtUndoStack->canUndo()) {
-            mpQtUndoStack->undo();
-        }
+        mpUndoStack->undo();
     }
 
     // Update button states after undo completes
@@ -1305,19 +1246,14 @@ void dlgTriggerEditor::slot_smartRedo()
     // This provides intuitive behavior - most recently undone change redoes first, regardless of focus
 
     bool canRedoText = mpTextUndoStack && mpTextUndoStack->canRedo();
-    bool canRedoItems = mpUndoSystem && mpUndoSystem->canRedo();
+    bool canRedoItems = mpUndoStack && mpUndoStack->canRedo();
 
     if (canRedoText) {
         // Redo text changes first (most recently undone edits in the script editor)
         mpSourceEditorEdbee->controller()->redo();
     } else if (canRedoItems) {
         // Once text stack is empty, redo item operations
-        mpUndoSystem->redo();
-
-        // Keep Qt undo stack in sync during migration validation
-        if (mpQtUndoStack->canRedo()) {
-            mpQtUndoStack->redo();
-        }
+        mpUndoStack->redo();
     }
 
     // Update button states after redo completes
@@ -1333,10 +1269,10 @@ void dlgTriggerEditor::slot_updateUndoRedoButtonStates()
 
     // Check if EITHER the text editor OR the item undo system has undo/redo available
     bool canUndoText = mpTextUndoStack->canUndo();
-    bool canUndoItems = mpUndoSystem && mpUndoSystem->canUndo();
+    bool canUndoItems = mpUndoStack && mpUndoStack->canUndo();
 
     bool canRedoText = mpTextUndoStack->canRedo();
-    bool canRedoItems = mpUndoSystem && mpUndoSystem->canRedo();
+    bool canRedoItems = mpUndoStack && mpUndoStack->canRedo();
 
     // Enable buttons if EITHER system has something to undo/redo
     mpUndoAction->setEnabled(canUndoText || canUndoItems);
@@ -1421,14 +1357,11 @@ void dlgTriggerEditor::closeEvent(QCloseEvent* event)
     if (mpTextUndoStack) {
         disconnect(mpTextUndoStack, nullptr, this, nullptr);
     }
-    if (mpUndoSystem) {
-        disconnect(mpUndoSystem, nullptr, this, nullptr);
-    }
-    if (mpQtUndoStack) {
-        disconnect(mpQtUndoStack, nullptr, this, nullptr);
+    if (mpUndoStack) {
+        disconnect(mpUndoStack, nullptr, this, nullptr);
         // Clear the Qt undo stack to release commands that hold Host* pointers
         // This prevents use-after-free when Host is destroyed before this dialog
-        mpQtUndoStack->clear();
+        mpUndoStack->clear();
     }
 
     emit editorClosing();
@@ -3115,7 +3048,7 @@ void dlgTriggerEditor::delete_alias()
     }
 
     // Capture state of all items BEFORE deletion for undo
-    QList<DeleteItemCommand::DeletedItemInfo> deletedItems;
+    QList<MudletDeleteItemCommand::DeletedItemInfo> deletedItems;
 
     // Recursive lambda to capture an alias and all its descendants
     std::function<void(TAlias*, int, int)> captureAliasAndChildren = [&](TAlias* pT, int parentID, int positionInParent) {
@@ -3123,7 +3056,7 @@ void dlgTriggerEditor::delete_alias()
             return;
         }
 
-        DeleteItemCommand::DeletedItemInfo info;
+        MudletDeleteItemCommand::DeletedItemInfo info;
         info.itemID = pT->getID();
         info.itemName = pT->getName();
         info.parentID = parentID;
@@ -3200,30 +3133,12 @@ void dlgTriggerEditor::delete_alias()
 
     // Push undo command for the deleted aliases
     if (!deletedItems.isEmpty()) {
-        auto cmd = std::make_unique<DeleteItemCommand>(
+        auto* qtCmd = new MudletDeleteItemCommand(
             EditorViewType::cmAliasView,
             deletedItems,
             mpHost
         );
-        mpUndoSystem->pushCommand(std::move(cmd));
-
-        // Push to Qt system - convert DeletedItemInfo to MudletDeleteItemCommand format
-        QList<MudletDeleteItemCommand::DeletedItemInfo> qtDeletedItems;
-        for (const auto& item : deletedItems) {
-            qtDeletedItems.append({
-                .itemID = item.itemID,
-                .parentID = item.parentID,
-                .positionInParent = item.positionInParent,
-                .xmlSnapshot = item.xmlSnapshot,
-                .itemName = item.itemName
-            });
-        }
-        auto* qtCmd = new MudletDeleteItemCommand(
-            EditorViewType::cmAliasView,
-            qtDeletedItems,
-            mpHost
-        );
-        mpQtUndoStack->pushCommand(qtCmd);
+        mpUndoStack->pushCommand(qtCmd);
     }
 
     // Set new selection
@@ -3270,7 +3185,7 @@ void dlgTriggerEditor::delete_action()
     }
 
     // Capture state of all items BEFORE deletion for undo
-    QList<DeleteItemCommand::DeletedItemInfo> deletedItems;
+    QList<MudletDeleteItemCommand::DeletedItemInfo> deletedItems;
 
     // Recursive lambda to capture an action and all its descendants
     std::function<void(TAction*, int, int)> captureActionAndChildren = [&](TAction* pT, int parentID, int positionInParent) {
@@ -3278,7 +3193,7 @@ void dlgTriggerEditor::delete_action()
             return;
         }
 
-        DeleteItemCommand::DeletedItemInfo info;
+        MudletDeleteItemCommand::DeletedItemInfo info;
         info.itemID = pT->getID();
         info.itemName = pT->getName();
         info.parentID = parentID;
@@ -3362,30 +3277,12 @@ void dlgTriggerEditor::delete_action()
 
     // Push undo command for the deleted actions
     if (!deletedItems.isEmpty()) {
-        auto cmd = std::make_unique<DeleteItemCommand>(
+        auto* qtCmd = new MudletDeleteItemCommand(
             EditorViewType::cmActionView,
             deletedItems,
             mpHost
         );
-        mpUndoSystem->pushCommand(std::move(cmd));
-
-        // Push to Qt system - convert DeletedItemInfo to MudletDeleteItemCommand format
-        QList<MudletDeleteItemCommand::DeletedItemInfo> qtDeletedItems;
-        for (const auto& item : deletedItems) {
-            qtDeletedItems.append({
-                .itemID = item.itemID,
-                .parentID = item.parentID,
-                .positionInParent = item.positionInParent,
-                .xmlSnapshot = item.xmlSnapshot,
-                .itemName = item.itemName
-            });
-        }
-        auto* qtCmd = new MudletDeleteItemCommand(
-            EditorViewType::cmActionView,
-            qtDeletedItems,
-            mpHost
-        );
-        mpQtUndoStack->pushCommand(qtCmd);
+        mpUndoStack->pushCommand(qtCmd);
     }
 
     // Set new selection
@@ -3512,7 +3409,7 @@ void dlgTriggerEditor::delete_script()
     }
 
     // Capture state of all items BEFORE deletion for undo
-    QList<DeleteItemCommand::DeletedItemInfo> deletedItems;
+    QList<MudletDeleteItemCommand::DeletedItemInfo> deletedItems;
 
     // Recursive lambda to capture a script and all its descendants
     std::function<void(TScript*, int, int)> captureScriptAndChildren = [&](TScript* pT, int parentID, int positionInParent) {
@@ -3520,7 +3417,7 @@ void dlgTriggerEditor::delete_script()
             return;
         }
 
-        DeleteItemCommand::DeletedItemInfo info;
+        MudletDeleteItemCommand::DeletedItemInfo info;
         info.itemID = pT->getID();
         info.itemName = pT->getName();
         info.parentID = parentID;
@@ -3597,30 +3494,12 @@ void dlgTriggerEditor::delete_script()
 
     // Push undo command for the deleted scripts
     if (!deletedItems.isEmpty()) {
-        auto cmd = std::make_unique<DeleteItemCommand>(
+        auto* qtCmd = new MudletDeleteItemCommand(
             EditorViewType::cmScriptView,
             deletedItems,
             mpHost
         );
-        mpUndoSystem->pushCommand(std::move(cmd));
-
-        // Push to Qt system - convert DeletedItemInfo to MudletDeleteItemCommand format
-        QList<MudletDeleteItemCommand::DeletedItemInfo> qtDeletedItems;
-        for (const auto& item : deletedItems) {
-            qtDeletedItems.append({
-                .itemID = item.itemID,
-                .parentID = item.parentID,
-                .positionInParent = item.positionInParent,
-                .xmlSnapshot = item.xmlSnapshot,
-                .itemName = item.itemName
-            });
-        }
-        auto* qtCmd = new MudletDeleteItemCommand(
-            EditorViewType::cmScriptView,
-            qtDeletedItems,
-            mpHost
-        );
-        mpQtUndoStack->pushCommand(qtCmd);
+        mpUndoStack->pushCommand(qtCmd);
     }
 
     // Set new selection
@@ -3667,7 +3546,7 @@ void dlgTriggerEditor::delete_key()
     }
 
     // Capture state of all items BEFORE deletion for undo
-    QList<DeleteItemCommand::DeletedItemInfo> deletedItems;
+    QList<MudletDeleteItemCommand::DeletedItemInfo> deletedItems;
 
     // Recursive lambda to capture a key and all its descendants
     std::function<void(TKey*, int, int)> captureKeyAndChildren = [&](TKey* pT, int parentID, int positionInParent) {
@@ -3675,7 +3554,7 @@ void dlgTriggerEditor::delete_key()
             return;
         }
 
-        DeleteItemCommand::DeletedItemInfo info;
+        MudletDeleteItemCommand::DeletedItemInfo info;
         info.itemID = pT->getID();
         info.itemName = pT->getName();
         info.parentID = parentID;
@@ -3752,30 +3631,12 @@ void dlgTriggerEditor::delete_key()
 
     // Push undo command for the deleted keys
     if (!deletedItems.isEmpty()) {
-        auto cmd = std::make_unique<DeleteItemCommand>(
+        auto* qtCmd = new MudletDeleteItemCommand(
             EditorViewType::cmKeysView,
             deletedItems,
             mpHost
         );
-        mpUndoSystem->pushCommand(std::move(cmd));
-
-        // Push to Qt system - convert DeletedItemInfo to MudletDeleteItemCommand format
-        QList<MudletDeleteItemCommand::DeletedItemInfo> qtDeletedItems;
-        for (const auto& item : deletedItems) {
-            qtDeletedItems.append({
-                .itemID = item.itemID,
-                .parentID = item.parentID,
-                .positionInParent = item.positionInParent,
-                .xmlSnapshot = item.xmlSnapshot,
-                .itemName = item.itemName
-            });
-        }
-        auto* qtCmd = new MudletDeleteItemCommand(
-            EditorViewType::cmKeysView,
-            qtDeletedItems,
-            mpHost
-        );
-        mpQtUndoStack->pushCommand(qtCmd);
+        mpUndoStack->pushCommand(qtCmd);
     }
 
     // Set new selection
@@ -3822,7 +3683,7 @@ void dlgTriggerEditor::delete_trigger()
     }
 
     // Capture state of all items BEFORE deletion for undo
-    QList<DeleteItemCommand::DeletedItemInfo> deletedItems;
+    QList<MudletDeleteItemCommand::DeletedItemInfo> deletedItems;
 
     // Recursive lambda to capture a trigger and all its descendants
     std::function<void(TTrigger*, int, int)> captureTriggerAndChildren = [&](TTrigger* pT, int parentID, int positionInParent) {
@@ -3830,7 +3691,7 @@ void dlgTriggerEditor::delete_trigger()
             return;
         }
 
-        DeleteItemCommand::DeletedItemInfo info;
+        MudletDeleteItemCommand::DeletedItemInfo info;
         info.itemID = pT->getID();
         info.itemName = pT->getName();
         info.parentID = parentID;
@@ -3912,30 +3773,12 @@ void dlgTriggerEditor::delete_trigger()
 
     // Push undo command for the deleted triggers
     if (!deletedItems.isEmpty()) {
-        auto cmd = std::make_unique<DeleteItemCommand>(
+        auto* qtCmd = new MudletDeleteItemCommand(
             EditorViewType::cmTriggerView,
             deletedItems,
             mpHost
         );
-        mpUndoSystem->pushCommand(std::move(cmd));
-
-        // Push to Qt system - convert DeletedItemInfo to MudletDeleteItemCommand format
-        QList<MudletDeleteItemCommand::DeletedItemInfo> qtDeletedItems;
-        for (const auto& item : deletedItems) {
-            qtDeletedItems.append({
-                .itemID = item.itemID,
-                .parentID = item.parentID,
-                .positionInParent = item.positionInParent,
-                .xmlSnapshot = item.xmlSnapshot,
-                .itemName = item.itemName
-            });
-        }
-        auto* qtCmd = new MudletDeleteItemCommand(
-            EditorViewType::cmTriggerView,
-            qtDeletedItems,
-            mpHost
-        );
-        mpQtUndoStack->pushCommand(qtCmd);
+        mpUndoStack->pushCommand(qtCmd);
     }
 
     // Set new selection
@@ -3982,7 +3825,7 @@ void dlgTriggerEditor::delete_timer()
     }
 
     // Capture state of all items BEFORE deletion for undo
-    QList<DeleteItemCommand::DeletedItemInfo> deletedItems;
+    QList<MudletDeleteItemCommand::DeletedItemInfo> deletedItems;
 
     // Recursive lambda to capture a timer and all its descendants
     std::function<void(TTimer*, int, int)> captureTimerAndChildren = [&](TTimer* pT, int parentID, int positionInParent) {
@@ -3990,7 +3833,7 @@ void dlgTriggerEditor::delete_timer()
             return;
         }
 
-        DeleteItemCommand::DeletedItemInfo info;
+        MudletDeleteItemCommand::DeletedItemInfo info;
         info.itemID = pT->getID();
         info.itemName = pT->getName();
         info.parentID = parentID;
@@ -4067,30 +3910,12 @@ void dlgTriggerEditor::delete_timer()
 
     // Push undo command for the deleted timers
     if (!deletedItems.isEmpty()) {
-        auto cmd = std::make_unique<DeleteItemCommand>(
+        auto* qtCmd = new MudletDeleteItemCommand(
             EditorViewType::cmTimerView,
             deletedItems,
             mpHost
         );
-        mpUndoSystem->pushCommand(std::move(cmd));
-
-        // Push to Qt system - convert DeletedItemInfo to MudletDeleteItemCommand format
-        QList<MudletDeleteItemCommand::DeletedItemInfo> qtDeletedItems;
-        for (const auto& item : deletedItems) {
-            qtDeletedItems.append({
-                .itemID = item.itemID,
-                .parentID = item.parentID,
-                .positionInParent = item.positionInParent,
-                .xmlSnapshot = item.xmlSnapshot,
-                .itemName = item.itemName
-            });
-        }
-        auto* qtCmd = new MudletDeleteItemCommand(
-            EditorViewType::cmTimerView,
-            qtDeletedItems,
-            mpHost
-        );
-        mpQtUndoStack->pushCommand(qtCmd);
+        mpUndoStack->pushCommand(qtCmd);
     }
 
     // Set new selection
@@ -4193,19 +4018,7 @@ void dlgTriggerEditor::activeToggle_trigger()
     }
 
     // Push undo command for toggle operation
-    if (mpUndoSystem && oldState != newState) {
-        // Push to old system
-        auto cmd = std::make_unique<ToggleActiveCommand>(
-            EditorViewType::cmTriggerView,
-            pT->getID(),
-            oldState,
-            newState,
-            pT->getName(),
-            mpHost
-        );
-        mpUndoSystem->pushCommand(std::move(cmd));
-
-        // Push to new Qt system (for validation during migration)
+    if (mpUndoStack && oldState != newState) {
         auto* qtCmd = new MudletToggleActiveCommand(
             EditorViewType::cmTriggerView,
             pT->getID(),
@@ -4214,13 +4027,13 @@ void dlgTriggerEditor::activeToggle_trigger()
             pT->getName(),
             mpHost
         );
-        mpQtUndoStack->pushCommand(qtCmd);  // Qt takes ownership
+        mpUndoStack->pushCommand(qtCmd);  // Qt takes ownership
     }
 }
 
 void dlgTriggerEditor::slot_itemMoved(int itemID, int oldParentID, int newParentID, int oldPosition, int newPosition)
 {
-    if (!mpUndoSystem) {
+    if (!mpUndoStack) {
         return;
     }
 
@@ -4295,19 +4108,6 @@ void dlgTriggerEditor::slot_itemMoved(int itemID, int oldParentID, int newParent
     }
 
     // Push move command to undo system
-    auto cmd = std::make_unique<MoveItemCommand>(
-        viewType,
-        itemID,
-        oldParentID,
-        newParentID,
-        oldPosition,
-        newPosition,
-        itemName,
-        mpHost
-    );
-    mpUndoSystem->pushCommand(std::move(cmd));
-
-    // Push to new Qt system (for validation during migration)
     auto* qtCmd = new MudletMoveItemCommand(
         viewType,
         itemID,
@@ -4318,31 +4118,25 @@ void dlgTriggerEditor::slot_itemMoved(int itemID, int oldParentID, int newParent
         itemName,
         mpHost
     );
-    mpQtUndoStack->pushCommand(qtCmd);  // Qt takes ownership
+    mpUndoStack->pushCommand(qtCmd);  // Qt takes ownership
 }
 
 void dlgTriggerEditor::slot_batchMoveStarted()
 {
-    if (!mpUndoSystem) {
+    if (!mpUndoStack) {
         return;
     }
 
-    mpUndoSystem->beginBatch(tr("Move items"));
-
-    // Also begin macro for Qt undo stack (for validation during migration)
-    mpQtUndoStack->beginMacro(tr("Move items"));
+    mpUndoStack->beginMacro(tr("Move items"));
 }
 
 void dlgTriggerEditor::slot_batchMoveEnded()
 {
-    if (!mpUndoSystem) {
+    if (!mpUndoStack) {
         return;
     }
 
-    mpUndoSystem->endBatch();
-
-    // Also end macro for Qt undo stack (for validation during migration)
-    mpQtUndoStack->endMacro();
+    mpUndoStack->endMacro();
 }
 
 void dlgTriggerEditor::children_icon_triggers(QTreeWidgetItem* pWidgetItemParent)
@@ -4540,19 +4334,7 @@ void dlgTriggerEditor::activeToggle_timer()
     }
 
     // Push undo command for toggle operation
-    if (mpUndoSystem && oldState != newState) {
-        // Push to old system
-        auto cmd = std::make_unique<ToggleActiveCommand>(
-            EditorViewType::cmTimerView,
-            pT->getID(),
-            oldState,
-            newState,
-            pT->getName(),
-            mpHost
-        );
-        mpUndoSystem->pushCommand(std::move(cmd));
-
-        // Push to new Qt system (for validation during migration)
+    if (mpUndoStack && oldState != newState) {
         auto* qtCmd = new MudletToggleActiveCommand(
             EditorViewType::cmTimerView,
             pT->getID(),
@@ -4561,7 +4343,7 @@ void dlgTriggerEditor::activeToggle_timer()
             pT->getName(),
             mpHost
         );
-        mpQtUndoStack->pushCommand(qtCmd);  // Qt takes ownership
+        mpUndoStack->pushCommand(qtCmd);  // Qt takes ownership
     }
 }
 
@@ -4707,19 +4489,7 @@ void dlgTriggerEditor::activeToggle_alias()
     }
 
     // Push undo command for toggle operation
-    if (mpUndoSystem && oldState != newState) {
-        // Push to old system
-        auto cmd = std::make_unique<ToggleActiveCommand>(
-            EditorViewType::cmAliasView,
-            pT->getID(),
-            oldState,
-            newState,
-            pT->getName(),
-            mpHost
-        );
-        mpUndoSystem->pushCommand(std::move(cmd));
-
-        // Push to new Qt system (for validation during migration)
+    if (mpUndoStack && oldState != newState) {
         auto* qtCmd = new MudletToggleActiveCommand(
             EditorViewType::cmAliasView,
             pT->getID(),
@@ -4728,7 +4498,7 @@ void dlgTriggerEditor::activeToggle_alias()
             pT->getName(),
             mpHost
         );
-        mpQtUndoStack->pushCommand(qtCmd);  // Qt takes ownership
+        mpUndoStack->pushCommand(qtCmd);  // Qt takes ownership
     }
 }
 
@@ -4854,19 +4624,7 @@ void dlgTriggerEditor::activeToggle_script()
     }
 
     // Push undo command for toggle operation
-    if (mpUndoSystem && oldState != newState) {
-        // Push to old system
-        auto cmd = std::make_unique<ToggleActiveCommand>(
-            EditorViewType::cmScriptView,
-            pT->getID(),
-            oldState,
-            newState,
-            pT->getName(),
-            mpHost
-        );
-        mpUndoSystem->pushCommand(std::move(cmd));
-
-        // Push to new Qt system (for validation during migration)
+    if (mpUndoStack && oldState != newState) {
         auto* qtCmd = new MudletToggleActiveCommand(
             EditorViewType::cmScriptView,
             pT->getID(),
@@ -4875,7 +4633,7 @@ void dlgTriggerEditor::activeToggle_script()
             pT->getName(),
             mpHost
         );
-        mpQtUndoStack->pushCommand(qtCmd);  // Qt takes ownership
+        mpUndoStack->pushCommand(qtCmd);  // Qt takes ownership
     }
 }
 
@@ -5038,19 +4796,7 @@ void dlgTriggerEditor::activeToggle_action()
     }
 
     // Push undo command for toggle operation
-    if (mpUndoSystem && oldState != newState) {
-        // Push to old system
-        auto cmd = std::make_unique<ToggleActiveCommand>(
-            EditorViewType::cmActionView,
-            pT->getID(),
-            oldState,
-            newState,
-            pT->getName(),
-            mpHost
-        );
-        mpUndoSystem->pushCommand(std::move(cmd));
-
-        // Push to new Qt system (for validation during migration)
+    if (mpUndoStack && oldState != newState) {
         auto* qtCmd = new MudletToggleActiveCommand(
             EditorViewType::cmActionView,
             pT->getID(),
@@ -5059,7 +4805,7 @@ void dlgTriggerEditor::activeToggle_action()
             pT->getName(),
             mpHost
         );
-        mpQtUndoStack->pushCommand(qtCmd);  // Qt takes ownership
+        mpUndoStack->pushCommand(qtCmd);  // Qt takes ownership
     }
 }
 
@@ -5225,19 +4971,7 @@ void dlgTriggerEditor::activeToggle_key()
     }
 
     // Push undo command for toggle operation
-    if (mpUndoSystem && oldState != newState) {
-        // Push to old system
-        auto cmd = std::make_unique<ToggleActiveCommand>(
-            EditorViewType::cmKeysView,
-            pT->getID(),
-            oldState,
-            newState,
-            pT->getName(),
-            mpHost
-        );
-        mpUndoSystem->pushCommand(std::move(cmd));
-
-        // Push to new Qt system (for validation during migration)
+    if (mpUndoStack && oldState != newState) {
         auto* qtCmd = new MudletToggleActiveCommand(
             EditorViewType::cmKeysView,
             pT->getID(),
@@ -5246,7 +4980,7 @@ void dlgTriggerEditor::activeToggle_key()
             pT->getName(),
             mpHost
         );
-        mpQtUndoStack->pushCommand(qtCmd);  // Qt takes ownership
+        mpUndoStack->pushCommand(qtCmd);  // Qt takes ownership
     }
 }
 
@@ -5414,18 +5148,6 @@ void dlgTriggerEditor::addTrigger(bool isFolder)
         positionInParent = treeWidget_triggers->indexOfTopLevelItem(pNewItem);
     }
 
-    auto cmd = std::make_unique<AddItemCommand>(
-        EditorViewType::cmTriggerView,
-        pNewTrigger->getID(),
-        parentID,
-        positionInParent,
-        isFolder,
-        name,
-        mpHost
-    );
-    mpUndoSystem->pushCommand(std::move(cmd));
-
-    // Push to new Qt system (for validation during migration)
     auto* qtCmd = new MudletAddItemCommand(
         EditorViewType::cmTriggerView,
         pNewTrigger->getID(),
@@ -5435,7 +5157,7 @@ void dlgTriggerEditor::addTrigger(bool isFolder)
         name,
         mpHost
     );
-    mpQtUndoStack->pushCommand(qtCmd);  // Qt takes ownership
+    mpUndoStack->pushCommand(qtCmd);  // Qt takes ownership
 }
 
 
@@ -5527,18 +5249,6 @@ void dlgTriggerEditor::addTimer(bool isFolder)
         positionInParent = treeWidget_timers->indexOfTopLevelItem(pNewItem);
     }
 
-    auto cmd = std::make_unique<AddItemCommand>(
-        EditorViewType::cmTimerView,
-        pNewTimer->getID(),
-        parentID,
-        positionInParent,
-        isFolder,
-        name,
-        mpHost
-    );
-    mpUndoSystem->pushCommand(std::move(cmd));
-
-    // Push to new Qt system (for validation during migration)
     auto* qtCmd = new MudletAddItemCommand(
         EditorViewType::cmTimerView,
         pNewTimer->getID(),
@@ -5548,7 +5258,7 @@ void dlgTriggerEditor::addTimer(bool isFolder)
         name,
         mpHost
     );
-    mpQtUndoStack->pushCommand(qtCmd);  // Qt takes ownership
+    mpUndoStack->pushCommand(qtCmd);  // Qt takes ownership
 }
 
 void dlgTriggerEditor::addVar(bool isFolder)
@@ -5703,18 +5413,6 @@ void dlgTriggerEditor::addKey(bool isFolder)
         positionInParent = treeWidget_keys->indexOfTopLevelItem(pNewItem);
     }
 
-    auto cmd = std::make_unique<AddItemCommand>(
-        EditorViewType::cmKeysView,
-        pNewKey->getID(),
-        parentID,
-        positionInParent,
-        isFolder,
-        name,
-        mpHost
-    );
-    mpUndoSystem->pushCommand(std::move(cmd));
-
-    // Push to new Qt system (for validation during migration)
     auto* qtCmd = new MudletAddItemCommand(
         EditorViewType::cmKeysView,
         pNewKey->getID(),
@@ -5724,7 +5422,7 @@ void dlgTriggerEditor::addKey(bool isFolder)
         name,
         mpHost
     );
-    mpQtUndoStack->pushCommand(qtCmd);  // Qt takes ownership
+    mpUndoStack->pushCommand(qtCmd);  // Qt takes ownership
 }
 
 
@@ -5821,18 +5519,6 @@ void dlgTriggerEditor::addAlias(bool isFolder)
         positionInParent = treeWidget_aliases->indexOfTopLevelItem(pNewItem);
     }
 
-    auto cmd = std::make_unique<AddItemCommand>(
-        EditorViewType::cmAliasView,
-        pNewAlias->getID(),
-        parentID,
-        positionInParent,
-        isFolder,
-        name,
-        mpHost
-    );
-    mpUndoSystem->pushCommand(std::move(cmd));
-
-    // Push to new Qt system (for validation during migration)
     auto* qtCmd = new MudletAddItemCommand(
         EditorViewType::cmAliasView,
         pNewAlias->getID(),
@@ -5842,7 +5528,7 @@ void dlgTriggerEditor::addAlias(bool isFolder)
         name,
         mpHost
     );
-    mpQtUndoStack->pushCommand(qtCmd);  // Qt takes ownership
+    mpUndoStack->pushCommand(qtCmd);  // Qt takes ownership
 }
 
 void dlgTriggerEditor::addAction(bool isFolder)
@@ -5941,18 +5627,6 @@ void dlgTriggerEditor::addAction(bool isFolder)
         positionInParent = treeWidget_actions->indexOfTopLevelItem(pNewItem);
     }
 
-    auto cmd = std::make_unique<AddItemCommand>(
-        EditorViewType::cmActionView,
-        pNewAction->getID(),
-        parentID,
-        positionInParent,
-        isFolder,
-        name,
-        mpHost
-    );
-    mpUndoSystem->pushCommand(std::move(cmd));
-
-    // Push to new Qt system (for validation during migration)
     auto* qtCmd = new MudletAddItemCommand(
         EditorViewType::cmActionView,
         pNewAction->getID(),
@@ -5962,7 +5636,7 @@ void dlgTriggerEditor::addAction(bool isFolder)
         name,
         mpHost
     );
-    mpQtUndoStack->pushCommand(qtCmd);  // Qt takes ownership
+    mpUndoStack->pushCommand(qtCmd);  // Qt takes ownership
 }
 
 
@@ -6050,18 +5724,6 @@ void dlgTriggerEditor::addScript(bool isFolder)
         positionInParent = treeWidget_scripts->indexOfTopLevelItem(pNewItem);
     }
 
-    auto cmd = std::make_unique<AddItemCommand>(
-        EditorViewType::cmScriptView,
-        pNewScript->getID(),
-        parentID,
-        positionInParent,
-        isFolder,
-        name,
-        mpHost
-    );
-    mpUndoSystem->pushCommand(std::move(cmd));
-
-    // Push to new Qt system (for validation during migration)
     auto* qtCmd = new MudletAddItemCommand(
         EditorViewType::cmScriptView,
         pNewScript->getID(),
@@ -6071,7 +5733,7 @@ void dlgTriggerEditor::addScript(bool isFolder)
         name,
         mpHost
     );
-    mpQtUndoStack->pushCommand(qtCmd);  // Qt takes ownership
+    mpUndoStack->pushCommand(qtCmd);  // Qt takes ownership
 }
 
 void dlgTriggerEditor::selectTriggerByID(int id)
@@ -6523,17 +6185,6 @@ void dlgTriggerEditor::saveTrigger()
 
         // Only push undo command if something actually changed
         if (oldStateXML != newStateXML) {
-            auto cmd = std::make_unique<ModifyPropertyCommand>(
-                EditorViewType::cmTriggerView,
-                triggerID,
-                name,
-                oldStateXML,
-                newStateXML,
-                mpHost
-            );
-            mpUndoSystem->pushCommand(std::move(cmd));
-
-            // Push to Qt system
             auto* qtCmd = new MudletModifyPropertyCommand(
                 EditorViewType::cmTriggerView,
                 triggerID,
@@ -6542,7 +6193,7 @@ void dlgTriggerEditor::saveTrigger()
                 newStateXML,
                 mpHost
             );
-            mpQtUndoStack->pushCommand(qtCmd);
+            mpUndoStack->pushCommand(qtCmd);
         }
     }
 }
@@ -6689,17 +6340,6 @@ void dlgTriggerEditor::saveTimer()
 
         // Only push undo command if something actually changed
         if (oldStateXML != newStateXML) {
-            auto cmd = std::make_unique<ModifyPropertyCommand>(
-                EditorViewType::cmTimerView,
-                timerID,
-                name,
-                oldStateXML,
-                newStateXML,
-                mpHost
-            );
-            mpUndoSystem->pushCommand(std::move(cmd));
-
-            // Push to Qt system
             auto* qtCmd = new MudletModifyPropertyCommand(
                 EditorViewType::cmTimerView,
                 timerID,
@@ -6708,7 +6348,7 @@ void dlgTriggerEditor::saveTimer()
                 newStateXML,
                 mpHost
             );
-            mpQtUndoStack->pushCommand(qtCmd);
+            mpUndoStack->pushCommand(qtCmd);
         }
     }
 }
@@ -6889,17 +6529,6 @@ void dlgTriggerEditor::saveAlias()
 
         // Only push undo command if something actually changed
         if (oldStateXML != newStateXML) {
-            auto cmd = std::make_unique<ModifyPropertyCommand>(
-                EditorViewType::cmAliasView,
-                triggerID,
-                name,
-                oldStateXML,
-                newStateXML,
-                mpHost
-            );
-            mpUndoSystem->pushCommand(std::move(cmd));
-
-            // Push to Qt system
             auto* qtCmd = new MudletModifyPropertyCommand(
                 EditorViewType::cmAliasView,
                 triggerID,
@@ -6908,7 +6537,7 @@ void dlgTriggerEditor::saveAlias()
                 newStateXML,
                 mpHost
             );
-            mpQtUndoStack->pushCommand(qtCmd);
+            mpUndoStack->pushCommand(qtCmd);
         }
     }
 }
@@ -7086,17 +6715,6 @@ void dlgTriggerEditor::saveAction()
 
         // Only push undo command if something actually changed
         if (oldStateXML != newStateXML) {
-            auto cmd = std::make_unique<ModifyPropertyCommand>(
-                EditorViewType::cmActionView,
-                actionID,
-                name,
-                oldStateXML,
-                newStateXML,
-                mpHost
-            );
-            mpUndoSystem->pushCommand(std::move(cmd));
-
-            // Push to Qt system
             auto* qtCmd = new MudletModifyPropertyCommand(
                 EditorViewType::cmActionView,
                 actionID,
@@ -7105,7 +6723,7 @@ void dlgTriggerEditor::saveAction()
                 newStateXML,
                 mpHost
             );
-            mpQtUndoStack->pushCommand(qtCmd);
+            mpUndoStack->pushCommand(qtCmd);
         }
     }
 
@@ -7301,17 +6919,6 @@ void dlgTriggerEditor::saveScript()
 
     // Only push undo command if something actually changed
     if (oldStateXML != newStateXML) {
-        auto cmd = std::make_unique<ModifyPropertyCommand>(
-            EditorViewType::cmScriptView,
-            scriptID,
-            name,
-            oldStateXML,
-            newStateXML,
-            mpHost
-        );
-        mpUndoSystem->pushCommand(std::move(cmd));
-
-        // Push to Qt system
         auto* qtCmd = new MudletModifyPropertyCommand(
             EditorViewType::cmScriptView,
             scriptID,
@@ -7320,7 +6927,7 @@ void dlgTriggerEditor::saveScript()
             newStateXML,
             mpHost
         );
-        mpQtUndoStack->pushCommand(qtCmd);
+        mpUndoStack->pushCommand(qtCmd);
     }
 }
 
@@ -7719,17 +7326,6 @@ void dlgTriggerEditor::saveKey()
 
         // Only push undo command if something actually changed
         if (oldStateXML != newStateXML) {
-            auto cmd = std::make_unique<ModifyPropertyCommand>(
-                EditorViewType::cmKeysView,
-                triggerID,
-                name,
-                oldStateXML,
-                newStateXML,
-                mpHost
-            );
-            mpUndoSystem->pushCommand(std::move(cmd));
-
-            // Push to Qt system
             auto* qtCmd = new MudletModifyPropertyCommand(
                 EditorViewType::cmKeysView,
                 triggerID,
@@ -7738,7 +7334,7 @@ void dlgTriggerEditor::saveKey()
                 newStateXML,
                 mpHost
             );
-            mpQtUndoStack->pushCommand(qtCmd);
+            mpUndoStack->pushCommand(qtCmd);
         }
     }
 }
@@ -8783,13 +8379,8 @@ void dlgTriggerEditor::fillout_form()
 
     // Clear undo stack after initial profile loading (only on first call)
     // Only user actions after this point should be undo-able
-    if (mpUndoSystem && !mInitialLoadDone) {
-        mpUndoSystem->clear();
-
-        // Also clear Qt undo stack to keep in sync during migration
-        if (mpQtUndoStack) {
-            mpQtUndoStack->clear();
-        }
+    if (mpUndoStack && !mInitialLoadDone) {
+        mpUndoStack->clear();
 
         mInitialLoadDone = true;
     }

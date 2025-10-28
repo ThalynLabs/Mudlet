@@ -19,7 +19,7 @@
 
 #include "MudletDeleteItemCommand.h"
 
-#include "EditorUndoSystem.h"
+#include "EditorItemXMLHelpers.h"
 #include "Host.h"
 #include "TAction.h"
 #include "TAlias.h"
