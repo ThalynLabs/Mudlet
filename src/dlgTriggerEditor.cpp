@@ -46,6 +46,7 @@
 #include "dlgTriggerPatternEdit.h"
 #include "SingleLineTextEdit.h"
 #include "TrailingWhitespaceMarker.h"
+#include "commands/MudletAddItemCommand.h"
 #include "commands/MudletMoveItemCommand.h"
 #include "commands/MudletToggleActiveCommand.h"
 #include "mudlet.h"
@@ -5301,6 +5302,18 @@ void dlgTriggerEditor::addTrigger(bool isFolder)
         mpHost
     );
     mpUndoSystem->pushCommand(std::move(cmd));
+
+    // Push to new Qt system (for validation during migration)
+    auto* qtCmd = new MudletAddItemCommand(
+        EditorViewType::cmTriggerView,
+        pNewTrigger->getID(),
+        parentID,
+        positionInParent,
+        isFolder,
+        name,
+        mpHost
+    );
+    mpQtUndoStack->pushCommand(qtCmd);  // Qt takes ownership
 }
 
 
@@ -5402,6 +5415,18 @@ void dlgTriggerEditor::addTimer(bool isFolder)
         mpHost
     );
     mpUndoSystem->pushCommand(std::move(cmd));
+
+    // Push to new Qt system (for validation during migration)
+    auto* qtCmd = new MudletAddItemCommand(
+        EditorViewType::cmTimerView,
+        pNewTimer->getID(),
+        parentID,
+        positionInParent,
+        isFolder,
+        name,
+        mpHost
+    );
+    mpQtUndoStack->pushCommand(qtCmd);  // Qt takes ownership
 }
 
 void dlgTriggerEditor::addVar(bool isFolder)
@@ -5566,6 +5591,18 @@ void dlgTriggerEditor::addKey(bool isFolder)
         mpHost
     );
     mpUndoSystem->pushCommand(std::move(cmd));
+
+    // Push to new Qt system (for validation during migration)
+    auto* qtCmd = new MudletAddItemCommand(
+        EditorViewType::cmKeysView,
+        pNewKey->getID(),
+        parentID,
+        positionInParent,
+        isFolder,
+        name,
+        mpHost
+    );
+    mpQtUndoStack->pushCommand(qtCmd);  // Qt takes ownership
 }
 
 
@@ -5672,6 +5709,18 @@ void dlgTriggerEditor::addAlias(bool isFolder)
         mpHost
     );
     mpUndoSystem->pushCommand(std::move(cmd));
+
+    // Push to new Qt system (for validation during migration)
+    auto* qtCmd = new MudletAddItemCommand(
+        EditorViewType::cmAliasView,
+        pNewAlias->getID(),
+        parentID,
+        positionInParent,
+        isFolder,
+        name,
+        mpHost
+    );
+    mpQtUndoStack->pushCommand(qtCmd);  // Qt takes ownership
 }
 
 void dlgTriggerEditor::addAction(bool isFolder)
@@ -5780,6 +5829,18 @@ void dlgTriggerEditor::addAction(bool isFolder)
         mpHost
     );
     mpUndoSystem->pushCommand(std::move(cmd));
+
+    // Push to new Qt system (for validation during migration)
+    auto* qtCmd = new MudletAddItemCommand(
+        EditorViewType::cmActionView,
+        pNewAction->getID(),
+        parentID,
+        positionInParent,
+        isFolder,
+        name,
+        mpHost
+    );
+    mpQtUndoStack->pushCommand(qtCmd);  // Qt takes ownership
 }
 
 
@@ -5877,6 +5938,18 @@ void dlgTriggerEditor::addScript(bool isFolder)
         mpHost
     );
     mpUndoSystem->pushCommand(std::move(cmd));
+
+    // Push to new Qt system (for validation during migration)
+    auto* qtCmd = new MudletAddItemCommand(
+        EditorViewType::cmScriptView,
+        pNewScript->getID(),
+        parentID,
+        positionInParent,
+        isFolder,
+        name,
+        mpHost
+    );
+    mpQtUndoStack->pushCommand(qtCmd);  // Qt takes ownership
 }
 
 void dlgTriggerEditor::selectTriggerByID(int id)

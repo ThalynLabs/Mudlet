@@ -297,4 +297,26 @@ private:
     QString mBatchDescription;
 };
 
+// XML Helper Functions for item export/import
+// These functions are used by both EditorUndoSystem and MudletAddItemCommand
+// to preserve item state during undo/redo operations
+
+QString exportTriggerToXML(TTrigger* trigger);
+TTrigger* importTriggerFromXML(const QString& xmlSnapshot, TTrigger* pParent, Host* host, int position = -1);
+
+QString exportAliasToXML(TAlias* alias);
+TAlias* importAliasFromXML(const QString& xmlSnapshot, TAlias* pParent, Host* host, int position = -1);
+
+QString exportTimerToXML(TTimer* timer);
+TTimer* importTimerFromXML(const QString& xmlSnapshot, TTimer* pParent, Host* host, int position = -1);
+
+QString exportScriptToXML(TScript* script);
+TScript* importScriptFromXML(const QString& xmlSnapshot, TScript* pParent, Host* host, int position = -1);
+
+QString exportKeyToXML(TKey* key);
+TKey* importKeyFromXML(const QString& xmlSnapshot, TKey* pParent, Host* host, int position = -1);
+
+QString exportActionToXML(TAction* action);
+TAction* importActionFromXML(const QString& xmlSnapshot, TAction* pParent, Host* host, int position = -1);
+
 #endif // MUDLET_EDITORUNDOSYSTEM_H

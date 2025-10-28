@@ -63,6 +63,9 @@ public:
     void beginMacro(const QString& text);
     void endMacro();
 
+    // Override redo to handle ID remapping for AddItemCommand
+    void redo();
+
 signals:
     /*!
      * \brief Emitted when items are modified by undo/redo operations

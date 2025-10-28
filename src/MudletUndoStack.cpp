@@ -19,6 +19,7 @@
 
 #include "MudletUndoStack.h"
 #include "MudletCommand.h"
+#include "commands/MudletAddItemCommand.h"
 
 #include <QDebug>
 
@@ -137,6 +138,33 @@ void MudletUndoStack::endMacro()
     QUndoStack::endMacro();
     // Clear the flag after the macro is complete
     mInMacroPush = false;
+}
+
+void MudletUndoStack::redo()
+{
+    // Get the command that will be redone (if any)
+    if (index() < count()) {
+        const QUndoCommand* cmd = command(index());
+
+        // Check if this is an AddItemCommand (need to check before redo since ID may change)
+        auto* addCmd = dynamic_cast<const MudletAddItemCommand*>(cmd);
+        int oldItemID = -1;
+        if (addCmd) {
+            oldItemID = addCmd->getNewItemID();
+        }
+
+        // Call the base class redo
+        QUndoStack::redo();
+
+        // Check if the item ID changed during redo
+        if (addCmd && addCmd->didItemIDChange()) {
+            int newItemID = addCmd->getNewItemID();
+            remapItemIDs(oldItemID, newItemID);
+        }
+    } else {
+        // No command to redo
+        QUndoStack::redo();
+    }
 }
 
 void MudletUndoStack::remapItemIDs(int oldID, int newID)

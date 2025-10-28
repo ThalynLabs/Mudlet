@@ -43,10 +43,9 @@
 // Helper functions for XML serialization and compression
 // =============================================================================
 
-namespace {
-
+// Internal helper functions for compression (static to keep them local to this file)
 // Typical compression ratio: 3-5× (2 KB → 400-600 bytes)
-QString compressXML(const QString& xml) {
+static QString compressXML(const QString& xml) {
     if (xml.isEmpty()) {
         return QString();
     }
@@ -55,7 +54,7 @@ QString compressXML(const QString& xml) {
     return QString::fromLatin1(compressed.toBase64());
 }
 
-QString decompressXML(const QString& data) {
+static QString decompressXML(const QString& data) {
     if (data.isEmpty()) {
         return QString();
     }
@@ -76,6 +75,7 @@ QString decompressXML(const QString& data) {
     return QString::fromUtf8(decompressed);
 }
 
+// XML Export/Import functions - used by both EditorUndoSystem and MudletAddItemCommand
 QString exportTriggerToXML(TTrigger* trigger) {
     if (!trigger) {
         return QString();
@@ -230,7 +230,7 @@ QString getViewTypeName(EditorViewType viewType) {
 }
 
 // Import a single trigger from XML string
-TTrigger* importTriggerFromXML(const QString& xmlSnapshot, TTrigger* pParent, Host* host, int position = -1) {
+TTrigger* importTriggerFromXML(const QString& xmlSnapshot, TTrigger* pParent, Host* host, int position) {
     if (xmlSnapshot.isEmpty() || !host) {
         return nullptr;
     }
@@ -470,7 +470,7 @@ bool updateTriggerFromXML(TTrigger* pT, const QString& xmlSnapshot) {
 // =============================================================================
 
 // Import a single alias from XML string
-TAlias* importAliasFromXML(const QString& xmlSnapshot, TAlias* pParent, Host* host, int position = -1) {
+TAlias* importAliasFromXML(const QString& xmlSnapshot, TAlias* pParent, Host* host, int position) {
     if (xmlSnapshot.isEmpty() || !host) {
         return nullptr;
     }
@@ -627,7 +627,7 @@ bool updateAliasFromXML(TAlias* pA, const QString& xmlSnapshot) {
 // =============================================================================
 
 // Import a single timer from XML string
-TTimer* importTimerFromXML(const QString& xmlSnapshot, TTimer* pParent, Host* host, int position = -1) {
+TTimer* importTimerFromXML(const QString& xmlSnapshot, TTimer* pParent, Host* host, int position) {
     if (xmlSnapshot.isEmpty() || !host) {
         return nullptr;
     }
@@ -784,7 +784,7 @@ bool updateTimerFromXML(TTimer* pT, const QString& xmlSnapshot) {
 // =============================================================================
 
 // Import a single script from XML string
-TScript* importScriptFromXML(const QString& xmlSnapshot, TScript* pParent, Host* host, int position = -1) {
+TScript* importScriptFromXML(const QString& xmlSnapshot, TScript* pParent, Host* host, int position) {
     if (xmlSnapshot.isEmpty() || !host) {
         return nullptr;
     }
@@ -951,7 +951,7 @@ bool updateScriptFromXML(TScript* pS, const QString& xmlSnapshot) {
 // =============================================================================
 
 // Import a single key from XML string
-TKey* importKeyFromXML(const QString& xmlSnapshot, TKey* pParent, Host* host, int position = -1) {
+TKey* importKeyFromXML(const QString& xmlSnapshot, TKey* pParent, Host* host, int position) {
     if (xmlSnapshot.isEmpty() || !host) {
         return nullptr;
     }
@@ -1110,7 +1110,7 @@ bool updateKeyFromXML(TKey* pK, const QString& xmlSnapshot) {
 // =============================================================================
 
 // Import a single action from XML string
-TAction* importActionFromXML(const QString& xmlSnapshot, TAction* pParent, Host* host, int position = -1) {
+TAction* importActionFromXML(const QString& xmlSnapshot, TAction* pParent, Host* host, int position) {
     if (xmlSnapshot.isEmpty() || !host) {
         return nullptr;
     }
@@ -1310,7 +1310,6 @@ bool updateActionFromXML(TAction* pA, const QString& xmlSnapshot) {
     return true;
 }
 
-} // anonymous namespace
 
 // =============================================================================
 // AddItemCommand implementation
