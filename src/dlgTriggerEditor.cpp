@@ -478,7 +478,8 @@ dlgTriggerEditor::dlgTriggerEditor(Host* pH)
     mpQtUndoTestAction = new QAction(QIcon::fromTheme(qsl("edit-undo"), QIcon(qsl(":/icons/edit-undo.png"))), tr("Qt Undo (Test)"), this);
     mpQtUndoTestAction->setToolTip(tr("Test undo using Qt undo stack"));
     mpQtUndoTestAction->setEnabled(false);
-    connect(mpQtUndoTestAction, &QAction::triggered, mpQtUndoStack, &QUndoStack::undo);
+    // Use lambda to ensure virtual dispatch (no override currently, but keeping consistent)
+    connect(mpQtUndoTestAction, &QAction::triggered, this, [this]() { mpQtUndoStack->undo(); });
     connect(mpQtUndoStack, &QUndoStack::canUndoChanged, mpQtUndoTestAction, &QAction::setEnabled);
     connect(mpQtUndoStack, &QUndoStack::undoTextChanged, this, [this](const QString& text) {
         if (!text.isEmpty()) {
@@ -491,7 +492,8 @@ dlgTriggerEditor::dlgTriggerEditor(Host* pH)
     mpQtRedoTestAction = new QAction(QIcon::fromTheme(qsl("edit-redo"), QIcon(qsl(":/icons/edit-redo.png"))), tr("Qt Redo (Test)"), this);
     mpQtRedoTestAction->setToolTip(tr("Test redo using Qt undo stack"));
     mpQtRedoTestAction->setEnabled(false);
-    connect(mpQtRedoTestAction, &QAction::triggered, mpQtUndoStack, &QUndoStack::redo);
+    // Use lambda to ensure virtual dispatch calls MudletUndoStack::redo(), not QUndoStack::redo()
+    connect(mpQtRedoTestAction, &QAction::triggered, this, [this]() { mpQtUndoStack->redo(); });
     connect(mpQtUndoStack, &QUndoStack::canRedoChanged, mpQtRedoTestAction, &QAction::setEnabled);
     connect(mpQtUndoStack, &QUndoStack::redoTextChanged, this, [this](const QString& text) {
         if (!text.isEmpty()) {
