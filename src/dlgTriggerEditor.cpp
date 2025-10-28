@@ -12902,6 +12902,49 @@ QTreeWidgetItem* findItemByID(QTreeWidgetItem* parent, int itemID)
     return nullptr;
 }
 
+// Helper function to collect IDs of all expanded items in a tree
+QSet<int> collectExpandedItemIDs(QTreeWidgetItem* parent)
+{
+    QSet<int> expandedIDs;
+    if (!parent) {
+        return expandedIDs;
+    }
+
+    // If this item is expanded, record its ID
+    if (parent->isExpanded()) {
+        int itemID = parent->data(0, Qt::UserRole).toInt();
+        if (itemID > 0) {  // Valid ID
+            expandedIDs.insert(itemID);
+        }
+    }
+
+    // Recursively collect from children
+    for (int i = 0; i < parent->childCount(); ++i) {
+        expandedIDs.unite(collectExpandedItemIDs(parent->child(i)));
+    }
+
+    return expandedIDs;
+}
+
+// Helper function to restore expansion state based on saved IDs
+void restoreExpansionState(QTreeWidgetItem* parent, const QSet<int>& expandedIDs)
+{
+    if (!parent) {
+        return;
+    }
+
+    // Check if this item should be expanded
+    int itemID = parent->data(0, Qt::UserRole).toInt();
+    if (itemID > 0 && expandedIDs.contains(itemID)) {
+        parent->setExpanded(true);
+    }
+
+    // Recursively restore for children
+    for (int i = 0; i < parent->childCount(); ++i) {
+        restoreExpansionState(parent->child(i), expandedIDs);
+    }
+}
+
 void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> affectedItemIDs)
 {
     // Switch to the appropriate view if not already there
@@ -12936,6 +12979,9 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
         // Clear the current item pointer to avoid use-after-free
         mpCurrentTriggerItem = nullptr;
 
+        // Save expansion state before clearing the tree
+        QSet<int> expandedIDs = collectExpandedItemIDs(mpTriggerBaseItem);
+
         // Block signals on the selection model to prevent it from emitting during tree deletion
         // This prevents slot_triggerSelected from being called with dangling pointers
         QItemSelectionModel* selModel = treeWidget_triggers->selectionModel();
@@ -12956,8 +13002,9 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
         bool wasAnimated = treeWidget_triggers->isAnimated();
         treeWidget_triggers->setAnimated(false);
 
-        // Expand the base item to show the refreshed tree
+        // Restore expansion state
         mpTriggerBaseItem->setExpanded(true);
+        restoreExpansionState(mpTriggerBaseItem, expandedIDs);
 
         // Find and select the affected items
         if (!affectedItemIDs.isEmpty()) {
@@ -12971,6 +13018,17 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
                 selModel->blockSignals(false);
                 treeWidget_triggers->scrollToItem(itemToSelect);
                 slot_triggerSelected(itemToSelect);
+            } else {
+                // Item not found (was deleted) - try to find and expand its parent
+                // For items in affectedItemIDs that aren't found, they were likely deleted
+                // The parent should have been tracked during the operation, but we can infer it
+                // by looking at triggers that have children matching our search pattern
+                TTrigger* pTrigger = mpHost->getTriggerUnit()->getTrigger(affectedItemIDs.first());
+                if (!pTrigger) {
+                    // Item doesn't exist - it was deleted. Find what was its parent.
+                    // We can't easily determine the parent of a deleted item without storing it,
+                    // so for now just ensure the base is expanded (already done above)
+                }
             }
         }
 
@@ -12980,6 +13038,9 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
     }
     case EditorViewType::cmTimerView: {
         mpCurrentTimerItem = nullptr;
+
+        // Save expansion state before clearing the tree
+        QSet<int> expandedIDs = collectExpandedItemIDs(mpTimerBaseItem);
 
         // Block signals on the selection model to prevent it from emitting during tree deletion
         // This prevents slot_timerSelected from being called with dangling pointers
@@ -12997,7 +13058,10 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
         // Temporarily disable animation for instant expansion (looks better for undo/redo)
         bool wasAnimated = treeWidget_timers->isAnimated();
         treeWidget_timers->setAnimated(false);
+
+        // Restore expansion state
         mpTimerBaseItem->setExpanded(true);
+        restoreExpansionState(mpTimerBaseItem, expandedIDs);
 
         if (!affectedItemIDs.isEmpty()) {
             QTreeWidgetItem* itemToSelect = findItemByID(mpTimerBaseItem, affectedItemIDs.first());
@@ -13018,6 +13082,9 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
     case EditorViewType::cmAliasView: {
         mpCurrentAliasItem = nullptr;
 
+        // Save expansion state before clearing the tree
+        QSet<int> expandedIDs = collectExpandedItemIDs(mpAliasBaseItem);
+
         // Block signals on the selection model to prevent it from emitting during tree deletion
         // This prevents slot_aliasSelected from being called with dangling pointers
         QItemSelectionModel* selModel = treeWidget_aliases->selectionModel();
@@ -13034,7 +13101,10 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
         // Temporarily disable animation for instant expansion (looks better for undo/redo)
         bool wasAnimated = treeWidget_aliases->isAnimated();
         treeWidget_aliases->setAnimated(false);
+
+        // Restore expansion state
         mpAliasBaseItem->setExpanded(true);
+        restoreExpansionState(mpAliasBaseItem, expandedIDs);
 
         if (!affectedItemIDs.isEmpty()) {
             QTreeWidgetItem* itemToSelect = findItemByID(mpAliasBaseItem, affectedItemIDs.first());
@@ -13055,6 +13125,9 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
     case EditorViewType::cmScriptView: {
         mpCurrentScriptItem = nullptr;
 
+        // Save expansion state before clearing the tree
+        QSet<int> expandedIDs = collectExpandedItemIDs(mpScriptsBaseItem);
+
         // Block signals on the selection model to prevent it from emitting during tree deletion
         // This prevents slot_scriptsSelected from being called with dangling pointers
         QItemSelectionModel* selModel = treeWidget_scripts->selectionModel();
@@ -13071,7 +13144,10 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
         // Temporarily disable animation for instant expansion (looks better for undo/redo)
         bool wasAnimated = treeWidget_scripts->isAnimated();
         treeWidget_scripts->setAnimated(false);
+
+        // Restore expansion state
         mpScriptsBaseItem->setExpanded(true);
+        restoreExpansionState(mpScriptsBaseItem, expandedIDs);
 
         if (!affectedItemIDs.isEmpty()) {
             QTreeWidgetItem* itemToSelect = findItemByID(mpScriptsBaseItem, affectedItemIDs.first());
@@ -13092,6 +13168,9 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
     case EditorViewType::cmActionView: {
         mpCurrentActionItem = nullptr;
 
+        // Save expansion state before clearing the tree
+        QSet<int> expandedIDs = collectExpandedItemIDs(mpActionBaseItem);
+
         // Block signals on the selection model to prevent it from emitting during tree deletion
         // This prevents slot_actionSelected from being called with dangling pointers
         QItemSelectionModel* selModel = treeWidget_actions->selectionModel();
@@ -13108,7 +13187,10 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
         // Temporarily disable animation for instant expansion (looks better for undo/redo)
         bool wasAnimated = treeWidget_actions->isAnimated();
         treeWidget_actions->setAnimated(false);
+
+        // Restore expansion state
         mpActionBaseItem->setExpanded(true);
+        restoreExpansionState(mpActionBaseItem, expandedIDs);
 
         if (!affectedItemIDs.isEmpty()) {
             QTreeWidgetItem* itemToSelect = findItemByID(mpActionBaseItem, affectedItemIDs.first());
@@ -13129,6 +13211,9 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
     case EditorViewType::cmKeysView: {
         mpCurrentKeyItem = nullptr;
 
+        // Save expansion state before clearing the tree
+        QSet<int> expandedIDs = collectExpandedItemIDs(mpKeyBaseItem);
+
         // Block signals on the selection model to prevent it from emitting during tree deletion
         // This prevents slot_keySelected from being called with dangling pointers
         QItemSelectionModel* selModel = treeWidget_keys->selectionModel();
@@ -13145,7 +13230,10 @@ void dlgTriggerEditor::slot_itemsChanged(EditorViewType viewType, QList<int> aff
         // Temporarily disable animation for instant expansion (looks better for undo/redo)
         bool wasAnimated = treeWidget_keys->isAnimated();
         treeWidget_keys->setAnimated(false);
+
+        // Restore expansion state
         mpKeyBaseItem->setExpanded(true);
+        restoreExpansionState(mpKeyBaseItem, expandedIDs);
 
         if (!affectedItemIDs.isEmpty()) {
             QTreeWidgetItem* itemToSelect = findItemByID(mpKeyBaseItem, affectedItemIDs.first());
