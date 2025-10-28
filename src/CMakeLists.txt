@@ -105,6 +105,7 @@ set(mudlet_SRCS
     MudletUndoStack.cpp
     MxpTag.cpp
     commands/MudletAddItemCommand.cpp
+    commands/MudletModifyPropertyCommand.cpp
     commands/MudletMoveItemCommand.cpp
     commands/MudletToggleActiveCommand.cpp
     CredentialManager.cpp
@@ -304,6 +305,7 @@ set(mudlet_HDRS
     MudletUndoStack.h
     MxpTag.h
     commands/MudletAddItemCommand.h
+    commands/MudletModifyPropertyCommand.h
     commands/MudletMoveItemCommand.h
     commands/MudletToggleActiveCommand.h
     ScriptUnit.h

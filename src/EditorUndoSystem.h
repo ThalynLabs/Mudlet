@@ -303,20 +303,26 @@ private:
 
 QString exportTriggerToXML(TTrigger* trigger);
 TTrigger* importTriggerFromXML(const QString& xmlSnapshot, TTrigger* pParent, Host* host, int position = -1);
+bool updateTriggerFromXML(TTrigger* trigger, const QString& xmlSnapshot);
 
 QString exportAliasToXML(TAlias* alias);
 TAlias* importAliasFromXML(const QString& xmlSnapshot, TAlias* pParent, Host* host, int position = -1);
+bool updateAliasFromXML(TAlias* alias, const QString& xmlSnapshot);
 
 QString exportTimerToXML(TTimer* timer);
 TTimer* importTimerFromXML(const QString& xmlSnapshot, TTimer* pParent, Host* host, int position = -1);
+bool updateTimerFromXML(TTimer* timer, const QString& xmlSnapshot);
 
 QString exportScriptToXML(TScript* script);
 TScript* importScriptFromXML(const QString& xmlSnapshot, TScript* pParent, Host* host, int position = -1);
+bool updateScriptFromXML(TScript* script, const QString& xmlSnapshot);
 
 QString exportKeyToXML(TKey* key);
 TKey* importKeyFromXML(const QString& xmlSnapshot, TKey* pParent, Host* host, int position = -1);
+bool updateKeyFromXML(TKey* key, const QString& xmlSnapshot);
 
 QString exportActionToXML(TAction* action);
 TAction* importActionFromXML(const QString& xmlSnapshot, TAction* pParent, Host* host, int position = -1);
+bool updateActionFromXML(TAction* action, const QString& xmlSnapshot);
 
 #endif // MUDLET_EDITORUNDOSYSTEM_H

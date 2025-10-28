@@ -47,6 +47,7 @@
 #include "SingleLineTextEdit.h"
 #include "TrailingWhitespaceMarker.h"
 #include "commands/MudletAddItemCommand.h"
+#include "commands/MudletModifyPropertyCommand.h"
 #include "commands/MudletMoveItemCommand.h"
 #include "commands/MudletToggleActiveCommand.h"
 #include "mudlet.h"
@@ -6420,6 +6421,17 @@ void dlgTriggerEditor::saveTrigger()
                 mpHost
             );
             mpUndoSystem->pushCommand(std::move(cmd));
+
+            // Push to Qt system
+            auto* qtCmd = new MudletModifyPropertyCommand(
+                EditorViewType::cmTriggerView,
+                triggerID,
+                name,
+                oldStateXML,
+                newStateXML,
+                mpHost
+            );
+            mpQtUndoStack->pushCommand(qtCmd);
         }
     }
 }
@@ -6575,6 +6587,17 @@ void dlgTriggerEditor::saveTimer()
                 mpHost
             );
             mpUndoSystem->pushCommand(std::move(cmd));
+
+            // Push to Qt system
+            auto* qtCmd = new MudletModifyPropertyCommand(
+                EditorViewType::cmTimerView,
+                timerID,
+                name,
+                oldStateXML,
+                newStateXML,
+                mpHost
+            );
+            mpQtUndoStack->pushCommand(qtCmd);
         }
     }
 }
@@ -6764,6 +6787,17 @@ void dlgTriggerEditor::saveAlias()
                 mpHost
             );
             mpUndoSystem->pushCommand(std::move(cmd));
+
+            // Push to Qt system
+            auto* qtCmd = new MudletModifyPropertyCommand(
+                EditorViewType::cmAliasView,
+                triggerID,
+                name,
+                oldStateXML,
+                newStateXML,
+                mpHost
+            );
+            mpQtUndoStack->pushCommand(qtCmd);
         }
     }
 }
@@ -6950,6 +6984,17 @@ void dlgTriggerEditor::saveAction()
                 mpHost
             );
             mpUndoSystem->pushCommand(std::move(cmd));
+
+            // Push to Qt system
+            auto* qtCmd = new MudletModifyPropertyCommand(
+                EditorViewType::cmActionView,
+                actionID,
+                name,
+                oldStateXML,
+                newStateXML,
+                mpHost
+            );
+            mpQtUndoStack->pushCommand(qtCmd);
         }
     }
 
@@ -7154,6 +7199,17 @@ void dlgTriggerEditor::saveScript()
             mpHost
         );
         mpUndoSystem->pushCommand(std::move(cmd));
+
+        // Push to Qt system
+        auto* qtCmd = new MudletModifyPropertyCommand(
+            EditorViewType::cmScriptView,
+            scriptID,
+            name,
+            oldStateXML,
+            newStateXML,
+            mpHost
+        );
+        mpQtUndoStack->pushCommand(qtCmd);
     }
 }
 
@@ -7561,6 +7617,17 @@ void dlgTriggerEditor::saveKey()
                 mpHost
             );
             mpUndoSystem->pushCommand(std::move(cmd));
+
+            // Push to Qt system
+            auto* qtCmd = new MudletModifyPropertyCommand(
+                EditorViewType::cmKeysView,
+                triggerID,
+                name,
+                oldStateXML,
+                newStateXML,
+                mpHost
+            );
+            mpQtUndoStack->pushCommand(qtCmd);
         }
     }
 }
