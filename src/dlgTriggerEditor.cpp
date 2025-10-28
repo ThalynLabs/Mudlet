@@ -2993,33 +2993,6 @@ void dlgTriggerEditor::recursiveSearchKeys(TKey* pTriggerParent, const QString& 
     }
 }
 
-bool dlgTriggerEditor::showDeleteConfirmation(const QString& title, const QString& message)
-{
-    QSettings& settings = *mudlet::getQSettings();
-    const bool dontAskAgain = settings.value("triggerEditor/dontAskDeleteConfirmation", false).toBool();
-
-    if (dontAskAgain) {
-        return true;
-    }
-
-    QMessageBox msgBox(this);
-    msgBox.setWindowTitle(title);
-    msgBox.setText(message);
-    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-    msgBox.setDefaultButton(QMessageBox::No);
-    msgBox.setIcon(QMessageBox::Question);
-
-    QCheckBox* dontAskCheckBox = new QCheckBox(tr("Don't ask again"));
-    msgBox.setCheckBox(dontAskCheckBox);
-
-    int result = msgBox.exec();
-
-    if (dontAskCheckBox->isChecked()) {
-        settings.setValue("triggerEditor/dontAskDeleteConfirmation", true);
-    }
-
-    return result == QMessageBox::Yes;
-}
 
 void dlgTriggerEditor::delete_alias()
 {
@@ -3051,10 +3024,6 @@ void dlgTriggerEditor::delete_alias()
         message = tr("Do you really want to delete %1 aliases?\n\nItems to be deleted:\n%2")
                     .arg(aliasesToDelete.size())
                     .arg(itemNames.join(", "));
-    }
-
-    if (!showDeleteConfirmation(tr("Delete Alias(es)"), message)) {
-        return;
     }
 
     // Capture state of all items BEFORE deletion for undo
@@ -3192,10 +3161,6 @@ void dlgTriggerEditor::delete_action()
         message = tr("Do you really want to delete %1 buttons?\n\nItems to be deleted:\n%2")
                     .arg(actionsToDelete.size())
                     .arg(itemNames.join(", "));
-    }
-
-    if (!showDeleteConfirmation(tr("Delete Button(s)"), message)) {
-        return;
     }
 
     // Capture state of all items BEFORE deletion for undo
@@ -3346,10 +3311,6 @@ void dlgTriggerEditor::delete_variable()
                     .arg(itemNames.join(", "));
     }
 
-    if (!showDeleteConfirmation(tr("Delete Variable(s)"), message)) {
-        return;
-    }
-
     // Sort items by their position in tree (top to bottom) to delete correctly
     std::sort(selectedItems.begin(), selectedItems.end(), [this](QTreeWidgetItem* a, QTreeWidgetItem* b) {
         QModelIndex indexA = treeWidget_variables->indexFromItem(a);
@@ -3424,10 +3385,6 @@ void dlgTriggerEditor::delete_script()
         message = tr("Do you really want to delete %1 scripts?\n\nItems to be deleted:\n%2")
                     .arg(scriptsToDelete.size())
                     .arg(itemNames.join(", "));
-    }
-
-    if (!showDeleteConfirmation(tr("Delete Script(s)"), message)) {
-        return;
     }
 
     // Capture state of all items BEFORE deletion for undo
@@ -3567,10 +3524,6 @@ void dlgTriggerEditor::delete_key()
                     .arg(itemNames.join(", "));
     }
 
-    if (!showDeleteConfirmation(tr("Delete Key(s)"), message)) {
-        return;
-    }
-
     // Capture state of all items BEFORE deletion for undo
     QList<DeleteItemCommand::DeletedItemInfo> deletedItems;
 
@@ -3706,10 +3659,6 @@ void dlgTriggerEditor::delete_trigger()
         message = tr("Do you really want to delete %1 triggers?\n\nItems to be deleted:\n%2")
                     .arg(triggersToDelete.size())
                     .arg(itemNames.join(", "));
-    }
-
-    if (!showDeleteConfirmation(tr("Delete Trigger(s)"), message)) {
-        return;
     }
 
     // Capture state of all items BEFORE deletion for undo
@@ -3852,10 +3801,6 @@ void dlgTriggerEditor::delete_timer()
         message = tr("Do you really want to delete %1 timers?\n\nItems to be deleted:\n%2")
                     .arg(timersToDelete.size())
                     .arg(itemNames.join(", "));
-    }
-
-    if (!showDeleteConfirmation(tr("Delete Timer(s)"), message)) {
-        return;
     }
 
     // Capture state of all items BEFORE deletion for undo
