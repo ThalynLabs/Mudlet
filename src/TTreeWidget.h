@@ -60,13 +60,23 @@ public:
 
 signals:
     void itemMoved(int itemID, int oldParentID, int newParentID, int oldPosition, int newPosition);
+    void batchMoveStarted();
+    void batchMoveEnded();
 
 private:
+    // Structure to hold information about items being moved
+    struct MoveInfo {
+        int childID;
+        int oldParentID;
+        int oldPosition;
+    };
+
     bool mIsDropAction;
     QPointer<Host> mpHost;
-    int mOldParentID;
-    int mOldPosition;
-    int mChildID;
+    QList<MoveInfo> mPendingMoves;  // Stores info for all items being moved
+    int mOldParentID;  // Deprecated: kept for compatibility, will be removed
+    int mOldPosition;  // Deprecated: kept for compatibility, will be removed
+    int mChildID;      // Deprecated: kept for compatibility, will be removed
     // TODO: replace these seven booleans with a single enum:
     bool mIsTriggerTree;
     bool mIsAliasTree;

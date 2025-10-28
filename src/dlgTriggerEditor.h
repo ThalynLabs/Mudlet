@@ -207,6 +207,8 @@ public:
     void activeToggle_timer();
     void activeToggle_trigger();
     void slot_itemMoved(int itemID, int oldParentID, int newParentID, int oldPosition, int newPosition);
+    void slot_batchMoveStarted();
+    void slot_batchMoveEnded();
     void delete_action();
     void delete_alias();
     void delete_key();

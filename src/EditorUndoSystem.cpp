@@ -2642,7 +2642,63 @@ void EditorUndoSystem::pushCommand(std::unique_ptr<EditorCommand> cmd)
         return;
     }
 
+    // If in batch mode, collect commands instead of pushing directly
+    if (mInBatch) {
+        mBatchCommands.push_back(std::move(cmd));
+        return;
+    }
+
     mUndoStack.push_back(std::move(cmd));
+    clearRedoStack();
+    enforceUndoLimit();
+    emitSignals();
+}
+
+void EditorUndoSystem::beginBatch(const QString& description)
+{
+    if (mInBatch) {
+        qWarning() << "EditorUndoSystem::beginBatch() called while already in batch mode";
+        return;
+    }
+
+    mInBatch = true;
+    mBatchCommands.clear();
+    mBatchDescription = description.isEmpty() ? tr("Move items") : description;
+}
+
+void EditorUndoSystem::endBatch()
+{
+    if (!mInBatch) {
+        qWarning() << "EditorUndoSystem::endBatch() called while not in batch mode";
+        return;
+    }
+
+    mInBatch = false;
+
+    // If no commands were collected, just return
+    if (mBatchCommands.empty()) {
+        return;
+    }
+
+    // If only one command, push it directly without wrapping
+    if (mBatchCommands.size() == 1) {
+        auto cmd = std::move(mBatchCommands[0]);
+        mBatchCommands.clear();
+        mUndoStack.push_back(std::move(cmd));
+        clearRedoStack();
+        enforceUndoLimit();
+        emitSignals();
+        return;
+    }
+
+    // Create a batch command containing all collected commands
+    auto batchCmd = std::make_unique<BatchCommand>(mBatchDescription, mpHost);
+    for (auto& cmd : mBatchCommands) {
+        batchCmd->addCommand(std::move(cmd));
+    }
+    mBatchCommands.clear();
+
+    mUndoStack.push_back(std::move(batchCmd));
     clearRedoStack();
     enforceUndoLimit();
     emitSignals();

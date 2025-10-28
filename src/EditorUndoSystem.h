@@ -182,6 +182,58 @@ private:
     QString mItemName;
 };
 
+// Compound command that contains multiple sub-commands for batch operations
+class BatchCommand : public EditorCommand {
+public:
+    explicit BatchCommand(const QString& description, Host* host)
+        : EditorCommand(host), mDescription(description) {}
+
+    void addCommand(std::unique_ptr<EditorCommand> cmd) {
+        mCommands.push_back(std::move(cmd));
+    }
+
+    void undo() override {
+        // Undo in reverse order
+        for (auto it = mCommands.rbegin(); it != mCommands.rend(); ++it) {
+            (*it)->undo();
+        }
+    }
+
+    void redo() override {
+        // Redo in forward order
+        for (auto& cmd : mCommands) {
+            cmd->redo();
+        }
+    }
+
+    QString text() const override {
+        return mDescription;
+    }
+
+    EditorViewType viewType() const override {
+        // Return the view type of the first command if available
+        return mCommands.empty() ? EditorViewType::cmTriggerView : mCommands[0]->viewType();
+    }
+
+    QList<int> affectedItemIDs() const override {
+        QList<int> allIDs;
+        for (const auto& cmd : mCommands) {
+            allIDs.append(cmd->affectedItemIDs());
+        }
+        return allIDs;
+    }
+
+    void remapItemID(int oldID, int newID) override {
+        for (auto& cmd : mCommands) {
+            cmd->remapItemID(oldID, newID);
+        }
+    }
+
+private:
+    std::vector<std::unique_ptr<EditorCommand>> mCommands;
+    QString mDescription;
+};
+
 // Main undo system class
 class EditorUndoSystem : public QObject {
     Q_OBJECT
@@ -193,6 +245,9 @@ public:
     void pushCommand(std::unique_ptr<EditorCommand> cmd);
     void undo();
     void redo();
+
+    void beginBatch(const QString& description = QString());
+    void endBatch();
 
     bool canUndo() const { return !mUndoStack.empty(); }
     bool canRedo() const { return !mRedoStack.empty(); }
@@ -221,6 +276,11 @@ private:
     std::vector<std::unique_ptr<EditorCommand>> mRedoStack;
     int mUndoLimit = 50;
     Host* mpHost;
+
+    // Batch operation support
+    bool mInBatch = false;
+    std::vector<std::unique_ptr<EditorCommand>> mBatchCommands;
+    QString mBatchDescription;
 };
 
 #endif // MUDLET_EDITORUNDOSYSTEM_H
