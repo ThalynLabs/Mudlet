@@ -1204,17 +1204,18 @@ void dlgTriggerEditor::slot_editorThemeChanged()
 
 void dlgTriggerEditor::slot_smartUndo()
 {
-    // Check what widget currently has focus
-    QWidget* focusWidget = QApplication::focusWidget();
+    // Stack-based undo: prioritize text editor changes, then fall back to item operations
+    // This provides intuitive behavior - most recent change undoes first, regardless of focus
 
-    // If the text editor has focus, undo text changes
-    if (focusWidget && (focusWidget == mpSourceEditorEdbee || mpSourceEditorEdbee->isAncestorOf(focusWidget))) {
+    bool canUndoText = mpTextUndoStack && mpTextUndoStack->canUndo();
+    bool canUndoItems = mpUndoSystem && mpUndoSystem->canUndo();
+
+    if (canUndoText) {
+        // Undo text changes first (most recent edits in the script editor)
         mpSourceEditorEdbee->controller()->undo();
-    } else {
-        // Otherwise, undo item operations
-        if (mpUndoSystem && mpUndoSystem->canUndo()) {
-            mpUndoSystem->undo();
-        }
+    } else if (canUndoItems) {
+        // Once text stack is empty, undo item operations (add/delete/move triggers/aliases/etc)
+        mpUndoSystem->undo();
     }
 
     // Update button states after undo completes
@@ -1223,17 +1224,18 @@ void dlgTriggerEditor::slot_smartUndo()
 
 void dlgTriggerEditor::slot_smartRedo()
 {
-    // Check what widget currently has focus
-    QWidget* focusWidget = QApplication::focusWidget();
+    // Stack-based redo: prioritize text editor changes, then fall back to item operations
+    // This provides intuitive behavior - most recently undone change redoes first, regardless of focus
 
-    // If the text editor has focus, redo text changes
-    if (focusWidget && (focusWidget == mpSourceEditorEdbee || mpSourceEditorEdbee->isAncestorOf(focusWidget))) {
+    bool canRedoText = mpTextUndoStack && mpTextUndoStack->canRedo();
+    bool canRedoItems = mpUndoSystem && mpUndoSystem->canRedo();
+
+    if (canRedoText) {
+        // Redo text changes first (most recently undone edits in the script editor)
         mpSourceEditorEdbee->controller()->redo();
-    } else {
-        // Otherwise, redo item operations
-        if (mpUndoSystem && mpUndoSystem->canRedo()) {
-            mpUndoSystem->redo();
-        }
+    } else if (canRedoItems) {
+        // Once text stack is empty, redo item operations
+        mpUndoSystem->redo();
     }
 
     // Update button states after redo completes
