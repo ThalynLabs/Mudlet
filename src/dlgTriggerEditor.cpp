@@ -1216,6 +1216,9 @@ void dlgTriggerEditor::slot_smartUndo()
             mpUndoSystem->undo();
         }
     }
+
+    // Update button states after undo completes
+    slot_updateUndoRedoButtonStates();
 }
 
 void dlgTriggerEditor::slot_smartRedo()
@@ -1232,6 +1235,9 @@ void dlgTriggerEditor::slot_smartRedo()
             mpUndoSystem->redo();
         }
     }
+
+    // Update button states after redo completes
+    slot_updateUndoRedoButtonStates();
 }
 
 void dlgTriggerEditor::slot_updateUndoRedoButtonStates()
@@ -12026,6 +12032,20 @@ void dlgTriggerEditor::clearDocument(edbee::TextEditorWidget* pEditorWidget, con
     // lexer directly by name previously gave problems.
     mpSourceEditorEdbeeDocument->setLanguageGrammar(edbee::Edbee::instance()->grammarManager()->detectGrammarWithFilename(QLatin1String("Buck.lua")));
     pEditorWidget->controller()->giveTextDocument(mpSourceEditorEdbeeDocument);
+
+    // Update the text undo stack pointer since we have a new document
+    // Disconnect from old undo stack if it exists
+    if (mpTextUndoStack) {
+        disconnect(mpTextUndoStack, nullptr, this, nullptr);
+    }
+    // Connect to the new document's undo stack
+    mpTextUndoStack = mpSourceEditorEdbeeDocument->textUndoStack();
+    connect(mpTextUndoStack, &edbee::TextUndoStack::undoExecuted,
+            this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
+    connect(mpTextUndoStack, &edbee::TextUndoStack::redoExecuted,
+            this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
+    connect(mpTextUndoStack, &edbee::TextUndoStack::changeAdded,
+            this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
 
     auto config = mpSourceEditorEdbee->config();
     config->beginChanges();
