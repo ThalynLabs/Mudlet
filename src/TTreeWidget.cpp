@@ -264,8 +264,11 @@ void TTreeWidget::rowsInserted(const QModelIndex& parent, int start, int end)
             emit batchMoveStarted();
         }
 
+        // Make a copy to avoid iterator invalidation if signals cause re-entry or container reallocation
+        const QList<MoveInfo> pendingMovesCopy = mPendingMoves;
+
         // Process all pending moves
-        for (const MoveInfo& moveInfo : mPendingMoves) {
+        for (const MoveInfo& moveInfo : pendingMovesCopy) {
             int childID = moveInfo.childID;
 
             if (!childID) {
@@ -331,7 +334,7 @@ void TTreeWidget::rowsInserted(const QModelIndex& parent, int start, int end)
         }
 
         // If moving multiple items, signal end of batch operation for undo system
-        if (mPendingMoves.size() > 1) {
+        if (pendingMovesCopy.size() > 1) {
             emit batchMoveEnded();
         }
 
