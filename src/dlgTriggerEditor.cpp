@@ -3208,13 +3208,13 @@ void dlgTriggerEditor::delete_alias()
         // Push to Qt system - convert DeletedItemInfo to MudletDeleteItemCommand format
         QList<MudletDeleteItemCommand::DeletedItemInfo> qtDeletedItems;
         for (const auto& item : deletedItems) {
-            MudletDeleteItemCommand::DeletedItemInfo qtItem;
-            qtItem.itemID = item.itemID;
-            qtItem.parentID = item.parentID;
-            qtItem.positionInParent = item.positionInParent;
-            qtItem.xmlSnapshot = item.xmlSnapshot;
-            qtItem.itemName = item.itemName;
-            qtDeletedItems.append(qtItem);
+            qtDeletedItems.append({
+                .itemID = item.itemID,
+                .parentID = item.parentID,
+                .positionInParent = item.positionInParent,
+                .xmlSnapshot = item.xmlSnapshot,
+                .itemName = item.itemName
+            });
         }
         auto* qtCmd = new MudletDeleteItemCommand(
             EditorViewType::cmAliasView,
@@ -3370,13 +3370,13 @@ void dlgTriggerEditor::delete_action()
         // Push to Qt system - convert DeletedItemInfo to MudletDeleteItemCommand format
         QList<MudletDeleteItemCommand::DeletedItemInfo> qtDeletedItems;
         for (const auto& item : deletedItems) {
-            MudletDeleteItemCommand::DeletedItemInfo qtItem;
-            qtItem.itemID = item.itemID;
-            qtItem.parentID = item.parentID;
-            qtItem.positionInParent = item.positionInParent;
-            qtItem.xmlSnapshot = item.xmlSnapshot;
-            qtItem.itemName = item.itemName;
-            qtDeletedItems.append(qtItem);
+            qtDeletedItems.append({
+                .itemID = item.itemID,
+                .parentID = item.parentID,
+                .positionInParent = item.positionInParent,
+                .xmlSnapshot = item.xmlSnapshot,
+                .itemName = item.itemName
+            });
         }
         auto* qtCmd = new MudletDeleteItemCommand(
             EditorViewType::cmActionView,
@@ -3605,13 +3605,13 @@ void dlgTriggerEditor::delete_script()
         // Push to Qt system - convert DeletedItemInfo to MudletDeleteItemCommand format
         QList<MudletDeleteItemCommand::DeletedItemInfo> qtDeletedItems;
         for (const auto& item : deletedItems) {
-            MudletDeleteItemCommand::DeletedItemInfo qtItem;
-            qtItem.itemID = item.itemID;
-            qtItem.parentID = item.parentID;
-            qtItem.positionInParent = item.positionInParent;
-            qtItem.xmlSnapshot = item.xmlSnapshot;
-            qtItem.itemName = item.itemName;
-            qtDeletedItems.append(qtItem);
+            qtDeletedItems.append({
+                .itemID = item.itemID,
+                .parentID = item.parentID,
+                .positionInParent = item.positionInParent,
+                .xmlSnapshot = item.xmlSnapshot,
+                .itemName = item.itemName
+            });
         }
         auto* qtCmd = new MudletDeleteItemCommand(
             EditorViewType::cmScriptView,
@@ -3760,13 +3760,13 @@ void dlgTriggerEditor::delete_key()
         // Push to Qt system - convert DeletedItemInfo to MudletDeleteItemCommand format
         QList<MudletDeleteItemCommand::DeletedItemInfo> qtDeletedItems;
         for (const auto& item : deletedItems) {
-            MudletDeleteItemCommand::DeletedItemInfo qtItem;
-            qtItem.itemID = item.itemID;
-            qtItem.parentID = item.parentID;
-            qtItem.positionInParent = item.positionInParent;
-            qtItem.xmlSnapshot = item.xmlSnapshot;
-            qtItem.itemName = item.itemName;
-            qtDeletedItems.append(qtItem);
+            qtDeletedItems.append({
+                .itemID = item.itemID,
+                .parentID = item.parentID,
+                .positionInParent = item.positionInParent,
+                .xmlSnapshot = item.xmlSnapshot,
+                .itemName = item.itemName
+            });
         }
         auto* qtCmd = new MudletDeleteItemCommand(
             EditorViewType::cmKeysView,
@@ -3920,13 +3920,13 @@ void dlgTriggerEditor::delete_trigger()
         // Push to Qt system - convert DeletedItemInfo to MudletDeleteItemCommand format
         QList<MudletDeleteItemCommand::DeletedItemInfo> qtDeletedItems;
         for (const auto& item : deletedItems) {
-            MudletDeleteItemCommand::DeletedItemInfo qtItem;
-            qtItem.itemID = item.itemID;
-            qtItem.parentID = item.parentID;
-            qtItem.positionInParent = item.positionInParent;
-            qtItem.xmlSnapshot = item.xmlSnapshot;
-            qtItem.itemName = item.itemName;
-            qtDeletedItems.append(qtItem);
+            qtDeletedItems.append({
+                .itemID = item.itemID,
+                .parentID = item.parentID,
+                .positionInParent = item.positionInParent,
+                .xmlSnapshot = item.xmlSnapshot,
+                .itemName = item.itemName
+            });
         }
         auto* qtCmd = new MudletDeleteItemCommand(
             EditorViewType::cmTriggerView,
@@ -4075,13 +4075,13 @@ void dlgTriggerEditor::delete_timer()
         // Push to Qt system - convert DeletedItemInfo to MudletDeleteItemCommand format
         QList<MudletDeleteItemCommand::DeletedItemInfo> qtDeletedItems;
         for (const auto& item : deletedItems) {
-            MudletDeleteItemCommand::DeletedItemInfo qtItem;
-            qtItem.itemID = item.itemID;
-            qtItem.parentID = item.parentID;
-            qtItem.positionInParent = item.positionInParent;
-            qtItem.xmlSnapshot = item.xmlSnapshot;
-            qtItem.itemName = item.itemName;
-            qtDeletedItems.append(qtItem);
+            qtDeletedItems.append({
+                .itemID = item.itemID,
+                .parentID = item.parentID,
+                .positionInParent = item.positionInParent,
+                .xmlSnapshot = item.xmlSnapshot,
+                .itemName = item.itemName
+            });
         }
         auto* qtCmd = new MudletDeleteItemCommand(
             EditorViewType::cmTimerView,
