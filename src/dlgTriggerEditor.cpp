@@ -47,6 +47,7 @@
 #include "SingleLineTextEdit.h"
 #include "TrailingWhitespaceMarker.h"
 #include "commands/MudletAddItemCommand.h"
+#include "commands/MudletDeleteItemCommand.h"
 #include "commands/MudletModifyPropertyCommand.h"
 #include "commands/MudletMoveItemCommand.h"
 #include "commands/MudletToggleActiveCommand.h"
@@ -3203,6 +3204,24 @@ void dlgTriggerEditor::delete_alias()
             mpHost
         );
         mpUndoSystem->pushCommand(std::move(cmd));
+
+        // Push to Qt system - convert DeletedItemInfo to MudletDeleteItemCommand format
+        QList<MudletDeleteItemCommand::DeletedItemInfo> qtDeletedItems;
+        for (const auto& item : deletedItems) {
+            MudletDeleteItemCommand::DeletedItemInfo qtItem;
+            qtItem.itemID = item.itemID;
+            qtItem.parentID = item.parentID;
+            qtItem.positionInParent = item.positionInParent;
+            qtItem.xmlSnapshot = item.xmlSnapshot;
+            qtItem.itemName = item.itemName;
+            qtDeletedItems.append(qtItem);
+        }
+        auto* qtCmd = new MudletDeleteItemCommand(
+            EditorViewType::cmAliasView,
+            qtDeletedItems,
+            mpHost
+        );
+        mpQtUndoStack->pushCommand(qtCmd);
     }
 
     // Set new selection
@@ -3347,6 +3366,24 @@ void dlgTriggerEditor::delete_action()
             mpHost
         );
         mpUndoSystem->pushCommand(std::move(cmd));
+
+        // Push to Qt system - convert DeletedItemInfo to MudletDeleteItemCommand format
+        QList<MudletDeleteItemCommand::DeletedItemInfo> qtDeletedItems;
+        for (const auto& item : deletedItems) {
+            MudletDeleteItemCommand::DeletedItemInfo qtItem;
+            qtItem.itemID = item.itemID;
+            qtItem.parentID = item.parentID;
+            qtItem.positionInParent = item.positionInParent;
+            qtItem.xmlSnapshot = item.xmlSnapshot;
+            qtItem.itemName = item.itemName;
+            qtDeletedItems.append(qtItem);
+        }
+        auto* qtCmd = new MudletDeleteItemCommand(
+            EditorViewType::cmActionView,
+            qtDeletedItems,
+            mpHost
+        );
+        mpQtUndoStack->pushCommand(qtCmd);
     }
 
     // Set new selection
@@ -3564,6 +3601,24 @@ void dlgTriggerEditor::delete_script()
             mpHost
         );
         mpUndoSystem->pushCommand(std::move(cmd));
+
+        // Push to Qt system - convert DeletedItemInfo to MudletDeleteItemCommand format
+        QList<MudletDeleteItemCommand::DeletedItemInfo> qtDeletedItems;
+        for (const auto& item : deletedItems) {
+            MudletDeleteItemCommand::DeletedItemInfo qtItem;
+            qtItem.itemID = item.itemID;
+            qtItem.parentID = item.parentID;
+            qtItem.positionInParent = item.positionInParent;
+            qtItem.xmlSnapshot = item.xmlSnapshot;
+            qtItem.itemName = item.itemName;
+            qtDeletedItems.append(qtItem);
+        }
+        auto* qtCmd = new MudletDeleteItemCommand(
+            EditorViewType::cmScriptView,
+            qtDeletedItems,
+            mpHost
+        );
+        mpQtUndoStack->pushCommand(qtCmd);
     }
 
     // Set new selection
@@ -3701,6 +3756,24 @@ void dlgTriggerEditor::delete_key()
             mpHost
         );
         mpUndoSystem->pushCommand(std::move(cmd));
+
+        // Push to Qt system - convert DeletedItemInfo to MudletDeleteItemCommand format
+        QList<MudletDeleteItemCommand::DeletedItemInfo> qtDeletedItems;
+        for (const auto& item : deletedItems) {
+            MudletDeleteItemCommand::DeletedItemInfo qtItem;
+            qtItem.itemID = item.itemID;
+            qtItem.parentID = item.parentID;
+            qtItem.positionInParent = item.positionInParent;
+            qtItem.xmlSnapshot = item.xmlSnapshot;
+            qtItem.itemName = item.itemName;
+            qtDeletedItems.append(qtItem);
+        }
+        auto* qtCmd = new MudletDeleteItemCommand(
+            EditorViewType::cmKeysView,
+            qtDeletedItems,
+            mpHost
+        );
+        mpQtUndoStack->pushCommand(qtCmd);
     }
 
     // Set new selection
@@ -3843,6 +3916,24 @@ void dlgTriggerEditor::delete_trigger()
             mpHost
         );
         mpUndoSystem->pushCommand(std::move(cmd));
+
+        // Push to Qt system - convert DeletedItemInfo to MudletDeleteItemCommand format
+        QList<MudletDeleteItemCommand::DeletedItemInfo> qtDeletedItems;
+        for (const auto& item : deletedItems) {
+            MudletDeleteItemCommand::DeletedItemInfo qtItem;
+            qtItem.itemID = item.itemID;
+            qtItem.parentID = item.parentID;
+            qtItem.positionInParent = item.positionInParent;
+            qtItem.xmlSnapshot = item.xmlSnapshot;
+            qtItem.itemName = item.itemName;
+            qtDeletedItems.append(qtItem);
+        }
+        auto* qtCmd = new MudletDeleteItemCommand(
+            EditorViewType::cmTriggerView,
+            qtDeletedItems,
+            mpHost
+        );
+        mpQtUndoStack->pushCommand(qtCmd);
     }
 
     // Set new selection
@@ -3980,6 +4071,24 @@ void dlgTriggerEditor::delete_timer()
             mpHost
         );
         mpUndoSystem->pushCommand(std::move(cmd));
+
+        // Push to Qt system - convert DeletedItemInfo to MudletDeleteItemCommand format
+        QList<MudletDeleteItemCommand::DeletedItemInfo> qtDeletedItems;
+        for (const auto& item : deletedItems) {
+            MudletDeleteItemCommand::DeletedItemInfo qtItem;
+            qtItem.itemID = item.itemID;
+            qtItem.parentID = item.parentID;
+            qtItem.positionInParent = item.positionInParent;
+            qtItem.xmlSnapshot = item.xmlSnapshot;
+            qtItem.itemName = item.itemName;
+            qtDeletedItems.append(qtItem);
+        }
+        auto* qtCmd = new MudletDeleteItemCommand(
+            EditorViewType::cmTimerView,
+            qtDeletedItems,
+            mpHost
+        );
+        mpQtUndoStack->pushCommand(qtCmd);
     }
 
     // Set new selection
