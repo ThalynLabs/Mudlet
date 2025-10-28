@@ -38,6 +38,7 @@ class TScript : public Tree<TScript>
     friend class XMLexport;
     friend class XMLimport;
     friend class DeleteItemCommand;
+    friend class MudletDeleteItemCommand;
 
 public:
     virtual ~TScript();
