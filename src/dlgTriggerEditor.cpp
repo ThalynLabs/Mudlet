@@ -4202,6 +4202,9 @@ void dlgTriggerEditor::slot_batchMoveStarted()
     }
 
     mpUndoSystem->beginBatch(tr("Move items"));
+
+    // Also begin macro for Qt undo stack (for validation during migration)
+    mpQtUndoStack->beginMacro(tr("Move items"));
 }
 
 void dlgTriggerEditor::slot_batchMoveEnded()
@@ -4211,6 +4214,9 @@ void dlgTriggerEditor::slot_batchMoveEnded()
     }
 
     mpUndoSystem->endBatch();
+
+    // Also end macro for Qt undo stack (for validation during migration)
+    mpQtUndoStack->endMacro();
 }
 
 void dlgTriggerEditor::children_icon_triggers(QTreeWidgetItem* pWidgetItemParent)
