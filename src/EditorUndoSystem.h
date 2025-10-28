@@ -20,6 +20,15 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+// TODO: Consider evaluating Qt's QUndoStack/QUndoCommand framework as an alternative
+// to the custom EditorUndoSystem implementation. Qt's framework provides:
+// - QUndoView for visualizing undo history
+// - Built-in macro commands (QUndoCommand::mergeWith)
+// - Undo group support for multiple document interfaces
+// - Cleaner integration with Qt's action system
+// Current custom implementation works well but Qt's framework may offer better
+// maintainability and additional features for future enhancements.
+
 #include "EditorViewType.h"
 
 #include <QObject>
