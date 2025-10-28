@@ -470,6 +470,33 @@ dlgTriggerEditor::dlgTriggerEditor(Host* pH)
         Q_UNUSED(text);
     });
 
+    // Create Qt test buttons for independent validation during migration
+    mpQtUndoTestAction = new QAction(QIcon::fromTheme(qsl("edit-undo"), QIcon(qsl(":/icons/edit-undo.png"))), tr("Qt Undo (Test)"), this);
+    mpQtUndoTestAction->setToolTip(tr("Test undo using Qt undo stack"));
+    mpQtUndoTestAction->setEnabled(false);
+    connect(mpQtUndoTestAction, &QAction::triggered, mpQtUndoStack, &QUndoStack::undo);
+    connect(mpQtUndoStack, &QUndoStack::canUndoChanged, mpQtUndoTestAction, &QAction::setEnabled);
+    connect(mpQtUndoStack, &QUndoStack::undoTextChanged, this, [this](const QString& text) {
+        if (!text.isEmpty()) {
+            mpQtUndoTestAction->setToolTip(tr("Qt Undo (Test): %1").arg(text));
+        } else {
+            mpQtUndoTestAction->setToolTip(tr("Qt Undo (Test)"));
+        }
+    });
+
+    mpQtRedoTestAction = new QAction(QIcon::fromTheme(qsl("edit-redo"), QIcon(qsl(":/icons/edit-redo.png"))), tr("Qt Redo (Test)"), this);
+    mpQtRedoTestAction->setToolTip(tr("Test redo using Qt undo stack"));
+    mpQtRedoTestAction->setEnabled(false);
+    connect(mpQtRedoTestAction, &QAction::triggered, mpQtUndoStack, &QUndoStack::redo);
+    connect(mpQtUndoStack, &QUndoStack::canRedoChanged, mpQtRedoTestAction, &QAction::setEnabled);
+    connect(mpQtUndoStack, &QUndoStack::redoTextChanged, this, [this](const QString& text) {
+        if (!text.isEmpty()) {
+            mpQtRedoTestAction->setToolTip(tr("Qt Redo (Test): %1").arg(text));
+        } else {
+            mpQtRedoTestAction->setToolTip(tr("Qt Redo (Test)"));
+        }
+    });
+
     // Store guarded pointer to text editor's undo stack for safe signal connections
     mpTextUndoStack = mpSourceEditorEdbee->controller()->textDocument()->textUndoStack();
 
@@ -829,6 +856,12 @@ dlgTriggerEditor::dlgTriggerEditor(Host* pH)
     // Add smart undo/redo toolbar buttons (route based on focus)
     toolBar->addAction(mpUndoAction);
     toolBar->addAction(mpRedoAction);
+
+    toolBar->addSeparator();
+
+    // Add Qt test buttons (for migration validation)
+    toolBar->addAction(mpQtUndoTestAction);
+    toolBar->addAction(mpQtRedoTestAction);
 
     toolBar->addSeparator();
 

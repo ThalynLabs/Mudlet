@@ -584,6 +584,10 @@ private:
     QAction* mpUndoAction = nullptr;
     QAction* mpRedoAction = nullptr;
 
+    // Qt undo/redo test actions (for migration validation):
+    QAction* mpQtUndoTestAction = nullptr;
+    QAction* mpQtRedoTestAction = nullptr;
+
     // Undo system for item-level operations:
     EditorUndoSystem* mpUndoSystem = nullptr;
 
