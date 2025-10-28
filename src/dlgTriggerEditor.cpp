@@ -1284,6 +1284,11 @@ void dlgTriggerEditor::slot_smartUndo()
     } else if (canUndoItems) {
         // Once text stack is empty, undo item operations (add/delete/move triggers/aliases/etc)
         mpUndoSystem->undo();
+
+        // Keep Qt undo stack in sync during migration validation
+        if (mpQtUndoStack->canUndo()) {
+            mpQtUndoStack->undo();
+        }
     }
 
     // Update button states after undo completes
@@ -1304,6 +1309,11 @@ void dlgTriggerEditor::slot_smartRedo()
     } else if (canRedoItems) {
         // Once text stack is empty, redo item operations
         mpUndoSystem->redo();
+
+        // Keep Qt undo stack in sync during migration validation
+        if (mpQtUndoStack->canRedo()) {
+            mpQtUndoStack->redo();
+        }
     }
 
     // Update button states after redo completes
@@ -8597,6 +8607,12 @@ void dlgTriggerEditor::fillout_form()
     // Only user actions after this point should be undo-able
     if (mpUndoSystem && !mInitialLoadDone) {
         mpUndoSystem->clear();
+
+        // Also clear Qt undo stack to keep in sync during migration
+        if (mpQtUndoStack) {
+            mpQtUndoStack->clear();
+        }
+
         mInitialLoadDone = true;
     }
 }
