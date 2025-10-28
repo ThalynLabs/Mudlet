@@ -95,6 +95,8 @@ private:
 };
 
 // Command for deleting items
+// NOTE: Uses built-in batching (QList<DeletedItemInfo>) rather than BatchCommand
+// for efficiency - delete operations naturally come as sets with ordering constraints
 class DeleteItemCommand : public EditorCommand {
 public:
     struct DeletedItemInfo {
@@ -143,6 +145,7 @@ private:
 };
 
 // Command for moving items between parents
+// NOTE: Single-item design - use BatchCommand to group multiple moves triggered by drag-and-drop
 class MoveItemCommand : public EditorCommand {
 public:
     MoveItemCommand(EditorViewType viewType, int itemID,
@@ -192,6 +195,8 @@ private:
 };
 
 // Compound command that contains multiple sub-commands for batch operations
+// Use BatchCommand when: operations are triggered individually but should undo/redo as one atomic action
+// Use built-in batching (e.g. DeleteItemCommand) when: operations naturally come as sets from a single UI action
 class BatchCommand : public EditorCommand {
 public:
     explicit BatchCommand(const QString& description, Host* host)
