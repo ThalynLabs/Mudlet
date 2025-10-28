@@ -1408,6 +1408,9 @@ void dlgTriggerEditor::closeEvent(QCloseEvent* event)
     if (mpUndoSystem) {
         disconnect(mpUndoSystem, nullptr, this, nullptr);
     }
+    if (mpQtUndoStack) {
+        disconnect(mpQtUndoStack, nullptr, this, nullptr);
+    }
 
     emit editorClosing();
     writeSettings();
