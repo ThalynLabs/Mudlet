@@ -70,6 +70,9 @@ signals:
 protected:
     // Expose protected command() method for accessing commands on the stack
     using QUndoStack::command;
+
+private:
+    int mPreviousIndex = 0;  // Track previous index to determine undo vs redo
 };
 
 #endif // MUDLET_MUDLETUNDOSTACK_H

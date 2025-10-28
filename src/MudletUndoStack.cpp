@@ -24,15 +24,28 @@ MudletUndoStack::MudletUndoStack(QObject* parent)
     : QUndoStack(parent)
 {
     // Connect to indexChanged signal to emit itemsChanged after undo/redo
-    connect(this, &QUndoStack::indexChanged, this, [this](int idx) {
-        Q_UNUSED(idx);
-        // Emit itemsChanged signal for the current command
-        if (index() > 0 && index() <= count()) {
-            const QUndoCommand* cmd = command(index() - 1);
+    connect(this, &QUndoStack::indexChanged, this, [this](int newIndex) {
+        // Determine which command was affected based on index movement
+        int affectedCommandIndex = -1;
+
+        if (newIndex > mPreviousIndex) {
+            // Redo: index increased, emit for command that was redone
+            affectedCommandIndex = newIndex - 1;
+        } else if (newIndex < mPreviousIndex) {
+            // Undo: index decreased, emit for command that was undone
+            affectedCommandIndex = mPreviousIndex - 1;
+        }
+
+        // Emit itemsChanged for the affected command
+        if (affectedCommandIndex >= 0 && affectedCommandIndex < count()) {
+            const QUndoCommand* cmd = command(affectedCommandIndex);
             if (auto* mudletCmd = dynamic_cast<const MudletCommand*>(cmd)) {
                 emit itemsChanged(mudletCmd->viewType(), mudletCmd->affectedItemIDs());
             }
         }
+
+        // Update previous index for next change
+        mPreviousIndex = newIndex;
     });
 }
 
