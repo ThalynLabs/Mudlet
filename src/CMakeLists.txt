@@ -102,6 +102,7 @@ set(mudlet_SRCS
     mapInfoContributorManager.cpp
     mudlet.cpp
     MudletInstanceCoordinator.cpp
+    MudletUndoStack.cpp
     MxpTag.cpp
     CredentialManager.cpp
     ScriptUnit.cpp
@@ -295,7 +296,9 @@ set(mudlet_HDRS
     LuaInterface.h
     mapInfoContributorManager.h
     mudlet.h
+    MudletCommand.h
     MudletInstanceCoordinator.h
+    MudletUndoStack.h
     MxpTag.h
     ScriptUnit.h
     SecureStringUtils.h

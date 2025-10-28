@@ -413,6 +413,10 @@ dlgTriggerEditor::dlgTriggerEditor(Host* pH)
     // Initialize the undo system for item operations
     mpUndoSystem = new EditorUndoSystem(mpHost, this);
 
+    // Initialize Qt-based undo stack (parallel system during migration)
+    mpQtUndoStack = new MudletUndoStack(this);
+    mpQtUndoStack->setUndoLimit(50); // Match existing system
+
     // Create smart undo/redo actions with keyboard shortcuts
     // These route to either text editor or item operations based on focus
     mpUndoAction = new QAction(QIcon::fromTheme(qsl("edit-undo"), QIcon(qsl(":/icons/edit-undo.png"))), tr("Undo"), this);
@@ -452,6 +456,19 @@ dlgTriggerEditor::dlgTriggerEditor(Host* pH)
         }
     });
 
+    // Connect Qt undo stack signals (same API as custom system)
+    // Note: During migration, both systems run in parallel for validation
+    connect(mpQtUndoStack, &QUndoStack::canUndoChanged, this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
+    connect(mpQtUndoStack, &QUndoStack::canRedoChanged, this, &dlgTriggerEditor::slot_updateUndoRedoButtonStates);
+    connect(mpQtUndoStack, &QUndoStack::undoTextChanged, this, [this](const QString& text) {
+        // Currently unused during parallel migration - custom system handles tooltips
+        Q_UNUSED(text);
+    });
+    connect(mpQtUndoStack, &QUndoStack::redoTextChanged, this, [this](const QString& text) {
+        // Currently unused during parallel migration - custom system handles tooltips
+        Q_UNUSED(text);
+    });
+
     // Store guarded pointer to text editor's undo stack for safe signal connections
     mpTextUndoStack = mpSourceEditorEdbee->controller()->textDocument()->textUndoStack();
 
@@ -468,6 +485,9 @@ dlgTriggerEditor::dlgTriggerEditor(Host* pH)
 
     // Connect undo system to tree widget refresh
     connect(mpUndoSystem, &EditorUndoSystem::itemsChanged, this, &dlgTriggerEditor::slot_itemsChanged);
+
+    // Connect Qt undo stack to same slot (both systems use identical signal signature)
+    connect(mpQtUndoStack, &MudletUndoStack::itemsChanged, this, &dlgTriggerEditor::slot_itemsChanged);
 
     auto* provider = new edbee::StringTextAutoCompleteProvider();
     //QScopedPointer<edbee::StringTextAutoCompleteProvider> provider(new edbee::StringTextAutoCompleteProvider);

@@ -48,6 +48,7 @@
 #include "dlgVarsMainArea.h"
 #include "SingleLineTextEdit.h"
 #include "EditorUndoSystem.h"
+#include "MudletUndoStack.h"
 
 #include <QDialog>
 #include <QFlag>
@@ -585,6 +586,9 @@ private:
 
     // Undo system for item-level operations:
     EditorUndoSystem* mpUndoSystem = nullptr;
+
+    // Qt-based undo stack (parallel system during migration):
+    MudletUndoStack* mpQtUndoStack = nullptr;
 
     // Guarded pointer to text editor's undo stack (for safe signal connections):
     QPointer<edbee::TextUndoStack> mpTextUndoStack;
