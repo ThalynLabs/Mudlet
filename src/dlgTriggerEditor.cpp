@@ -46,6 +46,7 @@
 #include "dlgTriggerPatternEdit.h"
 #include "SingleLineTextEdit.h"
 #include "TrailingWhitespaceMarker.h"
+#include "commands/MudletMoveItemCommand.h"
 #include "commands/MudletToggleActiveCommand.h"
 #include "mudlet.h"
 #include "utils.h"
@@ -4179,6 +4180,19 @@ void dlgTriggerEditor::slot_itemMoved(int itemID, int oldParentID, int newParent
         mpHost
     );
     mpUndoSystem->pushCommand(std::move(cmd));
+
+    // Push to new Qt system (for validation during migration)
+    auto* qtCmd = new MudletMoveItemCommand(
+        viewType,
+        itemID,
+        oldParentID,
+        newParentID,
+        oldPosition,
+        newPosition,
+        itemName,
+        mpHost
+    );
+    mpQtUndoStack->push(qtCmd);  // Qt takes ownership
 }
 
 void dlgTriggerEditor::slot_batchMoveStarted()
