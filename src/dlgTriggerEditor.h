@@ -26,11 +26,9 @@
  ***************************************************************************/
 
 
-#include "pre_guard.h"
 #include "ui_trigger_editor.h"
 #include <QPointer>
 #include <unordered_map>
-#include "post_guard.h"
 
 #include "TAction.h"
 #include "TAlias.h"
@@ -48,14 +46,12 @@
 #include "dlgVarsMainArea.h"
 #include "SingleLineTextEdit.h"
 
-#include "pre_guard.h"
 #include <QDialog>
 #include <QFlag>
 #include <QListWidgetItem>
 #include <QScrollArea>
 #include <QTreeWidget>
 #include <QDesktopServices>
-#include "post_guard.h"
 
 // Edbee editor includes
 #include "edbee/edbee.h"
@@ -187,7 +183,7 @@ public:
     void changeEvent(QEvent* e) override;
     void fillout_form();
     void showError(const QString&);
-    void showWarning(const QString&);
+    void showWarning(const QString&, bool announce = true);
     void showInfo(const QString&);
     void children_icon_triggers(QTreeWidgetItem* pWidgetItemParent);
     void children_icon_alias(QTreeWidgetItem* pWidgetItemParent);
@@ -367,6 +363,8 @@ private:
     void clearActionForm();
     void clearKeyForm();
     void clearVarForm();
+
+    void updatePackageItemAccessibility(QTreeWidgetItem* pItem, const QString& currentDescription);
 
     void expand_child_triggers(TTrigger* pTriggerParent, QTreeWidgetItem* pItem);
     void expand_child_timers(TTimer* pTimerParent, QTreeWidgetItem* pWidgetItemParent);
@@ -613,11 +611,11 @@ private:
 
     // approximate max duration "Copy as image" can take in seconds
     int mCopyAsImageMax = 0;
-    
+
     struct introOption {
         QString name;
         QString headline;
-        QString contents;  
+        QString contents;
     };
 
     struct introTextParts {
@@ -654,6 +652,7 @@ private:
     QString descInactiveOffsetTimer;
     QString descNewFolder;
     QString descNewItem;
+    QString descPackageItem;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(dlgTriggerEditor::SearchOptions)
