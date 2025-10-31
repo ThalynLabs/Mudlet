@@ -281,7 +281,8 @@ void LlamafileManager::onProcessStarted() {
     });
 }
 
-void LlamafileManager::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus) {
+void LlamafileManager::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
+{
     Q_UNUSED(exitStatus)
 
     // Capture any remaining output from the process
