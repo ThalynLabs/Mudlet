@@ -1611,13 +1611,13 @@ Accessibility-friendly description for the built-in command line of a console/wi
       <location filename="../src/TConsole.cpp" line="2309"/>
       <source>Profile user window &quot;%1&quot; past content.</source>
       <extracomment>accessibility-friendly name to describe the upper half of a Mudlet profile&apos;s sub-console window when you&apos;ve scrolled up, %1 is the name of the window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Profile user window &quot;%1&quot; past content.</translation>
     </message>
     <message>
       <location filename="../src/TConsole.cpp" line="2311"/>
       <source>Profile user window &quot;%1&quot; live content.</source>
       <extracomment>accessibility-friendly name to describe the lower half of a Mudlet profile&apos;s sub-console window when you&apos;ve scrolled up, %1 is the name of the window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Profile user window &quot;%1&quot; live content.</translation>
     </message>
     <message>
       <location filename="../src/TConsole.cpp" line="2316"/>
@@ -2363,7 +2363,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="551"/>
       <source>The public test build gets newer features to you quicker, and you help us find issues in them quicker. Spotted something odd? Let us know asap!</source>
       <extracomment>This explains the &quot;Report an issue&quot; item in the &quot;About&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>The public test build gets newer features to you quicker, and you help us find issues in them quicker. Spotted something odd? Let us know asap!</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="957"/>
@@ -3001,7 +3001,8 @@ area) not found, adding reserved -1 id.</translation>
       <location filename="../src/TMap.cpp" line="1875"/>
       <source>[ INFO ]  - Successfully read the map file (%1s), checking some
 consistency details...</source>
-      <translation type="unfinished"/>
+      <translation>[ INFO ]  - Successfully read the map file (%1s), checking some
+consistency details...</translation>
     </message>
     <message>
       <location filename="../src/TMap.cpp" line="1890"/>
@@ -3066,7 +3067,10 @@ the file:
 &quot;%1&quot;
 - look for the (last) report with the title:
 &quot;%2&quot;.</source>
-      <translation type="unfinished"/>
+      <translation>[ ALERT ] - At least one thing was detected during that last map operation that it is recommended that you review the most recent report in the file:
+&quot;%1&quot;
+- look for the (last) report with the title:
+&quot;%2&quot;.</translation>
     </message>
     <message>
       <location filename="../src/TMap.cpp" line="2440"/>
@@ -3076,7 +3080,12 @@ the file:
 &quot;%1&quot;
 - look for the (last) report with the title:
 &quot;%2&quot;.</source>
-      <translation type="unfinished"/>
+      <translation>[ INFO ]  - The equivalent to the above information about that last map
+operation has been saved for review as the most recent report in
+the file:
+&quot;%1&quot;
+- look for the (last) report with the title:
+&quot;%2&quot;.</translation>
     </message>
     <message>
       <location filename="../src/TMap.cpp" line="2461"/>
@@ -3111,7 +3120,8 @@ and there is enough space. The download operation has failed.</source>
       <location filename="../src/TMap.cpp" line="2683"/>
       <source>[ ERROR ] - Map download encountered an error:
 %1</source>
-      <translation type="unfinished"/>
+      <translation>[ ERROR ] - Map download encountered an error:
+%1</translation>
     </message>
     <message>
       <location filename="../src/TMap.cpp" line="2917"/>
@@ -3208,7 +3218,8 @@ map with others relying on the original format.</translation>
       <location filename="../src/TMap.cpp" line="1142"/>
       <source>[ WARN ]  - Saving map in format version &quot;%1&quot; different from the
 recommended map version %2 for this version of Mudlet.</source>
-      <translation type="unfinished"/>
+      <translation>[ WARN ]  - Saving map in format version &quot;%1&quot; different from the
+recommended map version %2 for this version of Mudlet.</translation>
     </message>
     <message>
       <location filename="../src/TMap.cpp" line="1497"/>
@@ -3313,7 +3324,7 @@ imported at user request.</source>
       <location filename="../src/TMap.cpp" line="2627"/>
       <source>loadMap: failure to import XML map file, further information may be available
 in main console!</source>
-      <translation type="unfinished"/>
+      <translation>loadMap: failure to import XML map file, further information may be available in main console!</translation>
     </message>
     <message>
       <location filename="../src/TMap.cpp" line="2664"/>
@@ -3336,7 +3347,7 @@ in main console!</source>
     <message>
       <location filename="../src/TMap.cpp" line="2745"/>
       <source>[ INFO ]  - ... map downloaded and stored, now parsing it...</source>
-      <translation type="unfinished"/>
+      <translation>[ INFO ]  - ... map downloaded and stored, now parsing it...</translation>
     </message>
     <message>
       <location filename="../src/TMap.cpp" line="2781"/>
@@ -3524,73 +3535,73 @@ in main console!</source>
       <location filename="../src/TRoom.cpp" line="1143"/>
       <source>[ WARN ]  - In room ID: %1 removing invalid (special) exit to %2 (with no name!)</source>
       <extracomment>%1 is the room ID, %2 is the destination room ID</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ WARN ]  - In room ID: %1 removing invalid (special) exit to %2 (with no name!)</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1156"/>
       <source>[ INFO ]  - In room with ID: %1 correcting special exit &quot;%2&quot; that was to room with an exit to invalid room: %3 to now go to: %4.</source>
       <extracomment>%1 is the room ID, %2 is the exit name, %3 is the old destination room ID, %4 is the new destination room ID</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ INFO ]  - In room with ID: %1 correcting special exit &quot;%2&quot; that was to room with an exit to invalid room: %3 to now go to: %4.</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1186"/>
       <source>[ WARN ]  - Room with ID: %1 has a special exit &quot;%2&quot; with an exit to: %3 but that room does not exist.  The exit will be removed (but the destination room ID will be stored in the room user data under a key: &quot;%4&quot;).</source>
       <extracomment>%1 is the room ID, %2 is the exit name, %3 is the destination room ID, %4 is the audit key</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ WARN ]  - Room with ID: %1 has a special exit &quot;%2&quot; with an exit to: %3 but that room does not exist.  The exit will be removed (but the destination room ID will be stored in the room user data under a key: &quot;%4&quot;).</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1229"/>
       <source>[ INFO ]  - In room with ID: %1 special exit &quot;%2&quot; that was to room with an invalid ID: %3 that does not exist.  The exit will be removed (the bad destination room ID will be stored in the room user data under a key: &quot;%4&quot;).</source>
       <extracomment>%1 is the room ID, %2 is the exit name, %3 is the invalid destination room ID, %4 is the audit key</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ INFO ]  - In room with ID: %1 special exit &quot;%2&quot; that was to room with an invalid ID: %3 that does not exist.  The exit will be removed (the bad destination room ID will be stored in the room user data under a key: &quot;%4&quot;).</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1282"/>
       <source>[ INFO ]  - In room with ID: %1 found one or more surplus door items that were removed: %2.</source>
       <extracomment>%1 is the room ID, %2 is a list of door items</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ INFO ]  - In room with ID: %1 found one or more surplus door items that were removed: %2.</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1301"/>
       <source>[ INFO ]  - In room with ID: %1 found one or more surplus weight items that were removed: %2.</source>
       <extracomment>%1 is the room ID, %2 is a list of weight items</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ INFO ]  - In room with ID: %1 found one or more surplus weight items that were removed: %2.</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1320"/>
       <source>[ INFO ]  - In room with ID: %1 found one or more surplus exit lock items that were removed: %2.</source>
       <extracomment>%1 is the room ID, %2 is a list of exit lock items</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ INFO ]  - In room with ID: %1 found one or more surplus exit lock items that were removed: %2.</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1402"/>
       <source>[ INFO ]  - In room with ID: %1 found one or more surplus custom line elements that were removed: %2.</source>
       <extracomment>%1 is the room ID, %2 is a list of custom line elements</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ INFO ]  - In room with ID: %1 found one or more surplus custom line elements that were removed: %2.</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1431"/>
       <source>[ INFO ]  - In room with ID: %1 correcting exit &quot;%2&quot; that was to room with an exit to invalid room: %3 to now go to: %4.</source>
       <extracomment>%1 is the room ID, %2 is the exit direction, %3 is the old destination room ID, %4 is the new destination room ID</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ INFO ]  - In room with ID: %1 correcting exit &quot;%2&quot; that was to room with an exit to invalid room: %3 to now go to: %4.</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1450"/>
       <source>[ WARN ]  - Room with ID: %1 has an exit &quot;%2&quot; to: %3 but that room does not exist.  The exit will be removed (but the destination room ID will be stored in the room user data under a key: &quot;%4&quot;) and the exit will be turned into a stub.</source>
       <extracomment>%1 is the room ID, %2 is the exit direction, %3 is the destination room ID that doesn&apos;t exist, %4 is the audit key</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ WARN ]  - Room with ID: %1 has an exit &quot;%2&quot; to: %3 but that room does not exist.  The exit will be removed (but the destination room ID will be stored in the room user data under a key: &quot;%4&quot;) and the exit will be turned into a stub.</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1498"/>
       <source>[ ALERT ] - Room with ID: %1 has an exit &quot;%2&quot; to: %3 but also has a stub exit in the same direction!  As a real exit precludes a stub, the latter will be removed.</source>
       <extracomment>%1 is the room ID, %2 is the exit direction, %3 is the destination room ID</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ ALERT ] - Room with ID: %1 has an exit &quot;%2&quot; to: %3 but also has a stub exit in the same direction!  As a real exit precludes a stub, the latter will be removed.</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1557"/>
       <source>[ INFO ]  - In room with ID: %1 exit &quot;%2&quot; that was to room with an invalid ID: %3 that does not exist.  The exit will be removed (the bad destination room ID will be stored in the room user data under a key: &quot;%4&quot;) and the exit will be turned into a stub.</source>
       <extracomment>%1 is the room ID, %2 is the exit direction, %3 is the invalid destination room ID, %4 is the audit key</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ INFO ]  - In room with ID: %1 exit &quot;%2&quot; that was to room with an invalid ID: %3 that does not exist.  The exit will be removed (the bad destination room ID will be stored in the room user data under a key: &quot;%4&quot;) and the exit will be turned into a stub.</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1266"/>
@@ -3790,7 +3801,7 @@ be in these areas...</numerusform>
       <location filename="../src/TRoomDB.cpp" line="935"/>
       <location filename="../src/TRoomDB.cpp" line="938"/>
       <source>[ INFO ]  - Room id numbering is satisfactory.</source>
-      <translation type="unfinished"/>
+      <translation>[ INFO ]  - Room id numbering is satisfactory.</translation>
     </message>
     <message>
       <location filename="../src/TRoomDB.cpp" line="958"/>
@@ -3909,7 +3920,7 @@ first will also gain a suffix in this manner.
     <message>
       <location filename="../src/TRoomDB.cpp" line="1258"/>
       <source>[ ALERT ] - An empty area name was detected in the Map file!</source>
-      <translation type="unfinished"/>
+      <translation>[ ALERT ] - An empty area name was detected in the Map file!</translation>
     </message>
     <message>
       <location filename="../src/TRoomDB.cpp" line="1261"/>
@@ -5027,37 +5038,38 @@ changed.</translation>
     <message>
       <location filename="../src/ctelnet.cpp" line="885"/>
       <source>[ INFO ]  - Package download cancelled.</source>
-      <translation type="unfinished"/>
+      <translation>[ INFO ]  - Package download cancelled.</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="888"/>
       <source>[ WARN ]  - Package download failed from &apos;%1&apos;, reason: %2</source>
       <extracomment>%1 is the URL, %2 is the error message</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ WARN ]  - Package download failed from &apos;%1&apos;, reason: %2</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="893"/>
       <source>
 The package is hosted on a server with an SSL certificate problem. The URL may be using HTTPS when it should use HTTP, or the server&apos;s security certificate is not trusted by your system.</source>
-      <translation type="unfinished"/>
+      <translation>
+The package is hosted on a server with an SSL certificate problem. The URL may be using HTTPS when it should use HTTP, or the server&apos;s security certificate is not trusted by your system.</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="908"/>
       <source>[ WARN ]  - Package download failed: could not open file &apos;%1&apos; for writing, reason: %2</source>
       <extracomment>%1 is the file path, %2 is the error message</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ WARN ]  - Package download failed: could not open file &apos;%1&apos; for writing, reason: %2</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="918"/>
       <source>[ WARN ]  - Package download failed: could not save file, reason: %1</source>
       <extracomment>%1 is the error message</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ WARN ]  - Package download failed: could not save file, reason: %1</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="930"/>
       <source>[ WARN ]  - Package installation failed for &apos;%1&apos;, reason: %2</source>
       <extracomment>%1 is the package file path, %2 is the error message</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ WARN ]  - Package installation failed for &apos;%1&apos;, reason: %2</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="1726"/>
@@ -7790,7 +7802,7 @@ Further reading material, e.g., links to documentation or forum posts.
     <message>
       <location filename="../src/dlgProfilePreferences.cpp" line="1019"/>
       <source>%1 {For older versions}</source>
-      <translation type="unfinished"/>
+      <translation>%1 {For older versions}</translation>
     </message>
     <message>
       <location filename="../src/dlgProfilePreferences.cpp" line="1835"/>
@@ -9101,7 +9113,7 @@ Help contents of a selectable option for the Trigger intro</extracomment>
       <location filename="../src/dlgTriggerEditor.cpp" line="311"/>
       <source>package item</source>
       <extracomment>Accessible description indicating an item belongs to a package, shown after the item name. Keep short, as it&apos;s appended to other descriptions like &quot;activated, package item&quot;</extracomment>
-      <translation type="unfinished"/>
+      <translation>package item</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="777"/>
@@ -9127,7 +9139,7 @@ Help contents of a selectable option for the Trigger intro</extracomment>
       <location filename="../src/dlgTriggerEditor.cpp" line="1221"/>
       <source>Hide this hint</source>
       <extracomment>Tooltip for the button that hides the pattern navigation hint banner.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Hide this hint</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="1473"/>
@@ -9158,13 +9170,13 @@ Help contents of a selectable option for the Trigger intro</extracomment>
       <location filename="../src/dlgTriggerEditor.cpp" line="1582"/>
       <source>&lt;p&gt;&lt;strong&gt;Navigation shortcuts&lt;/strong&gt;&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Press &lt;strong&gt;Ctrl+F&lt;/strong&gt; to focus the first pattern field.&lt;/li&gt;&lt;li&gt;Press &lt;strong&gt;Ctrl+L&lt;/strong&gt; to jump to the last visible pattern field.&lt;/li&gt;&lt;li&gt;Press &lt;strong&gt;Ctrl+Up&lt;/strong&gt; or &lt;strong&gt;Ctrl+Down&lt;/strong&gt; to move between pattern fields.&lt;/li&gt;&lt;li&gt;Press &lt;strong&gt;Ctrl+Tab&lt;/strong&gt; to toggle the Lua code editor.&lt;/li&gt;&lt;/ul&gt;</source>
       <extracomment>Hint shown below trigger patterns explaining navigation shortcuts. Contains HTML markup.</extracomment>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;&lt;strong&gt;Navigation shortcuts&lt;/strong&gt;&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Press &lt;strong&gt;Ctrl+F&lt;/strong&gt; to focus the first pattern field.&lt;/li&gt;&lt;li&gt;Press &lt;strong&gt;Ctrl+L&lt;/strong&gt; to jump to the last visible pattern field.&lt;/li&gt;&lt;li&gt;Press &lt;strong&gt;Ctrl+Up&lt;/strong&gt; or &lt;strong&gt;Ctrl+Down&lt;/strong&gt; to move between pattern fields.&lt;/li&gt;&lt;li&gt;Press &lt;strong&gt;Ctrl+Tab&lt;/strong&gt; to toggle the Lua code editor.&lt;/li&gt;&lt;/ul&gt;</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="1628"/>
       <source>Hint hidden. &lt;a href=&apos;undo&apos; style=&apos;color: inherit; text-decoration: underline;&apos;&gt;Undo&lt;/a&gt; | &lt;a href=&apos;hide-permanently&apos; style=&apos;color: inherit; text-decoration: underline;&apos;&gt;Hide permanently&lt;/a&gt;</source>
       <extracomment>Toast notification shown when user dismisses the trigger pattern navigation hint. Allows them to undo or permanently hide the hint.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Hint hidden. &lt;a href=&apos;undo&apos; style=&apos;color: inherit; text-decoration: underline;&apos;&gt;Undo&lt;/a&gt; | &lt;a href=&apos;hide-permanently&apos; style=&apos;color: inherit; text-decoration: underline;&apos;&gt;Hide permanently&lt;/a&gt;</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="3453"/>
@@ -9426,7 +9438,7 @@ Package item warning banner shown in trigger editor when selecting package items
       <location filename="../src/dlgTriggerEditor.cpp" line="8174"/>
       <source>Package item. Copy before editing to preserve changes.</source>
       <extracomment>First-time educational message for screen reader users about package items</extracomment>
-      <translation type="unfinished"/>
+      <translation>Package item. Copy before editing to preserve changes.</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="7912"/>
@@ -15990,7 +16002,7 @@ Status</translation>
     <message>
       <location filename="../src/ui/room_exits.ui" line="1930"/>
       <source>&lt;p&gt;Click on an item to edit/change it. To delete a Special Exit, either: select it and press the keyboard Delete key; or set its Exit roomID to less than one; or clear the name/command entry.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;Click on an item to edit/change it. To delete a Special Exit, either: select it and press the keyboard Delete key; or set its Exit roomID to less than one; or clear the name/command entry.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/room_exits.ui" line="1964"/>
@@ -16341,13 +16353,13 @@ or LUA script</source>
       <location filename="../src/ui/triggers_main_area.ui" line="449"/>
       <source> lines)</source>
       <extracomment>This text is appended after the numeric value shown in the spin box (so that it and the prefix text is &quot;wrapped&quot; around it), except when the control is set to the special first value when all of them are replaced by that text.</extracomment>
-      <translation type="unfinished"/>
+      <translation> lines)</translation>
     </message>
     <message>
       <location filename="../src/ui/triggers_main_area.ui" line="452"/>
       <source>AND / Multi-line (within: </source>
       <extracomment>This text is prepended before the numeric value shown in the spin box (so that it and the suffix text is &quot;wrapped&quot; around it), except when the control is set to the special first value when all of them are replaced by that text. For locales using spaces between words ensure a space is left at the end to separate the text from the number that is shown from the control after it.</extracomment>
-      <translation type="unfinished"/>
+      <translation>AND / Multi-line (within: </translation>
     </message>
     <message>
       <location filename="../src/ui/triggers_main_area.ui" line="481"/>
@@ -16401,7 +16413,7 @@ or LUA script</source>
     <message>
       <location filename="../src/ui/triggers_main_area.ui" line="440"/>
       <source>&lt;p&gt;&lt;b&gt;Multi-line Trigger Range&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Specifies within how many consecutive lines all trigger patterns must match.&lt;/p&gt;&lt;p&gt;&lt;b&gt;Example:&lt;/b&gt; If set to 3 and pattern 1 matches on line 100, pattern 2 must match somewhere between lines 100-103 for the trigger to fire.&lt;/p&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;&lt;b&gt;Multi-line Trigger Range&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Specifies within how many consecutive lines all trigger patterns must match.&lt;/p&gt;&lt;p&gt;&lt;b&gt;Example:&lt;/b&gt; If set to 3 and pattern 1 matches on line 100, pattern 2 must match somewhere between lines 100-103 for the trigger to fire.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/ui/triggers_main_area.ui" line="446"/>
