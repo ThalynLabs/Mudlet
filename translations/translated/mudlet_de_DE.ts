@@ -634,7 +634,7 @@ Bitte warten...</translation>
     <message>
       <location filename="../src/TBuffer.cpp" line="2512"/>
       <source>Right-click for menu</source>
-      <translation type="unfinished"/>
+      <translation>Für Menü rechtsklicken</translation>
     </message>
     <message>
       <location filename="../src/dlgMapper.cpp" line="571"/>
@@ -686,7 +686,7 @@ Bitte warten...</translation>
       <extracomment>2D Mapper context menu (drawing custom exit line) item
 ----------
 2D Mapper context menu (custom line editing) item</extracomment>
-      <translation type="unfinished"/>
+      <translation>Punkte am Raster ausrichten</translation>
     </message>
     <message>
       <location filename="../src/CustomLineDrawContextMenuHandler.cpp" line="94"/>
@@ -695,7 +695,7 @@ Bitte warten...</translation>
       <extracomment>2D Mapper context menu (drawing custom exit line) item tooltip
 ----------
 2D Mapper context menu (custom line editing) item tooltip</extracomment>
-      <translation type="unfinished"/>
+      <translation>Aktuelle Punkte einrasten und Bearbeitungen der benutzerdefinierten Linie am Kartenraster beibehalten</translation>
     </message>
     <message>
       <location filename="../src/CustomLineDrawContextMenuHandler.cpp" line="97"/>
@@ -704,7 +704,7 @@ Bitte warten...</translation>
       <extracomment>2D Mapper context menu (drawing custom exit line) item
 ----------
 2D Mapper context menu (custom line editing) item</extracomment>
-      <translation type="unfinished"/>
+      <translation>Den letzten Punkt zum Zielraum verschieben</translation>
     </message>
     <message>
       <location filename="../src/CustomLineDrawContextMenuHandler.cpp" line="101"/>
@@ -713,7 +713,7 @@ Bitte warten...</translation>
       <extracomment>2D Mapper context menu (drawing custom exit line) item tooltip (enabled state)
 ----------
 2D Mapper context menu (custom line editing) item tooltip (enabled state)</extracomment>
-      <translation type="unfinished"/>
+      <translation>Den Endpunkt am Zielraum einrasten</translation>
     </message>
     <message>
       <location filename="../src/CustomLineDrawContextMenuHandler.cpp" line="105"/>
@@ -722,7 +722,7 @@ Bitte warten...</translation>
       <extracomment>2D Mapper context menu (drawing custom exit line) item tooltip (disabled state)
 ----------
 2D Mapper context menu (custom line editing) item tooltip (disabled state)</extracomment>
-      <translation type="unfinished"/>
+      <translation>Wähle eine Linie mit einem gültigen Zielraum und mindestens einem einstellbaren Punkt</translation>
     </message>
     <message>
       <location filename="../src/CustomLineDrawContextMenuHandler.cpp" line="109"/>
@@ -989,7 +989,7 @@ Bitte warten...</translation>
     <message>
       <location filename="../src/SelectionRectangleHandler.cpp" line="112"/>
       <source>Hold Shift to add rooms or labels to your current selection.</source>
-      <translation type="unfinished"/>
+      <translation>Shift halten, um Räume oder Labels zur aktuellen Auswahl hinzuzufügen.</translation>
     </message>
     <message>
       <location filename="../src/T2DMap.cpp" line="3127"/>
@@ -1057,7 +1057,7 @@ Bitte warten...</translation>
     <message>
       <location filename="../src/T2DMap.cpp" line="3627"/>
       <source>Click to finish moving the selected room(s).</source>
-      <translation type="unfinished"/>
+      <translation>Klicken, um das Verschieben der ausgewählten Raum(e) zu beenden.</translation>
     </message>
     <message>
       <location filename="../src/T2DMap.cpp" line="4723"/>
@@ -3527,13 +3527,13 @@ in main console!</source>
       <location filename="../src/TRoom.cpp" line="1143"/>
       <source>[ WARN ]  - In room ID: %1 removing invalid (special) exit to %2 (with no name!)</source>
       <extracomment>%1 is the room ID, %2 is the destination room ID</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ WARNUNG ] - Entferne in Raum ID: %1 den ungültigen (besonderen) Ausgang zu %2 (ohne Name!)</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1156"/>
       <source>[ INFO ]  - In room with ID: %1 correcting special exit &quot;%2&quot; that was to room with an exit to invalid room: %3 to now go to: %4.</source>
       <extracomment>%1 is the room ID, %2 is the exit name, %3 is the old destination room ID, %4 is the new destination room ID</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ INFO ]  - Korrigiere im Raum mit ID: %1 den besonderen Ausgang &quot;%2&quot;, der zu einem Raum zeigte, mit einem Ausgang zu einem ungültigen Raum: %3, zeigt nun zu %4.</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1186"/>
@@ -3551,49 +3551,53 @@ in main console!</source>
       <location filename="../src/TRoom.cpp" line="1282"/>
       <source>[ INFO ]  - In room with ID: %1 found one or more surplus door items that were removed: %2.</source>
       <extracomment>%1 is the room ID, %2 is a list of door items</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ INFO ] - Im Raum mit der ID: %1 wurden ein oder mehrere überzählige Tür-Elemente gefunden und entfernt: %2.</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1301"/>
       <source>[ INFO ]  - In room with ID: %1 found one or more surplus weight items that were removed: %2.</source>
       <extracomment>%1 is the room ID, %2 is a list of weight items</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ INFO ] - Im Raum mit der ID: %1 wurden ein oder mehrere überzählige Gewicht-Elemente gefunden und entfernt: %2.</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1320"/>
       <source>[ INFO ]  - In room with ID: %1 found one or more surplus exit lock items that were removed: %2.</source>
       <extracomment>%1 is the room ID, %2 is a list of exit lock items</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ INFO ] - Im Raum mit der ID: %1 wurden ein oder mehrere überzählige Sperren gefunden und entfernt: %2.</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1402"/>
       <source>[ INFO ]  - In room with ID: %1 found one or more surplus custom line elements that were removed: %2.</source>
       <extracomment>%1 is the room ID, %2 is a list of custom line elements</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ INFO ] - Im Raum mit der ID: %1 wurden ein oder mehrere überzählige benutzerdefinierte Linienelemente gefunden und entfernt: %2.</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1431"/>
       <source>[ INFO ]  - In room with ID: %1 correcting exit &quot;%2&quot; that was to room with an exit to invalid room: %3 to now go to: %4.</source>
       <extracomment>%1 is the room ID, %2 is the exit direction, %3 is the old destination room ID, %4 is the new destination room ID</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ INFO ]  - Korrigiere im Raum mit ID: %1 den Ausgang &quot;%2&quot;, der zu einem Raum zeigte, mit einem Ausgang zu einem ungültigen Raum: %3, zeigt nun zu %4.</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1450"/>
       <source>[ WARN ]  - Room with ID: %1 has an exit &quot;%2&quot; to: %3 but that room does not exist.  The exit will be removed (but the destination room ID will be stored in the room user data under a key: &quot;%4&quot;) and the exit will be turned into a stub.</source>
       <extracomment>%1 is the room ID, %2 is the exit direction, %3 is the destination room ID that doesn&apos;t exist, %4 is the audit key</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ WARNUNG ]  - Der Raum mit der ID: %1 hat einen Ausgang &quot;%2&quot; in
+Richtung: %3 aber dieser Raum existiert nicht. Der Ausgang wird
+entfernt (aber die ID des Ziel-Raumes wird gespeichert in den 
+Benutzerdaten des Raums unter dem Schlüssel: &quot;%4&quot;) 
+und der Ausgang wird in einen Abzweig umgewandelt.</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1498"/>
       <source>[ ALERT ] - Room with ID: %1 has an exit &quot;%2&quot; to: %3 but also has a stub exit in the same direction!  As a real exit precludes a stub, the latter will be removed.</source>
       <extracomment>%1 is the room ID, %2 is the exit direction, %3 is the destination room ID</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ ACHTUNG ]  - Der Raum mit ID: %1 hat einen Ausgang &quot;%2&quot; in Richtung: %3 aber außerdem ein Abzweig in dieselbe Richtung. Ein richtiger Ausgang geht vor, also wird der Abzweig entfernt.</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1557"/>
       <source>[ INFO ]  - In room with ID: %1 exit &quot;%2&quot; that was to room with an invalid ID: %3 that does not exist.  The exit will be removed (the bad destination room ID will be stored in the room user data under a key: &quot;%4&quot;) and the exit will be turned into a stub.</source>
       <extracomment>%1 is the room ID, %2 is the exit direction, %3 is the invalid destination room ID, %4 is the audit key</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ INFO ]  - Der Raum mit der ID: %1 hat einen Ausgang &quot;%2&quot; in Richtung eines Raums mit der ungültigen ID: %3 aber dieser Raum existiert nicht. Der Ausgang wird entfernt (aber die falsche ID des Ziel-Raumes wird gespeichert in den Benutzerdaten des Raums unter dem Schlüssel: &quot;%4&quot;) und der Ausgang wird in einen Abzweig umgewandelt.</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1266"/>
@@ -3903,7 +3907,9 @@ here (or created in the future) will automatically be assigned the name &quot;%1
 Duplicated area names will cause all but the first encountered one to gain a
 &quot;_###&quot; style suffix.
 %2</source>
-      <translation type="unfinished"/>
+      <translation>[ INFO ] - Mudlet hatte früher erlaubt, dass die Karte mehr als einen Bereich mit dem gleichen oder keinem Namen hat. Zur Lösung dieser Fälle werden Gebiete ohne Namen hier (oder in Zukunft erstellt) automatisch &quot;%1&quot; genannt.
+Doppelte Gebietsnamen führen dazu, dass alle bis auf den ersten angetroffenen Namen ein Suffix der Art &quot;_ ###&quot; erhalten.
+%2</translation>
     </message>
     <message>
       <location filename="../src/TRoomDB.cpp" line="1242"/>
@@ -5038,37 +5044,38 @@ changed.</source>
     <message>
       <location filename="../src/ctelnet.cpp" line="885"/>
       <source>[ INFO ]  - Package download cancelled.</source>
-      <translation type="unfinished"/>
+      <translation>[ INFO ]  - Paketdownload abgebrochen.</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="888"/>
       <source>[ WARN ]  - Package download failed from &apos;%1&apos;, reason: %2</source>
       <extracomment>%1 is the URL, %2 is the error message</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ WARNUNG ] - Fehler beim Herunterladen des Pakets von &apos;%1&apos;, Grund: %2</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="893"/>
       <source>
 The package is hosted on a server with an SSL certificate problem. The URL may be using HTTPS when it should use HTTP, or the server&apos;s security certificate is not trusted by your system.</source>
-      <translation type="unfinished"/>
+      <translation>
+Das Paket wird auf einem Server gehostet, der ein Problem mit dem SSL-Zertifikat hat. Die URL verwendet möglicherweise HTTPS, obwohl HTTP verwendet werden sollte, oder dein System vertraut dem Sicherheitszertifikat des Servers nicht.</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="908"/>
       <source>[ WARN ]  - Package download failed: could not open file &apos;%1&apos; for writing, reason: %2</source>
       <extracomment>%1 is the file path, %2 is the error message</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ WARNUNG ] - Paketdownload fehlgeschlagen: Datei &apos;%1&apos; konnte nicht zum Schreiben geöffnet werden, Grund: %2</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="918"/>
       <source>[ WARN ]  - Package download failed: could not save file, reason: %1</source>
       <extracomment>%1 is the error message</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ WARNUNG ] - Paketdownload fehlgeschlagen: Datei konnte nicht gespeichert werden, Grund: %1</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="930"/>
       <source>[ WARN ]  - Package installation failed for &apos;%1&apos;, reason: %2</source>
       <extracomment>%1 is the package file path, %2 is the error message</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ WARNUNG ] - Paket &apos;%1&apos; konnte nicht installiert werden, Grund: %2</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="1726"/>
