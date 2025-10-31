@@ -3768,8 +3768,10 @@ void T2DMap::slot_setRoomProperties(
         if (changeRoomColor) {
             room->environment = newRoomColor;
         }
-        if (changeSymbol || changeSymbolColor) {
+        if (changeSymbol) {
             room->mSymbol = newSymbol;
+        }
+        if (changeSymbolColor) {
             room->mSymbolColor = newSymbolColor;
         }
         if (changeWeight) {
