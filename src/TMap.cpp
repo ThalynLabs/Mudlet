@@ -33,7 +33,6 @@
 #include "mapInfoContributorManager.h"
 #include "mudlet.h"
 
-#include "pre_guard.h"
 #include <QElapsedTimer>
 #include <QFileDialog>
 #include <QJsonParseError>
@@ -41,7 +40,6 @@
 #include <QProgressDialog>
 #include <QPainter>
 #include <QBuffer>
-#include "post_guard.h"
 
 
 TMap::TMap(Host* pH, const QString& profileName)
@@ -97,6 +95,7 @@ void TMap::mapClear()
     mNewMove = true;
     mVersion = mDefaultVersion;
     mUserData.clear();
+
     // mSaveVersion is not reset - so that any new Mudlet map file saves are to
     // whatever version was previously set/deduced
 
@@ -104,6 +103,12 @@ void TMap::mapClear()
     // only has the "Default Area" after TRoomDB::clearMapDB() has been run.
     if (mpMapper) {
         mpMapper->updateAreaComboBox();
+
+        auto map = mpMapper->mp2dMap;
+        if (map) {
+            map->mMultiSelectionListWidget.clear();
+            map->mMultiSelectionListWidget.hide();
+        }
     }
 }
 
@@ -595,11 +600,7 @@ void TMap::audit()
         appendErrorMsg(infoMsg);
     }
 
-    auto loadTime = mpHost->getLuaInterpreter()->condenseMapLoad();
-    if (loadTime != -1.0) {
-        const QString msg = tr("[  OK  ]  - Map loaded successfully (%1s).").arg(loadTime);
-        postMessage(msg);
-    }
+    mpHost->getLuaInterpreter()->condenseMapLoad();
 }
 
 // This may be duplicating TArea class functionality:
@@ -2302,7 +2303,11 @@ void TMap::set3DViewCenter(const int areaId, const int xPos, const int yPos, con
 {
 #if defined(INCLUDE_3DMAPPER)
     if (mpM) {
-        mpM->setViewCenter(areaId, xPos, yPos, zPos);
+        if (auto* glWidget = dynamic_cast<GLWidget*>(mpM.data())) {
+            glWidget->setViewCenter(areaId, xPos, yPos, zPos);
+        } else if (auto* modernWidget = dynamic_cast<ModernGLWidget*>(mpM.data())) {
+            modernWidget->setViewCenter(areaId, xPos, yPos, zPos);
+        }
     }
 #else
     Q_UNUSED(areaId)

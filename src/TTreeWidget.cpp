@@ -27,16 +27,14 @@
 #include "TTimer.h"
 #include "VarUnit.h"
 
-#include "pre_guard.h"
 #include <QtEvents>
 #include <QHeaderView>
-#include "post_guard.h"
 
 TTreeWidget::TTreeWidget(QWidget* pW)
 : QTreeWidget(pW)
 , mChildID()
 {
-    setSelectionMode(QAbstractItemView::SingleSelection);
+    setSelectionMode(QAbstractItemView::ExtendedSelection);
     setSelectionBehavior(QAbstractItemView::SelectRows);
     setDragEnabled(true);
     setAcceptDrops(true);
@@ -188,6 +186,7 @@ void TTreeWidget::mousePressEvent(QMouseEvent* event)
             return;
         }
     }
+
     QTreeWidget::mousePressEvent(event);
 }
 
@@ -342,13 +341,7 @@ void TTreeWidget::dropEvent(QDropEvent* event)
         if (!lI->validMove(pItem)) {
             event->setDropAction(Qt::IgnoreAction);
             event->ignore();
-        }
-        QTreeWidgetItem* newpItem = pItem;
-        QTreeWidgetItem* cItem = selectedItems().first();
-        QTreeWidgetItem* oldpItem = cItem->parent();
-        if (!lI->reparentVariable(newpItem, cItem, oldpItem)) {
-            event->setDropAction(Qt::IgnoreAction);
-            event->ignore();
+            return;
         }
     }
     mIsDropAction = true;

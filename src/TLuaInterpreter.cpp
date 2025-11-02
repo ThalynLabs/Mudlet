@@ -7,7 +7,7 @@
  *   Copyright (C) 2016 by Chris Leacy - cleacy1972@gmail.com              *
  *   Copyright (C) 2016-2018 by Ian Adkins - ieadkins@gmail.com            *
  *   Copyright (C) 2017 by Chris Reid - WackyWormer@hotmail.com            *
- *   Copyright (C) 2022-2023 by Lecker Kebap - Leris@mudlet.org            *
+ *   Copyright (C) 2022-2025 by Lecker Kebap - Leris@mudlet.org            *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -51,12 +51,11 @@
 #include "dlgTriggerEditor.h"
 #include "mudlet.h"
 #if defined(INCLUDE_3DMAPPER)
-#include "glwidget.h"
+#include "glwidget_integration.h"
 #endif
 
 #include <math.h>
 
-#include "pre_guard.h"
 #include <QtConcurrent>
 #include <QCollator>
 #include <QCoreApplication>
@@ -67,7 +66,6 @@
 #include <QFileInfo>
 #include <QMovie>
 #include <QVector>
-#include "post_guard.h"
 
 using namespace std::chrono_literals;
 
@@ -1157,8 +1155,8 @@ int TLuaInterpreter::feedTriggers(lua_State* L)
         }
 
         // else plain, raw ASCII, we hope!
-        for (int i = 0, total = dataQString.size(); i < total; ++i) {
-            if (dataQString.at(i).row() || dataQString.at(i).cell() > 127) {
+        for (const QChar c : dataQString) {
+            if (c.row() || c.cell() > 127) {
                 return warnArgumentValue(L, __func__, qsl(
                     "cannot send '%1' as it contains one or more characters that cannot be conveyed in the current game server encoding of 'ASCII'")
                     .arg(data.constData()));
@@ -1320,8 +1318,17 @@ int TLuaInterpreter::saveProfile(lua_State* L)
     if (lua_isstring(L, 1)) {
         saveToDir = lua_tostring(L, 1);
     }
+    QString saveAsFile;
+    if (!lua_isnoneornil(L, 2)) {
+        saveAsFile = getVerifiedString(L, __func__, 2, "file name", true);
+        if (!saveAsFile.endsWith(".xml", Qt::CaseInsensitive)) {
+            saveAsFile = saveAsFile + ".xml";
+        }
+    }
 
-    auto [ok, filename, error] = host.saveProfile(saveToDir);
+    auto [ok, filename, error] = (saveAsFile.isNull())
+                               ? host.saveProfile(saveToDir)
+                               : host.saveProfileAs(saveToDir + "/" + saveAsFile);
 
     if (ok) {
         lua_pushboolean(L, true);
@@ -3435,7 +3442,7 @@ void TLuaInterpreter::setAtcpTable(const QString& var, const QString& arg)
 }
 
 // No documentation available in wiki - internal function
-void TLuaInterpreter::signalMXPEvent(const QString &type, const QMap<QString, QString> &attrs, const QStringList &actions)
+void TLuaInterpreter::signalMXPEvent(const QString &type, const QMap<QString, QString> &attrs, const QStringList &actions, const QString &caption)
 {
     lua_State *L = pGlobalLua;
     lua_getglobal(L, "mxp");
@@ -3471,6 +3478,10 @@ void TLuaInterpreter::signalMXPEvent(const QString &type, const QMap<QString, QS
         lua_pushstring(L, actions[i].toUtf8().constData());
         lua_rawseti(L, -2, i + 1);
     }
+    lua_pop(L, 1);
+
+    lua_pushstring(L, caption.toUtf8().constData());
+    lua_setfield(L, -2, "text");
 
     lua_pop(L, lua_gettop(L));
 
@@ -3659,30 +3670,30 @@ void TLuaInterpreter::parseJSON(QString& key, const QString& string_data, const 
 void TLuaInterpreter::handleIreComposerEdit(const QString& jsonData)
 {
     Host& host = getHostFromLua(pGlobalLua);
-    
+
     QJsonParseError parseError;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData.toUtf8(), &parseError);
-    
+
     if (parseError.error != QJsonParseError::NoError) {
         qDebug() << "IRE Composer: JSON parse error:" << parseError.errorString();
         return;
     }
-    
+
     if (!jsonDoc.isObject()) {
         qDebug() << "IRE Composer: JSON is not an object";
         return;
     }
-    
+
     QJsonObject jsonObj = jsonDoc.object();
-    
+
     if (!jsonObj.contains("title") || !jsonObj.contains("text")) {
         qDebug() << "IRE Composer: Missing required 'title' or 'text' fields";
         return;
     }
-    
+
     const QString title = jsonObj["title"].toString();
     const QString initialText = jsonObj["text"].toString();
-    
+
     if (host.mTelnet.mpComposer) {
         return;
     }
@@ -4905,50 +4916,11 @@ int TLuaInterpreter::check_for_custom_speedwalk()
     return r;
 }
 
-#if defined(_MSC_VER) && defined(_DEBUG)
-// Enable leak detection for MSVC debug builds.
-
-#define LUA_CLIENT_TYPE (_CLIENT_BLOCK | ((('L' << 8) | 'U') << 16))
-
-// No documentation available in wiki - internal function
-static void* l_alloc(void* ud, void* ptr, size_t osize, size_t nsize)
-{
-    (void)ud;
-    (void)osize;
-    if (nsize == 0) {
-        ::_free_dbg(ptr, LUA_CLIENT_TYPE);
-        return NULL;
-    } else {
-        return ::_realloc_dbg(ptr, nsize, LUA_CLIENT_TYPE, __FILE__, __LINE__);
-    }
-}
-
-// No documentation available in wiki - internal function
-static int panic(lua_State* L)
-{
-    fprintf(stderr, "PANIC: unprotected error in call to Lua API (%s)\n", lua_tostring(L, -1));
-    return 0;
-}
-
-// No documentation available in wiki - internal function
-static lua_State* newstate()
-{
-    lua_State* L = lua_newstate(l_alloc, NULL);
-    if (L) {
-        lua_atpanic(L, &panic);
-    }
-    return L;
-}
-
-#else
-
 // No documentation available in wiki - internal function
 static lua_State* newstate()
 {
     return luaL_newstate();
 }
-
-#endif // _MSC_VER && _DEBUG
 
 // No documentation available in wiki - internal function
 static void storeHostInLua(lua_State* L, Host* h);
@@ -5097,6 +5069,9 @@ void TLuaInterpreter::initLuaGlobals()
     lua_register(pGlobalLua, "createScrollBox", TLuaInterpreter::createScrollBox);
     lua_register(pGlobalLua, "createLabel", TLuaInterpreter::createLabel);
     lua_register(pGlobalLua, "deleteLabel", TLuaInterpreter::deleteLabel);
+    lua_register(pGlobalLua, "deleteMiniConsole", TLuaInterpreter::deleteMiniConsole);
+    lua_register(pGlobalLua, "deleteCommandLine", TLuaInterpreter::deleteCommandLine);
+    lua_register(pGlobalLua, "deleteScrollBox", TLuaInterpreter::deleteScrollBox);
     lua_register(pGlobalLua, "setLabelToolTip", TLuaInterpreter::setLabelToolTip);
     lua_register(pGlobalLua, "setLabelCursor", TLuaInterpreter::setLabelCursor);
     lua_register(pGlobalLua, "setLabelCustomCursor", TLuaInterpreter::setLabelCustomCursor);
@@ -5277,6 +5252,10 @@ void TLuaInterpreter::initLuaGlobals()
     lua_register(pGlobalLua, "getAreaRooms", TLuaInterpreter::getAreaRooms);
     lua_register(pGlobalLua, "getAreaRooms1", TLuaInterpreter::getAreaRooms1);
     lua_register(pGlobalLua, "getPath", TLuaInterpreter::getPath);
+#if defined(INCLUDE_3DMAPPER)
+    lua_register(pGlobalLua, "shiftMapPerspective", TLuaInterpreter::shiftMapPerspective);
+    lua_register(pGlobalLua, "setMapPerspective", TLuaInterpreter::setMapPerspective);
+#endif
     lua_register(pGlobalLua, "centerview", TLuaInterpreter::centerview);
     lua_register(pGlobalLua, "denyCurrentSend", TLuaInterpreter::denyCurrentSend);
     lua_register(pGlobalLua, "tempBeginOfLineTrigger", TLuaInterpreter::tempBeginOfLineTrigger);
@@ -5554,6 +5533,7 @@ void TLuaInterpreter::initLuaGlobals()
     lua_register(pGlobalLua, "loadProfile", TLuaInterpreter::loadProfile);
     lua_register(pGlobalLua, "closeProfile", TLuaInterpreter::closeProfile);
     lua_register(pGlobalLua, "getCollisionLocationsInArea", TLuaInterpreter::getCollisionLocationsInArea);
+    lua_register(pGlobalLua, "exportAreaImage", TLuaInterpreter::exportAreaImage);
     lua_register(pGlobalLua, "disableTimeStamps", TLuaInterpreter::disableTimeStamps);
     lua_register(pGlobalLua, "enableTimeStamps", TLuaInterpreter::enableTimeStamps);
     lua_register(pGlobalLua, "timeStampsEnabled", TLuaInterpreter::timeStampsEnabled);
@@ -5971,7 +5951,6 @@ void TLuaInterpreter::loadGlobal()
 
         error = luaL_dostring(pGlobalLua, luaGlobal.toUtf8().constData());
         if (!error) {
-            mpHost->postMessage(tr("[  OK  ]  - Mudlet-lua API & Geyser Layout manager loaded."));
             return;
         }
         qWarning() << "TLuaInterpreter::loadGlobal() loading " << pathFileName << " failed: " << lua_tostring(pGlobalLua, -1);
@@ -7118,12 +7097,14 @@ int TLuaInterpreter::getMapBackgroundColor(lua_State* L)
     lua_pushnumber(L, color.red());
     lua_pushnumber(L, color.green());
     lua_pushnumber(L, color.blue());
-    return 3;
+    lua_pushnumber(L, color.alpha());
+    return 4;
 }
 
 // Documentation: https://wiki.mudlet.org/w/Manual:Lua_Functions#setMapBackgroundColor
 int TLuaInterpreter::setMapBackgroundColor(lua_State* L)
 {
+    int a = 255;
     const int r = getVerifiedInt(L, __func__, 1, "red component");
     if (r < 0 || r > 255) {
         return warnArgumentValue(L, __func__, csmInvalidRedValue.arg(r));
@@ -7139,8 +7120,15 @@ int TLuaInterpreter::setMapBackgroundColor(lua_State* L)
         return warnArgumentValue(L, __func__, csmInvalidBlueValue.arg(b));
     }
 
+    if (lua_gettop(L) > 3) {
+        a = getVerifiedInt(L, __func__, 4, "alpha", true);
+        if (a < 0 || a > 255) {
+            return warnArgumentValue(L, __func__, csmInvalidAlphaValue.arg(a));
+        }
+    }
+
     auto& host = getHostFromLua(L);
-    host.mBgColor_2 = QColor(r, g, b);
+    host.mBgColor_2 = QColor(r, g, b, a);
     updateMap(L);
     lua_pushboolean(L, true);
     return 1;
@@ -7296,10 +7284,71 @@ int TLuaInterpreter::setConfig(lua_State * L)
             return success();
         }
         if (key == qsl("showUpperLowerLevels")) {
-            mudlet::self()->mDrawUpperLowerLevels = getVerifiedBool(L, __func__, 2, "value");;
-            if (host.mpMap->mpMapper->mp2dMap) {
+            mudlet::self()->mDrawUpperLowerLevels = getVerifiedBool(L, __func__, 2, "value");
+
+            if (host.mpMap && host.mpMap->mpMapper && host.mpMap->mpMapper->mp2dMap) {
                 host.mpMap->mpMapper->mp2dMap->update();
             }
+
+            return success();
+        }
+        if (key == qsl("mapInfoColor")) {
+            if (!lua_istable(L, 2)) {
+                lua_pushfstring(L, "%s: bad argument #%d type (table expected for mapInfoColor, got %s!)",
+                    __func__, 2, luaL_typename(L, 2));
+                return warnArgumentValue(L, __func__, qsl("mapInfoColor requires a table {r, g, b} or {r, g, b, a}"));
+            }
+
+            // Get red component (index 1)
+            lua_rawgeti(L, 2, 1);
+            if (!lua_isnumber(L, -1)) {
+                lua_pop(L, 1);
+                return warnArgumentValue(L, __func__, qsl("mapInfoColor table must have red component at index 1"));
+            }
+            const int r = lua_tonumber(L, -1);
+            lua_pop(L, 1);
+            if (r < 0 || r > 255) {
+                return warnArgumentValue(L, __func__, csmInvalidRedValue.arg(r));
+            }
+
+            // Get green component (index 2)
+            lua_rawgeti(L, 2, 2);
+            if (!lua_isnumber(L, -1)) {
+                lua_pop(L, 1);
+                return warnArgumentValue(L, __func__, qsl("mapInfoColor table must have green component at index 2"));
+            }
+            const int g = lua_tonumber(L, -1);
+            lua_pop(L, 1);
+            if (g < 0 || g > 255) {
+                return warnArgumentValue(L, __func__, csmInvalidGreenValue.arg(g));
+            }
+
+            // Get blue component (index 3)
+            lua_rawgeti(L, 2, 3);
+            if (!lua_isnumber(L, -1)) {
+                lua_pop(L, 1);
+                return warnArgumentValue(L, __func__, qsl("mapInfoColor table must have blue component at index 3"));
+            }
+            const int b = lua_tonumber(L, -1);
+            lua_pop(L, 1);
+            if (b < 0 || b > 255) {
+                return warnArgumentValue(L, __func__, csmInvalidBlueValue.arg(b));
+            }
+
+            // Get alpha component (index 4, optional, defaults to 255)
+            int a = 255;
+            lua_rawgeti(L, 2, 4);
+            if (lua_isnumber(L, -1)) {
+                a = lua_tonumber(L, -1);
+                if (a < 0 || a > 255) {
+                    lua_pop(L, 1);
+                    return warnArgumentValue(L, __func__, csmInvalidAlphaValue.arg(a));
+                }
+            }
+            lua_pop(L, 1);
+
+            host.mMapInfoBg = QColor(r, g, b, a);
+            updateMap(L);
             return success();
         }
     }
@@ -7398,11 +7447,23 @@ int TLuaInterpreter::setConfig(lua_State * L)
         return success();
     }
     if (key == qsl("specialForceCharsetNegotiationOff")) {
-        host.mFORCE_CHARSET_NEGOTIATION_OFF = getVerifiedBool(L, __func__, 2, "value");
+        // specialForceCharsetNegotiationOff should not be used anymore, but we support it for compatibility
+        // it will be the inverse of enableCHARSET
+        host.mEnableCHARSET = !getVerifiedBool(L, __func__, 2, "value");
+        return success();
+    }
+    if (key == qsl("enableCHARSET")) {
+        host.mEnableCHARSET = getVerifiedBool(L, __func__, 2, "value");
         return success();
     }
     if (key == qsl("forceNewEnvironNegotiationOff")) {
-        host.mForceNewEnvironNegotiationOff = getVerifiedBool(L, __func__, 2, "value");
+        // forceNewEnvironNegotiationOff should not be used anymore, but we support it for compatibility
+        // it will be the inverse of enableNEWENVIRON
+        host.mEnableNEWENVIRON = !getVerifiedBool(L, __func__, 2, "value");
+        return success();
+    }
+    if (key == qsl("enableNEWENVIRON")) {
+        host.mEnableNEWENVIRON = getVerifiedBool(L, __func__, 2, "value");
         return success();
     }
     if (key == qsl("compactInputLine")) {
@@ -7510,6 +7571,45 @@ int TLuaInterpreter::setConfig(lua_State * L)
         mudlet::self()->setShowTabConnectionIndicators(getVerifiedBool(L, __func__, 2, "value"));
         return success();
     }
+    if (key == qsl("ambiguousEAsianWidthCharacters")) {
+        static const QStringList values{"narrow", "wide", "auto"};
+        const auto value = getVerifiedString(L, __func__, 2, "value");
+
+        if (!values.contains(value)) {
+            lua_pushnil(L);
+            lua_pushfstring(L, "invalid ambiguousEAsianWidthCharacters string \"%s\", it should be one of \"%s\"",
+                            lua_tostring(L, 2), values.join(qsl("\", \"")).toUtf8().constData());
+            return 2;
+        }
+
+        if (value == qsl("narrow")) {
+            host.setWideAmbiguousEAsianGlyphs(Qt::Unchecked);
+        } else if (value == qsl("wide")) {
+            host.setWideAmbiguousEAsianGlyphs(Qt::Checked);
+        } else {
+            host.setWideAmbiguousEAsianGlyphs(Qt::PartiallyChecked);
+        }
+        return success();
+    }
+
+    // Handle experiment keys
+    if (key.startsWith(qsl("experiment."))) {
+        auto [result, errorMessage] = host.setExperimentEnabled(key, getVerifiedBool(L, __func__, 2, "value"));
+        if (!result) {
+            return warnArgumentValue(L, __func__, errorMessage);
+        }
+
+        // Special handling for 3D mapper experiment
+        if (key == qsl("experiment.3dmap.modernmapper")) {
+#if defined(INCLUDE_3DMAPPER)
+            if (host.mpMap && host.mpMap->mpMapper) {
+                host.mpMap->mpMapper->recreate3DWidget();
+            }
+#endif
+        }
+        return success();
+    }
+
     return warnArgumentValue(L, __func__, qsl("'%1' isn't a valid configuration option").arg(key));
 }
 
@@ -7571,6 +7671,17 @@ int TLuaInterpreter::getConfig(lua_State *L)
         }},
         { qsl("mapperPanelVisible"), [&](){ lua_pushboolean(L, host.mShowPanel); } },
         { qsl("mapShowRoomBorders"), [&](){ lua_pushboolean(L, host.mMapperShowRoomBorders); } },
+        { qsl("mapInfoColor"), [&](){
+            lua_newtable(L);
+            lua_pushnumber(L, host.mMapInfoBg.red());
+            lua_rawseti(L, -2, 1);
+            lua_pushnumber(L, host.mMapInfoBg.green());
+            lua_rawseti(L, -2, 2);
+            lua_pushnumber(L, host.mMapInfoBg.blue());
+            lua_rawseti(L, -2, 3);
+            lua_pushnumber(L, host.mMapInfoBg.alpha());
+            lua_rawseti(L, -2, 4);
+        } },
         { qsl("editorAutoComplete"), [&](){ lua_pushboolean(L, host.mEditorAutoComplete); } },
         { qsl("enableGMCP"), [&](){ lua_pushboolean(L, host.mEnableGMCP); } },
         { qsl("enableMSSP"), [&](){ lua_pushboolean(L, host.mEnableMSSP); } },
@@ -7631,8 +7742,18 @@ int TLuaInterpreter::getConfig(lua_State *L)
             // it will be the inverse of enableMXP
             lua_pushboolean(L, !host.mEnableMXP);
         } },
-        { qsl("specialForceCharsetNegotiationOff"), [&](){ lua_pushboolean(L, host.mFORCE_CHARSET_NEGOTIATION_OFF); } },
-        { qsl("forceNewEnvironNegotiationOff"), [&](){ lua_pushboolean(L, host.mForceNewEnvironNegotiationOff); } },
+        { qsl("specialForceCharsetNegotiationOff"), [&](){
+            // specialForceCharsetNegotiationOff should not be used anymore, but we support it for compatibility
+            // it will be the inverse of enableCHARSET
+            lua_pushboolean(L, !host.mEnableCHARSET);
+        } },
+        { qsl("enableCHARSET"), [&](){ lua_pushboolean(L, host.mEnableCHARSET); } },
+        { qsl("forceNewEnvironNegotiationOff"), [&](){
+            // forceNewEnvironNegotiationOff should not be used anymore, but we support it for compatibility
+            // it will be the inverse of enableNEWENVIRON
+            lua_pushboolean(L, !host.mEnableNEWENVIRON);
+        } },
+        { qsl("enableNEWENVIRON"), [&](){ lua_pushboolean(L, host.mEnableNEWENVIRON); } },
         { qsl("compactInputLine"), [&](){ lua_pushboolean(L, host.getCompactInputLine()); } },
         { qsl("announceIncomingText"), [&](){ lua_pushboolean(L, host.mAnnounceIncomingText); } },
         { qsl("blankLinesBehaviour"), [&](){
@@ -7674,11 +7795,58 @@ int TLuaInterpreter::getConfig(lua_State *L)
         { qsl("logInHTML"), [&](){ lua_pushboolean(L, host.mIsNextLogFileInHtmlFormat); } },
         { qsl("f3SearchEnabled"), [&](){ lua_pushboolean(L, host.getF3SearchEnabled()); } },
         { qsl("showTabConnectionIndicators"), [&](){ lua_pushboolean(L, mudlet::self()->mShowTabConnectionIndicators); } },
+        { qsl("advertiseScreenReader"), [&](){ lua_pushboolean(L, host.mAdvertiseScreenReader); } },
+        { qsl("ambiguousEAsianWidthCharacters"), [&]() {
+            const auto ambiguousEAsianGlyphWidth = host.getWideAmbiguousEAsianGlyphsControlState();
+            switch (ambiguousEAsianGlyphWidth) {
+            case Qt::Unchecked:
+                lua_pushstring(L, "narrow");
+                break;
+            case Qt::Checked:
+                lua_pushstring(L, "wide");
+            break;
+            default:
+                lua_pushstring(L, "auto");
+            }
+        } },
+        { qsl("enableClosedCaption"), [&](){ lua_pushboolean(L, host.mEnableClosedCaption); } },
+        { qsl("showUpperLowerLevels"), [&](){ lua_pushboolean(L, mudlet::self()->mDrawUpperLowerLevels); } }
     };
 
     auto it = configMap.find(key);
     if (it != configMap.end()) {
         it->second();
+        return 1;
+    }
+
+    // Handle experiment keys
+    if (key.startsWith(qsl("experiment."))) {
+        if (key == qsl("experiment.list")) {
+            // Special case: return list of all valid experiments
+            QStringList validExperiments = host.getValidExperiments();
+            lua_createtable(L, validExperiments.size(), 0);
+            for (int i = 0; i < validExperiments.size(); ++i) {
+                lua_pushstring(L, validExperiments.at(i).toUtf8().constData());
+                lua_rawseti(L, -2, i + 1);
+            }
+        } else if (key.endsWith(qsl(".active"))) {
+            // Handle special case: experiment.<group>.active returns active experiment name
+            QString group = key.left(key.length() - 7); // Remove ".active"
+            QString activeExperiment = host.getActiveExperimentInGroup(group);
+            if (activeExperiment.isEmpty()) {
+                lua_pushnil(L);
+            } else {
+                lua_pushstring(L, activeExperiment.toUtf8().constData());
+            }
+        } else {
+            // Regular experiment key - but only if it's valid
+            QStringList validExperiments = host.getValidExperiments();
+            if (validExperiments.contains(key)) {
+                lua_pushboolean(L, host.experimentEnabled(key));
+            } else {
+                lua_pushboolean(L, false);  // Invalid experiments are always false
+            }
+        }
         return 1;
     }
 

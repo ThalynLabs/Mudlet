@@ -34,21 +34,13 @@
 macro(include_optional_module)
   # parse readable arguments
   set(OPTIONAL_MODULE_OPTIONS "") # not used
-  set(OPTIONAL_MODULE_ONE_VALUE_ARGS
-    ENVIRONMENT_VARIABLE
-    OPTION_VARIABLE
-    READABLE_NAME
-    DEFAULT_VALUE)
+  set(OPTIONAL_MODULE_ONE_VALUE_ARGS ENVIRONMENT_VARIABLE OPTION_VARIABLE
+                                     READABLE_NAME DEFAULT)
   set(OPTIONAL_MODULE_MULTI_VALUE_ARGS SUPPORTED_SYSTEMS)
   cmake_parse_arguments(
     OPTIONAL_MODULE "${OPTIONAL_MODULE_OPTIONS}"
     "${OPTIONAL_MODULE_ONE_VALUE_ARGS}" "${OPTIONAL_MODULE_MULTI_VALUE_ARGS}"
     ${ARGN})
-
-  # Set default value to ON if not specified
-  if(NOT DEFINED OPTIONAL_MODULE_DEFAULT_VALUE)
-    set(OPTIONAL_MODULE_DEFAULT_VALUE ON)
-  endif()
 
   if(NOT OPTIONAL_MODULE_ENVIRONMENT_VARIABLE)
     message(
@@ -92,10 +84,24 @@ macro(include_optional_module)
         )
       endif()
     else()
-      # An environmental variable not detected, apply platform default
-      set(OPTIONAL_MODULE_OPTION_VALUE ${OPTIONAL_MODULE_DEFAULT_VALUE})
-      message(
-        STATUS "Optional ${OPTIONAL_MODULE_READABLE_NAME} defaulting to: ${OPTIONAL_MODULE_OPTION_VALUE}")
+      # An environmental variable not detected, apply specified default or "yes"
+      if(DEFINED OPTIONAL_MODULE_DEFAULT)
+        string(TOUPPER ${OPTIONAL_MODULE_DEFAULT} OPTIONAL_MODULE_DEFAULT_UPPER)
+        if(OPTIONAL_MODULE_DEFAULT_UPPER STREQUAL "OFF" OR OPTIONAL_MODULE_DEFAULT_UPPER STREQUAL "NO")
+          set(OPTIONAL_MODULE_OPTION_VALUE OFF)
+          message(
+            STATUS "Excluding optional ${OPTIONAL_MODULE_READABLE_NAME} by default")
+        else()
+          set(OPTIONAL_MODULE_OPTION_VALUE ON)
+          message(
+            STATUS "Including optional ${OPTIONAL_MODULE_READABLE_NAME}")
+        endif()
+      else()
+        # No default specified, use platform default of "yes, include the module"
+        set(OPTIONAL_MODULE_OPTION_VALUE ON)
+        message(
+          STATUS "Including optional ${OPTIONAL_MODULE_READABLE_NAME}")
+      endif()
     endif()
     option(${OPTIONAL_MODULE_OPTION_VARIABLE}
            "Include optional ${OPTIONAL_MODULE_READABLE_NAME}"

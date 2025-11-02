@@ -37,7 +37,13 @@
 ############################################################################
 
 if(lessThan(QT_MAJOR_VERSION,6)) {
-    error("Mudlet requires Qt 6.0 or later")
+    error("Mudlet requires Qt 6.8.2 or later")
+}
+if(equals(QT_MAJOR_VERSION,6):lessThan(QT_MINOR_VERSION,8)) {
+    error("Mudlet requires Qt 6.8.2 or later")
+}
+if(equals(QT_MAJOR_VERSION,6):equals(QT_MINOR_VERSION,8):lessThan(QT_PATCH_VERSION,2)) {
+    error("Mudlet requires Qt 6.8.2 or later")
 }
 
 # Including IRC Library
@@ -51,23 +57,18 @@ include(../3rdparty/communi/communi.pri)
 # that Qt tries to put in automatically for us for release builds, only the
 # last, ours, is supposed to apply but it can be confusing to see multiple
 # alternatives during compilations.
-!msvc {
-    QMAKE_CXXFLAGS_RELEASE ~= s/-O[0123s]//g
-    QMAKE_CFLAGS_RELEASE ~= s/-O[0123s]//g
+QMAKE_CXXFLAGS_RELEASE ~= s/-O[0123s]//g
+QMAKE_CFLAGS_RELEASE ~= s/-O[0123s]//g
 # NOW we can put ours in:
-    QMAKE_CXXFLAGS_RELEASE += -O3
-    QMAKE_CFLAGS_RELEASE += -O3
+QMAKE_CXXFLAGS_RELEASE += -O3
+QMAKE_CFLAGS_RELEASE += -O3
 # There is NO need to put in the -g option as it is done already for debug bugs
 # For gdb type debugging it helps if there is NO optimisations so use -O0.
-    QMAKE_CXXFLAGS_DEBUG += -O0
-    QMAKE_CFLAGS_DEBUG += -O0
-}
+QMAKE_CXXFLAGS_DEBUG += -O0
+QMAKE_CFLAGS_DEBUG += -O0
 
 # c++20 for Qt 6
 CONFIG += c++20
-
-# MSVC specific flags. Enable multiprocessor MSVC builds.
-msvc:QMAKE_CXXFLAGS += -MP
 
 # Mac specific flags.
 macx:QMAKE_MACOSX_DEPLOYMENT_TARGET = 12.0
@@ -239,6 +240,22 @@ isEmpty( 3DMAPPER_TEST ) | !equals(3DMAPPER_TEST, "NO" ) {
     DEFINES += INCLUDE_3DMAPPER
 }
 
+######################### Shader hot-reload toggle ############################
+# To enable shader hot-reloading, set the environment WITH_SHADER_HOT_RELOAD variable to "YES"
+# ie: export WITH_SHADER_HOT_RELOAD="YES" qmake
+#
+SHADER_HOT_RELOAD_TEST = $$upper($$(WITH_SHADER_HOT_RELOAD))
+equals(SHADER_HOT_RELOAD_TEST, "YES" ) {
+    DEFINES += USE_SHADER_HOT_RELOAD
+    !build_pass{
+        message("Shader hot-reloading is enabled in this configuration")
+    }
+} else {
+    !build_pass{
+        message("Shader hot-reloading is disabled in this configuration")
+    }
+}
+
 ######################## System QtKeyChain library #############################
 # To use a system provided QtKeyChain library set the environmental variable
 # WITH_OWN_QTKEYCHAIN variable to "NO". Note that this is only likely to be
@@ -325,6 +342,10 @@ DEFINES+=DEBUG_TELNET=1
 # * Produce qDebug() messages about window handling operations like dock widget
 # transfers, profile switching, and detached window management:
 # DEFINES+=DEBUG_WINDOW_HANDLING
+#
+# * Enable player icon adjustment controls in the 3D mapper for debugging and 
+# alignment purposes - these are normally hidden in production builds:
+# DEFINES+=DEBUG_PLAYER_ICON_CONTROLS
 
 unix:!macx {
 # Distribution packagers would be using PREFIX = /usr but this is accepted
@@ -381,7 +402,9 @@ unix:!macx {
         -lpugixml
 
     isEmpty( 3DMAPPER_TEST ) | !equals(3DMAPPER_TEST, "NO" ) {
-       LIBS += -lGLU
+       LIBS += \
+         -lGLU \
+         -lassimp
     }
 
     LUA_DEFAULT_DIR = $${DATADIR}/lua
@@ -413,6 +436,9 @@ unix:!macx {
         -lpugixml \
         -lws2_32 \
         -loleaut32
+    isEmpty( 3DMAPPER_TEST ) | !equals(3DMAPPER_TEST, "NO" ) {
+        LIBS += -lassimp
+    }
 
     INCLUDEPATH += \
         $${MINGW_BASE_DIR_TEST}/include/lua5.1 \
@@ -589,8 +615,8 @@ SOURCES += \
     ActionUnit.cpp \
     AliasUnit.cpp \
     AltFocusMenuBarDisable.cpp \
-    DarkTheme.cpp \
     ctelnet.cpp \
+    DarkTheme.cpp \
     discord.cpp \
     dlgAboutDialog.cpp \
     dlgActionMainArea.cpp \
@@ -606,6 +632,7 @@ SOURCES += \
     dlgNotepad.cpp \
     dlgPackageExporter.cpp \
     dlgPackageManager.cpp \
+    PackageItemDelegate.cpp \
     dlgProfilePreferences.cpp \
     dlgRoomExits.cpp \
     dlgRoomProperties.cpp \
@@ -637,9 +664,22 @@ SOURCES += \
     MudletInstanceCoordinator.cpp \
     MxpTag.cpp \
     ScriptUnit.cpp \
+    SecureStringUtils.cpp \
+    CredentialManager.cpp \
     ShortcutsManager.cpp \
     SingleLineTextEdit.cpp \
     T2DMap.cpp \
+    CustomLineDrawContextMenuHandler.cpp \
+    CustomLineDrawHandler.cpp \
+    CustomLineEditContextMenuHandler.cpp \
+    CustomLineEditHandler.cpp \
+    CustomLineSession.cpp \
+    LabelInteractionHandler.cpp \
+    PanInteractionHandler.cpp \
+    RoomContextMenuHandler.cpp \
+    RoomMoveActivationHandler.cpp \
+    RoomMoveDragHandler.cpp \
+    SelectionRectangleHandler.cpp \
     TAccessibleTextEdit.cpp \
     TAction.cpp \
     TAlias.cpp \
@@ -677,6 +717,7 @@ SOURCES += \
     TMxpElementDefinitionHandler.cpp \
     TMxpElementRegistry.cpp \
     TMxpEntityTagHandler.cpp \
+    TMxpExpireTagHandler.cpp \
     TLuaInterpreterTextToSpeech.cpp \
     TMxpFormattingTagsHandler.cpp \
     TMxpColorTagHandler.cpp \
@@ -720,7 +761,6 @@ HEADERS += \
     ../3rdparty/discord/rpc/include/discord_register.h \
     ../3rdparty/discord/rpc/include/discord_rpc.h \
     ActionUnit.h \
-    Announcer.h \
     AliasUnit.h \
     AltFocusMenuBarDisable.h \
     ctelnet.h \
@@ -740,6 +780,7 @@ HEADERS += \
     dlgNotepad.h \
     dlgPackageExporter.h \
     dlgPackageManager.h \
+    PackageItemDelegate.h \
     dlgProfilePreferences.h \
     dlgRoomExits.h \
     dlgRoomProperties.h \
@@ -768,12 +809,23 @@ HEADERS += \
     mudlet.h \
     MudletInstanceCoordinator.h \
     MxpTag.h \
-    pre_guard.h \
-    post_guard.h \
     ScriptUnit.h \
+    SecureStringUtils.h \
+    CredentialManager.h \
     ShortcutsManager.h \
     SingleLineTextEdit.h \
     T2DMap.h \
+    CustomLineDrawContextMenuHandler.h \
+    CustomLineDrawHandler.h \
+    CustomLineEditContextMenuHandler.h \
+    CustomLineEditHandler.h \
+    CustomLineSession.h \
+    LabelInteractionHandler.h \
+    PanInteractionHandler.h \
+    RoomContextMenuHandler.h \
+    RoomMoveActivationHandler.h \
+    RoomMoveDragHandler.h \
+    SelectionRectangleHandler.h \
     TAccessibleConsole.h \
     TAccessibleTextEdit.h \
     TAction.h \
@@ -789,7 +841,6 @@ HEADERS += \
     TEncodingTable.h \
     TEntityHandler.h \
     TEntityResolver.h \
-    testdbg.h \
     TEvent.h \
     TFlipButton.h \
     TForkedProcess.h \
@@ -817,6 +868,7 @@ HEADERS += \
     TMxpElementDefinitionHandler.h \
     TMxpElementRegistry.h \
     TMxpEntityTagHandler.h \
+    TMxpExpireTagHandler.h \
     TMxpContext.h \
     TMxpFormattingTagsHandler.h \
     TMxpMudlet.h \
@@ -856,22 +908,6 @@ HEADERS += \
     ../3rdparty/discord/rpc/include/discord_register.h \
     ../3rdparty/discord/rpc/include/discord_rpc.h
 
-macx|win32 {
-    macx {
-        SOURCES += AnnouncerMac.mm
-    }
-
-    win32 {
-        SOURCES += AnnouncerWindows.cpp \
-            uiawrapper.cpp
-
-        HEADERS += uiawrapper.h
-    }
-} else {
-    # Everything else
-    SOURCES += \
-        AnnouncerUnix.cpp
-}
 
 # This is for compiled UI files, not those used at runtime through the resource file.
 FORMS += \
@@ -954,17 +990,40 @@ linux|macx|win32 {
 
 
 contains( DEFINES, INCLUDE_3DMAPPER ) {
-    HEADERS += glwidget.h
-    SOURCES += glwidget.cpp
+    HEADERS += glwidget.h \
+               modern_glwidget.h \
+               glwidget_integration.h \
+               CameraController.h \
+               GeometryManager.h \
+               RenderCommand.h \
+               RenderCommandQueue.h \
+               ResourceManager.h \
+               ShaderManager.h
+    SOURCES += glwidget.cpp \
+               modern_glwidget.cpp \
+               glwidget_integration.cpp \
+               CameraController.cpp \
+               GeometryManager.cpp \
+               RenderCommand.cpp \
+               RenderCommandQueue.cpp \
+               ResourceManager.cpp \
+               ShaderManager.cpp
+
+    # Enable shader hot-reloading when USE_SHADER_HOT_RELOAD is defined
+    contains( DEFINES, USE_SHADER_HOT_RELOAD ) {
+        DEFINES += MUDLET_SHADER_HOT_RELOAD=1
+    }
+
+    !build_pass{
+        message("The 3D mapper code with both OpenGL implementations is included in this configuration for runtime selection")
+    }
+
     QT += opengl
 
     win32 {
         LIBS += -lopengl32 \
-                -lglu32
-    }
-
-    !build_pass{
-        message("The 3D mapper code is included in this configuration")
+                -lglu32 \
+                -lassimp
     }
 } else {
     !build_pass{
@@ -1583,7 +1642,7 @@ macx {
         QMAKE_OBJECTIVE_CFLAGS += -F $$SPARKLE_PATH
 
         OBJECTIVE_SOURCES += sparkleupdater.mm
-        HEADERS += sparkleupdater.h        
+        HEADERS += sparkleupdater.h
         # Copy Sparkle into the app bundle
         sparkle.path = Contents/Frameworks
         sparkle.files = $$SPARKLE_PATH/Sparkle.framework
@@ -1622,22 +1681,21 @@ win32 {
 # This is a list of files that we want to show up in the Qt Creator IDE that are
 # not otherwise used by the main project:
 OTHER_FILES += \
+    ../.ai/ai-instructions.md \
     ../.crowdin.yml \
+    ../.cursorrules \
     ../.devcontainer/Dockerfile \
     ../.devcontainer/devcontainer.json \
     ../.devcontainer/library-scripts/desktop-lite-debian.sh \
-    ../.github/CODE_OF_CONDUCT.md \
     ../.github/CODEOWNERS \
     ../.github/codeql/codeql-config.yml \
     ../.github/codespell-wordlist.txt \
-    ../.github/CONTRIBUTING.md \
+    ../.github/copilot-instructions.md \
     ../.github/dependabot.yml \
-    ../.github/FUNDING.yml \
     ../.github/ISSUE_TEMPLATE.md \
     ../.github/pr-labeler.yml \
     ../.github/PULL_REQUEST_TEMPLATE.md \
     ../.github/repo-metadata.yml \
-    ../.github/SUPPORT.md \
     ../.github/workflows/build-mudlet.yml \
     ../.github/workflows/build-mudlet-win.yml \
     ../.github/workflows/clangtidy-diff-analysis.yml \
@@ -1657,6 +1715,8 @@ OTHER_FILES += \
     ../.github/workflows/update-geyser-docs.yml \
     ../.github/workflows/update-translations.yml \
     ../.gitignore \
+    ../AGENTS.md \
+    ../CLAUDE.md \
     ../CI/build-mudlet-for-windows.sh \
     ../CI/deploy-mudlet-for-windows.sh \
     ../CI/fix.grid.ui.ordering.js \
@@ -1685,8 +1745,15 @@ OTHER_FILES += \
     ../docker/docker-compose.override.linux.yml \
     ../docker/docker-compose.yml \
     ../docker/Dockerfile \
+    ../docs/AI-ASSISTANTS.md \
+    ../docs/CODE_OF_CONDUCT.md \
+    ../docs/CONTRIBUTING.md \
+    ../docs/FUNDING.yml \
+    ../docs/SUPPORT.md \
     ../test/CMakeLists.txt \
     ../test/GUIConsoleTests.mpackage \
+    ../test/CredentialManagerTest.cpp \
+    ../test/SecureStringUtilsTest.cpp \
     ../test/TEntityHandlerTest.cpp \
     ../test/TEntityResolverTest.cpp \
     ../test/TLinkStoreTest.cpp \
@@ -1698,6 +1765,7 @@ OTHER_FILES += \
     ../test/TMxpStubClient.h \
     ../test/TMxpTagParserTest.cpp \
     ../test/TMxpVersionTagTest.cpp \
+    ../test/TMxpElementDefinitionHandlerTest.cpp \
     mac-deploy.sh \
     mudlet-lua/genDoc.sh \
     mudlet-lua/lua/ldoc.css

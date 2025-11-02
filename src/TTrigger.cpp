@@ -31,9 +31,7 @@
 #include "TMatchState.h"
 #include "TMedia.h"
 #include "mudlet.h"
-#include "pre_guard.h"
 #include <QRegularExpression>
-#include "post_guard.h"
 
 #include <cassert>
 #include <sstream>
@@ -46,68 +44,19 @@ const int TTrigger::scmIgnored = -1;
 
 TTrigger::TTrigger( TTrigger * parent, Host * pHost )
 : Tree<TTrigger>( parent )
-, mTriggerContainsPerlRegex(false)
-, mPerlSlashGOption(false)
-, mFilterTrigger(false)
-, mSoundTrigger(false)
-, mStayOpen(0)
-, mColorTrigger(false)
-, mColorTriggerFgAnsi(scmIgnored)
-, mColorTriggerBgAnsi(scmIgnored)
-, mKeepFiring(0)
 , mpHost(pHost)
-, exportItem(true)
-, mModuleMasterFolder(false)
-, mRegisteredAnonymousLuaFunction(false)
-, mNeedsToBeCompiled(true)
-, mTriggerType(REGEX_SUBSTRING)
-, mIsLineTrigger(false)
-, mStartOfLineDelta(0)
-, mLineDelta(3)
-, mIsMultiline(false)
-, mConditionLineDelta(0)
 , mpLua(mpHost->getLuaInterpreter())
-, mFgColor(QColor(Qt::red))
-, mBgColor(QColor(Qt::yellow))
-, mIsColorizerTrigger(false)
-, mModuleMember(false)
-, isNew(true)
-, mExpiryCount(-1)
 {
 }
 
 TTrigger::TTrigger(const QString& name, const QStringList& patterns, const QList<int>& patternKinds, bool isMultiline, Host* pHost)
 : Tree<TTrigger>(nullptr)
-, mTriggerContainsPerlRegex(false)
-, mPerlSlashGOption(false)
-, mFilterTrigger(false)
-, mSoundTrigger(false)
-, mStayOpen(0)
-, mColorTrigger(false)
-, mColorTriggerFgAnsi(scmIgnored)
-, mColorTriggerBgAnsi(scmIgnored)
-, mKeepFiring(0)
 , mpHost(pHost)
 , mName(name)
 , mPatterns(patterns)
-, exportItem(true)
-, mModuleMasterFolder(false)
-, mRegisteredAnonymousLuaFunction(false)
 , mPatternKinds(patternKinds)
-, mNeedsToBeCompiled(true)
-, mTriggerType(REGEX_SUBSTRING)
-, mIsLineTrigger(false)
-, mStartOfLineDelta(0)
-, mLineDelta(3)
 , mIsMultiline(isMultiline)
-, mConditionLineDelta(0)
 , mpLua(mpHost->getLuaInterpreter())
-, mFgColor(QColor(Qt::red))
-, mBgColor(QColor(Qt::yellow))
-, mIsColorizerTrigger(false)
-, mModuleMember(false)
-, isNew(true)
-, mExpiryCount(-1)
 {
     setRegexCodeList(patterns, patternKinds);
 }
@@ -1134,7 +1083,7 @@ bool TTrigger::match(char* haystackC, const QString& haystack, int line, int pos
         if (!mFilterTrigger) {
             if (conditionMet || (mPatterns.empty())) {
                 for (auto trigger : *mpMyChildrenList) {
-                    ret = trigger->match(haystackC, haystack, line);
+                    ret = trigger->match(haystackC, haystack, line, posOffset);
                     if (ret) {
                         conditionMet = true;
                     }
@@ -1148,7 +1097,7 @@ bool TTrigger::match(char* haystackC, const QString& haystack, int line, int pos
                 execute();
             }
             for (auto trigger : *mpMyChildrenList) {
-                ret = trigger->match(haystackC, haystack, line);
+                ret = trigger->match(haystackC, haystack, line, posOffset);
                 if (ret) {
                     conditionMet = true;
                 }
@@ -1180,12 +1129,12 @@ bool TTrigger::match(char* haystackC, const QString& haystack, int line, int pos
 
 bool TTrigger::checkIfNew()
 {
-    return isNew;
+    return mIsNew;
 }
 
 void TTrigger::unmarkAsNew()
 {
-    isNew = false;
+    mIsNew = false;
 }
 
 

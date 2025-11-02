@@ -102,10 +102,24 @@ set(mudlet_SRCS
     mudlet.cpp
     MudletInstanceCoordinator.cpp
     MxpTag.cpp
+    CredentialManager.cpp
     ScriptUnit.cpp
+    SecureStringUtils.cpp
     ShortcutsManager.cpp
     SingleLineTextEdit.cpp
     T2DMap.cpp
+    CustomLineDrawContextMenuHandler.cpp
+    CustomLineDrawHandler.cpp
+    CustomLineEditContextMenuHandler.cpp
+    CustomLineEditHandler.cpp
+    CustomLineSession.cpp
+    LabelInteractionHandler.cpp
+    PackageItemDelegate.cpp
+    PanInteractionHandler.cpp
+    RoomContextMenuHandler.cpp
+    RoomMoveActivationHandler.cpp
+    RoomMoveDragHandler.cpp
+    SelectionRectangleHandler.cpp
     TAccessibleTextEdit.cpp
     TAction.cpp
     TAlias.cpp
@@ -149,6 +163,7 @@ set(mudlet_SRCS
     TMxpElementDefinitionHandler.cpp
     TMxpElementRegistry.cpp
     TMxpEntityTagHandler.cpp
+    TMxpExpireTagHandler.cpp
     TMxpFontTagHandler.cpp
     TMxpFormattingTagsHandler.cpp
     TMxpLinkTagHandler.cpp
@@ -188,7 +203,6 @@ set(mudlet_SRCS
     XMLimport.cpp)
 
 if(APPLE)
-  list(APPEND mudlet_SRCS AnnouncerMac.mm)
   # Sparkle updater for macOS
   if(USE_UPDATER)
     list(APPEND mudlet_SRCS sparkleupdater.mm)
@@ -201,11 +215,6 @@ if(APPLE)
       COMPILE_OPTIONS "-fobjc-arc"
   )
   endif()
-elseif(WIN32)
-  list(APPEND mudlet_SRCS AnnouncerWindows.cpp)
-  list(APPEND mudlet_SRCS uiawrapper.cpp)
-else()
-  list(APPEND mudlet_SRCS AnnouncerUnix.cpp)
 endif()
 
 # This is for compiled UI files, not those used at runtime
@@ -242,7 +251,6 @@ set(mudlet_HDRS
     ActionUnit.h
     AliasUnit.h
     AltFocusMenuBarDisable.h
-    Announcer.h
     ctelnet.h
     DarkTheme.h
     discord.h
@@ -288,12 +296,22 @@ set(mudlet_HDRS
     mudlet.h
     MudletInstanceCoordinator.h
     MxpTag.h
-    post_guard.h
-    pre_guard.h
     ScriptUnit.h
+    SecureStringUtils.h
     ShortcutsManager.h
     SingleLineTextEdit.h
     T2DMap.h
+    CustomLineDrawContextMenuHandler.h
+    CustomLineDrawHandler.h
+    CustomLineEditContextMenuHandler.h
+    CustomLineEditHandler.h
+    CustomLineSession.h
+    LabelInteractionHandler.h
+    PackageItemDelegate.h
+    PanInteractionHandler.h
+    RoomMoveActivationHandler.h
+    RoomMoveDragHandler.h
+    SelectionRectangleHandler.h
     TAccessibleConsole.h
     TAccessibleTextEdit.h
     TAction.h
@@ -309,7 +327,6 @@ set(mudlet_HDRS
     TEncodingTable.h
     TEntityHandler.h
     TEntityResolver.h
-    testdbg.h
     TEvent.h
     TFlipButton.h
     TForkedProcess.h
@@ -332,6 +349,7 @@ set(mudlet_HDRS
     TMxpElementDefinitionHandler.h
     TMxpElementRegistry.h
     TMxpEntityTagHandler.h
+    TMxpExpireTagHandler.h
     TMxpFontTagHandler.h
     TMxpFormattingTagsHandler.h
     TMxpLinkTagHandler.h
@@ -374,9 +392,6 @@ set(mudlet_HDRS
     XMLimport.h
     enums.h)
 
-if(WIN32)
-  list(APPEND mudlet_HDRS uiawrapper.h)
-endif()
 
 if(USE_UPDATER)
   list(APPEND mudlet_SRCS updater.cpp)
@@ -386,6 +401,22 @@ endif(USE_UPDATER)
 if(USE_3DMAPPER)
   list(APPEND mudlet_SRCS glwidget.cpp)
   list(APPEND mudlet_HDRS glwidget.h)
+  list(APPEND mudlet_SRCS modern_glwidget.cpp)
+  list(APPEND mudlet_HDRS modern_glwidget.h)
+  list(APPEND mudlet_SRCS CameraController.cpp)
+  list(APPEND mudlet_HDRS CameraController.h)
+  list(APPEND mudlet_SRCS GeometryManager.cpp)
+  list(APPEND mudlet_HDRS GeometryManager.h)
+  list(APPEND mudlet_SRCS RenderCommand.cpp)
+  list(APPEND mudlet_HDRS RenderCommand.h)
+  list(APPEND mudlet_SRCS RenderCommandQueue.cpp)
+  list(APPEND mudlet_HDRS RenderCommandQueue.h)
+  list(APPEND mudlet_SRCS ResourceManager.cpp)
+  list(APPEND mudlet_HDRS ResourceManager.h)
+  list(APPEND mudlet_SRCS ShaderManager.cpp)
+  list(APPEND mudlet_HDRS ShaderManager.h)
+  list(APPEND mudlet_HDRS glwidget_integration.h)
+  list(APPEND mudlet_SRCS glwidget_integration.cpp)
 endif(USE_3DMAPPER)
 
 # credit to https://github.com/heavyai/heavydb/blob/72c90bc290b79dd30240da41c103a00720f6b050/CMakeLists.txt#L119
@@ -490,6 +521,7 @@ if(USE_3DMAPPER)
     cmake_policy(SET CMP0072 NEW)
   endif()
   find_package(OpenGL REQUIRED)
+  find_package(assimp REQUIRED)
 endif()
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -559,6 +591,10 @@ target_compile_definitions(mudlet PRIVATE DEBUG_TELNET=1)
 # * Produce qDebug() messages about window handling operations like dock widget
 #   transfers, profile switching, and detached window management:
 # target_compile_definitions(mudlet PRIVATE DEBUG_WINDOW_HANDLING)
+#
+# * Enable player icon adjustment controls in the 3D mapper for debugging and 
+#   alignment purposes - these are normally hidden in production builds:
+# target_compile_definitions(mudlet PRIVATE DEBUG_PLAYER_ICON_CONTROLS)
 
 target_sources(mudlet PRIVATE "${mudlet_BINARY_DIR}/translations/translated/qm.qrc")
 
@@ -586,6 +622,11 @@ target_compile_definitions(mudlet
 
 if(USE_OWN_QTKEYCHAIN)
     target_compile_definitions(mudlet PRIVATE INCLUDE_OWN_QT6_KEYCHAIN QTKEYCHAIN_NO_EXPORT)
+endif()
+
+# Define shader hot-reloading if enabled
+if(USE_SHADER_HOT_RELOAD AND USE_3DMAPPER)
+  target_compile_definitions(mudlet PRIVATE MUDLET_SHADER_HOT_RELOAD=1)
 endif()
 
 # Used to force an include of winsock2.h BEFORE Qt tries to include winsock.h
@@ -630,8 +671,10 @@ endif(USE_UPDATER)
 
 if(USE_3DMAPPER)
   target_link_libraries(mudlet OpenGL::GLU)
+  target_link_libraries(mudlet assimp::assimp)
   target_compile_definitions(mudlet PRIVATE INCLUDE_3DMAPPER)
 endif()
+
 
 if(USE_VARIABLE_SPLASH_SCREEN)
   target_compile_definitions(mudlet PRIVATE INCLUDE_VARIABLE_SPLASH_SCREEN)

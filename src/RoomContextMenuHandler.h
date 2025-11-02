@@ -1,6 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2022 by Vadim Peretokin - vadim.peretokin@mudlet.org    *
- *   Copyright (C) 2023 by Stephen Lyons - slysven@virginmedia.com         *
+ *   Copyright (C) 2025 by Piotr Wilczynski - delwing@gmail.com            *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -18,26 +17,25 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "Announcer.h"
+#pragma once
 
-#include <AppKit/AppKit.h>
-#include <QDebug>
+#include "T2DMap.h"
 
-Announcer::Announcer(QWidget *parent)
-: QWidget{parent}
+class QMenu;
+class TArea;
+
+class RoomContextMenuHandler : public T2DMap::IInteractionHandler
 {
-    // Needed to prevent this (invisible) widget from being seen by itself in
-    // the top left corner of the main application window where it masks part of
-    // the main menu bar:
-    setVisible(false);
-}
+public:
+    explicit RoomContextMenuHandler(T2DMap& mapWidget);
 
-void Announcer::announce(const QString& text, const QString& processing)
-{
-    Q_UNUSED(processing)
-    NSDictionary *announcementInfo = @{
-        NSAccessibilityAnnouncementKey : text.toNSString(),
-        NSAccessibilityPriorityKey : @(NSAccessibilityPriorityHigh),
-    };
-    NSAccessibilityPostNotificationWithUserInfo([NSApp mainWindow], NSAccessibilityAnnouncementRequestedNotification, announcementInfo);
-}
+    bool matches(const T2DMap::MapInteractionContext& context) const override;
+    bool handle(T2DMap::MapInteractionContext& context) override;
+
+private:
+    void populateEditModeActions(QMenu* menu, int selectionSize, TArea* area) const;
+    void populateViewModeActions(QMenu* menu, int selectionSize) const;
+    bool hasCustomLineSelection(const T2DMap::MapInteractionContext& context) const;
+
+    T2DMap& mMapWidget;
+};

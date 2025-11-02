@@ -24,12 +24,10 @@
 
 #include "Tree.h"
 
-#include "pre_guard.h"
 #include <QDebug>
 #include <QPointer>
 #include <QStringList>
 #include <optional>
-#include "post_guard.h"
 
 class Host;
 class TEvent;
@@ -65,9 +63,9 @@ public:
     bool checkIfNew();
     void unmarkAsNew();
 
-    bool exportItem;
-    bool mModuleMasterFolder;
-    bool isNew;
+    bool exportItem = true;
+    bool mModuleMasterFolder = false;
+    bool mIsNew = true;
 
 private:
     TScript() = default;
@@ -75,9 +73,9 @@ private:
     QString mScript;
     QString mFuncName;
     QPointer<Host> mpHost;
-    bool mNeedsToBeCompiled;
+    bool mNeedsToBeCompiled = true;
     QStringList mEventHandlerList;
-    bool mModuleMember;
+    bool mModuleMember = false;
     std::optional<QString> mLoadingError;
 };
 
