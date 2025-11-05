@@ -628,7 +628,7 @@ Por favor, espere...</translation>
     <message>
       <location filename="../src/TBuffer.cpp" line="2512"/>
       <source>Right-click for menu</source>
-      <translation type="unfinished"/>
+      <translation>Clic derecho para menú</translation>
     </message>
     <message>
       <location filename="../src/dlgMapper.cpp" line="571"/>
@@ -680,7 +680,7 @@ Por favor, espere...</translation>
       <extracomment>2D Mapper context menu (drawing custom exit line) item
 ----------
 2D Mapper context menu (custom line editing) item</extracomment>
-      <translation type="unfinished"/>
+      <translation>Ajustar puntos a la cuadrícula</translation>
     </message>
     <message>
       <location filename="../src/CustomLineDrawContextMenuHandler.cpp" line="94"/>
@@ -689,7 +689,7 @@ Por favor, espere...</translation>
       <extracomment>2D Mapper context menu (drawing custom exit line) item tooltip
 ----------
 2D Mapper context menu (custom line editing) item tooltip</extracomment>
-      <translation type="unfinished"/>
+      <translation>Adherir los puntos actuales y mantener alineadas las ediciones de líneas personalizadas a la cuadrícula del mapa</translation>
     </message>
     <message>
       <location filename="../src/CustomLineDrawContextMenuHandler.cpp" line="97"/>
@@ -698,7 +698,7 @@ Por favor, espere...</translation>
       <extracomment>2D Mapper context menu (drawing custom exit line) item
 ----------
 2D Mapper context menu (custom line editing) item</extracomment>
-      <translation type="unfinished"/>
+      <translation>Mover el último punto a la sala objetivo</translation>
     </message>
     <message>
       <location filename="../src/CustomLineDrawContextMenuHandler.cpp" line="101"/>
@@ -707,7 +707,7 @@ Por favor, espere...</translation>
       <extracomment>2D Mapper context menu (drawing custom exit line) item tooltip (enabled state)
 ----------
 2D Mapper context menu (custom line editing) item tooltip (enabled state)</extracomment>
-      <translation type="unfinished"/>
+      <translation>Ajustar el punto final a la sala de destino</translation>
     </message>
     <message>
       <location filename="../src/CustomLineDrawContextMenuHandler.cpp" line="105"/>
@@ -716,7 +716,7 @@ Por favor, espere...</translation>
       <extracomment>2D Mapper context menu (drawing custom exit line) item tooltip (disabled state)
 ----------
 2D Mapper context menu (custom line editing) item tooltip (disabled state)</extracomment>
-      <translation type="unfinished"/>
+      <translation>Selecciona una línea con una sala de destino válida y al menos un punto ajustable</translation>
     </message>
     <message>
       <location filename="../src/CustomLineDrawContextMenuHandler.cpp" line="109"/>
@@ -878,13 +878,13 @@ Por favor, espere...</translation>
       <location filename="../src/RoomContextMenuHandler.cpp" line="266"/>
       <source>Export area to image...</source>
       <extracomment>2D Mapper context menu (area) item</extracomment>
-      <translation type="unfinished"/>
+      <translation>Exportar área a imagen...</translation>
     </message>
     <message>
       <location filename="../src/RoomContextMenuHandler.cpp" line="268"/>
       <source>Export the current area as an image file</source>
       <extracomment>2D Mapper context menu (area) item tooltip</extracomment>
-      <translation type="unfinished"/>
+      <translation>Exportar el área actual como archivo de imagen</translation>
     </message>
     <message>
       <location filename="../src/RoomContextMenuHandler.cpp" line="281"/>
@@ -983,7 +983,7 @@ Por favor, espere...</translation>
     <message>
       <location filename="../src/SelectionRectangleHandler.cpp" line="112"/>
       <source>Hold Shift to add rooms or labels to your current selection.</source>
-      <translation type="unfinished"/>
+      <translation>Mantenga pulsado Shift para agregar salas o etiquetas a su selección actual.</translation>
     </message>
     <message>
       <location filename="../src/T2DMap.cpp" line="3127"/>
@@ -1051,7 +1051,7 @@ Por favor, espere...</translation>
     <message>
       <location filename="../src/T2DMap.cpp" line="3627"/>
       <source>Click to finish moving the selected room(s).</source>
-      <translation type="unfinished"/>
+      <translation>Haga clic para terminar de mover la(s) sala(s).</translation>
     </message>
     <message>
       <location filename="../src/T2DMap.cpp" line="4723"/>
@@ -1069,27 +1069,27 @@ Por favor, espere...</translation>
     <message>
       <location filename="../src/T2DMap.cpp" line="5681"/>
       <source>[MAP]: %1</source>
-      <translation type="unfinished"/>
+      <translation>[MAPA]: %1</translation>
     </message>
     <message>
       <location filename="../src/T2DMap.cpp" line="5711"/>
       <source>Unknown Area</source>
-      <translation type="unfinished"/>
+      <translation>Área desconocida</translation>
     </message>
     <message>
       <location filename="../src/T2DMap.cpp" line="5731"/>
       <source>Export Area %1 to Image</source>
-      <translation type="unfinished"/>
+      <translation>Exportar área %1 a imagen</translation>
     </message>
     <message>
       <location filename="../src/T2DMap.cpp" line="5733"/>
       <source>Image Files (*.png *.jpg *.jpeg *.bmp *.tiff);;All Files (*)</source>
-      <translation type="unfinished"/>
+      <translation>Archivos de imagen (*.png *.jpg *.jpeg *.bmp *.tiff);;Todos los Archivos (*)</translation>
     </message>
     <message>
       <location filename="../src/T2DMap.cpp" line="5746"/>
       <source>[MAP]: Export failed - %1</source>
-      <translation type="unfinished"/>
+      <translation>[MAP]: Error al exportar - %1</translation>
     </message>
     <message>
       <location filename="../src/T2DMap.cpp" line="872"/>
@@ -1945,7 +1945,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="253"/>
       <source>Configure connection details of, and make a connection to, game servers.</source>
       <extracomment>This explains the &quot;Play&quot; item in the &quot;Games&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Configure los detalles de conexión de los servidores de juegos y establezca una conexión con ellos.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="260"/>
@@ -1957,7 +1957,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="262"/>
       <source>Disconnect from the current game server.</source>
       <extracomment>This explains the &quot;Disconnect&quot; item in the &quot;Games&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Desconéctate del servidor del juego actual.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="267"/>
@@ -1969,19 +1969,19 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="269"/>
       <source>Disconnect and then reconnect to the current game server.</source>
       <extracomment>This explains the &quot;Reconnect&quot; item in the &quot;Games&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Desconéctate y vuélvete a conectarte al servidor de juegos actual.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="283"/>
       <source>Close &amp;Mudlet</source>
       <extracomment>This is an item in the &quot;Games&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Cerrar &amp;Mudlet</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="285"/>
       <source>Close the entire Mudlet application</source>
       <extracomment>This explains the &quot;Close Mudlet&quot; item in the &quot;Games&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Cerrar la aplicación Mudlet por completo</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="291"/>
@@ -1999,37 +1999,37 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
       <location filename="../src/TDetachedWindow.cpp" line="296"/>
       <source>Opens the Editor for the different types of things that can be scripted by the user.</source>
       <extracomment>This explains the &quot;Script editor&quot; item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation/>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="301"/>
       <source>Show &amp;errors</source>
       <extracomment>This is an item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Mostrar &amp;errores</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="303"/>
       <source>Show errors from scripts that you have running</source>
       <extracomment>This explains the &quot;Show errors&quot; item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Mostrar errores de scripts que se están ejecutando</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="308"/>
       <source>Show &amp;map</source>
       <extracomment>This is an item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Mostrar &amp;mapa</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="310"/>
       <source>Show or hide the game map.</source>
       <extracomment>This explains the &quot;Show map&quot; item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Mostrar u ocultar el mapa de juego.</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="315"/>
       <source>Compact &amp;input line</source>
       <extracomment>This is an item in the &quot;Toolbox&quot; menu in the menubar of a detached Mudlet window.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Compactar línea de &amp;entrada</translation>
     </message>
     <message>
       <location filename="../src/TDetachedWindow.cpp" line="317"/>
@@ -6217,7 +6217,7 @@ Count</source>
       <location filename="../src/dlgAboutDialog.cpp" line="1239"/>
       <location filename="../src/dlgAboutDialog.cpp" line="1269"/>
       <source>Technical information:</source>
-      <translation type="unfinished"/>
+      <translation>CPU (%1-bits):</translation>
     </message>
     <message>
       <location filename="../src/dlgAboutDialog.cpp" line="1153"/>
