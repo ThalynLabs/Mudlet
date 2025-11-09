@@ -202,7 +202,7 @@ attendere prego...</translation>
       <location filename="../src/mapInfoContributorManager.cpp" line="128"/>
       <source>Area:&#xa0;%1 ID:&#xa0;%2 x:&#xa0;%3&#xa0;&lt;‑&gt;&#xa0;%4 y:&#xa0;%5&#xa0;&lt;‑&gt;&#xa0;%6 z:&#xa0;%7&#xa0;&lt;‑&gt;&#xa0;%8</source>
       <extracomment>This text uses non-breaking spaces (Unicode U+00A0) and non-breaking hyphens which are used to prevent the line being split at some places it might otherwise be. When translating, please consider at which points the text may be divided to fit onto more than one line. %1 is the (text) name of the area, %2 is the area ID number, %3 and %4 are the minimum and maximum x coordinates, %5 and %6 for y, and %7 and %8 for z.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Area:&#xa0;%1 ID:&#xa0;%2 x:&#xa0;%3&#xa0;&lt;‑&gt;&#xa0;%4 y:&#xa0;%5&#xa0;&lt;‑&gt;&#xa0;%6 z:&#xa0;%7&#xa0;&lt;‑&gt;&#xa0;%8</translation>
     </message>
     <message>
       <location filename="../src/mapInfoContributorManager.cpp" line="143"/>
@@ -213,19 +213,22 @@ attendere prego...</translation>
       <location filename="../src/mapInfoContributorManager.cpp" line="164"/>
       <source>Room&#xa0;ID:&#xa0;%1 Position&#xa0;on&#xa0;Map: (%2,%3,%4) ‑਌urrent player location</source>
       <extracomment>This text uses non-breaking spaces (Unicode U+00A0) and a non-breaking hyphen which are used to prevent the line being split at some places it might otherwise be. When translating, please consider at which points the text may be divided to fit onto more than one line. This text is for when NO rooms are selected: %1 is the room ID number, and %2, %3, %4 are the x, y, and z coordinates for the current player&apos;s room.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Stanza&#xa0;ID:&#xa0;%1 Posizione &#xa0;sulla&#xa0;Mappa: (%2,%3,%4) ‑ Posizione attuale giocatore</translation>
     </message>
     <message>
       <location filename="../src/mapInfoContributorManager.cpp" line="184"/>
       <source>Room&#xa0;ID:&#xa0;%1 Position&#xa0;on&#xa0;Map: (%2,%3,%4) ‑&#xa0;selected room</source>
       <extracomment>This text uses non-breaking spaces (Unicode U+00A0) and a non-breaking hyphen which are used to prevent the line being split at some places it might otherwise be. When translating, please consider at which points the text may be divided to fit onto more than one line. This text is for when ONE room is selected: %1 is the room ID number, and %2, %3, %4 are the x, y, and z coordinates for the selected room.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Stanza&#xa0;ID:&#xa0;%1 Posizione&#xa0;sulla&#xa0;Mappa: (%2,%3,%4) ‑&#xa0;Stanza selezionata</translation>
     </message>
     <message numerus="yes">
       <location filename="../src/mapInfoContributorManager.cpp" line="208"/>
       <source>Room&#xa0;ID:&#xa0;%1 Position&#xa0;on&#xa0;Map: (%2,%3,%4) ‑ꃎnter of %n selected rooms</source>
       <extracomment>This text uses non-breaking spaces (Unicode U+00A0) and a non-breaking hyphen which are used to prevent the line being split at some places it might otherwise be. When translating, please consider at which points the text may be divided to fit onto more than one line. This text is for when TWO or MORE rooms are selected: %1 is the room ID number for which %2, %3, %4 are the x, y, and z coordinates of the room nearest the middle of the selection. This room has the yellow cross-hairs. %n is the count of rooms selected and will ALWAYS be greater than 1 in this situation. It is provided so that non-English translations can select required plural forms as needed.</extracomment>
-      <translation type="unfinished"/>
+      <translation>
+        <numerusform>Stanza&#xa0;ID:&#xa0;%1 Posizione&#xa0;sulla&#xa0;Mappa: (%2,%3,%4) ‑ Entra nella %n stanza selezionata</numerusform>
+        <numerusform>Stanza&#xa0;ID:&#xa0;%1 Posizione&#xa0;sulla&#xa0;Mappa: (%2,%3,%4) ‑ Entra nelle %n stanze selezionata</numerusform>
+      </translation>
     </message>
   </context>
   <context>
@@ -5075,37 +5078,38 @@ non sarà variata nuovamente.</translation>
     <message>
       <location filename="../src/ctelnet.cpp" line="885"/>
       <source>[ INFO ]  - Package download cancelled.</source>
-      <translation type="unfinished"/>
+      <translation>[ INFO ]  - Download del package annullato.</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="888"/>
       <source>[ WARN ]  - Package download failed from &apos;%1&apos;, reason: %2</source>
       <extracomment>%1 is the URL, %2 is the error message</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ WARN ]  - Download del package da &apos;%1&apos; fallito a causa di: %2</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="893"/>
       <source>
 The package is hosted on a server with an SSL certificate problem. The URL may be using HTTPS when it should use HTTP, or the server&apos;s security certificate is not trusted by your system.</source>
-      <translation type="unfinished"/>
+      <translation>
+Il package si trova in un server con problemi di certificato SSL, l'URL potrebbe essere HTTPS invece che utilizzare HTTP o il certificato di sicurezza del server non è considerato attendibile.</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="908"/>
       <source>[ WARN ]  - Package download failed: could not open file &apos;%1&apos; for writing, reason: %2</source>
       <extracomment>%1 is the file path, %2 is the error message</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ WARN ]  - Download del package fallito: impossibile aprire il file &apos;%1&apos; in scrittura a causa di: %2</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="918"/>
       <source>[ WARN ]  - Package download failed: could not save file, reason: %1</source>
       <extracomment>%1 is the error message</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ WARN ]  - Download del package fallito: impossibile salvare il file a causa di: %1</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="930"/>
       <source>[ WARN ]  - Package installation failed for &apos;%1&apos;, reason: %2</source>
       <extracomment>%1 is the package file path, %2 is the error message</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ WARN ]  - Installazione del package &apos;%1&apos; non riuscita a causa di: %2</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="1726"/>
@@ -6668,7 +6672,7 @@ Utilizzi</translation>
       <location filename="../src/dlgConnectionProfiles.cpp" line="103"/>
       <source>&lt;p&gt;&lt;center&gt;&lt;big&gt;&lt;b&gt;Welcome to Mudlet!&lt;/b&gt;&lt;/big&gt;&lt;/center&gt;&lt;/p&gt;&lt;p&gt;&lt;center&gt;&lt;b&gt;To get started, double-click on &lt;/b&gt;Mudlet Tutorial&lt;b&gt; or select a game from the list.&lt;/b&gt;&lt;/center&gt;&lt;/p&gt;&lt;p&gt;Want to play a game that’s not listed?&lt;/p&gt;&lt;p&gt;Click %1 &lt;span style=&quot; color:#555753;&quot;&gt;New&lt;/span&gt;, then enter the &lt;i&gt;Profile Name&lt;/i&gt;, &lt;i&gt;Server Address&lt;/i&gt;, and &lt;i&gt;Port&lt;/i&gt; in the required fields.&lt;/p&gt;&lt;p&gt;Once you&apos;re ready, click %2 &lt;span style=&quot; color:#555753;&quot;&gt;Connect&lt;/span&gt; to begin your adventure.&lt;/p&gt;&lt;p&gt;Have fun!&lt;/p&gt;&lt;p align=&quot;right&quot;&gt;&lt;span style=&quot; font-family:&apos;Sans&apos;;&quot;&gt;The Mudlet Team &lt;/span&gt;&lt;img src=&quot;:/icons/mudlet_main_16px.png&quot;/&gt;&lt;/p&gt;</source>
       <comment>Welcome message. Both %1 and %2 may be replaced by icons when this text is used.</comment>
-      <translation type="unfinished"/>
+      <translation>&lt;p&gt;&lt;center&gt;&lt;big&gt;&lt;b&gt;Benvenuto in Mudlet!&lt;/b&gt;&lt;/big&gt;&lt;/center&gt;&lt;/p&gt;&lt;p&gt;&lt;center&gt;&lt;b&gt;Per iniziare, fare doppio clic su &lt;/b&gt;Mudlet Tutorial&lt;b&gt; o seleziona un gioco dall'elenco.&lt;/b&gt;&lt;/center&gt;&lt;/p&gt;&lt;p&gt;Vuoi collegarti a un gioco che non è elencato?&lt;/p&gt;&lt;p&gt;Fai clic su %1 &lt;span style=&quot; color:#555753;&quot;&gt;Nuovo&lt;/span&gt;, quindi inserisci il &lt;i&gt;Nome profilo&lt;/i&gt;, &lt;i&gt;Indirizzo server&lt;/i&gt;e &lt;i&gt;Porta&lt;/i&gt; nei rispettivi campi.&lt;/p&gt;&lt;p&gt;Una volta terminato, clicca %2 &lt;span style=&quot; color:#555753;&quot;&gt;Connetti&lt;/span&gt; per iniziare la tua avventura.&lt;/p&gt;&lt;p&gt;Buon divertimento!&lt;/p&gt;&lt;p align=&quot;right&quot;&gt;&lt;span style=&quot; font-family:&apos;Sans&apos;;&quot;&gt;The Mudlet Team &lt;/span&gt;&lt;img src=&quot;:/icons/mudlet_main_16px.png&quot;/&gt;&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../src/dlgConnectionProfiles.cpp" line="896"/>
@@ -7136,7 +7140,7 @@ Inserisci altro materiale utile, per esempio un link alla wiki di mudlet, al for
     <message>
       <location filename="../src/ui/dlgPackageExporter.ui" line="455"/>
       <source>-</source>
-      <translation type="unfinished"/>
+      <translation>-</translation>
     </message>
     <message>
       <location filename="../src/ui/dlgPackageExporter.ui" line="468"/>
@@ -7558,7 +7562,7 @@ Altro materiale utile come link alla documentazione ai post dei forum:
       <extracomment>Package manager - status item showing installed packages
 ----------
 Package manager - status item showing number of installed packages</extracomment>
-      <translation type="unfinished"/>
+      <translation>Installato</translation>
     </message>
     <message>
       <location filename="../src/dlgPackageManager.cpp" line="64"/>
@@ -7567,7 +7571,7 @@ Package manager - status item showing number of installed packages</extracomment
       <extracomment>Package manager - status item showing available packages
 ----------
 Package manager - status item showing number of available packages</extracomment>
-      <translation type="unfinished"/>
+      <translation>Disponibile</translation>
     </message>
     <message>
       <location filename="../src/dlgPackageManager.cpp" line="158"/>
@@ -7598,7 +7602,7 @@ Package manager - status item showing number of available packages</extracomment
       <location filename="../src/dlgPackageManager.cpp" line="265"/>
       <source>Downloading packages...</source>
       <extracomment>Package manager - cancel button text for download progress dialog</extracomment>
-      <translation type="unfinished"/>
+      <translation>Download package...</translation>
     </message>
     <message>
       <location filename="../src/dlgPackageManager.cpp" line="265"/>
@@ -7613,24 +7617,27 @@ Package manager - status item showing number of available packages</extracomment
       <extracomment>Package manager: package couldn&apos;t be downloaded
 ----------
 Package manager: network error, package couldn&apos;t be downloaded</extracomment>
-      <translation type="unfinished"/>
+      <translation>Installazione non riuscita</translation>
     </message>
     <message>
       <location filename="../src/dlgPackageManager.cpp" line="305"/>
       <location filename="../src/dlgPackageManager.cpp" line="314"/>
       <source>Package &apos;%1&apos; not found in repository</source>
-      <translation type="unfinished"/>
+      <translation>Package &apos;%1&apos; non trovato nel repository</translation>
     </message>
     <message>
       <location filename="../src/dlgPackageManager.cpp" line="358"/>
       <source>Package &apos;%1&apos; could not be downloaded due to a network error</source>
-      <translation type="unfinished"/>
+      <translation>Il package &apos;%1&apos; non può essere scaricato a causa di un errore di rete</translation>
     </message>
     <message numerus="yes">
       <location filename="../src/dlgPackageManager.cpp" line="642"/>
       <source>Install (%n)</source>
       <extracomment>Message on button in package manager to install one or more (%n is the count of) selected package(s).</extracomment>
-      <translation type="unfinished"/>
+      <translation>
+        <numerusform>Installa (%n)</numerusform>
+        <numerusform>Installa (%n)</numerusform>
+      </translation>
     </message>
     <message>
       <location filename="../src/dlgPackageManager.cpp" line="645"/>
@@ -7643,7 +7650,10 @@ Package manager: network error, package couldn&apos;t be downloaded</extracommen
       <location filename="../src/dlgPackageManager.cpp" line="664"/>
       <source>Remove (%n)</source>
       <extracomment>Message on button in package manager to remove one or more (%n is the count of) selected package(s).</extracomment>
-      <translation type="unfinished"/>
+      <translation>
+        <numerusform>Rimuovi (%n)</numerusform>
+        <numerusform>Rimuovi (%n)</numerusform>
+      </translation>
     </message>
     <message>
       <location filename="../src/dlgPackageManager.cpp" line="667"/>
@@ -7880,17 +7890,17 @@ Package manager: network error, package couldn&apos;t be downloaded</extracommen
     <message>
       <location filename="../src/dlgProfilePreferences.cpp" line="1005"/>
       <source>%1 {Default}</source>
-      <translation type="unfinished"/>
+      <translation>%1 {Default}</translation>
     </message>
     <message>
       <location filename="../src/dlgProfilePreferences.cpp" line="1017"/>
       <source>%1 {Experimental}</source>
-      <translation type="unfinished"/>
+      <translation>%1 {Experimental}</translation>
     </message>
     <message>
       <location filename="../src/dlgProfilePreferences.cpp" line="1019"/>
       <source>%1 {For older versions}</source>
-      <translation type="unfinished"/>
+      <translation>%1 {For older versions}</translation>
     </message>
     <message>
       <location filename="../src/dlgProfilePreferences.cpp" line="1835"/>
@@ -8606,7 +8616,10 @@ Bold HTML tags are used to emphasis that the value is destination room&apos;s we
       <source>Enter one or more characters to set a new symbol for %n room(s).  Clear to unset.</source>
       <comment>%n is the total number of rooms involved.</comment>
       <extracomment>room properties dialog, setting symbols</extracomment>
-      <translation type="unfinished"/>
+      <translation>
+        <numerusform>Inserisci uno o più caratteri per impostare un nuovo simbolo per questa %n stanza. Lascia vuoto per azzerare.</numerusform>
+        <numerusform>Inserisci uno o più caratteri per impostare un nuovo simbolo per queste %n stanze. Lascia vuoto per azzerare.</numerusform>
+      </translation>
     </message>
     <message numerus="yes">
       <location filename="../src/dlgRoomProperties.cpp" line="209"/>
@@ -8616,7 +8629,16 @@ Bold HTML tags are used to emphasis that the value is destination room&apos;s we
  • clear to unset.</source>
       <comment>This is for when applying a new room symbol to one or more rooms and some have different symbols or no symbol at present. %n is the total number of rooms involved.</comment>
       <extracomment>room properties dialog, setting symbols</extracomment>
-      <translation type="unfinished"/>
+      <translation>
+        <numerusform>Per impostare il simbolo per la %n stanza, scegli:
+ • un simbolo già presente dall'elenco,
+ • inserire uno o più caratteri per impostare un nuovo simbolo,
+ • lascia vuoto per azzerare.</numerusform>
+        <numerusform>Per impostare il simbolo per tutte le %n stanze, scegli:
+ • un simbolo già presente dall'elenco,
+ • inserire uno o più caratteri per impostare un nuovo simbolo,
+ • lascia vuoto per azzerare.</numerusform>
+      </translation>
     </message>
     <message>
       <location filename="../src/dlgRoomProperties.cpp" line="252"/>
@@ -8625,7 +8647,7 @@ Bold HTML tags are used to emphasis that the value is destination room&apos;s we
       <extracomment>Format for showing a room symbol with its usage count. %1 is the symbol itself (e.g., &quot;★&quot; or &quot;!&quot;), %2 is the number of rooms using this symbol. Example output: &quot;★ (count: 5)&quot; or &quot;! (count: 12)&quot;. The word &quot;count&quot; and the format can be translated, but ensure the numbers remain clearly associated.
 ----------
 Format for showing a room weight with its usage count. %1 is the weight value (e.g., &quot;1&quot; or &quot;50&quot;), %2 is the number of rooms with this weight. Example output: &quot;5 (count: 3)&quot; or &quot;100 (count: 7)&quot;. The word &quot;count&quot; and the format can be translated, but ensure the numbers remain clearly associated.</extracomment>
-      <translation type="unfinished"/>
+      <translation>%1 (usato: %2)</translation>
     </message>
     <message>
       <location filename="../src/dlgRoomProperties.cpp" line="484"/>
@@ -9199,7 +9221,7 @@ Help contents of a selectable option for the Trigger intro</extracomment>
       <location filename="../src/dlgTriggerEditor.cpp" line="311"/>
       <source>package item</source>
       <extracomment>Accessible description indicating an item belongs to a package, shown after the item name. Keep short, as it&apos;s appended to other descriptions like &quot;activated, package item&quot;</extracomment>
-      <translation type="unfinished"/>
+      <translation>elemento del package</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="777"/>
@@ -9225,7 +9247,7 @@ Help contents of a selectable option for the Trigger intro</extracomment>
       <location filename="../src/dlgTriggerEditor.cpp" line="1221"/>
       <source>Hide this hint</source>
       <extracomment>Tooltip for the button that hides the pattern navigation hint banner.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Nascondi questo suggerimento</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="1473"/>
@@ -9262,7 +9284,7 @@ Help contents of a selectable option for the Trigger intro</extracomment>
       <location filename="../src/dlgTriggerEditor.cpp" line="1628"/>
       <source>Hint hidden. &lt;a href=&apos;undo&apos; style=&apos;color: inherit; text-decoration: underline;&apos;&gt;Undo&lt;/a&gt; | &lt;a href=&apos;hide-permanently&apos; style=&apos;color: inherit; text-decoration: underline;&apos;&gt;Hide permanently&lt;/a&gt;</source>
       <extracomment>Toast notification shown when user dismisses the trigger pattern navigation hint. Allows them to undo or permanently hide the hint.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Suggerimento nascosto. &lt;a href=&apos;undo&apos; style=&apos;color: inherit; text-decoration: underline;&apos;&gt;Annulla&lt;/a&gt; | &lt;a href=&apos;hide-permanently&apos; style=&apos;color: inherit; text-decoration: underline;&apos;&gt;Nascondi per sempre&lt;/a&gt;</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="3452"/>
@@ -9524,7 +9546,7 @@ Package item warning banner shown in trigger editor when selecting package items
       <location filename="../src/dlgTriggerEditor.cpp" line="8173"/>
       <source>Package item. Copy before editing to preserve changes.</source>
       <extracomment>First-time educational message for screen reader users about package items</extracomment>
-      <translation type="unfinished"/>
+      <translation>Elemento del package. Fanne una copia per preservare le modifiche.</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="7911"/>
