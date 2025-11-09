@@ -202,7 +202,7 @@ please wait...</translation>
       <location filename="../src/mapInfoContributorManager.cpp" line="128"/>
       <source>Area:&#xa0;%1 ID:&#xa0;%2 x:&#xa0;%3&#xa0;&lt;‑&gt;&#xa0;%4 y:&#xa0;%5&#xa0;&lt;‑&gt;&#xa0;%6 z:&#xa0;%7&#xa0;&lt;‑&gt;&#xa0;%8</source>
       <extracomment>This text uses non-breaking spaces (Unicode U+00A0) and non-breaking hyphens which are used to prevent the line being split at some places it might otherwise be. When translating, please consider at which points the text may be divided to fit onto more than one line. %1 is the (text) name of the area, %2 is the area ID number, %3 and %4 are the minimum and maximum x coordinates, %5 and %6 for y, and %7 and %8 for z.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Area:&#xa0;%1 ID:&#xa0;%2 x:&#xa0;%3&#xa0;&lt;‑&gt;&#xa0;%4 y:&#xa0;%5&#xa0;&lt;‑&gt;&#xa0;%6 z:&#xa0;%7&#xa0;&lt;‑&gt;&#xa0;%8</translation>
     </message>
     <message>
       <location filename="../src/mapInfoContributorManager.cpp" line="143"/>
@@ -213,13 +213,13 @@ please wait...</translation>
       <location filename="../src/mapInfoContributorManager.cpp" line="164"/>
       <source>Room&#xa0;ID:&#xa0;%1 Position&#xa0;on&#xa0;Map: (%2,%3,%4) ‑਌urrent player location</source>
       <extracomment>This text uses non-breaking spaces (Unicode U+00A0) and a non-breaking hyphen which are used to prevent the line being split at some places it might otherwise be. When translating, please consider at which points the text may be divided to fit onto more than one line. This text is for when NO rooms are selected: %1 is the room ID number, and %2, %3, %4 are the x, y, and z coordinates for the current player&apos;s room.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Room&#xa0;ID:&#xa0;%1 Position&#xa0;on&#xa0;Map: (%2,%3,%4) ‑ current player location</translation>
     </message>
     <message>
       <location filename="../src/mapInfoContributorManager.cpp" line="184"/>
       <source>Room&#xa0;ID:&#xa0;%1 Position&#xa0;on&#xa0;Map: (%2,%3,%4) ‑&#xa0;selected room</source>
       <extracomment>This text uses non-breaking spaces (Unicode U+00A0) and a non-breaking hyphen which are used to prevent the line being split at some places it might otherwise be. When translating, please consider at which points the text may be divided to fit onto more than one line. This text is for when ONE room is selected: %1 is the room ID number, and %2, %3, %4 are the x, y, and z coordinates for the selected room.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Room&#xa0;ID:&#xa0;%1 Position&#xa0;on&#xa0;Map: (%2,%3,%4) ‑&#xa0;selected room</translation>
     </message>
     <message numerus="yes">
       <location filename="../src/mapInfoContributorManager.cpp" line="208"/>
@@ -1126,7 +1126,7 @@ please wait...</translation>
       <location filename="../src/T2DMap.cpp" line="356"/>
       <source>Click on a line to select or deselect that room number (it will have a name if the room is named).&lt;br&gt;&lt;br&gt;Click on a column header to sort by that column.&lt;br&gt;&lt;br&gt;The name column only appears if at least one room has a name.</source>
       <extracomment>Tooltip for the room selection list. This text will be formatted with HTML line breaks between sentences.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Click on a line to select or deselect that room number (it will have a name if the room is named).&lt;br&gt;&lt;br&gt;Click on a column header to sort by that column.&lt;br&gt;&lt;br&gt;The name column only appears if at least one room has a name.</translation>
     </message>
     <message>
       <location filename="../src/T2DMap.cpp" line="1529"/>
@@ -7518,7 +7518,7 @@ Further reading material, e.g., links to documentation or forum posts.
       <extracomment>Package manager - status item showing installed packages
 ----------
 Package manager - status item showing number of installed packages</extracomment>
-      <translation type="unfinished"/>
+      <translation>Installed</translation>
     </message>
     <message>
       <location filename="../src/dlgPackageManager.cpp" line="64"/>
@@ -7527,7 +7527,7 @@ Package manager - status item showing number of installed packages</extracomment
       <extracomment>Package manager - status item showing available packages
 ----------
 Package manager - status item showing number of available packages</extracomment>
-      <translation type="unfinished"/>
+      <translation>Available</translation>
     </message>
     <message>
       <location filename="../src/dlgPackageManager.cpp" line="158"/>
@@ -7558,7 +7558,7 @@ Package manager - status item showing number of available packages</extracomment
       <location filename="../src/dlgPackageManager.cpp" line="265"/>
       <source>Downloading packages...</source>
       <extracomment>Package manager - cancel button text for download progress dialog</extracomment>
-      <translation type="unfinished"/>
+      <translation>Downloading packages...</translation>
     </message>
     <message>
       <location filename="../src/dlgPackageManager.cpp" line="265"/>
@@ -7573,37 +7573,43 @@ Package manager - status item showing number of available packages</extracomment
       <extracomment>Package manager: package couldn&apos;t be downloaded
 ----------
 Package manager: network error, package couldn&apos;t be downloaded</extracomment>
-      <translation type="unfinished"/>
+      <translation>Installation Failed</translation>
     </message>
     <message>
       <location filename="../src/dlgPackageManager.cpp" line="305"/>
       <location filename="../src/dlgPackageManager.cpp" line="314"/>
       <source>Package &apos;%1&apos; not found in repository</source>
-      <translation type="unfinished"/>
+      <translation>Package &apos;%1&apos; not found in repository</translation>
     </message>
     <message>
       <location filename="../src/dlgPackageManager.cpp" line="358"/>
       <source>Package &apos;%1&apos; could not be downloaded due to a network error</source>
-      <translation type="unfinished"/>
+      <translation>Package &apos;%1&apos; could not be downloaded due to a network error</translation>
     </message>
     <message numerus="yes">
       <location filename="../src/dlgPackageManager.cpp" line="642"/>
       <source>Install (%n)</source>
       <extracomment>Message on button in package manager to install one or more (%n is the count of) selected package(s).</extracomment>
-      <translation type="unfinished"/>
+      <translation>
+        <numerusform>Install (%n)</numerusform>
+        <numerusform>Install (%n)</numerusform>
+      </translation>
     </message>
     <message>
       <location filename="../src/dlgPackageManager.cpp" line="645"/>
       <location filename="../src/dlgPackageManager.cpp" line="649"/>
       <source>Install</source>
       <extracomment>Message on button in package manager initially and when there is no packages to install</extracomment>
-      <translation type="unfinished"/>
+      <translation>Install</translation>
     </message>
     <message numerus="yes">
       <location filename="../src/dlgPackageManager.cpp" line="664"/>
       <source>Remove (%n)</source>
       <extracomment>Message on button in package manager to remove one or more (%n is the count of) selected package(s).</extracomment>
-      <translation type="unfinished"/>
+      <translation>
+        <numerusform>Remove (%n)</numerusform>
+        <numerusform>Remove (%n)</numerusform>
+      </translation>
     </message>
     <message>
       <location filename="../src/dlgPackageManager.cpp" line="667"/>
@@ -8591,7 +8597,7 @@ Bold HTML tags are used to emphasis that the value is destination room&apos;s we
       <extracomment>Format for showing a room symbol with its usage count. %1 is the symbol itself (e.g., &quot;★&quot; or &quot;!&quot;), %2 is the number of rooms using this symbol. Example output: &quot;★ (count: 5)&quot; or &quot;! (count: 12)&quot;. The word &quot;count&quot; and the format can be translated, but ensure the numbers remain clearly associated.
 ----------
 Format for showing a room weight with its usage count. %1 is the weight value (e.g., &quot;1&quot; or &quot;50&quot;), %2 is the number of rooms with this weight. Example output: &quot;5 (count: 3)&quot; or &quot;100 (count: 7)&quot;. The word &quot;count&quot; and the format can be translated, but ensure the numbers remain clearly associated.</extracomment>
-      <translation type="unfinished"/>
+      <translation>%1 (count: %2)</translation>
     </message>
     <message>
       <location filename="../src/dlgRoomProperties.cpp" line="484"/>
@@ -13892,32 +13898,32 @@ try again when it has finished.</source>
       <location filename="../src/ui/package_manager.ui" line="62"/>
       <location filename="../src/ui/package_manager.ui" line="65"/>
       <source>Search packages</source>
-      <translation type="unfinished"/>
+      <translation>Search packages</translation>
     </message>
     <message>
       <location filename="../src/ui/package_manager.ui" line="124"/>
       <source>Install package from repository</source>
-      <translation type="unfinished"/>
+      <translation>Install package from repository</translation>
     </message>
     <message>
       <location filename="../src/ui/package_manager.ui" line="127"/>
       <source>Install</source>
-      <translation type="unfinished"/>
+      <translation>Install</translation>
     </message>
     <message>
       <location filename="../src/ui/package_manager.ui" line="137"/>
       <source>Install package from file</source>
-      <translation type="unfinished"/>
+      <translation>Install package from file</translation>
     </message>
     <message>
       <location filename="../src/ui/package_manager.ui" line="140"/>
       <source>Install from file</source>
-      <translation type="unfinished"/>
+      <translation>Install from file</translation>
     </message>
     <message>
       <location filename="../src/ui/package_manager.ui" line="153"/>
       <source>Remove package from installed packages</source>
-      <translation type="unfinished"/>
+      <translation>Remove package from installed packages</translation>
     </message>
     <message>
       <location filename="../src/ui/package_manager.ui" line="156"/>
@@ -13928,17 +13934,17 @@ try again when it has finished.</source>
     <message>
       <location filename="../src/ui/package_manager.ui" line="209"/>
       <source>TextLabel</source>
-      <translation type="unfinished"/>
+      <translation>TextLabel</translation>
     </message>
     <message>
       <location filename="../src/ui/package_manager.ui" line="311"/>
       <source>Open package repository website</source>
-      <translation type="unfinished"/>
+      <translation>Open package repository website</translation>
     </message>
     <message>
       <location filename="../src/ui/package_manager.ui" line="324"/>
       <source>Report an issue with this package</source>
-      <translation type="unfinished"/>
+      <translation>Report an issue with this package</translation>
     </message>
   </context>
   <context>
