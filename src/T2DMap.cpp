@@ -36,6 +36,7 @@
 #include "CustomLineEditHandler.h"
 #include "CustomLineSession.h"
 #include "LabelInteractionHandler.h"
+#include "MiddleMousePanHandler.h"
 #include "PanInteractionHandler.h"
 #include "RoomContextMenuHandler.h"
 #include "RoomMoveActivationHandler.h"
@@ -56,6 +57,7 @@
 #include <QAction>
 #include <QApplication>
 #include <QCoreApplication>
+#include <QCursor>
 #include <QMap>
 #include <QMapIterator>
 #include <QMenu>
@@ -65,6 +67,8 @@
 #include <QWidget>
 
 #include <cmath>
+
+#include <algorithm>
 
 #include "mapInfoContributorManager.h"
 
@@ -413,6 +417,9 @@ T2DMap::T2DMap(QWidget* parent)
 
     mLabelInteractionHandler = std::make_unique<LabelInteractionHandler>(*this);
     registerInteractionHandler(mLabelInteractionHandler.get(), 150);
+
+    mMiddleMousePanHandler = std::make_unique<MiddleMousePanHandler>(*this);
+    registerInteractionHandler(mMiddleMousePanHandler.get(), 110);
 
     mPanInteractionHandler = std::make_unique<PanInteractionHandler>(*this);
     registerInteractionHandler(mPanInteractionHandler.get(), 100);
@@ -1950,6 +1957,10 @@ void T2DMap::paintEvent(QPaintEvent* e)
             painter.setPen(savePen);
             painter.setBrush(saveBrush);
         }
+    }
+
+    if (mMiddleMousePanHandler) {
+        mMiddleMousePanHandler->renderIndicator(painter);
     }
 
     QColor infoColor;
