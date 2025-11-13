@@ -441,6 +441,7 @@ void T2DMap::init()
     eSize = mpHost->mLineSize;
     rSize = mpHost->mRoomSize;
     mMapperUseAntiAlias = mpHost->mMapperUseAntiAlias;
+    mShowGrid = mpHost->mMapperShowGrid;
     if (mMapViewOnly != mpHost->mMapViewOnly) {
         // If it was initialised in one state but the stored setting is the
         // opposite then we need to toggle the mode:
@@ -1687,6 +1688,38 @@ void T2DMap::paintEvent(QPaintEvent* e)
     pen.setWidthF(exitWidth);
     painter.setRenderHint(QPainter::Antialiasing, mMapperUseAntiAlias);
     painter.setPen(pen);
+
+    if (mShowGrid && mRoomWidth > 0.0f && mRoomHeight > 0.0f) {
+        painter.save();
+
+        QColor gridColor = mpHost->mMapGridColor;
+
+        QPen gridPen(gridColor);
+        const qreal gridWidth = static_cast<qreal>(mpHost->mMapGridLineSize);
+        gridPen.setWidthF(gridWidth);
+        painter.setPen(gridPen);
+
+        const qreal visibleMinX = mMapCenterX - xspan / 2.0;
+        const qreal visibleMaxX = mMapCenterX + xspan / 2.0;
+        const qreal visibleMinY = -((yspan / 2.0) + mMapCenterY);
+        const qreal visibleMaxY = (yspan / 2.0) - mMapCenterY;
+
+        const int startX = static_cast<int>(std::floor(visibleMinX));
+        const int endX = static_cast<int>(std::ceil(visibleMaxX));
+        for (int gridX = startX; gridX <= endX; ++gridX) {
+            const qreal widgetX = static_cast<qreal>(gridX) * static_cast<qreal>(mRoomWidth) + static_cast<qreal>(mRX);
+            painter.drawLine(QPointF(widgetX, 0.0), QPointF(widgetX, static_cast<qreal>(widgetHeight)));
+        }
+
+        const int startY = static_cast<int>(std::floor(visibleMinY));
+        const int endY = static_cast<int>(std::ceil(visibleMaxY));
+        for (int gridY = startY; gridY <= endY; ++gridY) {
+            const qreal widgetY = static_cast<qreal>(gridY) * -static_cast<qreal>(mRoomHeight) + static_cast<qreal>(mRY);
+            painter.drawLine(QPointF(0.0, widgetY), QPointF(static_cast<qreal>(widgetWidth), widgetY));
+        }
+
+        painter.restore();
+    }
 
     // Draw label sizing or group selection box
     if (mSizeLabel) {
