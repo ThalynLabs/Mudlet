@@ -4929,7 +4929,7 @@ The package is hosted on a server with an SSL certificate problem. The URL may b
       <location filename="../src/ctelnet.cpp" line="1178"/>
       <source>[%1]</source>
       <extracomment>For an IPv6 address (which is composed of hex-digits and colons) if we * want to show it with a port number appended (as a colon and then an * integer between 1 and 65535) we need to wrap it with &apos;[&apos;...&apos;]&apos; to * separate the latter from the former, however some Far-East locales may * expect to use the wide versions of these character here.</extracomment>
-      <translation type="unfinished"/>
+      <translation>[%1]</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="482"/>
