@@ -163,6 +163,7 @@ set(mudlet_SRCS
     TMxpElementRegistry.cpp
     TMxpFormattingTagsHandler.cpp
     TMxpBRTagHandler.cpp
+    TMxpHRTagHandler.cpp
     TMxpColorTagHandler.cpp
     TMxpCustomElementTagHandler.cpp
     TMxpElementDefinitionHandler.cpp
@@ -348,6 +349,7 @@ set(mudlet_HDRS
     TMedia.h
     TMediaPlaylist.h
     TMxpBRTagHandler.h
+    TMxpHRTagHandler.h
     TMxpClient.h
     TMxpColorTagHandler.h
     TMxpContext.h
