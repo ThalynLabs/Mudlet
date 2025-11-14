@@ -202,7 +202,7 @@ Bitte warten...</translation>
       <location filename="../src/mapInfoContributorManager.cpp" line="130"/>
       <source>Area:&#xa0;%1 ID:&#xa0;%2 x:&#xa0;%3&#xa0;&lt;‑&gt;&#xa0;%4 y:&#xa0;%5&#xa0;&lt;‑&gt;&#xa0;%6 z:&#xa0;%7&#xa0;&lt;‑&gt;&#xa0;%8</source>
       <extracomment>%1 is the (text) name of the area, %2 is the area ID number, %3 and %4 are the minimum and maximum x coordinates, %5 and %6 for y, and %7 and %8 for z. This text uses non-breaking spaces (Unicode U+00A0) and non-breaking hyphens which are used to prevent the line being split at some places it might otherwise be. When translating, please consider at which points the text may be divided to fit onto more than one line.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Gebiet:&#xa0;%1 ID:&#xa0;%2 x:&#xa0;%3&#xa0;&lt;‑&gt;&#xa0;%4 y:&#xa0;%5&#xa0;&lt;‑&gt;&#xa0;%6 z:&#xa0;%7&#xa0;&lt;‑&gt;&#xa0;%8</translation>
     </message>
     <message>
       <location filename="../src/mapInfoContributorManager.cpp" line="145"/>
@@ -217,25 +217,28 @@ Bitte warten...</translation>
       <extracomment>This text is shown when room(s) are (not) selected in mapper. %1 is the room ID number, and %2, %3, %4 are the x, y, and z coordinates of the current/selected room, or a room near the middle of the selection. %5 is a description like: Current player room. This text uses non-breaking spaces (Unicode &#xa0;) and a non-breaking hyphen (‑). They are used to prevent the line being split at unexpected places. When translating, please consider at which points the text may be divided to fit onto more than one line.
 ----------
 This text is shown when room(s) are (not) selected in mapper. %1 is the room ID number, and %2, %3, %4 are the x, y, and z coordinates of the current/selected room, or a room near the middle of the selection. %5 is a description like: Current player room. This text uses non-breaking spaces (Unicode U+00A0) and a non-breaking hyphen (U+2011). They are used to prevent the line being split at unexpected places. When translating, please consider at which points the text may be divided to fit onto more than one line.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Raum&#xa0;ID:&#xa0;%1 Position&#xa0;auf&#xa0;der&#xa0;Karte: (%2,%3,%4) ‑&#xa0;%5</translation>
     </message>
     <message>
       <location filename="../src/mapInfoContributorManager.cpp" line="174"/>
       <source>Current player location</source>
       <extracomment>This description is shown when NO room is selected.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Aktueller Standort des Spielers</translation>
     </message>
     <message>
       <location filename="../src/mapInfoContributorManager.cpp" line="197"/>
       <source>Selected room</source>
       <extracomment>This description is shown when EXACTLY ONE room is selected.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Ausgewählter Raum</translation>
     </message>
     <message numerus="yes">
       <location filename="../src/mapInfoContributorManager.cpp" line="221"/>
       <source>Center of %n selected rooms</source>
       <extracomment>This description is shown when MORE THAN ONE room is selected.</extracomment>
-      <translation type="unfinished"/>
+      <translation>
+        <numerusform>Zentrum des %n ausgewählten Raumes</numerusform>
+        <numerusform>Zentrum der %n ausgewählten Räume</numerusform>
+      </translation>
     </message>
   </context>
   <context>
@@ -3547,7 +3550,7 @@ in main console!</source>
       <location filename="../src/TRoom.cpp" line="1186"/>
       <source>[ WARN ]  - Room with ID: %1 has a special exit &quot;%2&quot; with an exit to: %3 but that room does not exist.  The exit will be removed (but the destination room ID will be stored in the room user data under a key: &quot;%4&quot;).</source>
       <extracomment>%1 is the room ID, %2 is the exit name, %3 is the destination room ID, %4 is the audit key</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ WARNUNG ]  - Der Raum mit der ID: %1 hat einen besonderen Ausgang &quot;%2&quot; in Richtung: %3 aber dieser Raum existiert nicht. Der Ausgang wird entfernt (aber die ID des Ziel-Raumes wird gespeichert in den Benutzerdaten des Raums unter dem Schlüssel: &quot;%4&quot;).</translation>
     </message>
     <message>
       <location filename="../src/TRoom.cpp" line="1229"/>
@@ -5046,32 +5049,32 @@ Das Paket wird auf einem Server gehostet, der ein Problem mit dem SSL-Zertifikat
     <message>
       <location filename="../src/ctelnet.cpp" line="626"/>
       <source>[  OK  ]  - Secure connection made (IPv6).</source>
-      <translation type="unfinished"/>
+      <translation>[  OK  ]  - Sichere Verbindung hergestellt (IPv6).</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="628"/>
       <source>[  OK  ]  - Secure connection made (IPv4).</source>
-      <translation type="unfinished"/>
+      <translation>[  OK  ]  - Sichere Verbindung hergestellt (IPv4).</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="632"/>
       <source>[  OK  ]  - Open connection made (IPv6).</source>
-      <translation type="unfinished"/>
+      <translation>[  OK  ]  - Offene Verbindung hergestellt (IPv6).</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="634"/>
       <source>[  OK  ]  - Open connection made (IPv4).</source>
-      <translation type="unfinished"/>
+      <translation>[  OK  ]  - Offene Verbindung hergestellt (IPv4).</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="639"/>
       <source>[  OK  ]  - Connection made (IPv6).</source>
-      <translation type="unfinished"/>
+      <translation>[  OK  ]  - Verbindung hergestellt (IPv6).</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="641"/>
       <source>[  OK  ]  - Connection made (IPv4).</source>
-      <translation type="unfinished"/>
+      <translation>[  OK  ]  - Verbindung hergestellt (IPv4).</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="687"/>
