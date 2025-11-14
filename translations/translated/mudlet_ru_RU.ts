@@ -7081,22 +7081,22 @@ Count</source>
     <message>
       <location filename="../src/dlgMapper.cpp" line="575"/>
       <source>Round rooms</source>
-      <translation type="unfinished"/>
+      <translation>Круглые комнаты</translation>
     </message>
     <message>
       <location filename="../src/dlgMapper.cpp" line="578"/>
       <source>When enabled, rooms will be drawn with round corners instead of square corners.</source>
-      <translation type="unfinished"/>
+      <translation>Когда включено, комнаты будут отображаться с закругленными углами вместо квадратных углов.</translation>
     </message>
     <message>
       <location filename="../src/dlgMapper.cpp" line="583"/>
       <source>Show room IDs</source>
-      <translation type="unfinished"/>
+      <translation>Показывать ID комнат</translation>
     </message>
     <message>
       <location filename="../src/dlgMapper.cpp" line="586"/>
       <source>When enabled, room IDs will be displayed on the map.</source>
-      <translation type="unfinished"/>
+      <translation>Когда включено, идентификаторы комнат будут отображаться на карте.</translation>
     </message>
     <message>
       <location filename="../src/dlgMapper.cpp" line="591"/>
