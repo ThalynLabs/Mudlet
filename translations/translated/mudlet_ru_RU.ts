@@ -204,7 +204,7 @@ please wait...</source>
       <location filename="../src/mapInfoContributorManager.cpp" line="130"/>
       <source>Area:&#xa0;%1 ID:&#xa0;%2 x:&#xa0;%3&#xa0;&lt;‑&gt;&#xa0;%4 y:&#xa0;%5&#xa0;&lt;‑&gt;&#xa0;%6 z:&#xa0;%7&#xa0;&lt;‑&gt;&#xa0;%8</source>
       <extracomment>%1 is the (text) name of the area, %2 is the area ID number, %3 and %4 are the minimum and maximum x coordinates, %5 and %6 for y, and %7 and %8 for z. This text uses non-breaking spaces (Unicode U+00A0) and non-breaking hyphens which are used to prevent the line being split at some places it might otherwise be. When translating, please consider at which points the text may be divided to fit onto more than one line.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Зона:&#xa0;%1 ID:&#xa0;%2 x:&#xa0;%3&#xa0;&lt;‑&gt;&#xa0;%4 y:&#xa0;%5&#xa0;&lt;‑&gt;&#xa0;%6 z:&#xa0;%7&#xa0;&lt;‑&gt;&#xa0;%8</translation>
     </message>
     <message>
       <location filename="../src/mapInfoContributorManager.cpp" line="145"/>
@@ -219,25 +219,30 @@ please wait...</source>
       <extracomment>This text is shown when room(s) are (not) selected in mapper. %1 is the room ID number, and %2, %3, %4 are the x, y, and z coordinates of the current/selected room, or a room near the middle of the selection. %5 is a description like: Current player room. This text uses non-breaking spaces (Unicode &#xa0;) and a non-breaking hyphen (‑). They are used to prevent the line being split at unexpected places. When translating, please consider at which points the text may be divided to fit onto more than one line.
 ----------
 This text is shown when room(s) are (not) selected in mapper. %1 is the room ID number, and %2, %3, %4 are the x, y, and z coordinates of the current/selected room, or a room near the middle of the selection. %5 is a description like: Current player room. This text uses non-breaking spaces (Unicode U+00A0) and a non-breaking hyphen (U+2011). They are used to prevent the line being split at unexpected places. When translating, please consider at which points the text may be divided to fit onto more than one line.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Комната&#xa0;ID:&#xa0;%1 Позиция&#xa0;на&#xa0;Карте: (%2,%3,%4) ‑&#xa0;%5</translation>
     </message>
     <message>
       <location filename="../src/mapInfoContributorManager.cpp" line="174"/>
       <source>Current player location</source>
       <extracomment>This description is shown when NO room is selected.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Местоположение игрока</translation>
     </message>
     <message>
       <location filename="../src/mapInfoContributorManager.cpp" line="197"/>
       <source>Selected room</source>
       <extracomment>This description is shown when EXACTLY ONE room is selected.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Выбранная комната</translation>
     </message>
     <message numerus="yes">
       <location filename="../src/mapInfoContributorManager.cpp" line="221"/>
       <source>Center of %n selected rooms</source>
       <extracomment>This description is shown when MORE THAN ONE room is selected.</extracomment>
-      <translation type="unfinished"/>
+      <translation>
+        <numerusform>Центр %n выбранной комнаты</numerusform>
+        <numerusform>Центр %n выбранных комнат</numerusform>
+        <numerusform>Центр %n выбранных комнат</numerusform>
+        <numerusform>Центр %n выбранных комнат</numerusform>
+      </translation>
     </message>
   </context>
   <context>
@@ -645,7 +650,7 @@ This text is shown when room(s) are (not) selected in mapper. %1 is the room ID 
     <message>
       <location filename="../src/TBuffer.cpp" line="2510"/>
       <source>Right-click for menu</source>
-      <translation type="unfinished"/>
+      <translation>Правый клик для меню</translation>
     </message>
     <message>
       <location filename="../src/dlgMapper.cpp" line="515"/>
@@ -697,7 +702,7 @@ This text is shown when room(s) are (not) selected in mapper. %1 is the room ID 
       <extracomment>2D Mapper context menu (drawing custom exit line) item
 ----------
 2D Mapper context menu (custom line editing) item</extracomment>
-      <translation type="unfinished"/>
+      <translation>Привязать точки к сетке</translation>
     </message>
     <message>
       <location filename="../src/CustomLineDrawContextMenuHandler.cpp" line="94"/>
@@ -706,7 +711,7 @@ This text is shown when room(s) are (not) selected in mapper. %1 is the room ID 
       <extracomment>2D Mapper context menu (drawing custom exit line) item tooltip
 ----------
 2D Mapper context menu (custom line editing) item tooltip</extracomment>
-      <translation type="unfinished"/>
+      <translation>Привязать текущие точки и сохранить пользовательские линии выровненными по сетке карты</translation>
     </message>
     <message>
       <location filename="../src/CustomLineDrawContextMenuHandler.cpp" line="97"/>
@@ -715,7 +720,7 @@ This text is shown when room(s) are (not) selected in mapper. %1 is the room ID 
       <extracomment>2D Mapper context menu (drawing custom exit line) item
 ----------
 2D Mapper context menu (custom line editing) item</extracomment>
-      <translation type="unfinished"/>
+      <translation>Переместить последнюю точку в целевую комнату</translation>
     </message>
     <message>
       <location filename="../src/CustomLineDrawContextMenuHandler.cpp" line="101"/>
@@ -724,7 +729,7 @@ This text is shown when room(s) are (not) selected in mapper. %1 is the room ID 
       <extracomment>2D Mapper context menu (drawing custom exit line) item tooltip (enabled state)
 ----------
 2D Mapper context menu (custom line editing) item tooltip (enabled state)</extracomment>
-      <translation type="unfinished"/>
+      <translation>Привязать конечную точку к комнате назначения</translation>
     </message>
     <message>
       <location filename="../src/CustomLineDrawContextMenuHandler.cpp" line="105"/>
@@ -733,7 +738,7 @@ This text is shown when room(s) are (not) selected in mapper. %1 is the room ID 
       <extracomment>2D Mapper context menu (drawing custom exit line) item tooltip (disabled state)
 ----------
 2D Mapper context menu (custom line editing) item tooltip (disabled state)</extracomment>
-      <translation type="unfinished"/>
+      <translation>Выберите линию, имеющую действующую целевую комнату, и хотя бы одну регулируемую точку</translation>
     </message>
     <message>
       <location filename="../src/CustomLineDrawContextMenuHandler.cpp" line="109"/>
@@ -1000,7 +1005,7 @@ This text is shown when room(s) are (not) selected in mapper. %1 is the room ID 
     <message>
       <location filename="../src/SelectionRectangleHandler.cpp" line="112"/>
       <source>Hold Shift to add rooms or labels to your current selection.</source>
-      <translation type="unfinished"/>
+      <translation>Удерживайте Shift, чтобы добавить комнаты или метки к текущему выбору.</translation>
     </message>
     <message>
       <location filename="../src/T2DMap.cpp" line="3194"/>
@@ -1068,7 +1073,7 @@ This text is shown when room(s) are (not) selected in mapper. %1 is the room ID 
     <message>
       <location filename="../src/T2DMap.cpp" line="3694"/>
       <source>Click to finish moving the selected room(s).</source>
-      <translation type="unfinished"/>
+      <translation>Нажмите, чтобы завершить перемещение выбранной комнаты.</translation>
     </message>
     <message>
       <location filename="../src/T2DMap.cpp" line="4792"/>
@@ -1397,7 +1402,7 @@ Accessibility-friendly description for the built-in command line of a console/wi
     <message>
       <location filename="../src/TConsole.cpp" line="1072"/>
       <source>[ INFO ]  - Split-screen scrollback activated. Press &lt;CTRL&gt;+&lt;ENTER&gt; to cancel.</source>
-      <translation type="unfinished"/>
+      <translation>[ ИНФО ] - Прокрутка сплит-экрана активирована. Нажмите &lt;CTRL&gt;+&lt;ENTER&gt; для отмены.</translation>
     </message>
     <message>
       <location filename="../src/TConsole.cpp" line="2195"/>
@@ -7726,7 +7731,7 @@ Further reading material, e.g., links to documentation or forum posts.
       <extracomment>Package manager - status item showing installed packages
 ----------
 Package manager - status item showing number of installed packages</extracomment>
-      <translation type="unfinished"/>
+      <translation>Установлено</translation>
     </message>
     <message>
       <location filename="../src/dlgPackageManager.cpp" line="64"/>
@@ -7735,7 +7740,7 @@ Package manager - status item showing number of installed packages</extracomment
       <extracomment>Package manager - status item showing available packages
 ----------
 Package manager - status item showing number of available packages</extracomment>
-      <translation type="unfinished"/>
+      <translation>Доступно</translation>
     </message>
     <message>
       <location filename="../src/dlgPackageManager.cpp" line="158"/>
@@ -7766,7 +7771,7 @@ Package manager - status item showing number of available packages</extracomment
       <location filename="../src/dlgPackageManager.cpp" line="265"/>
       <source>Downloading packages...</source>
       <extracomment>Package manager - cancel button text for download progress dialog</extracomment>
-      <translation type="unfinished"/>
+      <translation>Скачивание пакетов...</translation>
     </message>
     <message>
       <location filename="../src/dlgPackageManager.cpp" line="265"/>
@@ -7781,24 +7786,29 @@ Package manager - status item showing number of available packages</extracomment
       <extracomment>Package manager: package couldn&apos;t be downloaded
 ----------
 Package manager: network error, package couldn&apos;t be downloaded</extracomment>
-      <translation type="unfinished"/>
+      <translation>Установка не удалась</translation>
     </message>
     <message>
       <location filename="../src/dlgPackageManager.cpp" line="305"/>
       <location filename="../src/dlgPackageManager.cpp" line="314"/>
       <source>Package &apos;%1&apos; not found in repository</source>
-      <translation type="unfinished"/>
+      <translation>Пакет '%1' не найден в репозитории</translation>
     </message>
     <message>
       <location filename="../src/dlgPackageManager.cpp" line="358"/>
       <source>Package &apos;%1&apos; could not be downloaded due to a network error</source>
-      <translation type="unfinished"/>
+      <translation>Пакет &apos;%1&apos; не удалось загрузить из-за сетевой ошибки</translation>
     </message>
     <message numerus="yes">
       <location filename="../src/dlgPackageManager.cpp" line="642"/>
       <source>Install (%n)</source>
       <extracomment>Message on button in package manager to install one or more (%n is the count of) selected package(s).</extracomment>
-      <translation type="unfinished"/>
+      <translation>
+        <numerusform>Установить (%n)</numerusform>
+        <numerusform>Установить (%n)</numerusform>
+        <numerusform>Установить (%n)</numerusform>
+        <numerusform>Установить (%n)</numerusform>
+      </translation>
     </message>
     <message>
       <location filename="../src/dlgPackageManager.cpp" line="645"/>
@@ -7811,7 +7821,12 @@ Package manager: network error, package couldn&apos;t be downloaded</extracommen
       <location filename="../src/dlgPackageManager.cpp" line="664"/>
       <source>Remove (%n)</source>
       <extracomment>Message on button in package manager to remove one or more (%n is the count of) selected package(s).</extracomment>
-      <translation type="unfinished"/>
+      <translation>
+        <numerusform>Удалить (%n)</numerusform>
+        <numerusform>Удалить (%n)</numerusform>
+        <numerusform>Удалить (%n)</numerusform>
+        <numerusform>Удалить (%n)</numerusform>
+      </translation>
     </message>
     <message>
       <location filename="../src/dlgPackageManager.cpp" line="667"/>
@@ -8789,7 +8804,7 @@ Bold HTML tags are used to emphasis that the value is destination room&apos;s we
       <extracomment>Format for showing a room symbol with its usage count. %1 is the symbol itself (e.g., &quot;★&quot; or &quot;!&quot;), %2 is the number of rooms using this symbol. Example output: &quot;★ (count: 5)&quot; or &quot;! (count: 12)&quot;. The word &quot;count&quot; and the format can be translated, but ensure the numbers remain clearly associated.
 ----------
 Format for showing a room weight with its usage count. %1 is the weight value (e.g., &quot;1&quot; or &quot;50&quot;), %2 is the number of rooms with this weight. Example output: &quot;5 (count: 3)&quot; or &quot;100 (count: 7)&quot;. The word &quot;count&quot; and the format can be translated, but ensure the numbers remain clearly associated.</extracomment>
-      <translation type="unfinished"/>
+      <translation>%1 (всего: %2)</translation>
     </message>
     <message>
       <location filename="../src/dlgRoomProperties.cpp" line="484"/>
@@ -14060,12 +14075,12 @@ try again when it has finished.</source>
       <location filename="../src/ui/package_manager.ui" line="62"/>
       <location filename="../src/ui/package_manager.ui" line="65"/>
       <source>Search packages</source>
-      <translation type="unfinished"/>
+      <translation>Поиск пакетов</translation>
     </message>
     <message>
       <location filename="../src/ui/package_manager.ui" line="124"/>
       <source>Install package from repository</source>
-      <translation type="unfinished"/>
+      <translation>Установить пакет из репозитория</translation>
     </message>
     <message>
       <location filename="../src/ui/package_manager.ui" line="127"/>
@@ -14075,17 +14090,17 @@ try again when it has finished.</source>
     <message>
       <location filename="../src/ui/package_manager.ui" line="137"/>
       <source>Install package from file</source>
-      <translation type="unfinished"/>
+      <translation>Установить пакет из файла</translation>
     </message>
     <message>
       <location filename="../src/ui/package_manager.ui" line="140"/>
       <source>Install from file</source>
-      <translation type="unfinished"/>
+      <translation>Установить из файла</translation>
     </message>
     <message>
       <location filename="../src/ui/package_manager.ui" line="153"/>
       <source>Remove package from installed packages</source>
-      <translation type="unfinished"/>
+      <translation>Удалить пакет из установленных пакетов</translation>
     </message>
     <message>
       <location filename="../src/ui/package_manager.ui" line="156"/>
@@ -14101,12 +14116,12 @@ try again when it has finished.</source>
     <message>
       <location filename="../src/ui/package_manager.ui" line="311"/>
       <source>Open package repository website</source>
-      <translation type="unfinished"/>
+      <translation>Открыть веб-сайт репозитория пакетов</translation>
     </message>
     <message>
       <location filename="../src/ui/package_manager.ui" line="324"/>
       <source>Report an issue with this package</source>
-      <translation type="unfinished"/>
+      <translation>Сообщить о проблеме с этим пакетом</translation>
     </message>
   </context>
   <context>
