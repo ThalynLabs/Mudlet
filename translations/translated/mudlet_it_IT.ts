@@ -223,19 +223,22 @@ This text is shown when room(s) are (not) selected in mapper. %1 is the room ID 
       <location filename="../src/mapInfoContributorManager.cpp" line="174"/>
       <source>Current player location</source>
       <extracomment>This description is shown when NO room is selected.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Posizione attuale del giocatore</translation>
     </message>
     <message>
       <location filename="../src/mapInfoContributorManager.cpp" line="197"/>
       <source>Selected room</source>
       <extracomment>This description is shown when EXACTLY ONE room is selected.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Stanza selezionata</translation>
     </message>
     <message numerus="yes">
       <location filename="../src/mapInfoContributorManager.cpp" line="221"/>
       <source>Center of %n selected rooms</source>
       <extracomment>This description is shown when MORE THAN ONE room is selected.</extracomment>
-      <translation type="unfinished"/>
+      <translation>
+        <numerusform>Centra sulla %n stanza selezionata</numerusform>
+        <numerusform>Centra sulle %n stanze selezionate</numerusform>
+      </translation>
     </message>
   </context>
   <context>
@@ -5076,32 +5079,32 @@ Il package si trova in un server con problemi di certificato SSL, l'URL potrebbe
     <message>
       <location filename="../src/ctelnet.cpp" line="626"/>
       <source>[  OK  ]  - Secure connection made (IPv6).</source>
-      <translation type="unfinished"/>
+      <translation>[  OK  ]  - Connessione sicura stabilita (IPv6).</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="628"/>
       <source>[  OK  ]  - Secure connection made (IPv4).</source>
-      <translation type="unfinished"/>
+      <translation>[  OK  ]  - Connessione sicura stabilita (IPv4).</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="632"/>
       <source>[  OK  ]  - Open connection made (IPv6).</source>
-      <translation type="unfinished"/>
+      <translation>[  OK  ]  - Connessione non sicura stabilita (IPv6).</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="634"/>
       <source>[  OK  ]  - Open connection made (IPv4).</source>
-      <translation type="unfinished"/>
+      <translation>[  OK  ]  - Connessione non sicura stabilita (IPv4).</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="639"/>
       <source>[  OK  ]  - Connection made (IPv6).</source>
-      <translation type="unfinished"/>
+      <translation>[  OK  ]  - Connessione stabilita (IPv6).</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="641"/>
       <source>[  OK  ]  - Connection made (IPv4).</source>
-      <translation type="unfinished"/>
+      <translation>[  OK  ]  - Connessione stabilita (IPv4).</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="687"/>
@@ -5113,14 +5116,19 @@ Il package si trova in un server con problemi di certificato SSL, l'URL potrebbe
       <source>[ ALERT ] - Socket got disconnected, for %n reason(s):
 %1</source>
       <extracomment>This message is used when we have been trying to connect or * we were connected securely, but the connection has been lost. * It is possible with a secure connection that there is MORE * than one error message to show, but for English or other * locales where the singular case (%n==1) is distinct it would * be perfectly feasible to replace &quot;for %n reason(s)&quot; with * &quot;because&quot; for that number (1) of errors - however the text * should then be repeated in the corresponding situation for * an &quot;open&quot; connection which is different in that it only ever * has one &quot;reason&quot; to report.</extracomment>
-      <translation type="unfinished"/>
+      <translation>
+        <numerusform>[ ALERT ] - Socket disconnesso, per %n causa:
+%1</numerusform>
+        <numerusform>[ ALERT ] - Socket disconnesso, per %n cause:
+%1</numerusform>
+      </translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="765"/>
       <location filename="../src/ctelnet.cpp" line="799"/>
       <source>[ ALERT ] - Socket got disconnected.</source>
       <extracomment>This message is used when we have been trying to connect or * we were connected securely or in an open manner, but the * connection has been lost and we do not have any explaination * to give to the user as to why. Anyhow, in this case we do not * have anything more to say about it. This text used in two * places, ensure the same translation is used in both of them.</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ ALERT ] - Socket disconnesso.</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="780"/>
