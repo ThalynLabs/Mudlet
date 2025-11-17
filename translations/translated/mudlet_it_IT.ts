@@ -1139,7 +1139,7 @@ This text is shown when room(s) are (not) selected in mapper. %1 is the room ID 
       <location filename="../src/T2DMap.cpp" line="369"/>
       <source>Click on a line to select or deselect that room number (it will have a name if the room is named).&lt;br&gt;&lt;br&gt;Click on a column header to sort by that column.&lt;br&gt;&lt;br&gt;The name column only appears if at least one room has a name.</source>
       <extracomment>Tooltip for the room selection list. This text will be formatted with HTML line breaks between sentences.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Fai clic su una linea per selezionare o deselezionare il numero di stanza (avrà un nome se la stanza è denominata).&lt;br&gt;&lt;br&gt;Fai clic su un'intestazione di colonna per ordinarla alfabeticamente.&lt;br&gt;&lt;br&gt;La colonna nome viene mostrata solo se almeno una stanza ha un nome.</translation>
     </message>
     <message>
       <location filename="../src/T2DMap.cpp" line="1559"/>
@@ -5163,13 +5163,13 @@ Check your internet connection and the details entered for the game server.</sou
       <location filename="../src/ctelnet.cpp" line="948"/>
       <source>%1 (IPv6)</source>
       <extracomment>Used to add an IPv6 address line to the list displayed during * connecting to a Host. Some, e.g. Far Eastern locales may require a * different text here if they do not use spaces, or need &quot;wide&quot; &apos;(&apos; &apos;)&apos;s</extracomment>
-      <translation type="unfinished"/>
+      <translation>%1 (IPv6)</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="955"/>
       <source>%1 (IPv4)</source>
       <extracomment>Used to add an IPv4 address line to the list displayed during * connecting to a Host. Some, e.g. Far Eastern locales may require a * different text here if they do not use spaces, or &quot;wide&quot; &apos;(&apos;...&apos;)&apos;</extracomment>
-      <translation type="unfinished"/>
+      <translation>%1 (IPv4)</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="970"/>
@@ -11901,7 +11901,7 @@ Non è prevista NESSUNA GARANZIA, nella misura consentita dalla legge.</translat
     <message>
       <location filename="../src/ui/mapper.ui" line="442"/>
       <source>≡</source>
-      <translation type="unfinished"/>
+      <translation>≡</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="445"/>
@@ -14162,12 +14162,12 @@ tenta di nuovo quando sarà terminato.</translation>
       <location filename="../src/ui/package_manager.ui" line="62"/>
       <location filename="../src/ui/package_manager.ui" line="65"/>
       <source>Search packages</source>
-      <translation type="unfinished"/>
+      <translation>Cerca package</translation>
     </message>
     <message>
       <location filename="../src/ui/package_manager.ui" line="124"/>
       <source>Install package from repository</source>
-      <translation type="unfinished"/>
+      <translation>Installa package dal catalogo</translation>
     </message>
     <message>
       <location filename="../src/ui/package_manager.ui" line="127"/>
@@ -14177,17 +14177,17 @@ tenta di nuovo quando sarà terminato.</translation>
     <message>
       <location filename="../src/ui/package_manager.ui" line="137"/>
       <source>Install package from file</source>
-      <translation type="unfinished"/>
+      <translation>Installa package da file</translation>
     </message>
     <message>
       <location filename="../src/ui/package_manager.ui" line="140"/>
       <source>Install from file</source>
-      <translation type="unfinished"/>
+      <translation>Installa da file</translation>
     </message>
     <message>
       <location filename="../src/ui/package_manager.ui" line="153"/>
       <source>Remove package from installed packages</source>
-      <translation type="unfinished"/>
+      <translation>Rimuovi package da quelli installati</translation>
     </message>
     <message>
       <location filename="../src/ui/package_manager.ui" line="156"/>
@@ -14203,12 +14203,12 @@ tenta di nuovo quando sarà terminato.</translation>
     <message>
       <location filename="../src/ui/package_manager.ui" line="311"/>
       <source>Open package repository website</source>
-      <translation type="unfinished"/>
+      <translation>Apri il sito internet del catalogo package</translation>
     </message>
     <message>
       <location filename="../src/ui/package_manager.ui" line="324"/>
       <source>Report an issue with this package</source>
-      <translation type="unfinished"/>
+      <translation>Segnala un problema con questo package</translation>
     </message>
   </context>
   <context>
