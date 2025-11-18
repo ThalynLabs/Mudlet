@@ -223,19 +223,22 @@ This text is shown when room(s) are (not) selected in mapper. %1 is the room ID 
       <location filename="../src/mapInfoContributorManager.cpp" line="174"/>
       <source>Current player location</source>
       <extracomment>This description is shown when NO room is selected.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Current player location</translation>
     </message>
     <message>
       <location filename="../src/mapInfoContributorManager.cpp" line="197"/>
       <source>Selected room</source>
       <extracomment>This description is shown when EXACTLY ONE room is selected.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Selected room</translation>
     </message>
     <message numerus="yes">
       <location filename="../src/mapInfoContributorManager.cpp" line="221"/>
       <source>Center of %n selected rooms</source>
       <extracomment>This description is shown when MORE THAN ONE room is selected.</extracomment>
-      <translation type="unfinished"/>
+      <translation>
+        <numerusform>Centre of %n selected rooms</numerusform>
+        <numerusform>Centre of %n selected rooms</numerusform>
+      </translation>
     </message>
   </context>
   <context>
@@ -7057,12 +7060,12 @@ Count</translation>
     <message>
       <location filename="../src/dlgMapper.cpp" line="575"/>
       <source>Round rooms</source>
-      <translation type="unfinished"/>
+      <translation>Round rooms</translation>
     </message>
     <message>
       <location filename="../src/dlgMapper.cpp" line="578"/>
       <source>When enabled, rooms will be drawn with round corners instead of square corners.</source>
-      <translation type="unfinished"/>
+      <translation>When enabled, rooms will be drawn with round corners instead of square corners.</translation>
     </message>
     <message>
       <location filename="../src/dlgMapper.cpp" line="583"/>
@@ -7077,12 +7080,12 @@ Count</translation>
     <message>
       <location filename="../src/dlgMapper.cpp" line="591"/>
       <source>Show map grid</source>
-      <translation type="unfinished"/>
+      <translation>Show map grid</translation>
     </message>
     <message>
       <location filename="../src/dlgMapper.cpp" line="594"/>
       <source>When enabled, grid will be shown on mapper.</source>
-      <translation type="unfinished"/>
+      <translation>When enabled, grid will be shown on mapper.</translation>
     </message>
     <message>
       <location filename="../src/dlgMapper.cpp" line="600"/>
@@ -7092,12 +7095,12 @@ Count</translation>
     <message>
       <location filename="../src/dlgMapper.cpp" line="603"/>
       <source>When enabled, the map will be displayed in 3D mode.</source>
-      <translation type="unfinished"/>
+      <translation>When enabled, the map will be displayed in 3D mode.</translation>
     </message>
     <message>
       <location filename="../src/dlgMapper.cpp" line="610"/>
       <source>Info overlays</source>
-      <translation type="unfinished"/>
+      <translation>Info overlays</translation>
     </message>
     <message>
       <location filename="../src/dlgMapper.cpp" line="640"/>
