@@ -1478,13 +1478,13 @@ Accessibility-friendly description for the built-in command line of a console/wi
       <location filename="../src/TConsole.cpp" line="915"/>
       <source>Start recording of replay</source>
       <extracomment>Button tooltip for the replay recording toggle button</extracomment>
-      <translation type="unfinished"/>
+      <translation>Начать запись повтора</translation>
     </message>
     <message>
       <location filename="../src/TConsole.cpp" line="357"/>
       <source>Start logging game output to log file.</source>
       <extracomment>Button tooltip for the logging button</extracomment>
-      <translation type="unfinished"/>
+      <translation>Начать ведение журнала в лог-файл.</translation>
     </message>
     <message>
       <location filename="../src/TConsole.cpp" line="435"/>
@@ -1527,7 +1527,7 @@ Accessibility-friendly description for the built-in command line of a console/wi
       <location filename="../src/TConsole.cpp" line="894"/>
       <source>Failed to open replay recording file for writing.</source>
       <extracomment>Informational message displayed when replay recording file could not be opened</extracomment>
-      <translation type="unfinished"/>
+      <translation>Не удалось открыть файл для записи.</translation>
     </message>
     <message>
       <location filename="../src/TConsole.cpp" line="902"/>
@@ -1538,7 +1538,7 @@ Accessibility-friendly description for the built-in command line of a console/wi
       <location filename="../src/TConsole.cpp" line="904"/>
       <source>Stop recording of replay</source>
       <extracomment>Button tooltip for the replay recording toggle button</extracomment>
-      <translation type="unfinished"/>
+      <translation>Остановить запись повтора</translation>
     </message>
     <message>
       <location filename="../src/TConsole.cpp" line="909"/>
@@ -4034,7 +4034,7 @@ area) not found, adding &quot;%1&quot; against the reserved -1 id.</source>
     <message>
       <location filename="../src/TTextEdit.cpp" line="1962"/>
       <source>Unknown</source>
-      <translation type="unfinished"/>
+      <translation>Неизвестен</translation>
     </message>
     <message>
       <location filename="../src/TTextEdit.cpp" line="1963"/>
@@ -5309,7 +5309,7 @@ It is: &quot;%1&quot;
     <message>
       <location filename="../src/ctelnet.cpp" line="2323"/>
       <source>[ INFO ]  - This game appears to support MXP (Mud eXtension Protocol), but has not turned it on properly. MXP processing has been automatically enabled for clickable links, room info, and richer interactions. You can disable this setting in Settings &gt; Special Options.</source>
-      <translation type="unfinished"/>
+      <translation>[ ИНФО ] - Эта игра, похоже, поддерживает MXP (Mud eXtension Protocol), но не включила ее правильно. Обработка MXP автоматически включена для интерактивных ссылок, информации о комнате и более сильных взаимодействиях. Вы можете отключить этот параметр в Настройках &gt; Специальные настройки.</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="3325"/>
