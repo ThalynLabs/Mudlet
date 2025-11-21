@@ -3915,7 +3915,7 @@ area) not found, adding &quot;%1&quot; against the reserved -1 id.</source>
     <message>
       <location filename="../src/TTextEdit.cpp" line="1962"/>
       <source>Unknown</source>
-      <translation type="unfinished"/>
+      <translation>Onbekend</translation>
     </message>
     <message>
       <location filename="../src/TTextEdit.cpp" line="1963"/>
