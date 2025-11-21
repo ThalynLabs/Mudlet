@@ -1473,7 +1473,7 @@ Accessibility-friendly description for the built-in command line of a console/wi
       <location filename="../src/TConsole.cpp" line="357"/>
       <source>Start logging game output to log file.</source>
       <extracomment>Button tooltip for the logging button</extracomment>
-      <translation type="unfinished"/>
+      <translation>Rozpocznij logowanie wyjścia gry do pliku.</translation>
     </message>
     <message>
       <location filename="../src/TConsole.cpp" line="435"/>
@@ -3989,7 +3989,7 @@ obszaru) nie znaleziono, dodając &quot;%1&quot; w stosunku do zarezerwowanego -
     <message>
       <location filename="../src/TTextEdit.cpp" line="1962"/>
       <source>Unknown</source>
-      <translation type="unfinished"/>
+      <translation>Nieznane</translation>
     </message>
     <message>
       <location filename="../src/TTextEdit.cpp" line="1963"/>
