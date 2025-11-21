@@ -1461,7 +1461,7 @@ Accessibility-friendly description for the built-in command line of a console/wi
       <location filename="../src/TConsole.cpp" line="357"/>
       <source>Start logging game output to log file.</source>
       <extracomment>Button tooltip for the logging button</extracomment>
-      <translation type="unfinished"/>
+      <translation>Começar a registar a saída do jogo num ficheiro log.</translation>
     </message>
     <message>
       <location filename="../src/TConsole.cpp" line="435"/>
@@ -3910,7 +3910,7 @@ area) not found, adding &quot;%1&quot; against the reserved -1 id.</source>
     <message>
       <location filename="../src/TTextEdit.cpp" line="1962"/>
       <source>Unknown</source>
-      <translation type="unfinished"/>
+      <translation>Desconhecido</translation>
     </message>
     <message>
       <location filename="../src/TTextEdit.cpp" line="1963"/>
