@@ -2148,9 +2148,8 @@ int TTextEdit::imageTopLine()
         }
 
         return mCursorY - mScreenHeight;
-    } else {
-        return 0;
     }
+    return 0;
 }
 
 
@@ -2385,9 +2384,8 @@ inline QString TTextEdit::convertWhitespaceToVisual(const QChar& first, const QC
             } else if ((value >= 0xFFF0 && value <= 0xFFF8) || value == 0xFFFE || value == 0xFFFF) {
                 //: Unicode codepoint in range U+FFFx - not a character.
                 return htmlCenter(tr("{noncharacter}")); break;
-            } else {
-                return htmlCenter(first);
             }
+            return htmlCenter(first);
         }
     } else {
         // The code point is NOT on the BMP
@@ -2429,9 +2427,8 @@ inline QString TTextEdit::byteToLuaCodeOrChar(const char* byte)
         // HTML/Rich-text formatting opening tag and has to be converted to
         // "&lt;":
         return qsl("&lt;");
-    } else {
-        return qsl("%1").arg(*byte);
     }
+    return qsl("%1").arg(*byte);
 }
 
 /*

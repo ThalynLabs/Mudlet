@@ -24,9 +24,8 @@ QOpenGLWidget* GLWidgetFactory::createGLWidget(TMap* pMap, Host* pHost, QWidget*
 {
     if (pHost && pHost->getUseModern3DMapper()) {
         return new ModernGLWidget(pMap, pHost, parent);
-    } else {
-        return new GLWidget(pMap, pHost, parent);
     }
+    return new GLWidget(pMap, pHost, parent);
 }
 
 bool GLWidgetFactory::isCorrectWidgetType(QOpenGLWidget* widget, Host* pHost)
@@ -51,7 +50,6 @@ QString GLWidgetFactory::getWidgetTypeName(QOpenGLWidget* widget)
         return QStringLiteral("ModernGLWidget");
     } else if (dynamic_cast<GLWidget*>(widget)) {
         return QStringLiteral("GLWidget");
-    } else {
-        return QStringLiteral("Unknown");
     }
+    return QStringLiteral("Unknown");
 }

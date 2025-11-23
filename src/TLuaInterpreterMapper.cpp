@@ -431,11 +431,10 @@ int TLuaInterpreter::addCustomLine(lua_State* L)
         line_style = Qt::DashDotLine;
     } else if (!lineStyleString.compare(QLatin1String("dash dot dot line"))) {
         line_style = Qt::DashDotDotLine;
-    } else {
-        return warnArgumentValue(L, __func__, qsl(
+    }
+    return warnArgumentValue(L, __func__, qsl(
             "invalid line style '%1', only use one of: 'solid line', 'dot line', 'dash line', 'dash dot line' or 'dash dot dot line'")
             .arg(lineStyleString));
-    }
 
     if (!lua_istable(L, 5)) {
         lua_pushfstring(L, "addCustomLine: bad argument #5 type (RGB color components as a table expected, got %s!)", luaL_typename(L, 5));
@@ -707,9 +706,8 @@ int TLuaInterpreter::centerview(lua_State* L)
         }
         lua_pushboolean(L, true);
         return 1;
-    } else {
-        return warnArgumentValue(L, __func__, csmInvalidRoomID.arg(roomId));
     }
+    return warnArgumentValue(L, __func__, csmInvalidRoomID.arg(roomId));
 }
 
 // Documentation: https://wiki.mudlet.org/w/Manual:Lua_Functions#clearAreaUserData
@@ -2126,9 +2124,8 @@ int TLuaInterpreter::getRoomExits(lua_State* L)
             lua_settable(L, -3);
         }
         return 1;
-    } else {
-        return 0;
     }
+    return 0;
 }
 
 // Documentation: https://wiki.mudlet.org/w/Manual:Lua_Functions#getRoomHashByID
@@ -2287,9 +2284,8 @@ int TLuaInterpreter::getRoomWeight(lua_State* L)
     if (pR) {
         lua_pushnumber(L, pR->getWeight());
         return 1;
-    } else {
-        return 0;
     }
+    return 0;
 }
 
 // documented in the wiki!
@@ -2565,9 +2561,8 @@ int TLuaInterpreter::loadMap(lua_State* L)
             if (!errMsg.isEmpty()) {
                 lua_pushstring(L, errMsg.toUtf8().constData());
                 return 2;
-            } else {
-                return 1;
             }
+            return 1;
         }
     } else {
         isOk = host.mpConsole->loadMap(location);

@@ -170,9 +170,8 @@ bool LuaInterface::loadValue(lua_State* L, TVar* var, int index)
                     return false;
                 }
             }
-        } else {
-            return false;
         }
+        return false;
         if (lua_gettop(L)) {
             return lua_type(L, -1) == var->getValueType();
         }
@@ -609,9 +608,8 @@ bool LuaInterface::loadVar(TVar* var)
             lua_pushboolean(mL, var->getValue().toLower() == "true" ? 1 : 0);
         } else if (vType == LUA_TSTRING) {
             lua_pushstring(mL, QString(var->getName()).toUtf8().constData());
-        } else {
-            return false;
         }
+        return false;
     } else {
         //FIXME: report error to user qDebug()<<"panic in loadVar";
         return false;

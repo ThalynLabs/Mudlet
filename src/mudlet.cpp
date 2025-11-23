@@ -126,9 +126,8 @@ bool TConsoleMonitor::eventFilter(QObject* obj, QEvent* event)
         mudlet::smDebugMode = false;
         mudlet::self()->refreshTabBar();
         return QObject::eventFilter(obj, event);
-    } else {
-        return QObject::eventFilter(obj, event);
     }
+    return QObject::eventFilter(obj, event);
 }
 
 /*static*/ void mudlet::start()
@@ -2479,9 +2478,8 @@ bool mudlet::saveWindowLayout()
         }
         mHasSavedLayout = true;
         return true;
-    } else {
-        return false;
     }
+    return false;
 }
 
 bool mudlet::loadWindowLayout()
@@ -5427,9 +5425,8 @@ Host* mudlet::loadProfile(const QString& profile_name, const bool playOnline, co
         if (!pHost) {
             return pHost;
         }
-    } else {
-        return pHost;
     }
+    return pHost;
 
     LuaInterface* lI = pHost->getLuaInterface();
     lI->getVars(true);
@@ -6755,12 +6752,11 @@ void mudlet::onlyShowProfiles(const QStringList& predefinedProfiles)
             return original.mirrored(true, true);
 #endif
         }
-    } else {
-        return QImage(releaseVersion
+    }
+    return QImage(releaseVersion
                               ? qsl(":/splash/Mudlet_splashscreen_main.png")
                               : testVersion ? qsl(":/splash/Mudlet_splashscreen_ptb.png")
                                                                : qsl(":/splash/Mudlet_splashscreen_development.png"));
-    }
 #else
     return QImage(qsl(":/splash/Mudlet_splashscreen_main.png"));
 #endif // INCLUDE_VARIABLE_SPLASH_SCREEN

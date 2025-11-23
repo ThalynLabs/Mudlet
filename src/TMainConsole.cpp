@@ -513,9 +513,8 @@ TConsole* TMainConsole::createMiniConsole(const QString& windowname, const QStri
         pC->show();
 
         return pC;
-    } else {
-        return nullptr;
     }
+    return nullptr;
 }
 
 // This is a scrollBox overlaid on to the main console
@@ -720,9 +719,8 @@ std::pair<bool, QString> TMainConsole::setLabelCursor(const QString& name, int s
             pL->setCursor(static_cast<Qt::CursorShape>(shape));
         } else if (shape == -1) {
             pL->unsetCursor();
-        } else {
-            return {false, qsl("cursor shape '%1' not found. see https://doc.qt.io/qt-5/qt.html#CursorShape-enum").arg(shape)};
         }
+        return {false, qsl("cursor shape '%1' not found. see https://doc.qt.io/qt-5/qt.html#CursorShape-enum").arg(shape)};
         return {true, QString()};
     }
     return {false, qsl("label name '%1' not found").arg(name)};
@@ -851,9 +849,8 @@ bool TMainConsole::setBackgroundImage(const QString& name, const QString& path)
         const QPixmap bgPixmap(path);
         pL->setPixmap(bgPixmap);
         return true;
-    } else {
-        return false;
     }
+    return false;
 }
 
 // Does NOT act on the TMainConsole itself:
@@ -881,9 +878,8 @@ bool TMainConsole::setBackgroundColor(const QString& name, int r, int g, int b, 
         mainPalette.setColor(QPalette::Window, QColor(r, g, b, alpha));
         pL->setPalette(mainPalette);
         return true;
-    } else {
-        return false;
     }
+    return false;
 }
 
 bool TMainConsole::raiseWindow(const QString& name)
@@ -969,9 +965,8 @@ bool TMainConsole::showWindow(const QString& name)
     } else if (pL) {
         pL->show();
         return true;
-    } else {
-        return false;
     }
+    return false;
 }
 
 bool TMainConsole::hideWindow(const QString& name)
@@ -984,9 +979,8 @@ bool TMainConsole::hideWindow(const QString& name)
     } else if (pL) {
         pL->hide();
         return true;
-    } else {
-        return false;
     }
+    return false;
 }
 
 bool TMainConsole::printWindow(const QString& name, const QString& text)
@@ -999,9 +993,8 @@ bool TMainConsole::printWindow(const QString& name, const QString& text)
     } else if (pL) {
         pL->setText(text);
         return true;
-    } else {
-        return false;
     }
+    return false;
 }
 
 //getUserWindowSize for resizing in Geyser
@@ -1165,9 +1158,8 @@ QSet<QString> TMainConsole::getWordSet() const
 
     if (!mUseSharedDictionary) {
         return mWordSet_profile;
-    } else {
-        return mudlet::self()->getWordSet();
     }
+    return mudlet::self()->getWordSet();
 }
 
 void TMainConsole::setProfileName(const QString& newName)

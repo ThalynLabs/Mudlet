@@ -78,9 +78,8 @@ QString TMxpLinkTagHandler::getHref(const MxpStartTag* tag)
         return tag->getAttributeValue("href");
     } else if (!tag->getAttribute(0).hasValue()) {
         return tag->getAttribute(0).getName();
-    } else {
-        return "";
     }
+    return "";
 }
 void TMxpLinkTagHandler::handleContent(char ch)
 {

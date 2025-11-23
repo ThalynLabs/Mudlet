@@ -673,13 +673,11 @@ QString TLuaInterpreter::dirToString(lua_State* L, int position)
             return QLatin1String("in");
         } else if (!direction.compare(QLatin1String("o"), Qt::CaseInsensitive) || !direction.compare(QLatin1String("out"), Qt::CaseInsensitive)) {
             return QLatin1String("out");
-        } else {
-            return direction;
         }
+        return direction;
 
-    } else {
-        return QString();
     }
+    return QString();
 }
 
 // No documentation available in wiki - internal function
@@ -1570,9 +1568,8 @@ int TLuaInterpreter::setLabelCallback(lua_State* L, const QString& funcName)
         lua_result = host.setLabelOnEnter(labelName, func);
     } else if (funcName == qsl("setLabelOnLeave")) {
         lua_result = host.setLabelOnLeave(labelName, func);
-    } else {
-        return warnArgumentValue(L, __func__, qsl("'%1' is not a known function name - bug in Mudlet, please report it").arg(funcName));
     }
+    return warnArgumentValue(L, __func__, qsl("'%1' is not a known function name - bug in Mudlet, please report it").arg(funcName));
 
     if (!lua_result) {
         return warnArgumentValue(L, __func__, qsl("label name '%1' not found").arg(labelName));
@@ -4553,9 +4550,8 @@ bool TLuaInterpreter::callLabelCallbackEvent(const int func, const QEvent* qE)
             // No-op - this silences warnings about unhandled QEvent types
         }
         }
-    } else {
-        return callReference(L, name, 0);
     }
+    return callReference(L, name, 0);
     lua_pop(L, lua_gettop(L));
     return true;
 }
@@ -4884,9 +4880,8 @@ QString TLuaInterpreter::getLuaString(const QString& stringName)
     const int error = luaL_dostring(L, qsl("return %1").arg(stringName).toUtf8().constData());
     if (!error) {
         return lua_tostring(L, 1);
-    } else {
-        return QString();
     }
+    return QString();
 }
 
 // check for <whitespace><no_valid_representation> as output

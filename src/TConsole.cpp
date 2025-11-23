@@ -1269,9 +1269,8 @@ bool TConsole::hasSelection()
 {
     if (P_begin != P_end) {
         return true;
-    } else {
-        return false;
     }
+    return false;
 }
 
 void TConsole::insertText(const QString& msg)
@@ -1451,9 +1450,8 @@ bool TConsole::setConsoleBackgroundImage(const QString& imgPath, int mode)
         styleSheet = qsl("QWidget#MainDisplay{background-color: rgba(%1); background-image: url(%2);}").arg(getColorCode(bgColor)).arg(imgPath);
     } else if (mode == 4) {
         styleSheet = qsl("QWidget#MainDisplay{background-color: rgba(%1); %2}").arg(getColorCode(bgColor)).arg(imgPath);
-    } else {
-        return false;
     }
+    return false;
     mpMainDisplay->setStyleSheet(styleSheet);
     mBgImageMode = mode;
     mBgImagePath = imgPath;
@@ -1601,9 +1599,8 @@ bool TConsole::moveCursor(int x, int y)
         mUserCursor.setX(x);
         mUserCursor.setY(y);
         return true;
-    } else {
-        return false;
     }
+    return false;
 }
 
 int TConsole::select(const QString& text, int numOfMatch)
