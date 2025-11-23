@@ -75,8 +75,9 @@ bool TKey::match(const Qt::Key key, const Qt::KeyboardModifiers modifier, const 
                 execute();
                 if (isToMatchAll) {
                     isAMatch = true;
+                } else {
+                    return true;
                 }
-                return true;
             }
         }
 
@@ -84,8 +85,9 @@ bool TKey::match(const Qt::Key key, const Qt::KeyboardModifiers modifier, const 
             if (childKey->match(key, modifier, isToMatchAll)) {
                 if (isToMatchAll) {
                     isAMatch = true;
+                } else {
+                    return true;
                 }
-                return true;
             }
         }
     }

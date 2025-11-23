@@ -719,8 +719,9 @@ std::pair<bool, QString> TMainConsole::setLabelCursor(const QString& name, int s
             pL->setCursor(static_cast<Qt::CursorShape>(shape));
         } else if (shape == -1) {
             pL->unsetCursor();
+        } else {
+            return {false, qsl("cursor shape '%1' not found. see https://doc.qt.io/qt-5/qt.html#CursorShape-enum").arg(shape)};
         }
-        return {false, qsl("cursor shape '%1' not found. see https://doc.qt.io/qt-5/qt.html#CursorShape-enum").arg(shape)};
         return {true, QString()};
     }
     return {false, qsl("label name '%1' not found").arg(name)};

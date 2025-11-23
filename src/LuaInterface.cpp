@@ -608,8 +608,9 @@ bool LuaInterface::loadVar(TVar* var)
             lua_pushboolean(mL, var->getValue().toLower() == "true" ? 1 : 0);
         } else if (vType == LUA_TSTRING) {
             lua_pushstring(mL, QString(var->getName()).toUtf8().constData());
+        } else {
+            return false;
         }
-        return false;
     } else {
         //FIXME: report error to user qDebug()<<"panic in loadVar";
         return false;

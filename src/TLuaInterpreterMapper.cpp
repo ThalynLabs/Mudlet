@@ -431,10 +431,11 @@ int TLuaInterpreter::addCustomLine(lua_State* L)
         line_style = Qt::DashDotLine;
     } else if (!lineStyleString.compare(QLatin1String("dash dot dot line"))) {
         line_style = Qt::DashDotDotLine;
+    } else {
+        return warnArgumentValue(L, __func__, qsl(
+                "invalid line style '%1', only use one of: 'solid line', 'dot line', 'dash line', 'dash dot line' or 'dash dot dot line'")
+                .arg(lineStyleString));
     }
-    return warnArgumentValue(L, __func__, qsl(
-            "invalid line style '%1', only use one of: 'solid line', 'dot line', 'dash line', 'dash dot line' or 'dash dot dot line'")
-            .arg(lineStyleString));
 
     if (!lua_istable(L, 5)) {
         lua_pushfstring(L, "addCustomLine: bad argument #5 type (RGB color components as a table expected, got %s!)", luaL_typename(L, 5));

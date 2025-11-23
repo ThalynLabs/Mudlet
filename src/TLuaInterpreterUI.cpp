@@ -892,8 +892,9 @@ int TLuaInterpreter::getBackgroundColor(lua_State* L)
         color = host.mpConsole->getConsoleBgColor();
     } else if (auto optionalColor = host.getBackgroundColor(windowName)) {
         color = optionalColor.value();
+    } else {
+        return warnArgumentValue(L, __func__, qsl("window '%1' does not exist").arg(windowName));
     }
-    return warnArgumentValue(L, __func__, qsl("window '%1' does not exist").arg(windowName));
 
     lua_pushnumber(L, color.red());
     lua_pushnumber(L, color.green());
@@ -3515,8 +3516,9 @@ int TLuaInterpreter::movieFunc(lua_State* L, const QString& funcName)
         } else {
             pN->disconnect(SIGNAL(resized()));
         }
+    } else {
+        return warnArgumentValue(L, __func__, qsl("'%1' is not a known function name - bug in Mudlet, please report it").arg(funcName));
     }
-    return warnArgumentValue(L, __func__, qsl("'%1' is not a known function name - bug in Mudlet, please report it").arg(funcName));
 
     lua_pushboolean(L, true);
     return 1;

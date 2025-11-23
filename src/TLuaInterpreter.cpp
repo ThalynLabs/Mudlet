@@ -1568,8 +1568,9 @@ int TLuaInterpreter::setLabelCallback(lua_State* L, const QString& funcName)
         lua_result = host.setLabelOnEnter(labelName, func);
     } else if (funcName == qsl("setLabelOnLeave")) {
         lua_result = host.setLabelOnLeave(labelName, func);
+    } else {
+        return warnArgumentValue(L, __func__, qsl("'%1' is not a known function name - bug in Mudlet, please report it").arg(funcName));
     }
-    return warnArgumentValue(L, __func__, qsl("'%1' is not a known function name - bug in Mudlet, please report it").arg(funcName));
 
     if (!lua_result) {
         return warnArgumentValue(L, __func__, qsl("label name '%1' not found").arg(labelName));
@@ -4550,8 +4551,9 @@ bool TLuaInterpreter::callLabelCallbackEvent(const int func, const QEvent* qE)
             // No-op - this silences warnings about unhandled QEvent types
         }
         }
+    } else {
+        return callReference(L, name, 0);
     }
-    return callReference(L, name, 0);
     lua_pop(L, lua_gettop(L));
     return true;
 }
