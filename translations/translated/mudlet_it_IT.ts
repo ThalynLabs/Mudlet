@@ -1474,7 +1474,7 @@ Accessibility-friendly description for the built-in command line of a console/wi
       <location filename="../src/TConsole.cpp" line="915"/>
       <source>Start recording of replay</source>
       <extracomment>Button tooltip for the replay recording toggle button</extracomment>
-      <translation type="unfinished"/>
+      <translation>Inizia registrazione del replay</translation>
     </message>
     <message>
       <location filename="../src/TConsole.cpp" line="357"/>
@@ -1523,7 +1523,7 @@ Accessibility-friendly description for the built-in command line of a console/wi
       <location filename="../src/TConsole.cpp" line="894"/>
       <source>Failed to open replay recording file for writing.</source>
       <extracomment>Informational message displayed when replay recording file could not be opened</extracomment>
-      <translation type="unfinished"/>
+      <translation>Impossibile aprire per la scrittura il file di registrazione replay.</translation>
     </message>
     <message>
       <location filename="../src/TConsole.cpp" line="902"/>
@@ -1534,7 +1534,7 @@ Accessibility-friendly description for the built-in command line of a console/wi
       <location filename="../src/TConsole.cpp" line="904"/>
       <source>Stop recording of replay</source>
       <extracomment>Button tooltip for the replay recording toggle button</extracomment>
-      <translation type="unfinished"/>
+      <translation>Interrompi registrazione del replay</translation>
     </message>
     <message>
       <location filename="../src/TConsole.cpp" line="909"/>
@@ -5091,7 +5091,7 @@ Il package si trova in un server con problemi di certificato SSL, l'URL potrebbe
       <location filename="../src/ctelnet.cpp" line="482"/>
       <source>Looking up the details of server: %1:%2 ...</source>
       <extracomment>%1 is the URL or an IP address (suitably wrapped if it is an IPv6 one) * of the Game Server (or Proxy); %2 is the port number.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Ricerca dettagli del server: %1:%2 ...</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="626"/>
@@ -5151,14 +5151,15 @@ Il package si trova in un server con problemi di certificato SSL, l'URL potrebbe
       <location filename="../src/ctelnet.cpp" line="780"/>
       <source>Secure connections not supported by this game on this port; try turning the option off</source>
       <extracomment>A reason why a connection to a game server ended.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Connessione sicura non supportate dal gioco su questa porta; prova a disattivare l'opzione</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="810"/>
       <source>[ ALERT ] - Socket got disconnected, for reason:
 %1</source>
       <extracomment>This message is used when we have been trying to connect or * we were connected in an open, insecure manner, but the * connection has been lost. Unlike the secure connection case * there is only one error message to show; it would be * desirable to use the same text for this message as the &quot;one * reason&quot; (%n==1) situation for locales such as English (with * a distinct form for the singular) use for the secure type * of connection.</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ ALERT ] - Socket disconnesso, causa:
+%1</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="930"/>
@@ -5167,14 +5168,17 @@ The server name is not correct, or your nameservers are not
 working properly.
 </source>
       <extracomment>This text is used in the (expected) case when the user has provided * a URL for the Game Server rather than (unusually) an IP address. * After a DNS lookup however, we have NOT found any IP addresses which * means that we cannot proceed further to connect to the Game server.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Impossibile trovare l'indirizzo del server! La connessione non può essere effettuata.
+L'indirizzo inserito non è corretto o il tuo server DNS non sta funzionando correttamente.
+</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="935"/>
       <source>[ ERROR ] - Unable to connect to &quot;%1&quot;.
 Check your internet connection and the details entered for the game server.</source>
       <extracomment>%1 is the URL of the Game Server</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ ERROR ] - Impossibile connettersi a &quot;%1&quot;.
+Verifica la tua connessione internet e i dettagli inseriti per il server di gioco.</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="948"/>
@@ -5192,7 +5196,7 @@ Check your internet connection and the details entered for the game server.</sou
       <location filename="../src/ctelnet.cpp" line="970"/>
       <source>A host name could not be found for the given IP address.</source>
       <extracomment>This text is used when the user has provided a raw IP address * for the Game Server rather than a URL. In this case we try to * perform a &quot;reverse-lookup&quot; to see if we can identify the URL that * matches it - but nothing useful was found.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Impossibile trovare un nome host per l'indirizzo IP specificato.</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="980"/>
@@ -5200,7 +5204,9 @@ Check your internet connection and the details entered for the game server.</sou
 It is: &quot;%1&quot;
 </source>
       <extracomment>This text is used when the user has provided a raw IP address * for the Game Server rather than a URL. In this case we try to * perform a &quot;reverse-lookup&quot; to see if we can identify the URL that * matches it - and this is used when we have something (%1) to * show.</extracomment>
-      <translation type="unfinished"/>
+      <translation>È stato trovato un nome host per l'indirizzo IP:
+&quot;%1&quot;
+</translation>
     </message>
     <message numerus="yes">
       <location filename="../src/ctelnet.cpp" line="992"/>
@@ -5320,7 +5326,7 @@ It is: &quot;%1&quot;
     <message>
       <location filename="../src/ctelnet.cpp" line="2323"/>
       <source>[ INFO ]  - This game appears to support MXP (Mud eXtension Protocol), but has not turned it on properly. MXP processing has been automatically enabled for clickable links, room info, and richer interactions. You can disable this setting in Settings &gt; Special Options.</source>
-      <translation type="unfinished"/>
+      <translation>[ INFO ]  - Questo gioco sembra supportare MXP (MUD eXtension Protocol), ma il protocollo non è stato negoziato correttamente. L'elaborazione MXP è stata forzatamente abilitata per i collegamenti cliccabili, le informazioni sulla stanza e altre interazioni. Puoi disabilitare questa impostazione nella sezione Impostazioni &gt; Opzioni Speciali.</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="3325"/>
