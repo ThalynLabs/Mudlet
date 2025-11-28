@@ -3930,24 +3930,36 @@ void mudlet::slot_showAboutDialog()
 void mudlet::slot_toggleTimeStamp()
 {
     Host* pHost = getActiveHost();
+    if (!pHost) {
+        return;
+    }
     pHost->mpConsole->timeStampButton->click();
 }
 
 void mudlet::slot_toggleReplay()
 {
     Host* pHost = getActiveHost();
+    if (!pHost) {
+        return;
+    }
     pHost->mpConsole->replayButton->click();
 }
 
 void mudlet::slot_toggleLogging()
 {
     Host* pHost = getActiveHost();
+    if (!pHost) {
+        return;
+    }
     pHost->mpConsole->logButton->click();
 }
 
 void mudlet::slot_toggleEmergencyStop()
 {
     Host* pHost = getActiveHost();
+    if (!pHost) {
+        return;
+    }
     pHost->mpConsole->emergencyStop->click();
 }
 
