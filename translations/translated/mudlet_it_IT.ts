@@ -5333,13 +5333,15 @@ It is: &quot;%1&quot;
       <location filename="../src/ctelnet.cpp" line="3672"/>
       <source>[ INFO ]  - Upgrading the GUI to new version &apos;%1&apos; from version &apos;%2&apos;
 (url=&apos;%3&apos;).</source>
-      <translation type="unfinished"/>
+      <translation>[ INFO ]  - Aggiornamento della GUI alla versione &apos;%1&apos; dalla versione &apos;%2&apos;
+(url=&apos;%3&apos;).</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="3619"/>
       <source>[ INFO ]  - Downloading and installing package &apos;%1&apos;
 (url=&apos;%2&apos;).</source>
-      <translation type="unfinished"/>
+      <translation>[ INFO ]  - Download e installazione del package &apos;%1&apos;
+(url=&apos;%2&apos;).</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="3629"/>
@@ -6989,7 +6991,9 @@ Utilizzi</translation>
 
 &lt;i&gt;SSL/TLS connections require a URL, as an IP address is not a suitable identifier for the certification of the Game Server.&lt;/i&gt;</source>
       <extracomment>Please use two line-feeds after the first line so the second * line can be italicised and spaced out - if appropriate for * the locale.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Inserisci l'URL del server di gioco.
+
+&lt;i&gt;Le connessioni SSL/TLS richiedono un URL, poiché un indirizzo IP non è un identificatore adatto per la verifica del certificato del server di gioco.&lt;/i&gt;</translation>
     </message>
     <message>
       <location filename="../src/dlgConnectionProfiles.cpp" line="1926"/>
@@ -16803,13 +16807,13 @@ o script LUA</translation>
       <location filename="../src/ui/triggers_main_area.ui" line="449"/>
       <source> lines)</source>
       <extracomment>This text is appended after the numeric value shown in the spin box (so that it and the prefix text is &quot;wrapped&quot; around it), except when the control is set to the special first value when all of them are replaced by that text.</extracomment>
-      <translation type="unfinished"/>
+      <translation> righe)</translation>
     </message>
     <message>
       <location filename="../src/ui/triggers_main_area.ui" line="452"/>
       <source>AND / Multi-line (within: </source>
       <extracomment>This text is prepended before the numeric value shown in the spin box (so that it and the suffix text is &quot;wrapped&quot; around it), except when the control is set to the special first value when all of them are replaced by that text. For locales using spaces between words ensure a space is left at the end to separate the text from the number that is shown from the control after it.</extracomment>
-      <translation type="unfinished"/>
+      <translation>E / multi-riga (delta: </translation>
     </message>
     <message>
       <location filename="../src/ui/triggers_main_area.ui" line="481"/>
