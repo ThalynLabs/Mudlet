@@ -226,7 +226,7 @@ int TTextCodec_869::mibEnum() const
 
 QList<QByteArray> TTextCodec_medievia::aliases() const
 {
-    return {};
+    return {"M_MEDIEVIA"};
 }
 
 int TTextCodec_medievia::mibEnum() const
