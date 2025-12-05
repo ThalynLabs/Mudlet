@@ -6,27 +6,27 @@
     <message>
       <location filename="../src/crash_reporter/main.cpp" line="74"/>
       <source>Mudlet Crash</source>
-      <translation type="unfinished"/>
+      <translation>Crash di Mudlet</translation>
     </message>
     <message>
       <location filename="../src/crash_reporter/main.cpp" line="77"/>
       <source>&lt;div align=&apos;center&apos;&gt;&lt;b&gt;Mudlet has encountered a problem.&lt;/b&gt;&lt;br&gt;&lt;br&gt;You can choose to send a crash report to help us improve the application.&lt;/div&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;div align=&apos;center&apos;&gt;&lt;b&gt;Mudlet ha riscontrato un problema.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Puoi scegliere di inviare un rapporto sul crash per aiutarci a migliorare l'applicazione.&lt;/div&gt;</translation>
     </message>
     <message>
       <location filename="../src/crash_reporter/main.cpp" line="85"/>
       <source>Send this time</source>
-      <translation type="unfinished"/>
+      <translation>Invia una volta</translation>
     </message>
     <message>
       <location filename="../src/crash_reporter/main.cpp" line="86"/>
       <source>Always send</source>
-      <translation type="unfinished"/>
+      <translation>Invia sempre</translation>
     </message>
     <message>
       <location filename="../src/crash_reporter/main.cpp" line="87"/>
       <source>Don&apos;t send</source>
-      <translation type="unfinished"/>
+      <translation>Non inviare</translation>
     </message>
   </context>
   <context>
@@ -1033,7 +1033,7 @@ This text is shown when room(s) are (not) selected in mapper. %1 is the room ID 
       <location filename="../src/SelectionRectangleHandler.cpp" line="116"/>
       <source>Hold %1 and drag to pan the map.</source>
       <extracomment>%1 is the platform-specific key name for Alt (Alt on Windows/Linux, Option on macOS)</extracomment>
-      <translation type="unfinished"/>
+      <translation>Tieni premuto %1 e trascina per spostare la mappa.</translation>
     </message>
     <message>
       <location filename="../src/T2DMap.cpp" line="3194"/>
@@ -2648,7 +2648,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
     <message>
       <location filename="../src/TLuaInterpreter.cpp" line="5649"/>
       <source>Some regular expression functions may not be available.</source>
-      <translation type="unfinished"/>
+      <translation>Alcune funzioni delle regular expression potrebbero non essere disponibili.</translation>
     </message>
     <message>
       <location filename="../src/TLuaInterpreter.cpp" line="5656"/>
@@ -4782,19 +4782,19 @@ Desideri aggiornare ora?</translation>
       <location filename="../src/VarUnit.cpp" line="115"/>
       <source>Lua functions cannot be saved.</source>
       <extracomment>Tooltip explaining why a Lua function cannot be saved</extracomment>
-      <translation type="unfinished"/>
+      <translation>Le funzioni Lua non possono essere salvate.</translation>
     </message>
     <message>
       <location filename="../src/VarUnit.cpp" line="120"/>
       <source>Referenced variables cannot be saved.</source>
       <extracomment>Tooltip explaining why a referenced variable cannot be saved</extracomment>
-      <translation type="unfinished"/>
+      <translation>Le variabili referenziate non possono essere salvate.</translation>
     </message>
     <message>
       <location filename="../src/VarUnit.cpp" line="127"/>
       <source>This table has %1 items, exceeding the 10,000 item limit for saved variables. Use &lt;b&gt;table.save()&lt;/b&gt; and &lt;b&gt;table.load()&lt;/b&gt; instead for better performance with large tables.</source>
       <extracomment>Tooltip explaining why a large table cannot be saved, recommending alternative methods</extracomment>
-      <translation type="unfinished"/>
+      <translation>Questa tabella ha %1 elementi e supera il limite di 10.000 elementi consigliati per le variabili salvate. Utilizza la funzione &lt;b&gt;table.save()&lt;/b&gt; e &lt;b&gt;table.load()&lt;/b&gt; per migliorare le prestazioni con grandi tabelle.</translation>
     </message>
     <message>
       <location filename="../src/VarUnit.cpp" line="148"/>
@@ -6490,7 +6490,7 @@ Utilizzi</translation>
     <message>
       <location filename="../src/dlgAboutDialog.cpp" line="854"/>
       <source>&lt;h2&gt;&lt;u&gt;Lrexlib-pcre2 -  Regular expression library binding (PCRE2 flavour).&lt;/u&gt;&lt;/h2&gt;&lt;h3&gt;Copyright © Reuben Thomas 2000-2020&lt;br&gt;Copyright © Shmuel Zeigerman 2004-2020 &lt;/h3&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;h2&gt;&lt;u&gt;Lrexlib-pcre2 -  Regular expression library binding (PCRE2 flavour).&lt;/u&gt;&lt;/h2&gt;&lt;h3&gt;Copyright © Reuben Thomas 2000-2020&lt;br&gt;Copyright © Shmuel Zeigerman 2004-2020 &lt;/h3&gt;</translation>
     </message>
     <message>
       <location filename="../src/dlgAboutDialog.cpp" line="868"/>
@@ -15015,22 +15015,22 @@ tenta di nuovo quando sarà terminato.</translation>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="4519"/>
       <source>Crash report sending policy:</source>
-      <translation type="unfinished"/>
+      <translation>Criterio di invio del report sul crash:</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="4527"/>
       <source>Always send</source>
-      <translation type="unfinished"/>
+      <translation>Invia sempre</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="4532"/>
       <source>Never send</source>
-      <translation type="unfinished"/>
+      <translation>Non inviare mai</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="4537"/>
       <source>Ask each time</source>
-      <translation type="unfinished"/>
+      <translation>Chiedi ogni volta</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="4545"/>
