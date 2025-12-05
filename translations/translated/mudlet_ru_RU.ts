@@ -6,27 +6,27 @@
     <message>
       <location filename="../src/crash_reporter/main.cpp" line="74"/>
       <source>Mudlet Crash</source>
-      <translation type="unfinished"/>
+      <translation>Mudlet Crash</translation>
     </message>
     <message>
       <location filename="../src/crash_reporter/main.cpp" line="77"/>
       <source>&lt;div align=&apos;center&apos;&gt;&lt;b&gt;Mudlet has encountered a problem.&lt;/b&gt;&lt;br&gt;&lt;br&gt;You can choose to send a crash report to help us improve the application.&lt;/div&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;div align=&apos;center&apos;&gt;&lt;b&gt;В Mudlet произошла ошибка.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Вы можете отправить отчет о сбое, чтобы помочь нам улучшить приложение.&lt;/div&gt;</translation>
     </message>
     <message>
       <location filename="../src/crash_reporter/main.cpp" line="85"/>
       <source>Send this time</source>
-      <translation type="unfinished"/>
+      <translation>Отправить в этот раз</translation>
     </message>
     <message>
       <location filename="../src/crash_reporter/main.cpp" line="86"/>
       <source>Always send</source>
-      <translation type="unfinished"/>
+      <translation>Всегда отправлять</translation>
     </message>
     <message>
       <location filename="../src/crash_reporter/main.cpp" line="87"/>
       <source>Don&apos;t send</source>
-      <translation type="unfinished"/>
+      <translation>Не отправлять</translation>
     </message>
   </context>
   <context>
@@ -1039,7 +1039,7 @@ This text is shown when room(s) are (not) selected in mapper. %1 is the room ID 
       <location filename="../src/SelectionRectangleHandler.cpp" line="116"/>
       <source>Hold %1 and drag to pan the map.</source>
       <extracomment>%1 is the platform-specific key name for Alt (Alt on Windows/Linux, Option on macOS)</extracomment>
-      <translation type="unfinished"/>
+      <translation>Удерживайте %1 и перетащите для перемещения карты.</translation>
     </message>
     <message>
       <location filename="../src/T2DMap.cpp" line="3194"/>
@@ -2652,7 +2652,7 @@ This is a sub-item of the &quot;Connect&quot; item in the toolbar of a detached 
     <message>
       <location filename="../src/TLuaInterpreter.cpp" line="5649"/>
       <source>Some regular expression functions may not be available.</source>
-      <translation type="unfinished"/>
+      <translation>Некоторые функции регулярных выражений могут не быть доступны.</translation>
     </message>
     <message>
       <location filename="../src/TLuaInterpreter.cpp" line="5656"/>
@@ -4781,13 +4781,13 @@ Would you like to update now?</source>
       <location filename="../src/VarUnit.cpp" line="115"/>
       <source>Lua functions cannot be saved.</source>
       <extracomment>Tooltip explaining why a Lua function cannot be saved</extracomment>
-      <translation type="unfinished"/>
+      <translation>Функции Lua не могут быть сохранены.</translation>
     </message>
     <message>
       <location filename="../src/VarUnit.cpp" line="120"/>
       <source>Referenced variables cannot be saved.</source>
       <extracomment>Tooltip explaining why a referenced variable cannot be saved</extracomment>
-      <translation type="unfinished"/>
+      <translation>Переменные со ссылками не могут быть сохранены.</translation>
     </message>
     <message>
       <location filename="../src/VarUnit.cpp" line="127"/>
@@ -14916,22 +14916,22 @@ try again when it has finished.</source>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="4519"/>
       <source>Crash report sending policy:</source>
-      <translation type="unfinished"/>
+      <translation>Отчет об ошибке:</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="4527"/>
       <source>Always send</source>
-      <translation type="unfinished"/>
+      <translation>Всегда отправлять</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="4532"/>
       <source>Never send</source>
-      <translation type="unfinished"/>
+      <translation>Никогда</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="4537"/>
       <source>Ask each time</source>
-      <translation type="unfinished"/>
+      <translation>Спрашивать каждый раз</translation>
     </message>
     <message>
       <location filename="../src/ui/profile_preferences.ui" line="4545"/>
