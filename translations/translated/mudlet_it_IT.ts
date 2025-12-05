@@ -5253,7 +5253,7 @@ It is: &quot;%1&quot;
       <location filename="../src/ctelnet.cpp" line="999"/>
       <source>Trying secure (IPv4 and IPv6) connections to proxy %1:%2 ...</source>
       <extracomment>Happy-Eyeballs (both IPv4 and IPv6 addresses available) * case. %1 is the URL for the server and %2 is the port number * (on BOTH addresses) for the connection.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Tentativo di connessione sicura (IPv4 e IPv6) a %1:%2 ...</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="1007"/>
@@ -5261,7 +5261,7 @@ It is: &quot;%1&quot;
       <location filename="../src/ctelnet.cpp" line="1082"/>
       <source>[ INFO ]  - Attempting a secure connection to %1:%2 via proxy...</source>
       <extracomment>%1 is a URL for the Game Server; %2 is the port number.</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ INFO ]  - Tentativo di connessione sicura a %1:%2 tramite proxy...</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="1014"/>
@@ -5270,7 +5270,7 @@ It is: &quot;%1&quot;
       <extracomment>Happy-Eyeballs (both IPv4 and IPv6 addresses available) * case. %1 is the URL for the Server and %2 is the port number * (on BOTH addresses) for the connection.
 ----------
 %1 is the URL for the Server and %2 is the port number * for the connection.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Tentativo di connessioni sicure (IPv4 e IPv6) a %1:%2 ...</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="1022"/>
@@ -5278,31 +5278,31 @@ It is: &quot;%1&quot;
       <location filename="../src/ctelnet.cpp" line="1093"/>
       <source>[ INFO ]  - Attempting a secure connection to %1:%2 ...</source>
       <extracomment>%1 is a URL for the Game Server; %2 is the port number.</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ INFO ]  - Tentativo di connessione sicura a %1:%2 ...</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="1040"/>
       <source>Trying secure (IPv6) connection to %1:%2 via proxy...</source>
       <extracomment>%1 is the URL for the Server and %2 is the port number * for the connection.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Tentativo di connessione sicura (IPv6) a %1:%2 tramite proxy...</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="1077"/>
       <source>Trying secure (IPv4) connection to %1:%2 via proxy...</source>
       <extracomment>%1 is the URL for the Server and %2 is the port number * for the connection.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Tentativo di connessione sicura (IPv4) a %1:%2 tramite proxy...</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="1088"/>
       <source>Trying secure (IPv4) connection to %1:%2 ...</source>
       <extracomment>%1 is the URL for the Server and %2 is the port number * for the connection.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Tentativo di connessione sicura (IPv4) a %1:%2 ...</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="1115"/>
       <source>Trying open (IPv4 and IPv6) connections to %1:%2 via proxy...</source>
       <extracomment>Happy-Eyeballs (both IPv4 and IPv6 addresses available) * case. %1 is the URL for the proxy and %2 is the port number * (on BOTH addresses) for the connection.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Tentativo di connessione sicura (IPv4 e IPv6) a %1:%2 tramite proxy...</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="1120"/>
@@ -5314,13 +5314,13 @@ It is: &quot;%1&quot;
 %1 is the URL or IPv6 address (suitably wrapped) for the * Game Server and %2 is the port number.
 ----------
 %1 is the URL or IPv4 address for the Game Server and %2 * is the port number for the connection.</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ INFO ]  - Tentativo di connessione a %1:%2 tramite proxy...</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="1127"/>
       <source>Trying open (IPv4 and IPv6) connections to %1:%2 ...</source>
       <extracomment>Happy-Eyeballs (both IPv4 and IPv6 addresses available) * case. %1 is the URL for the Server and %2 is the port number * (on BOTH addresses) for the connection.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Tentativo di connessione sicura (IPv4 e IPv6) a %1:%2 ...</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="1132"/>
@@ -5332,31 +5332,31 @@ It is: &quot;%1&quot;
 %1 is the URL or IPv6 address (suitably wrapped) for the * Game Server and %2 is the port number for the connection.
 ----------
 %1 is the URL or IPv4 address for the Game Server and %2 * is the port number for the connection.</extracomment>
-      <translation type="unfinished"/>
+      <translation>[ INFO ]  - Tentativo di connessione a %1:%2 ...</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="1150"/>
       <source>Trying open (IPv6) connection to %1:%2 via proxy...</source>
       <extracomment>%1 is the URL or IPv6 address (suitably wrapped) for the * Game Server and %2 is the port number for the connection.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Tentativo di connessione (IPv6) a %1:%2 tramite proxy...</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="1163"/>
       <source>Trying open (IPv6) connection to %1:%2 ...</source>
       <extracomment>%1 is the URL or IPv6 address (suitably wrapped) for the * Game Server and %2 is the port number for the connection.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Tentativo di connessione (IPv6) a %1:%2 ...</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="1185"/>
       <source>Trying open (IPv4) connection to %1:%2 via proxy...</source>
       <extracomment>%1 is the URL or IPv4 address for the Game Server and %2 * is the port number for the connection.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Tentativo di connessione (IPv4) a %1:%2 tramite proxy...</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="1199"/>
       <source>Trying open (IPv4) connection to %1:%2 ...</source>
       <extracomment>%1 is the URL or IPv4 address for the Game Server and %2 * is the port number for the connection.</extracomment>
-      <translation type="unfinished"/>
+      <translation>Tentativo di connessione (IPv4) a %1:%2 ...</translation>
     </message>
     <message>
       <location filename="../src/ctelnet.cpp" line="2290"/>
