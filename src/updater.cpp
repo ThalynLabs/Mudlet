@@ -178,34 +178,15 @@ void Updater::checkUpdatesOnStart()
 
     mDailyCheck->setInterval(12h);
     connect(mDailyCheck.get(), &QTimer::timeout, this, [this] {
-        // Reload the feed to get fresh data before checking for updates
-        // Use single-shot connections to avoid multiple handlers accumulating
-        KDToolBox::connectSingleShot(feed, &dblsqd::Feed::ready, this, [this]() {
-            auto updates = feed->getUpdates(dblsqd::Release::getCurrentRelease());
-            qWarning() << "Bi-daily check for updates:" << updates.size() << "update(s) available";
-            if (updates.isEmpty()) {
-                return;
-            }
-
-            if (!updateAutomatically()) {
-                emit signal_updateAvailable(updates.size());
-                return;
-            }
-
-            // Validate the release has a valid download URL before attempting download
-            const auto& release = updates.first();
-            const QUrl downloadUrl = release.getDownloadUrl();
-            if (!downloadUrl.isValid() || downloadUrl.isEmpty()) {
-                qWarning() << "Bi-daily update check: invalid download URL for release" << release.getVersion();
-                return;
-            }
-
-            feed->downloadRelease(release);
-        });
-        KDToolBox::connectSingleShot(feed, &dblsqd::Feed::loadError, this, [](const QString& error) {
-            qWarning() << "Bi-daily update check: failed to load feed:" << error;
-        });
-        feed->load();
+          auto updates = feed->getUpdates(dblsqd::Release::getCurrentRelease());
+          qWarning() << "Bi-daily check for updates:" << updates.size() << "update(s) available";
+          if (updates.isEmpty()) {
+              return;
+          } else if (!updateAutomatically()) {
+              emit signal_updateAvailable(updates.size());
+          } else {
+              feed->downloadRelease(updates.first());
+          }
     });
     mDailyCheck->start();
 }
