@@ -879,7 +879,7 @@ This text is shown when room(s) are (not) selected in mapper. %1 is the room ID 
       <location filename="../src/EditorItemXMLHelpers.cpp" line="225"/>
       <source>Item</source>
       <extracomment>Display name for unknown items in editor</extracomment>
-      <translation type="unfinished"/>
+      <translation>Élément</translation>
     </message>
     <message>
       <location filename="../src/EditorModifyPropertyCommand.cpp" line="216"/>
@@ -9652,7 +9652,7 @@ Help contents of a selectable option for the Trigger intro</extracomment>
       <location filename="../src/dlgTriggerEditor.cpp" line="13466"/>
       <location filename="../src/dlgTriggerEditor.cpp" line="13475"/>
       <source>Undo</source>
-      <translation type="unfinished"/>
+      <translation>Défaire</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="456"/>
