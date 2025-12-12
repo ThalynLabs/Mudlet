@@ -883,7 +883,7 @@ This text is shown when room(s) are (not) selected in mapper. %1 is the room ID 
       <location filename="../src/EditorItemXMLHelpers.cpp" line="225"/>
       <source>Item</source>
       <extracomment>Display name for unknown items in editor</extracomment>
-      <translation type="unfinished"/>
+      <translation>البند</translation>
     </message>
     <message>
       <location filename="../src/EditorModifyPropertyCommand.cpp" line="216"/>
