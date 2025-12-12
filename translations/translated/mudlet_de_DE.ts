@@ -851,37 +851,37 @@ This text is shown when room(s) are (not) selected in mapper. %1 is the room ID 
       <location filename="../src/EditorItemXMLHelpers.cpp" line="207"/>
       <source>Trigger</source>
       <extracomment>Display name for trigger items in editor</extracomment>
-      <translation type="unfinished"/>
+      <translation>Trigger</translation>
     </message>
     <message>
       <location filename="../src/EditorItemXMLHelpers.cpp" line="210"/>
       <source>Alias</source>
       <extracomment>Display name for alias items in editor</extracomment>
-      <translation type="unfinished"/>
+      <translation>Alias</translation>
     </message>
     <message>
       <location filename="../src/EditorItemXMLHelpers.cpp" line="213"/>
       <source>Timer</source>
       <extracomment>Display name for timer items in editor</extracomment>
-      <translation type="unfinished"/>
+      <translation>Timer</translation>
     </message>
     <message>
       <location filename="../src/EditorItemXMLHelpers.cpp" line="216"/>
       <source>Script</source>
       <extracomment>Display name for script items in editor</extracomment>
-      <translation type="unfinished"/>
+      <translation>Skript</translation>
     </message>
     <message>
       <location filename="../src/EditorItemXMLHelpers.cpp" line="219"/>
       <source>Key</source>
       <extracomment>Display name for key binding items in editor</extracomment>
-      <translation type="unfinished"/>
+      <translation>Legende</translation>
     </message>
     <message>
       <location filename="../src/EditorItemXMLHelpers.cpp" line="222"/>
       <source>Action</source>
       <extracomment>Display name for action/button items in editor</extracomment>
-      <translation type="unfinished"/>
+      <translation>Aktion</translation>
     </message>
     <message>
       <location filename="../src/EditorItemXMLHelpers.cpp" line="225"/>
@@ -9859,7 +9859,7 @@ Help contents of a selectable option for the Trigger intro</extracomment>
       <location filename="../src/dlgTriggerEditor.cpp" line="13466"/>
       <location filename="../src/dlgTriggerEditor.cpp" line="13475"/>
       <source>Undo</source>
-      <translation type="unfinished"/>
+      <translation>Rückgängig machen</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="456"/>
