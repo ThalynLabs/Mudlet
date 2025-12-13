@@ -9932,56 +9932,56 @@ Help contents of a selectable option for the Trigger intro</extracomment>
       <location filename="../src/dlgTriggerEditor.cpp" line="13467"/>
       <location filename="../src/dlgTriggerEditor.cpp" line="13476"/>
       <source>Redo</source>
-      <translation type="unfinished"/>
+      <translation>Ripristina</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="470"/>
       <location filename="../src/dlgTriggerEditor.cpp" line="1572"/>
       <source>Undo: %1 (%2)</source>
       <extracomment>Tooltip for undo action. %1 is the action being undone (e.g., &quot;Activate trigger &quot;foo&quot;&quot;), %2 is the keyboard shortcut</extracomment>
-      <translation type="unfinished"/>
+      <translation>Annulla: %1 (%2)</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="475"/>
       <location filename="../src/dlgTriggerEditor.cpp" line="1583"/>
       <source>Undo (%1)</source>
       <extracomment>Tooltip for undo action when no specific action. %1 is the keyboard shortcut</extracomment>
-      <translation type="unfinished"/>
+      <translation>Annulla (%1)</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="484"/>
       <location filename="../src/dlgTriggerEditor.cpp" line="1577"/>
       <source>Redo: %1 (%2)</source>
       <extracomment>Tooltip for redo action. %1 is the action being redone (e.g., &quot;Activate trigger &quot;foo&quot;&quot;), %2 is the keyboard shortcut</extracomment>
-      <translation type="unfinished"/>
+      <translation>Ripristina: %1 (%2)</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="489"/>
       <location filename="../src/dlgTriggerEditor.cpp" line="1586"/>
       <source>Redo (%1)</source>
       <extracomment>Tooltip for redo action when no specific action. %1 is the keyboard shortcut</extracomment>
-      <translation type="unfinished"/>
+      <translation>Ripristina (%1)</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="835"/>
       <source>Show/Hide Debug Console (%1) -&gt; system will be &lt;b&gt;&lt;i&gt;slower&lt;/i&gt;&lt;/b&gt;.</source>
       <extracomment>%1 is a keyboard shortcut, e.g. &apos;Ctrl+0&apos; on Windows/Linux or &apos;⌘0&apos; on macOS</extracomment>
-      <translation type="unfinished"/>
+      <translation>Mostra/Nascondi Console di Debug (%1) -&gt; il sistema potrebbe essere &lt;b&gt;&lt;i&gt;rallentato&lt;/i&gt;&lt;/b&gt;.</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="840"/>
       <source>Test Undo/Redo</source>
-      <translation type="unfinished"/>
+      <translation>Prova Annulla/Ripristina</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="841"/>
       <source>Run internal undo/redo tests and output results to console</source>
-      <translation type="unfinished"/>
+      <translation>Esegue test interni annulla/ripristina e mostra i risultati sulla console</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="842"/>
       <source>Run Undo/Redo Tests</source>
-      <translation type="unfinished"/>
+      <translation>Esegui test di annulla/ripristina</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="858"/>
