@@ -977,85 +977,85 @@ This text is shown when room(s) are (not) selected in mapper. %1 is the room ID 
       <location filename="../src/EditorToggleActiveCommand.cpp" line="139"/>
       <source>activate trigger &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for activating a trigger</extracomment>
-      <translation type="unfinished"/>
+      <translation>attiva trigger &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorToggleActiveCommand.cpp" line="142"/>
       <source>activate alias &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for activating an alias</extracomment>
-      <translation type="unfinished"/>
+      <translation>attiva alias &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorToggleActiveCommand.cpp" line="145"/>
       <source>activate timer &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for activating a timer</extracomment>
-      <translation type="unfinished"/>
+      <translation>attiva timer &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorToggleActiveCommand.cpp" line="148"/>
       <source>activate script &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for activating a script</extracomment>
-      <translation type="unfinished"/>
+      <translation>attiva script &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorToggleActiveCommand.cpp" line="151"/>
       <source>activate key &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for activating a key binding</extracomment>
-      <translation type="unfinished"/>
+      <translation>attiva tasto &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorToggleActiveCommand.cpp" line="154"/>
       <source>activate button &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for activating a button</extracomment>
-      <translation type="unfinished"/>
+      <translation>attiva pulsante &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorToggleActiveCommand.cpp" line="157"/>
       <source>activate item &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for activating an unknown item</extracomment>
-      <translation type="unfinished"/>
+      <translation>attiva elemento &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorToggleActiveCommand.cpp" line="164"/>
       <source>deactivate trigger &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for deactivating a trigger</extracomment>
-      <translation type="unfinished"/>
+      <translation>disattiva trigger &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorToggleActiveCommand.cpp" line="167"/>
       <source>deactivate alias &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for deactivating an alias</extracomment>
-      <translation type="unfinished"/>
+      <translation>disattiva alias &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorToggleActiveCommand.cpp" line="170"/>
       <source>deactivate timer &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for deactivating a timer</extracomment>
-      <translation type="unfinished"/>
+      <translation>disattiva timer &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorToggleActiveCommand.cpp" line="173"/>
       <source>deactivate script &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for deactivating a script</extracomment>
-      <translation type="unfinished"/>
+      <translation>disattiva script &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorToggleActiveCommand.cpp" line="176"/>
       <source>deactivate key &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for deactivating a key binding</extracomment>
-      <translation type="unfinished"/>
+      <translation>disattiva tasto &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorToggleActiveCommand.cpp" line="179"/>
       <source>deactivate button &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for deactivating a button</extracomment>
-      <translation type="unfinished"/>
+      <translation>disattiva pulsante &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorToggleActiveCommand.cpp" line="182"/>
       <source>deactivate item &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for deactivating an unknown item</extracomment>
-      <translation type="unfinished"/>
+      <translation>disattiva elemento &quot;%1&quot;</translation>
     </message>
   </context>
   <context>
