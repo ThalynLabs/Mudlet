@@ -683,169 +683,169 @@ This text is shown when room(s) are (not) selected in mapper. %1 is the room ID 
       <location filename="../src/EditorAddItemCommand.cpp" line="576"/>
       <source>add trigger group &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for adding a trigger folder</extracomment>
-      <translation type="unfinished"/>
+      <translation>aggiungi gruppo di trigger &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorAddItemCommand.cpp" line="579"/>
       <source>add trigger &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for adding a trigger</extracomment>
-      <translation type="unfinished"/>
+      <translation>aggiungi trigger &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorAddItemCommand.cpp" line="584"/>
       <source>add alias group &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for adding an alias folder</extracomment>
-      <translation type="unfinished"/>
+      <translation>aggiungi gruppo di alias &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorAddItemCommand.cpp" line="587"/>
       <source>add alias &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for adding an alias</extracomment>
-      <translation type="unfinished"/>
+      <translation>aggiungi alias &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorAddItemCommand.cpp" line="592"/>
       <source>add timer group &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for adding a timer folder</extracomment>
-      <translation type="unfinished"/>
+      <translation>aggiungi gruppo di timer &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorAddItemCommand.cpp" line="595"/>
       <source>add timer &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for adding a timer</extracomment>
-      <translation type="unfinished"/>
+      <translation>aggiungi timer &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorAddItemCommand.cpp" line="600"/>
       <source>add script group &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for adding a script folder</extracomment>
-      <translation type="unfinished"/>
+      <translation>aggiungi gruppo di script &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorAddItemCommand.cpp" line="603"/>
       <source>add script &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for adding a script</extracomment>
-      <translation type="unfinished"/>
+      <translation>aggiungi script &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorAddItemCommand.cpp" line="608"/>
       <source>add key group &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for adding a key folder</extracomment>
-      <translation type="unfinished"/>
+      <translation>aggiungi gruppo di tasti &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorAddItemCommand.cpp" line="611"/>
       <source>add key &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for adding a key binding</extracomment>
-      <translation type="unfinished"/>
+      <translation>aggiungi tasto &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorAddItemCommand.cpp" line="616"/>
       <source>add button group &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for adding a button toolbar</extracomment>
-      <translation type="unfinished"/>
+      <translation>aggiungi gruppo di pulsanti &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorAddItemCommand.cpp" line="619"/>
       <source>add button &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for adding a button</extracomment>
-      <translation type="unfinished"/>
+      <translation>aggiungi pulsante &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorAddItemCommand.cpp" line="624"/>
       <source>add group &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for adding an unknown folder type</extracomment>
-      <translation type="unfinished"/>
+      <translation>aggiungi gruppo &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorAddItemCommand.cpp" line="627"/>
       <source>add item &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for adding an unknown item type</extracomment>
-      <translation type="unfinished"/>
+      <translation>aggiungi elemento &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorDeleteItemCommand.cpp" line="796"/>
       <source>delete trigger &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for deleting a single trigger</extracomment>
-      <translation type="unfinished"/>
+      <translation>elimina trigger &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorDeleteItemCommand.cpp" line="799"/>
       <source>delete alias &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for deleting a single alias</extracomment>
-      <translation type="unfinished"/>
+      <translation>elimina alias &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorDeleteItemCommand.cpp" line="802"/>
       <source>delete timer &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for deleting a single timer</extracomment>
-      <translation type="unfinished"/>
+      <translation>elimina timer &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorDeleteItemCommand.cpp" line="805"/>
       <source>delete script &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for deleting a single script</extracomment>
-      <translation type="unfinished"/>
+      <translation>elimina script &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorDeleteItemCommand.cpp" line="808"/>
       <source>delete key &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for deleting a single key binding</extracomment>
-      <translation type="unfinished"/>
+      <translation>elimina tasto &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorDeleteItemCommand.cpp" line="811"/>
       <source>delete button &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for deleting a single button</extracomment>
-      <translation type="unfinished"/>
+      <translation>elimina pulsante &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorDeleteItemCommand.cpp" line="814"/>
       <source>delete item &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for deleting a single unknown item</extracomment>
-      <translation type="unfinished"/>
+      <translation>elimina elemento &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorDeleteItemCommand.cpp" line="821"/>
       <source>delete %1 triggers</source>
       <extracomment>Undo/redo menu text for deleting multiple triggers. %1 = count</extracomment>
-      <translation type="unfinished"/>
+      <translation>elimina %1 trigger</translation>
     </message>
     <message>
       <location filename="../src/EditorDeleteItemCommand.cpp" line="824"/>
       <source>delete %1 aliases</source>
       <extracomment>Undo/redo menu text for deleting multiple aliases. %1 = count</extracomment>
-      <translation type="unfinished"/>
+      <translation>elimina %1 alias</translation>
     </message>
     <message>
       <location filename="../src/EditorDeleteItemCommand.cpp" line="827"/>
       <source>delete %1 timers</source>
       <extracomment>Undo/redo menu text for deleting multiple timers. %1 = count</extracomment>
-      <translation type="unfinished"/>
+      <translation>elimina %1 timer</translation>
     </message>
     <message>
       <location filename="../src/EditorDeleteItemCommand.cpp" line="830"/>
       <source>delete %1 scripts</source>
       <extracomment>Undo/redo menu text for deleting multiple scripts. %1 = count</extracomment>
-      <translation type="unfinished"/>
+      <translation>elimina %1 script</translation>
     </message>
     <message>
       <location filename="../src/EditorDeleteItemCommand.cpp" line="833"/>
       <source>delete %1 keys</source>
       <extracomment>Undo/redo menu text for deleting multiple key bindings. %1 = count</extracomment>
-      <translation type="unfinished"/>
+      <translation>elimina %1 tasti</translation>
     </message>
     <message>
       <location filename="../src/EditorDeleteItemCommand.cpp" line="836"/>
       <source>delete %1 buttons</source>
       <extracomment>Undo/redo menu text for deleting multiple buttons. %1 = count</extracomment>
-      <translation type="unfinished"/>
+      <translation>elimina %1 pulsanti</translation>
     </message>
     <message>
       <location filename="../src/EditorDeleteItemCommand.cpp" line="839"/>
       <source>delete %1 items</source>
       <extracomment>Undo/redo menu text for deleting multiple unknown items. %1 = count</extracomment>
-      <translation type="unfinished"/>
+      <translation>elimina %1 elementi</translation>
     </message>
     <message>
       <location filename="../src/EditorItemXMLHelpers.cpp" line="207"/>
@@ -887,91 +887,91 @@ This text is shown when room(s) are (not) selected in mapper. %1 is the room ID 
       <location filename="../src/EditorItemXMLHelpers.cpp" line="225"/>
       <source>Item</source>
       <extracomment>Display name for unknown items in editor</extracomment>
-      <translation type="unfinished"/>
+      <translation>Elemento</translation>
     </message>
     <message>
       <location filename="../src/EditorModifyPropertyCommand.cpp" line="216"/>
       <source>modify trigger &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for modifying a trigger&apos;s properties</extracomment>
-      <translation type="unfinished"/>
+      <translation>modifica trigger &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorModifyPropertyCommand.cpp" line="219"/>
       <source>modify alias &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for modifying an alias&apos;s properties</extracomment>
-      <translation type="unfinished"/>
+      <translation>modifica alias &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorModifyPropertyCommand.cpp" line="222"/>
       <source>modify timer &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for modifying a timer&apos;s properties</extracomment>
-      <translation type="unfinished"/>
+      <translation>modifica timer &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorModifyPropertyCommand.cpp" line="225"/>
       <source>modify script &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for modifying a script&apos;s properties</extracomment>
-      <translation type="unfinished"/>
+      <translation>modifica script &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorModifyPropertyCommand.cpp" line="228"/>
       <source>modify key &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for modifying a key binding&apos;s properties</extracomment>
-      <translation type="unfinished"/>
+      <translation>modifica tasto &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorModifyPropertyCommand.cpp" line="231"/>
       <source>modify button &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for modifying a button&apos;s properties</extracomment>
-      <translation type="unfinished"/>
+      <translation>modifica pulsante &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorModifyPropertyCommand.cpp" line="234"/>
       <source>modify item &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for modifying an unknown item&apos;s properties</extracomment>
-      <translation type="unfinished"/>
+      <translation>modifica elemento &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorMoveItemCommand.cpp" line="121"/>
       <source>move trigger &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for moving a trigger</extracomment>
-      <translation type="unfinished"/>
+      <translation>sposta trigger &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorMoveItemCommand.cpp" line="124"/>
       <source>move alias &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for moving an alias</extracomment>
-      <translation type="unfinished"/>
+      <translation>sposta alias &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorMoveItemCommand.cpp" line="127"/>
       <source>move timer &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for moving a timer</extracomment>
-      <translation type="unfinished"/>
+      <translation>sposta timer &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorMoveItemCommand.cpp" line="130"/>
       <source>move script &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for moving a script</extracomment>
-      <translation type="unfinished"/>
+      <translation>sposta script &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorMoveItemCommand.cpp" line="133"/>
       <source>move key &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for moving a key binding</extracomment>
-      <translation type="unfinished"/>
+      <translation>sposta tasto &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorMoveItemCommand.cpp" line="136"/>
       <source>move button &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for moving a button</extracomment>
-      <translation type="unfinished"/>
+      <translation>sposta pulsante &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorMoveItemCommand.cpp" line="139"/>
       <source>move item &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for moving an unknown item</extracomment>
-      <translation type="unfinished"/>
+      <translation>sposta elemento &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../src/EditorToggleActiveCommand.cpp" line="139"/>
@@ -10151,7 +10151,7 @@ Timer da eliminare:
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="4744"/>
       <source>move items</source>
-      <translation type="unfinished"/>
+      <translation>sposta elementi</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="4937"/>
@@ -10740,7 +10740,7 @@ Package item warning banner shown in trigger editor when selecting package items
       <location filename="../src/dlgTriggerEditor.cpp" line="12306"/>
       <source>paste</source>
       <extracomment>Undo/redo text for pasting items</extracomment>
-      <translation type="unfinished"/>
+      <translation>incolla</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="12775"/>
@@ -11299,7 +11299,7 @@ Package item warning banner shown in trigger editor when selecting package items
       <location filename="../src/dlgTriggerEditor.cpp" line="873"/>
       <source>Add Group (%1)</source>
       <extracomment>%1 is a keyboard shortcut, e.g. &apos;Ctrl+Shift+N&apos; on Windows/Linux or &apos;⌘⇧N&apos; on macOS</extracomment>
-      <translation type="unfinished"/>
+      <translation>Aggiungi gruppo (%1)</translation>
     </message>
     <message>
       <location filename="../src/dlgTriggerEditor.cpp" line="883"/>
