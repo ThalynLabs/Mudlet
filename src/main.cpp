@@ -158,6 +158,18 @@ void msys2QtMessageHandler(QtMsgType type, const QMessageLogContext& context, co
 int main(int argc, char* argv[])
 {
     initializeQRCResources();
+
+#ifdef Q_OS_WINDOWS
+    // Handle Squirrel installer commands - must exit quickly for install/update/uninstall
+    // https://github.com/clowd/Clowd.Squirrel/blob/master/docs/using/custom-squirrel-events-non-cs.md
+    for (int i = 1; i < argc; ++i) {
+        const QString arg = QString::fromLocal8Bit(argv[i]);
+        if (arg.startsWith(qsl("--squirrel-")) && arg != qsl("--squirrel-firstrun")) {
+            return 0;
+        }
+    }
+#endif
+
 #ifdef Q_OS_WINDOWS
     if (AttachConsole(ATTACH_PARENT_PROCESS)) {
         if (qgetenv("MSYSTEM").isNull()) {
