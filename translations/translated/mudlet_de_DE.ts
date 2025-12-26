@@ -6,27 +6,27 @@
     <message>
       <location filename="../src/crash_reporter/main.cpp" line="74"/>
       <source>Mudlet Crash</source>
-      <translation type="unfinished"/>
+      <translation>Mudlet-Absturz</translation>
     </message>
     <message>
       <location filename="../src/crash_reporter/main.cpp" line="77"/>
       <source>&lt;div align=&apos;center&apos;&gt;&lt;b&gt;Mudlet has encountered a problem.&lt;/b&gt;&lt;br&gt;&lt;br&gt;You can choose to send a crash report to help us improve the application.&lt;/div&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;div align=&apos;center&apos;&gt;&lt;b&gt;Mudlet ist auf ein Problem gestoßen.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Du kannst einen Absturzbericht senden, um uns bei der Verbesserung der Anwendung zu helfen.&lt;/div&gt;</translation>
     </message>
     <message>
       <location filename="../src/crash_reporter/main.cpp" line="85"/>
       <source>Send this time</source>
-      <translation type="unfinished"/>
+      <translation>Diesmal senden</translation>
     </message>
     <message>
       <location filename="../src/crash_reporter/main.cpp" line="86"/>
       <source>Always send</source>
-      <translation type="unfinished"/>
+      <translation>Immer senden</translation>
     </message>
     <message>
       <location filename="../src/crash_reporter/main.cpp" line="87"/>
       <source>Don&apos;t send</source>
-      <translation type="unfinished"/>
+      <translation>Nicht senden</translation>
     </message>
   </context>
   <context>
@@ -683,85 +683,85 @@ This text is shown when room(s) are (not) selected in mapper. %1 is the room ID 
       <location filename="../src/EditorAddItemCommand.cpp" line="576"/>
       <source>add trigger group &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for adding a trigger folder</extracomment>
-      <translation type="unfinished"/>
+      <translation>füge Trigger-Gruppe &quot;%1&quot; hinzu</translation>
     </message>
     <message>
       <location filename="../src/EditorAddItemCommand.cpp" line="579"/>
       <source>add trigger &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for adding a trigger</extracomment>
-      <translation type="unfinished"/>
+      <translation>füge Trigger &quot;%1&quot; hinzu</translation>
     </message>
     <message>
       <location filename="../src/EditorAddItemCommand.cpp" line="584"/>
       <source>add alias group &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for adding an alias folder</extracomment>
-      <translation type="unfinished"/>
+      <translation>füge Alias-Gruppe &quot;%1&quot; hinzu</translation>
     </message>
     <message>
       <location filename="../src/EditorAddItemCommand.cpp" line="587"/>
       <source>add alias &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for adding an alias</extracomment>
-      <translation type="unfinished"/>
+      <translation>füge Alias &quot;%1&quot; hinzu</translation>
     </message>
     <message>
       <location filename="../src/EditorAddItemCommand.cpp" line="592"/>
       <source>add timer group &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for adding a timer folder</extracomment>
-      <translation type="unfinished"/>
+      <translation>füge Timer-Gruppe &quot;%1&quot; hinzu</translation>
     </message>
     <message>
       <location filename="../src/EditorAddItemCommand.cpp" line="595"/>
       <source>add timer &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for adding a timer</extracomment>
-      <translation type="unfinished"/>
+      <translation>füge Timer &quot;%1&quot; zu</translation>
     </message>
     <message>
       <location filename="../src/EditorAddItemCommand.cpp" line="600"/>
       <source>add script group &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for adding a script folder</extracomment>
-      <translation type="unfinished"/>
+      <translation>füge Skript-Gruppe &quot;%1&quot; hinzu</translation>
     </message>
     <message>
       <location filename="../src/EditorAddItemCommand.cpp" line="603"/>
       <source>add script &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for adding a script</extracomment>
-      <translation type="unfinished"/>
+      <translation>füge Skript &quot;%1&quot; hinzu</translation>
     </message>
     <message>
       <location filename="../src/EditorAddItemCommand.cpp" line="608"/>
       <source>add key group &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for adding a key folder</extracomment>
-      <translation type="unfinished"/>
+      <translation>füge Tasten-Gruppe &quot;%1&quot; zu</translation>
     </message>
     <message>
       <location filename="../src/EditorAddItemCommand.cpp" line="611"/>
       <source>add key &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for adding a key binding</extracomment>
-      <translation type="unfinished"/>
+      <translation>füge Taste &quot;%1&quot; hinzu</translation>
     </message>
     <message>
       <location filename="../src/EditorAddItemCommand.cpp" line="616"/>
       <source>add button group &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for adding a button toolbar</extracomment>
-      <translation type="unfinished"/>
+      <translation>füge Button-Gruppe &quot;%1&quot; hinzu</translation>
     </message>
     <message>
       <location filename="../src/EditorAddItemCommand.cpp" line="619"/>
       <source>add button &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for adding a button</extracomment>
-      <translation type="unfinished"/>
+      <translation>füge Button &quot;%1&quot; hinzu</translation>
     </message>
     <message>
       <location filename="../src/EditorAddItemCommand.cpp" line="624"/>
       <source>add group &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for adding an unknown folder type</extracomment>
-      <translation type="unfinished"/>
+      <translation>füge Gruppe &quot;%1&quot; hinzu</translation>
     </message>
     <message>
       <location filename="../src/EditorAddItemCommand.cpp" line="627"/>
       <source>add item &quot;%1&quot;</source>
       <extracomment>Undo/redo menu text for adding an unknown item type</extracomment>
-      <translation type="unfinished"/>
+      <translation>füge Element &quot;%1&quot; hinzu</translation>
     </message>
     <message>
       <location filename="../src/EditorDeleteItemCommand.cpp" line="796"/>
@@ -1061,7 +1061,7 @@ This text is shown when room(s) are (not) selected in mapper. %1 is the room ID 
       <location filename="../src/LuaInterface.cpp" line="92"/>
       <source>Cannot move variable here - the target is not a table</source>
       <extracomment>Error message shown when user tries to drag a variable onto a non-table variable</extracomment>
-      <translation type="unfinished"/>
+      <translation>Variable kann hier nicht verschoben werden - das Ziel ist keine Tabelle</translation>
     </message>
   </context>
   <context>
@@ -5134,17 +5134,17 @@ Möchtest Du jetzt aktualisieren?</translation>
       <location filename="../src/updater.cpp" line="445"/>
       <location filename="../src/updater.cpp" line="459"/>
       <source>Update Error</source>
-      <translation type="unfinished"/>
+      <translation>Fehler beim Aktualisieren</translation>
     </message>
     <message>
       <location filename="../src/updater.cpp" line="446"/>
       <source>The update installer could not be found. Please try checking for updates again.</source>
-      <translation type="unfinished"/>
+      <translation>Der Update-Installer konnte nicht gefunden werden. Bitte versuche erneut, nach Updates zu suchen.</translation>
     </message>
     <message>
       <location filename="../src/updater.cpp" line="460"/>
       <source>Could not prepare the update installer. Please try again or download the update manually from https://www.mudlet.org/download/</source>
-      <translation type="unfinished"/>
+      <translation>Der Update-Installer konnte nicht vorbereitet werden. Bitte versuche es erneut oder lade das Update manuell von https://www.mudlet.org/download/ herunter</translation>
     </message>
     <message>
       <location filename="../src/updater.cpp" line="530"/>
@@ -6890,7 +6890,7 @@ Nutzungen</translation>
     <message>
       <location filename="../src/dlgAboutDialog.cpp" line="928"/>
       <source>&lt;h2&gt;&lt;u&gt;Sentry Native - Crash reporting SDK&lt;/u&gt;&lt;/h2&gt;&lt;h3&gt;Copyright © 2019 Sentry (https://sentry.io) and individual contributors.&lt;br&gt;All rights reserved.&lt;/h3&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;h2&gt;&lt;u&gt;Sentry Native - Crash reporting SDK&lt;/u&gt;&lt;/h2&gt;&lt;h3&gt;Copyright © 2019 Sentry (https://sentry.io) and individual contributors.&lt;br&gt;All rights reserved.&lt;/h3&gt;</translation>
     </message>
     <message>
       <location filename="../src/dlgAboutDialog.cpp" line="1039"/>
