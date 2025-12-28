@@ -4427,6 +4427,9 @@ void cTelnet::postData()
     if (!mpHost || mpHost->isClosingDown() || !mpHost->mpConsole) {
         return;
     }
+    
+    // All data goes through main console's printOnDisplay which calls
+    // translateToPlainText - MXP DEST routing happens inside that process
     mpHost->mpConsole->printOnDisplay(mMudData, true);
 }
 

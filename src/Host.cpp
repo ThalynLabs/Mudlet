@@ -219,6 +219,7 @@ Host::Host(int port, const QString& hostname, const QString& login, const QStrin
 , mLuaInterpreter(this, hostname, id)
 , mMxpClient(this)
 , mMxpProcessor(&mMxpClient)
+, mMxpFrameManager(this)
 , mpMap(new TMap(this, hostname))
 , mpMedia(new TMedia(this, hostname))
 , mpAuth(new GMCPAuthenticator(this))
@@ -339,6 +340,10 @@ Host::Host(int port, const QString& hostname, const QString& login, const QStrin
     });
     connect(&mTelnet, &cTelnet::signal_connected, this, [this]() {
         purgeTimer.stop();
+
+        // Reset MXP frames on reconnect - per user feedback, frames shouldn't persist
+        // between sessions as the server should send new FRAME commands
+        mMxpFrameManager.resetAllFrames();
 
         if (getForceMXPProcessorOn()) {
             mMxpProcessor.enable();

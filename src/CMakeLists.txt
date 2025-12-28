@@ -166,6 +166,10 @@ set(mudlet_SRCS
     TMxpExpireTagHandler.cpp
     TMxpFontTagHandler.cpp
     TMxpFormattingTagsHandler.cpp
+    TMxpFrameManager.cpp
+    TMxpFrameTagHandler.cpp
+    TMxpDestTagHandler.cpp
+    TMxpImageTagHandler.cpp
     TMxpLinkTagHandler.cpp
     TMxpMudlet.cpp
     TMxpMusicTagHandler.cpp
@@ -361,12 +365,16 @@ set(mudlet_HDRS
     TMxpColorTagHandler.h
     TMxpContext.h
     TMxpCustomElementTagHandler.h
+    TMxpDestTagHandler.h
     TMxpElementDefinitionHandler.h
     TMxpElementRegistry.h
     TMxpEntityTagHandler.h
     TMxpExpireTagHandler.h
     TMxpFontTagHandler.h
     TMxpFormattingTagsHandler.h
+    TMxpFrameManager.h
+    TMxpFrameTagHandler.h
+    TMxpImageTagHandler.h
     TMxpLinkTagHandler.h
     TMxpMudlet.h
     TMxpMusicTagHandler.h
