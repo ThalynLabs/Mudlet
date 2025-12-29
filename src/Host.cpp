@@ -394,9 +394,13 @@ Host::~Host()
     // which can lead to a crash when closing multiple profiles at once.
     mpLastCommandLineUsed.clear();
 
+    qDeleteAll(profileShortcuts);
+    profileShortcuts.clear();
+
     if (mpDockableMapWidget) {
         mpDockableMapWidget->deleteLater();
     }
+
     mErrorLogStream.flush();
     mErrorLogFile.close();
     // Since this is a destructor, it's risky to rely on member variables within the destructor itself.

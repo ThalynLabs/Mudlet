@@ -69,6 +69,7 @@
 #include "edbee/models/texteditorconfig.h"
 #include "edbee/models/textgrammar.h"
 #include "edbee/models/textundostack.h"
+#include "edbee/models/textautocompleteprovider.h"
 #include "edbee/texteditorcommand.h"
 #include "edbee/texteditorcontroller.h"
 #include "edbee/texteditorwidget.h"
@@ -671,6 +672,9 @@ private:
 
     // Guarded pointer to text editor's undo stack (for safe signal connections):
     QPointer<edbee::TextUndoStack> mpTextUndoStack;
+
+    // Track whether auto-complete provider has been initialized
+    static bool smAutoCompleteInitialized;
 
     // tracks the duration of the "Save Profile As" action so
     // autosave doesn't kick in
