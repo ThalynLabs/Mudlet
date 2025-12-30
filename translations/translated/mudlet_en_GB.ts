@@ -1061,7 +1061,7 @@ This text is shown when room(s) are (not) selected in mapper. %1 is the room ID 
       <location filename="../src/LuaInterface.cpp" line="92"/>
       <source>Cannot move variable here - the target is not a table</source>
       <extracomment>Error message shown when user tries to drag a variable onto a non-table variable</extracomment>
-      <translation type="unfinished"/>
+      <translation>Cannot move variable here - the target is not a table</translation>
     </message>
   </context>
   <context>
@@ -5119,17 +5119,17 @@ Would you like to update now?</translation>
       <location filename="../src/updater.cpp" line="445"/>
       <location filename="../src/updater.cpp" line="459"/>
       <source>Update Error</source>
-      <translation type="unfinished"/>
+      <translation>Update Error</translation>
     </message>
     <message>
       <location filename="../src/updater.cpp" line="446"/>
       <source>The update installer could not be found. Please try checking for updates again.</source>
-      <translation type="unfinished"/>
+      <translation>The update installer could not be found. Please try checking for updates again.</translation>
     </message>
     <message>
       <location filename="../src/updater.cpp" line="460"/>
       <source>Could not prepare the update installer. Please try again or download the update manually from https://www.mudlet.org/download/</source>
-      <translation type="unfinished"/>
+      <translation>Could not prepare the update installer. Please try again or download the update manually from https://www.mudlet.org/download/</translation>
     </message>
     <message>
       <location filename="../src/updater.cpp" line="530"/>
@@ -6881,7 +6881,7 @@ Count</translation>
     <message>
       <location filename="../src/dlgAboutDialog.cpp" line="928"/>
       <source>&lt;h2&gt;&lt;u&gt;Sentry Native - Crash reporting SDK&lt;/u&gt;&lt;/h2&gt;&lt;h3&gt;Copyright © 2019 Sentry (https://sentry.io) and individual contributors.&lt;br&gt;All rights reserved.&lt;/h3&gt;</source>
-      <translation type="unfinished"/>
+      <translation>&lt;h2&gt;&lt;u&gt;Sentry Native - Crash reporting SDK&lt;/u&gt;&lt;/h2&gt;&lt;h3&gt;Copyright © 2019 Sentry (https://sentry.io) and individual contributors.&lt;br&gt;All rights reserved.&lt;/h3&gt;</translation>
     </message>
     <message>
       <location filename="../src/dlgAboutDialog.cpp" line="1039"/>
