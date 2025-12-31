@@ -2354,21 +2354,11 @@ void dlgTriggerEditor::slot_searchMudletItems(const int index)
         searchVariables(s);
     }
 
-    // TODO: Edbee search term highlighter
-
-    // As it is, findNext() and selectNext() are exactly the same. You could
-    // do a selectAll(), but that would create a cursor for each found instance,
-    // and would likely do things the user wasn't expecting.
-
-    // Although there are some findHighlight code entries in libedbee, the
-    // functionality isn't implemented.
-
     mpSourceEditorEdbee->controller()->textSearcher()->setSearchTerm(s);
     mpSourceEditorEdbee->controller()->textSearcher()->setCaseSensitive(mSearchOptions & SearchOptionCaseSensitive);
 
     treeWidget_searchResults->setUpdatesEnabled(true);
 
-    // Need to highlight the contents if something is already showing in the editor:
     mpSourceEditorEdbee->controller()->update();
 }
 
