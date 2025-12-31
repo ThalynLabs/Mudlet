@@ -2775,7 +2775,7 @@ void TBuffer::decodeOSC(const QString& sequence)
             // Visibility currently only supports single-line hyperlinks
             // Multi-line links will not have visibility management applied
             if (mCurrentHyperlinkLinkId > 0 && mCurrentHyperlinkStyling.visibility.hasVisibilitySettings 
-                && mpConsole && isOsc8VisibilityEnabled()
+                && mpConsole
                 && mCurrentHyperlinkStartLine == static_cast<int>(lineBuffer.size()) - 1) {
                 
                 int currentColumn = mMudLine.length();
@@ -2818,7 +2818,6 @@ void TBuffer::decodeOSC(const QString& sequence)
 #endif
                 }
             } else if (mCurrentHyperlinkLinkId > 0 && mCurrentHyperlinkStyling.visibility.hasVisibilitySettings
-                       && isOsc8VisibilityEnabled()
                        && mCurrentHyperlinkStartLine != static_cast<int>(lineBuffer.size()) - 1) {
 #if defined(DEBUG_OSC_PROCESSING)
                 qDebug() << "[OSC] Skipping visibility registration for multi-line hyperlink"
@@ -6511,17 +6510,6 @@ void TBuffer::applyAccessibilityEnhancements(Mudlet::HyperlinkStyling& styling)
 
         styling.focusVisibleStyle = styling.focusStyle; // Copy focus style to focus-visible
     }
-}
-
-bool TBuffer::isOsc8VisibilityEnabled() const
-{
-    if (mpConsole) {
-        Host* pHost = mpConsole->getHost();
-        if (pHost) {
-            return pHost->experimentEnabled(qsl("experiment.osc8.visibility"));
-        }
-    }
-    return false;
 }
 
 // Link state management methods for interactive pseudo-classes
