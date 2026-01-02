@@ -238,32 +238,30 @@ void dlgMapper::slot_toggle3DView(const bool is3DMode)
         glWidget->setSizePolicy(sizePolicy);
         verticalLayout_mapper->insertWidget(0, glWidget);
         mpMap->mpM = glWidget;
-        connect(pushButton_ortho, SIGNAL(clicked()), glWidget, SLOT(slot_showAllLevels()));
-        connect(pushButton_singleLevel, SIGNAL(clicked()), glWidget, SLOT(slot_singleLevelView()));
-        connect(pushButton_increaseTop, SIGNAL(clicked()), glWidget, SLOT(slot_showMoreUpperLevels()));
-        connect(pushButton_increaseBottom, SIGNAL(clicked()), glWidget, SLOT(slot_showMoreLowerLevels()));
-        connect(pushButton_reduceTop, SIGNAL(clicked()), glWidget, SLOT(slot_showLessUpperLevels()));
-        connect(pushButton_reduceBottom, SIGNAL(clicked()), glWidget, SLOT(slot_showLessLowerLevels()));
-        connect(toolButton_shiftZup, SIGNAL(clicked()), glWidget, SLOT(slot_shiftZup()));
-        connect(toolButton_shiftZdown, SIGNAL(clicked()), glWidget, SLOT(slot_shiftZdown()));
-        connect(pushButton_defaultView, SIGNAL(clicked()), glWidget, SLOT(slot_defaultView()));
-        connect(pushButton_sideView, SIGNAL(clicked()), glWidget, SLOT(slot_sideView()));
-        connect(pushButton_topView, SIGNAL(clicked()), glWidget, SLOT(slot_topView()));
-        connect(slider_scale, SIGNAL(valueChanged(int)), glWidget, SLOT(slot_setScale(int)));
-        connect(slider_xRot, SIGNAL(valueChanged(int)), glWidget, SLOT(slot_setCameraPositionX(int)));
-        connect(slider_yRot, SIGNAL(valueChanged(int)), glWidget, SLOT(slot_setCameraPositionY(int)));
-        connect(slider_zRot, SIGNAL(valueChanged(int)), glWidget, SLOT(slot_setCameraPositionZ(int)));
-        
-        // Player icon adjustment controls
-        connect(slider_playerIconHeight, SIGNAL(valueChanged(int)), glWidget, SLOT(slot_setPlayerIconHeight(int)));
-        connect(slider_playerIconRotX, SIGNAL(valueChanged(int)), glWidget, SLOT(slot_setPlayerIconRotationX(int)));
-        connect(slider_playerIconRotY, SIGNAL(valueChanged(int)), glWidget, SLOT(slot_setPlayerIconRotationY(int)));
-        connect(slider_playerIconRotZ, SIGNAL(valueChanged(int)), glWidget, SLOT(slot_setPlayerIconRotationZ(int)));
-        connect(slider_playerIconScale, SIGNAL(valueChanged(int)), glWidget, SLOT(slot_setPlayerIconScale(int)));
-        connect(pushButton_resetPlayerIcon, SIGNAL(clicked()), glWidget, SLOT(slot_resetPlayerIcon()));
-        
-        // Connect reset signal from glWidget back to sliders (cast to ModernGLWidget*)
-        if (ModernGLWidget* modernWidget = qobject_cast<ModernGLWidget*>(glWidget)) {
+
+        // Connect signals using new-style syntax with concrete widget type
+        if (auto* modernWidget = qobject_cast<ModernGLWidget*>(glWidget)) {
+            connect(pushButton_ortho, &QAbstractButton::clicked, modernWidget, &ModernGLWidget::slot_showAllLevels);
+            connect(pushButton_singleLevel, &QAbstractButton::clicked, modernWidget, &ModernGLWidget::slot_singleLevelView);
+            connect(pushButton_increaseTop, &QAbstractButton::clicked, modernWidget, &ModernGLWidget::slot_showMoreUpperLevels);
+            connect(pushButton_increaseBottom, &QAbstractButton::clicked, modernWidget, &ModernGLWidget::slot_showMoreLowerLevels);
+            connect(pushButton_reduceTop, &QAbstractButton::clicked, modernWidget, &ModernGLWidget::slot_showLessUpperLevels);
+            connect(pushButton_reduceBottom, &QAbstractButton::clicked, modernWidget, &ModernGLWidget::slot_showLessLowerLevels);
+            connect(toolButton_shiftZup, &QAbstractButton::clicked, modernWidget, &ModernGLWidget::slot_shiftZup);
+            connect(toolButton_shiftZdown, &QAbstractButton::clicked, modernWidget, &ModernGLWidget::slot_shiftZdown);
+            connect(pushButton_defaultView, &QAbstractButton::clicked, modernWidget, &ModernGLWidget::slot_defaultView);
+            connect(pushButton_sideView, &QAbstractButton::clicked, modernWidget, &ModernGLWidget::slot_sideView);
+            connect(pushButton_topView, &QAbstractButton::clicked, modernWidget, &ModernGLWidget::slot_topView);
+            connect(slider_scale, &QSlider::valueChanged, modernWidget, &ModernGLWidget::slot_setScale);
+            connect(slider_xRot, &QSlider::valueChanged, modernWidget, &ModernGLWidget::slot_setCameraPositionX);
+            connect(slider_yRot, &QSlider::valueChanged, modernWidget, &ModernGLWidget::slot_setCameraPositionY);
+            connect(slider_zRot, &QSlider::valueChanged, modernWidget, &ModernGLWidget::slot_setCameraPositionZ);
+            connect(slider_playerIconHeight, &QSlider::valueChanged, modernWidget, &ModernGLWidget::slot_setPlayerIconHeight);
+            connect(slider_playerIconRotX, &QSlider::valueChanged, modernWidget, &ModernGLWidget::slot_setPlayerIconRotationX);
+            connect(slider_playerIconRotY, &QSlider::valueChanged, modernWidget, &ModernGLWidget::slot_setPlayerIconRotationY);
+            connect(slider_playerIconRotZ, &QSlider::valueChanged, modernWidget, &ModernGLWidget::slot_setPlayerIconRotationZ);
+            connect(slider_playerIconScale, &QSlider::valueChanged, modernWidget, &ModernGLWidget::slot_setPlayerIconScale);
+            connect(pushButton_resetPlayerIcon, &QAbstractButton::clicked, modernWidget, &ModernGLWidget::slot_resetPlayerIcon);
             connect(modernWidget, &ModernGLWidget::resetPlayerIconSliders, this, [this](int height, int rotX, int rotY, int rotZ, int scale) {
                 slider_playerIconHeight->setValue(height);
                 slider_playerIconRotX->setValue(rotX);
@@ -271,6 +269,23 @@ void dlgMapper::slot_toggle3DView(const bool is3DMode)
                 slider_playerIconRotZ->setValue(rotZ);
                 slider_playerIconScale->setValue(scale);
             });
+        } else if (auto* legacyWidget = qobject_cast<GLWidget*>(glWidget)) {
+            connect(pushButton_ortho, &QAbstractButton::clicked, legacyWidget, &GLWidget::slot_showAllLevels);
+            connect(pushButton_singleLevel, &QAbstractButton::clicked, legacyWidget, &GLWidget::slot_singleLevelView);
+            connect(pushButton_increaseTop, &QAbstractButton::clicked, legacyWidget, &GLWidget::slot_showMoreUpperLevels);
+            connect(pushButton_increaseBottom, &QAbstractButton::clicked, legacyWidget, &GLWidget::slot_showMoreLowerLevels);
+            connect(pushButton_reduceTop, &QAbstractButton::clicked, legacyWidget, &GLWidget::slot_showLessUpperLevels);
+            connect(pushButton_reduceBottom, &QAbstractButton::clicked, legacyWidget, &GLWidget::slot_showLessLowerLevels);
+            connect(toolButton_shiftZup, &QAbstractButton::clicked, legacyWidget, &GLWidget::slot_shiftZup);
+            connect(toolButton_shiftZdown, &QAbstractButton::clicked, legacyWidget, &GLWidget::slot_shiftZdown);
+            connect(pushButton_defaultView, &QAbstractButton::clicked, legacyWidget, &GLWidget::slot_defaultView);
+            connect(pushButton_sideView, &QAbstractButton::clicked, legacyWidget, &GLWidget::slot_sideView);
+            connect(pushButton_topView, &QAbstractButton::clicked, legacyWidget, &GLWidget::slot_topView);
+            connect(slider_scale, &QSlider::valueChanged, legacyWidget, &GLWidget::slot_setScale);
+            connect(slider_xRot, &QSlider::valueChanged, legacyWidget, &GLWidget::slot_setCameraPositionX);
+            connect(slider_yRot, &QSlider::valueChanged, legacyWidget, &GLWidget::slot_setCameraPositionY);
+            connect(slider_zRot, &QSlider::valueChanged, legacyWidget, &GLWidget::slot_setCameraPositionZ);
+            // Note: GLWidget doesn't have player icon slots
         }
     }
 
@@ -423,32 +438,29 @@ void dlgMapper::recreate3DWidget()
     verticalLayout_mapper->insertWidget(0, glWidget);
     mpMap->mpM = glWidget;
 
-    connect(pushButton_ortho, SIGNAL(clicked()), glWidget, SLOT(slot_showAllLevels()));
-    connect(pushButton_singleLevel, SIGNAL(clicked()), glWidget, SLOT(slot_singleLevelView()));
-    connect(pushButton_increaseTop, SIGNAL(clicked()), glWidget, SLOT(slot_showMoreUpperLevels()));
-    connect(pushButton_increaseBottom, SIGNAL(clicked()), glWidget, SLOT(slot_showMoreLowerLevels()));
-    connect(pushButton_reduceTop, SIGNAL(clicked()), glWidget, SLOT(slot_showLessUpperLevels()));
-    connect(pushButton_reduceBottom, SIGNAL(clicked()), glWidget, SLOT(slot_showLessLowerLevels()));
-    connect(toolButton_shiftZup, SIGNAL(clicked()), glWidget, SLOT(slot_shiftZup()));
-    connect(toolButton_shiftZdown, SIGNAL(clicked()), glWidget, SLOT(slot_shiftZdown()));
-    connect(pushButton_defaultView, SIGNAL(clicked()), glWidget, SLOT(slot_defaultView()));
-    connect(pushButton_sideView, SIGNAL(clicked()), glWidget, SLOT(slot_sideView()));
-    connect(pushButton_topView, SIGNAL(clicked()), glWidget, SLOT(slot_topView()));
-    connect(slider_scale, SIGNAL(valueChanged(int)), glWidget, SLOT(slot_setScale(int)));
-    connect(slider_xRot, SIGNAL(valueChanged(int)), glWidget, SLOT(slot_setCameraPositionX(int)));
-    connect(slider_yRot, SIGNAL(valueChanged(int)), glWidget, SLOT(slot_setCameraPositionY(int)));
-    connect(slider_zRot, SIGNAL(valueChanged(int)), glWidget, SLOT(slot_setCameraPositionZ(int)));
-
-    // Player icon adjustment controls
-    connect(slider_playerIconHeight, SIGNAL(valueChanged(int)), glWidget, SLOT(slot_setPlayerIconHeight(int)));
-    connect(slider_playerIconRotX, SIGNAL(valueChanged(int)), glWidget, SLOT(slot_setPlayerIconRotationX(int)));
-    connect(slider_playerIconRotY, SIGNAL(valueChanged(int)), glWidget, SLOT(slot_setPlayerIconRotationY(int)));
-    connect(slider_playerIconRotZ, SIGNAL(valueChanged(int)), glWidget, SLOT(slot_setPlayerIconRotationZ(int)));
-    connect(slider_playerIconScale, SIGNAL(valueChanged(int)), glWidget, SLOT(slot_setPlayerIconScale(int)));
-    connect(pushButton_resetPlayerIcon, SIGNAL(clicked()), glWidget, SLOT(slot_resetPlayerIcon()));
-
-    // Connect reset signal from glWidget back to sliders (cast to ModernGLWidget*)
-    if (ModernGLWidget* modernWidget = qobject_cast<ModernGLWidget*>(glWidget)) {
+    // Connect signals using new-style syntax with concrete widget type
+    if (auto* modernWidget = qobject_cast<ModernGLWidget*>(glWidget)) {
+        connect(pushButton_ortho, &QAbstractButton::clicked, modernWidget, &ModernGLWidget::slot_showAllLevels);
+        connect(pushButton_singleLevel, &QAbstractButton::clicked, modernWidget, &ModernGLWidget::slot_singleLevelView);
+        connect(pushButton_increaseTop, &QAbstractButton::clicked, modernWidget, &ModernGLWidget::slot_showMoreUpperLevels);
+        connect(pushButton_increaseBottom, &QAbstractButton::clicked, modernWidget, &ModernGLWidget::slot_showMoreLowerLevels);
+        connect(pushButton_reduceTop, &QAbstractButton::clicked, modernWidget, &ModernGLWidget::slot_showLessUpperLevels);
+        connect(pushButton_reduceBottom, &QAbstractButton::clicked, modernWidget, &ModernGLWidget::slot_showLessLowerLevels);
+        connect(toolButton_shiftZup, &QAbstractButton::clicked, modernWidget, &ModernGLWidget::slot_shiftZup);
+        connect(toolButton_shiftZdown, &QAbstractButton::clicked, modernWidget, &ModernGLWidget::slot_shiftZdown);
+        connect(pushButton_defaultView, &QAbstractButton::clicked, modernWidget, &ModernGLWidget::slot_defaultView);
+        connect(pushButton_sideView, &QAbstractButton::clicked, modernWidget, &ModernGLWidget::slot_sideView);
+        connect(pushButton_topView, &QAbstractButton::clicked, modernWidget, &ModernGLWidget::slot_topView);
+        connect(slider_scale, &QSlider::valueChanged, modernWidget, &ModernGLWidget::slot_setScale);
+        connect(slider_xRot, &QSlider::valueChanged, modernWidget, &ModernGLWidget::slot_setCameraPositionX);
+        connect(slider_yRot, &QSlider::valueChanged, modernWidget, &ModernGLWidget::slot_setCameraPositionY);
+        connect(slider_zRot, &QSlider::valueChanged, modernWidget, &ModernGLWidget::slot_setCameraPositionZ);
+        connect(slider_playerIconHeight, &QSlider::valueChanged, modernWidget, &ModernGLWidget::slot_setPlayerIconHeight);
+        connect(slider_playerIconRotX, &QSlider::valueChanged, modernWidget, &ModernGLWidget::slot_setPlayerIconRotationX);
+        connect(slider_playerIconRotY, &QSlider::valueChanged, modernWidget, &ModernGLWidget::slot_setPlayerIconRotationY);
+        connect(slider_playerIconRotZ, &QSlider::valueChanged, modernWidget, &ModernGLWidget::slot_setPlayerIconRotationZ);
+        connect(slider_playerIconScale, &QSlider::valueChanged, modernWidget, &ModernGLWidget::slot_setPlayerIconScale);
+        connect(pushButton_resetPlayerIcon, &QAbstractButton::clicked, modernWidget, &ModernGLWidget::slot_resetPlayerIcon);
         connect(modernWidget, &ModernGLWidget::resetPlayerIconSliders, this, [this](int height, int rotX, int rotY, int rotZ, int scale) {
             slider_playerIconHeight->setValue(height);
             slider_playerIconRotX->setValue(rotX);
@@ -456,6 +468,23 @@ void dlgMapper::recreate3DWidget()
             slider_playerIconRotZ->setValue(rotZ);
             slider_playerIconScale->setValue(scale);
         });
+    } else if (auto* legacyWidget = qobject_cast<GLWidget*>(glWidget)) {
+        connect(pushButton_ortho, &QAbstractButton::clicked, legacyWidget, &GLWidget::slot_showAllLevels);
+        connect(pushButton_singleLevel, &QAbstractButton::clicked, legacyWidget, &GLWidget::slot_singleLevelView);
+        connect(pushButton_increaseTop, &QAbstractButton::clicked, legacyWidget, &GLWidget::slot_showMoreUpperLevels);
+        connect(pushButton_increaseBottom, &QAbstractButton::clicked, legacyWidget, &GLWidget::slot_showMoreLowerLevels);
+        connect(pushButton_reduceTop, &QAbstractButton::clicked, legacyWidget, &GLWidget::slot_showLessUpperLevels);
+        connect(pushButton_reduceBottom, &QAbstractButton::clicked, legacyWidget, &GLWidget::slot_showLessLowerLevels);
+        connect(toolButton_shiftZup, &QAbstractButton::clicked, legacyWidget, &GLWidget::slot_shiftZup);
+        connect(toolButton_shiftZdown, &QAbstractButton::clicked, legacyWidget, &GLWidget::slot_shiftZdown);
+        connect(pushButton_defaultView, &QAbstractButton::clicked, legacyWidget, &GLWidget::slot_defaultView);
+        connect(pushButton_sideView, &QAbstractButton::clicked, legacyWidget, &GLWidget::slot_sideView);
+        connect(pushButton_topView, &QAbstractButton::clicked, legacyWidget, &GLWidget::slot_topView);
+        connect(slider_scale, &QSlider::valueChanged, legacyWidget, &GLWidget::slot_setScale);
+        connect(slider_xRot, &QSlider::valueChanged, legacyWidget, &GLWidget::slot_setCameraPositionX);
+        connect(slider_yRot, &QSlider::valueChanged, legacyWidget, &GLWidget::slot_setCameraPositionY);
+        connect(slider_zRot, &QSlider::valueChanged, legacyWidget, &GLWidget::slot_setCameraPositionZ);
+        // Note: GLWidget doesn't have player icon slots
     }
 
     glWidget->setVisible(was3DMode);

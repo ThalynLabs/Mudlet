@@ -258,9 +258,6 @@ dlgConnectionProfiles::dlgConnectionProfiles(QWidget* parent)
     connect(discord_optin_checkBox, &QCheckBox::stateChanged, this, &dlgConnectionProfiles::slot_updateDiscordOptIn);
 #endif
 
-    // website_entry atm is only a label
-    //connect(website_entry, SIGNAL(textEdited(const QString)), this, SLOT(slot_updateWebsite(const QString)));
-
     clearNotificationArea();
 
 #if !defined(QT_NO_SSL)

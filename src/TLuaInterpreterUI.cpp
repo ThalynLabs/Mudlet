@@ -3556,7 +3556,7 @@ int TLuaInterpreter::movieFunc(lua_State* L, const QString& funcName)
         if (autoScale) {
             connect(pN, &TLabel::resized, pN, [=] { movie->setScaledSize(pN->size()); });
         } else {
-            pN->disconnect(SIGNAL(resized()));
+            QObject::disconnect(pN, &TLabel::resized, nullptr, nullptr);
         }
     } else {
         return warnArgumentValue(L, __func__, qsl("'%1' is not a known function name - bug in Mudlet, please report it").arg(funcName));
