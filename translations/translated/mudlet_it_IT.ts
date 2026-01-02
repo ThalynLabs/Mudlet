@@ -678,7 +678,7 @@ This text is shown when room(s) are (not) selected in mapper. %1 is the room ID 
       <location filename="../src/TBuffer.cpp" line="3445"/>
       <location filename="../src/TBuffer.cpp" line="6777"/>
       <source>Click to reveal</source>
-      <translation type="unfinished"/>
+      <translation>Clicca per mostrare</translation>
     </message>
     <message>
       <location filename="../src/dlgMapper.cpp" line="505"/>
@@ -3357,12 +3357,12 @@ Percorsi analizzati:
     <message>
       <location filename="../src/TMainConsole.cpp" line="1706"/>
       <source>Could not save map</source>
-      <translation type="unfinished"/>
+      <translation>Impossibile salvare la mappa</translation>
     </message>
     <message>
       <location filename="../src/TMainConsole.cpp" line="1707"/>
       <source>Sorry, could not save the map. Would you like to retry or close without saving the map?</source>
-      <translation type="unfinished"/>
+      <translation>Non è possibile salvare la mappa. Riprovare o chiudere senza salvare?</translation>
     </message>
   </context>
   <context>
@@ -7691,17 +7691,17 @@ Utilizzi</translation>
     <message>
       <location filename="../src/dlgMapper.cpp" line="664"/>
       <source>Map autosave failed</source>
-      <translation type="unfinished"/>
+      <translation>Salvataggio automatico della mappa fallito</translation>
     </message>
     <message>
       <location filename="../src/dlgMapper.cpp" line="670"/>
       <source>Retry save</source>
-      <translation type="unfinished"/>
+      <translation>Riprova salvataggio</translation>
     </message>
     <message>
       <location filename="../src/dlgMapper.cpp" line="680"/>
       <source>Dismiss warning</source>
-      <translation type="unfinished"/>
+      <translation>Ignora avviso</translation>
     </message>
   </context>
   <context>
@@ -8667,7 +8667,7 @@ Package manager: network error, package couldn&apos;t be downloaded</extracommen
     <message>
       <location filename="../src/dlgProfilePreferences.cpp" line="960"/>
       <source>NAWS: Negotiate About Window Size</source>
-      <translation type="unfinished"/>
+      <translation>NAWS: Negozia Dimensione della Finestra</translation>
     </message>
     <message>
       <location filename="../src/dlgProfilePreferences.cpp" line="965"/>
@@ -12323,7 +12323,7 @@ Non è prevista NESSUNA GARANZIA, nella misura consentita dalla legge.</translat
     <message>
       <location filename="../src/ui/mapper.ui" line="285"/>
       <source>Map autosave failed - click for options</source>
-      <translation type="unfinished"/>
+      <translation>Salvataggio automatico della mappa fallito - clicca per le opzioni</translation>
     </message>
     <message>
       <location filename="../src/ui/mapper.ui" line="447"/>
