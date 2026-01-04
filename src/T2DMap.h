@@ -184,7 +184,7 @@ public:
     qreal getZoom() const { return xyzoom; }
     int getZLevel() const { return mMapCenterZ; }
 
-    // Center view on a room (for secondary views, doesn't update player position)
+    // Center view on a room. For secondary views, skips raising sysMapAreaChanged events.
     void centerview(int roomId);
     std::pair<bool, QString> exportAreaToImage(int areaId, const QString& filePath, std::optional<int> zLevel = std::nullopt, qreal zoom = 2.0, bool exportAllZLevels = false);
 

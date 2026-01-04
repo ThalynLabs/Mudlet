@@ -29,6 +29,11 @@ class Host;
 class TMap;
 class TMapView;
 
+/**
+ * Manages the lifecycle of secondary map view windows.
+ * Secondary views are view-only map displays that can show different
+ * areas/z-levels independently from the main mapper window.
+ */
 class TMapViewManager : public QObject
 {
     Q_OBJECT

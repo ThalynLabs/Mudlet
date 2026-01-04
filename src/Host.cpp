@@ -3248,11 +3248,13 @@ std::pair<int, QString> Host::closeAllMapViews()
 QList<int> Host::getMapViewIds() const
 {
     if (!mpMap) {
+        qWarning() << "Host::getMapViewIds() - no map present";
         return {};
     }
 
     auto* viewManager = mpMap->getViewManager();
     if (!viewManager) {
+        qWarning() << "Host::getMapViewIds() - no view manager available";
         return {};
     }
 

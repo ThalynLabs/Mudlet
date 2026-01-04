@@ -4301,6 +4301,9 @@ int TLuaInterpreter::closeAllMapViews(lua_State* L)
     Host& host = getHostFromLua(L);
 
     auto [count, errorMsg] = host.closeAllMapViews();
+    if (!errorMsg.isEmpty()) {
+        return warnArgumentValue(L, __func__, errorMsg);
+    }
     lua_pushinteger(L, count);
     return 1;
 }

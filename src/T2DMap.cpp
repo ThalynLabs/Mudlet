@@ -790,7 +790,7 @@ void T2DMap::centerview(int roomId)
 
     TRoom* pR = mpMap->mpRoomDB->getRoom(roomId);
     if (!pR) {
-        qDebug() << "T2DMap::centerview(int) - room" << roomId << "not found";
+        qWarning() << "T2DMap::centerview(int) - room" << roomId << "not found";
         return;
     }
 

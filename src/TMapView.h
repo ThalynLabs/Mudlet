@@ -29,6 +29,11 @@ class Host;
 class T2DMap;
 class TMap;
 
+/**
+ * A secondary map view widget that provides a view-only display of the map.
+ * Unlike the primary mapper (dlgMapper), secondary views don't support
+ * editing operations or affect the player's tracked position.
+ */
 class TMapView : public QWidget
 {
     Q_OBJECT
@@ -58,7 +63,7 @@ public slots:
 private:
     void setupUi();
 
-    int mViewId;
+    const int mViewId;
     QPointer<Host> mpHost;
     QPointer<TMap> mpMap;
     T2DMap* mp2dMap = nullptr;

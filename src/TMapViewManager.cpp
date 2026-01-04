@@ -123,9 +123,9 @@ TMapView* TMapViewManager::getView(int viewId)
 QList<int> TMapViewManager::getViewIds() const
 {
     QList<int> result;
-    for (auto it = mViews.constKeyValueBegin(); it != mViews.constKeyValueEnd(); ++it) {
-        if (it->second) {
-            result.append(it->first);
+    for (const auto& [viewId, view] : mViews.asKeyValueRange()) {
+        if (view) {
+            result.append(viewId);
         }
     }
     return result;
@@ -134,8 +134,9 @@ QList<int> TMapViewManager::getViewIds() const
 int TMapViewManager::getViewCount() const
 {
     int count = 0;
-    for (auto it = mViews.constKeyValueBegin(); it != mViews.constKeyValueEnd(); ++it) {
-        if (it->second) {
+    for (const auto& [viewId, view] : mViews.asKeyValueRange()) {
+        Q_UNUSED(viewId)
+        if (view) {
             ++count;
         }
     }
@@ -144,8 +145,8 @@ int TMapViewManager::getViewCount() const
 
 void TMapViewManager::updateAllViews()
 {
-    for (auto it = mViews.constKeyValueBegin(); it != mViews.constKeyValueEnd(); ++it) {
-        TMapView* view = it->second;
+    for (const auto& [viewId, view] : mViews.asKeyValueRange()) {
+        Q_UNUSED(viewId)
         if (view && view->get2DMap()) {
             view->get2DMap()->update();
             view->updateAreaComboBox();

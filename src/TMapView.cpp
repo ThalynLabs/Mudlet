@@ -135,16 +135,17 @@ void TMapView::updateAreaComboBox()
     const auto& areaNamesMap = mpMap->mpRoomDB->getAreaNamesMap();
 
     QMap<QString, QString> areaNames;
-    for (auto it = areaNamesMap.constKeyValueBegin(); it != areaNamesMap.constKeyValueEnd(); ++it) {
-        if (it->first == -1 && !mpMap->getDefaultAreaShown()) {
+    for (const auto& [areaId, areaName] : areaNamesMap.asKeyValueRange()) {
+        if (areaId == -1 && !mpMap->getDefaultAreaShown()) {
             continue;
         }
-        areaNames.insert(it->second.toLower(), it->second);
+        areaNames.insert(areaName.toLower(), areaName);
     }
 
     mpAreaComboBox->clear();
-    for (auto it = areaNames.constKeyValueBegin(); it != areaNames.constKeyValueEnd(); ++it) {
-        mpAreaComboBox->addItem(it->second);
+    for (const auto& [sortKey, areaName] : areaNames.asKeyValueRange()) {
+        Q_UNUSED(sortKey)
+        mpAreaComboBox->addItem(areaName);
     }
 
     if (!oldValue.isEmpty()) {
@@ -169,6 +170,8 @@ void TMapView::slot_switchArea(int index)
 
     if (areaId != -1) {
         mp2dMap->switchArea(areaId);
+    } else {
+        qWarning() << "TMapView::slot_switchArea() - area" << areaName << "not found in area names map";
     }
 }
 

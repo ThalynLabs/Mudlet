@@ -208,12 +208,12 @@ public:
 
 
     TRoomDB* mpRoomDB = nullptr;
-    QScopedPointer<TMapViewManager> mpViewManager;
+    TMapViewManager* mpViewManager = nullptr;
     QMap<int, int> mEnvColors;
     QPointer<Host> mpHost;
     QString mProfileName;
 
-    TMapViewManager* getViewManager() { return mpViewManager.data(); }
+    TMapViewManager* getViewManager() { return mpViewManager; }
 
     // Was a single int mRoomId but that breaks things when maps are
     // copied/shared between profiles - so now we track the profile name
