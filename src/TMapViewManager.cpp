@@ -93,6 +93,9 @@ std::pair<bool, QString> TMapViewManager::closeView(int viewId)
     mDockWidgets.remove(viewId);
     mViews.remove(viewId);
 
+    // Note: deleteLater() will trigger the destroyed signal, which is connected to slot_viewClosed().
+    // Since we already removed from tracking maps above, slot_viewClosed() will find viewId == 0
+    // and skip emitting viewClosed again.
     dockWidget->deleteLater();
 
     emit viewClosed(viewId);
@@ -128,25 +131,12 @@ TMapView* TMapViewManager::getView(int viewId)
 
 QList<int> TMapViewManager::getViewIds() const
 {
-    QList<int> result;
-    for (const auto& [viewId, view] : mViews.asKeyValueRange()) {
-        if (view) {
-            result.append(viewId);
-        }
-    }
-    return result;
+    return mViews.keys();
 }
 
 int TMapViewManager::getViewCount() const
 {
-    int count = 0;
-    for (const auto& [viewId, view] : mViews.asKeyValueRange()) {
-        Q_UNUSED(viewId)
-        if (view) {
-            ++count;
-        }
-    }
-    return count;
+    return mViews.size();
 }
 
 void TMapViewManager::updateAllViews()

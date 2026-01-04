@@ -30,10 +30,10 @@ class T2DMap;
 class TMap;
 
 /**
- * A secondary map view widget that provides a non-editing display of the map.
- * Unlike the primary mapper (dlgMapper), secondary views don't support
- * room editing operations or affect the player's tracked position, but do allow
- * navigation (area selection, z-level changes, zoom).
+ * A secondary map view widget that displays the map independently from the primary mapper.
+ * Unlike the primary mapper (dlgMapper), secondary views maintain their own view position
+ * independent of the player's current room, but do allow navigation (area selection,
+ * z-level changes, zoom).
  */
 class TMapView : public QWidget
 {
@@ -58,7 +58,7 @@ public:
 
     void updateAreaComboBox();
 
-public slots:
+private slots:
     void slot_switchArea(int index);
 
 private:

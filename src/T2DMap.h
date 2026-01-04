@@ -175,7 +175,6 @@ public:
     void clearSelection();
 
     // Secondary view support (for multiple map views feature)
-    // Secondary views are view-only displays that don't raise map events or support edit mode
     void setSecondaryView(bool isSecondary) { mIsSecondaryView = isSecondary; }
     bool isSecondaryView() const { return mIsSecondaryView; }
 
@@ -437,7 +436,6 @@ private:
     // is shown - because the value of these two are different:
     int mLastViewedAreaID = -2;
 
-    // Flag to indicate this is a secondary map view (view-only, no edit mode)
     bool mIsSecondaryView = false;
 
 private slots:

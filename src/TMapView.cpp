@@ -191,6 +191,8 @@ void TMapView::setArea(int areaId)
     const int index = mpAreaComboBox->findText(areaName);
     if (index != -1) {
         mpAreaComboBox->setCurrentIndex(index);
+    } else {
+        qWarning() << "TMapView::setArea() - area" << areaName << "not found in combo box for view" << mViewId;
     }
 
     mp2dMap->switchArea(areaId);
@@ -207,7 +209,7 @@ std::pair<bool, QString> TMapView::centerOnRoom(int roomId)
 std::pair<bool, QString> TMapView::setZoom(qreal zoom)
 {
     if (!mp2dMap) {
-        return {false, qsl("no map view")};
+        return {false, qsl("mp2dMap is null for view %1").arg(mViewId)};
     }
     return mp2dMap->setMapZoom(zoom, getCurrentAreaId());
 }
@@ -215,6 +217,7 @@ std::pair<bool, QString> TMapView::setZoom(qreal zoom)
 int TMapView::getCurrentAreaId() const
 {
     if (!mp2dMap) {
+        qWarning() << "TMapView::getCurrentAreaId() - mp2dMap is null for view" << mViewId;
         return -1;
     }
     return mp2dMap->getAreaId();
@@ -223,6 +226,7 @@ int TMapView::getCurrentAreaId() const
 int TMapView::getCenteredRoomId() const
 {
     if (!mp2dMap) {
+        qWarning() << "TMapView::getCenteredRoomId() - mp2dMap is null for view" << mViewId;
         return 0;
     }
     return mp2dMap->getCenterRoomId();
@@ -231,6 +235,7 @@ int TMapView::getCenteredRoomId() const
 qreal TMapView::getZoom() const
 {
     if (!mp2dMap) {
+        qWarning() << "TMapView::getZoom() - mp2dMap is null for view" << mViewId;
         return 0.0;
     }
     return mp2dMap->getZoom();
@@ -239,6 +244,7 @@ qreal TMapView::getZoom() const
 int TMapView::getZLevel() const
 {
     if (!mp2dMap) {
+        qWarning() << "TMapView::getZLevel() - mp2dMap is null for view" << mViewId;
         return 0;
     }
     return mp2dMap->getZLevel();
