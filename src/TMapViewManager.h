@@ -61,7 +61,7 @@ private slots:
 private:
     int mNextViewId = 1;
     QPointer<Host> mpHost;
-    TMap* mpMap = nullptr;
+    QPointer<TMap> mpMap;
     QMap<int, QPointer<QDockWidget>> mDockWidgets;
     QMap<int, QPointer<TMapView>> mViews;
 };

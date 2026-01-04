@@ -36,6 +36,9 @@ TMapView::TMapView(int viewId, Host* pHost, TMap* pMap, QWidget* parent)
 , mpHost(pHost)
 , mpMap(pMap)
 {
+    Q_ASSERT(pHost);
+    Q_ASSERT(pMap);
+
     setupUi();
 
     mp2dMap->mpMap = pMap;
@@ -85,6 +88,7 @@ void TMapView::setupUi()
     mpZUpButton->setMaximumSize(30, 20);
     mpZUpButton->setFont(QFont(QString(), -1, QFont::Bold));
     mpZUpButton->setText(qsl("+"));
+    //: Tooltip for z-level up button in secondary map view
     mpZUpButton->setToolTip(tr("Go up one z-level"));
     panelLayout->addWidget(mpZUpButton);
 
@@ -93,9 +97,11 @@ void TMapView::setupUi()
     mpZDownButton->setMaximumSize(30, 20);
     mpZDownButton->setFont(QFont(QString(), -1, QFont::Bold));
     mpZDownButton->setText(qsl("-"));
+    //: Tooltip for z-level down button in secondary map view
     mpZDownButton->setToolTip(tr("Go down one z-level"));
     panelLayout->addWidget(mpZDownButton);
 
+    //: Label for area selection combobox in secondary map view
     auto* areaLabel = new QLabel(tr("Area:"), mpPanelWidget);
     areaLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     areaLabel->setMaximumHeight(20);
@@ -126,27 +132,23 @@ void TMapView::updateAreaComboBox()
     }
 
     const QString oldValue = mpAreaComboBox->currentText();
-    QMapIterator<int, QString> it(mpMap->mpRoomDB->getAreaNamesMap());
+    const auto& areaNamesMap = mpMap->mpRoomDB->getAreaNamesMap();
 
     QMap<QString, QString> areaNames;
-    while (it.hasNext()) {
-        it.next();
-        if (it.key() == -1 && !mpMap->getDefaultAreaShown()) {
+    for (auto it = areaNamesMap.constKeyValueBegin(); it != areaNamesMap.constKeyValueEnd(); ++it) {
+        if (it->first == -1 && !mpMap->getDefaultAreaShown()) {
             continue;
         }
-        const QString name = it.value();
-        areaNames.insert(name.toLower(), name);
+        areaNames.insert(it->second.toLower(), it->second);
     }
 
     mpAreaComboBox->clear();
-    QMapIterator<QString, QString> areaIt(areaNames);
-    while (areaIt.hasNext()) {
-        areaIt.next();
-        mpAreaComboBox->addItem(areaIt.value());
+    for (auto it = areaNames.constKeyValueBegin(); it != areaNames.constKeyValueEnd(); ++it) {
+        mpAreaComboBox->addItem(it->second);
     }
 
     if (!oldValue.isEmpty()) {
-        int index = mpAreaComboBox->findText(oldValue);
+        const int index = mpAreaComboBox->findText(oldValue);
         if (index != -1) {
             mpAreaComboBox->setCurrentIndex(index);
         }
@@ -158,6 +160,7 @@ void TMapView::updateAreaComboBox()
 void TMapView::slot_switchArea(int index)
 {
     if (!mpMap || !mpMap->mpRoomDB || !mp2dMap) {
+        qWarning() << "TMapView::slot_switchArea() - cannot switch area: invalid state";
         return;
     }
 
@@ -172,15 +175,17 @@ void TMapView::slot_switchArea(int index)
 void TMapView::setArea(int areaId)
 {
     if (!mpMap || !mpMap->mpRoomDB || !mp2dMap) {
+        qWarning() << "TMapView::setArea() - cannot set area" << areaId << ": invalid state";
         return;
     }
 
     const QString areaName = mpMap->mpRoomDB->getAreaNamesMap().value(areaId);
     if (areaName.isEmpty()) {
+        qWarning() << "TMapView::setArea() - area" << areaId << "not found";
         return;
     }
 
-    int index = mpAreaComboBox->findText(areaName);
+    const int index = mpAreaComboBox->findText(areaName);
     if (index != -1) {
         mpAreaComboBox->setCurrentIndex(index);
     }
@@ -191,6 +196,7 @@ void TMapView::setArea(int areaId)
 void TMapView::centerOnRoom(int roomId)
 {
     if (!mp2dMap) {
+        qWarning() << "TMapView::centerOnRoom() - mp2dMap is null for view" << mViewId;
         return;
     }
     mp2dMap->centerview(roomId);

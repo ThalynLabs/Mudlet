@@ -60,7 +60,7 @@ private:
 
     int mViewId;
     QPointer<Host> mpHost;
-    TMap* mpMap = nullptr;
+    QPointer<TMap> mpMap;
     T2DMap* mp2dMap = nullptr;
 
     QComboBox* mpAreaComboBox = nullptr;

@@ -31,6 +31,8 @@ TMapViewManager::TMapViewManager(Host* pHost, TMap* pMap)
 , mpHost(pHost)
 , mpMap(pMap)
 {
+    Q_ASSERT(pHost);
+    Q_ASSERT(pMap);
 }
 
 TMapViewManager::~TMapViewManager()
@@ -47,6 +49,7 @@ std::pair<int, QString> TMapViewManager::createView(int initialAreaId)
     const int viewId = mNextViewId++;
     const QString hostName = mpHost->getName();
 
+    //: Title for a secondary map view window, %1 is the view number, %2 is the profile name
     auto* dockWidget = new QDockWidget(tr("Map View %1 - %2").arg(viewId).arg(hostName));
     dockWidget->setObjectName(qsl("dockMapView_%1_%2").arg(hostName).arg(viewId));
 
@@ -100,6 +103,8 @@ int TMapViewManager::closeAllViews()
         auto [success, msg] = closeView(viewId);
         if (success) {
             ++closedCount;
+        } else {
+            qWarning() << "TMapViewManager::closeAllViews() - failed to close view" << viewId << ":" << msg;
         }
     }
 
@@ -118,9 +123,9 @@ TMapView* TMapViewManager::getView(int viewId)
 QList<int> TMapViewManager::getViewIds() const
 {
     QList<int> result;
-    for (auto it = mViews.constBegin(); it != mViews.constEnd(); ++it) {
-        if (it.value()) {
-            result.append(it.key());
+    for (auto it = mViews.constKeyValueBegin(); it != mViews.constKeyValueEnd(); ++it) {
+        if (it->second) {
+            result.append(it->first);
         }
     }
     return result;
@@ -129,8 +134,8 @@ QList<int> TMapViewManager::getViewIds() const
 int TMapViewManager::getViewCount() const
 {
     int count = 0;
-    for (auto it = mViews.constBegin(); it != mViews.constEnd(); ++it) {
-        if (it.value()) {
+    for (auto it = mViews.constKeyValueBegin(); it != mViews.constKeyValueEnd(); ++it) {
+        if (it->second) {
             ++count;
         }
     }
@@ -139,8 +144,8 @@ int TMapViewManager::getViewCount() const
 
 void TMapViewManager::updateAllViews()
 {
-    for (auto it = mViews.constBegin(); it != mViews.constEnd(); ++it) {
-        TMapView* view = it.value();
+    for (auto it = mViews.constKeyValueBegin(); it != mViews.constKeyValueEnd(); ++it) {
+        TMapView* view = it->second;
         if (view && view->get2DMap()) {
             view->get2DMap()->update();
             view->updateAreaComboBox();
@@ -152,16 +157,16 @@ void TMapViewManager::slot_viewClosed()
 {
     auto* dockWidget = qobject_cast<QDockWidget*>(sender());
     if (!dockWidget) {
+        qWarning() << "TMapViewManager::slot_viewClosed() - sender is not a QDockWidget";
         return;
     }
 
-    for (auto it = mDockWidgets.begin(); it != mDockWidgets.end(); ++it) {
-        if (it.value() == dockWidget) {
-            int viewId = it.key();
-            mDockWidgets.remove(viewId);
-            mViews.remove(viewId);
-            emit viewClosed(viewId);
-            return;
-        }
+    const int viewId = mDockWidgets.key(dockWidget, 0);
+    if (viewId > 0) {
+        mDockWidgets.remove(viewId);
+        mViews.remove(viewId);
+        emit viewClosed(viewId);
+    } else {
+        qWarning() << "TMapViewManager::slot_viewClosed() - dock widget not found in tracking map";
     }
 }

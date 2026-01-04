@@ -4313,9 +4313,10 @@ int TLuaInterpreter::getMapViewIds(lua_State* L)
     const QList<int> viewIds = host.getMapViewIds();
 
     lua_newtable(L);
-    for (int i = 0; i < viewIds.size(); ++i) {
-        lua_pushinteger(L, viewIds.at(i));
-        lua_rawseti(L, -2, i + 1);
+    int luaIndex = 1;
+    for (int viewId : viewIds) {
+        lua_pushinteger(L, viewId);
+        lua_rawseti(L, -2, luaIndex++);
     }
     return 1;
 }

@@ -769,29 +769,35 @@ void T2DMap::switchArea(const QString& newAreaName)
 void T2DMap::switchArea(int areaId)
 {
     if (!mpMap || !mpMap->mpRoomDB) {
+        qWarning() << "T2DMap::switchArea(int) - cannot switch to area" << areaId << "- map or roomDB is null";
         return;
     }
 
     const QString areaName = mpMap->mpRoomDB->getAreaNamesMap().value(areaId);
-    if (!areaName.isEmpty()) {
-        switchArea(areaName);
+    if (areaName.isEmpty()) {
+        qWarning() << "T2DMap::switchArea(int) - area" << areaId << "not found in area names map";
+        return;
     }
+    switchArea(areaName);
 }
 
 void T2DMap::centerview(int roomId)
 {
     if (!mpMap || !mpMap->mpRoomDB) {
+        qWarning() << "T2DMap::centerview(int) - map or roomDB is null";
         return;
     }
 
     TRoom* pR = mpMap->mpRoomDB->getRoom(roomId);
     if (!pR) {
+        qDebug() << "T2DMap::centerview(int) - room" << roomId << "not found";
         return;
     }
 
     const int areaId = pR->getArea();
     TArea* pArea = mpMap->mpRoomDB->getArea(areaId);
     if (!pArea) {
+        qWarning() << "T2DMap::centerview(int) - DATA INTEGRITY: room" << roomId << "references non-existent area" << areaId;
         return;
     }
 
