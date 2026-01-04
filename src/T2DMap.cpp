@@ -766,6 +766,65 @@ void T2DMap::switchArea(const QString& newAreaName)
     }
 }
 
+void T2DMap::switchArea(int areaId)
+{
+    if (!mpMap || !mpMap->mpRoomDB) {
+        return;
+    }
+
+    const QString areaName = mpMap->mpRoomDB->getAreaNamesMap().value(areaId);
+    if (!areaName.isEmpty()) {
+        switchArea(areaName);
+    }
+}
+
+void T2DMap::centerview(int roomId)
+{
+    if (!mpMap || !mpMap->mpRoomDB) {
+        return;
+    }
+
+    TRoom* pR = mpMap->mpRoomDB->getRoom(roomId);
+    if (!pR) {
+        return;
+    }
+
+    const int areaId = pR->getArea();
+    TArea* pArea = mpMap->mpRoomDB->getArea(areaId);
+    if (!pArea) {
+        return;
+    }
+
+    // For secondary views, don't raise events or update player position
+    if (!mIsSecondaryView) {
+        TEvent areaViewedChangedEvent{};
+        if (mAreaID != areaId) {
+            areaViewedChangedEvent.mArgumentList.append(qsl("sysMapAreaChanged"));
+            areaViewedChangedEvent.mArgumentTypeList.append(ARGUMENT_TYPE_STRING);
+            areaViewedChangedEvent.mArgumentList.append(QString::number(areaId));
+            areaViewedChangedEvent.mArgumentTypeList.append(ARGUMENT_TYPE_NUMBER);
+            areaViewedChangedEvent.mArgumentList.append(QString::number(mAreaID));
+            areaViewedChangedEvent.mArgumentTypeList.append(ARGUMENT_TYPE_NUMBER);
+        }
+
+        if (!areaViewedChangedEvent.mArgumentList.isEmpty() && mpHost) {
+            mpHost->raiseEvent(areaViewedChangedEvent);
+        }
+    }
+
+    mAreaID = areaId;
+    mLastViewedAreaID = areaId;
+    mRoomID = roomId;
+    mMapCenterX = pR->x();
+    mMapCenterY = -pR->y();  // Map y coordinates are reversed
+    mMapCenterZ = pR->z();
+    xyzoom = mpMap->mpRoomDB->get2DMapZoom(areaId);
+
+    isCenterViewCall = true;
+    update();
+    isCenterViewCall = false;
+}
+
 // key format: <QColor.name()><QString of one or more QChars>
 void T2DMap::addSymbolToPixmapCache(const QString key, const QString text, const QColor symbolColor, const bool gridMode)
 {

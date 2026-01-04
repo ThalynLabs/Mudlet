@@ -27,6 +27,7 @@
 #include "TConsole.h"
 #include "TEvent.h"
 #include "TMapLabel.h"
+#include "TMapViewManager.h"
 #include "TRoomDB.h"
 #include "XMLimport.h"
 #include "dlgMapper.h"
@@ -47,6 +48,7 @@ TMap::TMap(Host* pH, const QString& profileName)
 : mDefaultAreaName(tr("Default Area"))
 , mUnnamedAreaName(tr("Unnamed Area"))
 , mpRoomDB(new TRoomDB(this))
+, mpViewManager(new TMapViewManager(pH, this))
 , mpHost(pH)
 , mProfileName(profileName)
 {
@@ -3371,6 +3373,11 @@ void TMap::update()
                     mpMapper->mp2dMap->mNewMoveAction = true;
                     mpMapper->mp2dMap->update();
                 }
+            }
+
+            // Update all secondary map views
+            if (mpViewManager) {
+                mpViewManager->updateAllViews();
             }
         });
     }

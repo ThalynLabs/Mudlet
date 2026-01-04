@@ -66,6 +66,7 @@ class Host;
 class QOpenGLWidget;
 #endif
 class TArea;
+class TMapViewManager;
 class TRoom;
 class TRoomDB;
 class QFile;
@@ -207,9 +208,12 @@ public:
 
 
     TRoomDB* mpRoomDB = nullptr;
+    QScopedPointer<TMapViewManager> mpViewManager;
     QMap<int, int> mEnvColors;
     QPointer<Host> mpHost;
     QString mProfileName;
+
+    TMapViewManager* getViewManager() { return mpViewManager.data(); }
 
     // Was a single int mRoomId but that breaks things when maps are
     // copied/shared between profiles - so now we track the profile name

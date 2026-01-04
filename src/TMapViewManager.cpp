@@ -1,0 +1,167 @@
+/***************************************************************************
+ *   Copyright (C) 2025 by Mudlet Developers - mudlet@mudlet.org           *
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ *   This program is distributed in the hope that it will be useful,       *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+ *   GNU General Public License for more details.                          *
+ *                                                                         *
+ *   You should have received a copy of the GNU General Public License     *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+ ***************************************************************************/
+
+#include "TMapViewManager.h"
+
+#include "Host.h"
+#include "mudlet.h"
+#include "T2DMap.h"
+#include "TMap.h"
+#include "TMapView.h"
+#include "utils.h"
+
+TMapViewManager::TMapViewManager(Host* pHost, TMap* pMap)
+: QObject(pMap)
+, mpHost(pHost)
+, mpMap(pMap)
+{
+}
+
+TMapViewManager::~TMapViewManager()
+{
+    closeAllViews();
+}
+
+std::pair<int, QString> TMapViewManager::createView(int initialAreaId)
+{
+    if (!mpHost || !mpMap) {
+        return {0, qsl("no valid host or map")};
+    }
+
+    const int viewId = mNextViewId++;
+    const QString hostName = mpHost->getName();
+
+    auto* dockWidget = new QDockWidget(tr("Map View %1 - %2").arg(viewId).arg(hostName));
+    dockWidget->setObjectName(qsl("dockMapView_%1_%2").arg(hostName).arg(viewId));
+
+    auto* mapView = new TMapView(viewId, mpHost, mpMap, dockWidget);
+    dockWidget->setWidget(mapView);
+
+    if (initialAreaId > 0) {
+        mapView->setArea(initialAreaId);
+    }
+
+    mDockWidgets[viewId] = dockWidget;
+    mViews[viewId] = mapView;
+
+    connect(dockWidget, &QDockWidget::destroyed, this, &TMapViewManager::slot_viewClosed);
+
+    mudlet::self()->addDockWidget(Qt::RightDockWidgetArea, dockWidget);
+    dockWidget->setFloating(true);
+    dockWidget->show();
+    dockWidget->raise();
+
+    emit viewCreated(viewId);
+
+    return {viewId, QString()};
+}
+
+std::pair<bool, QString> TMapViewManager::closeView(int viewId)
+{
+    auto dockIt = mDockWidgets.find(viewId);
+    if (dockIt == mDockWidgets.end() || !dockIt.value()) {
+        return {false, qsl("view %1 not found").arg(viewId)};
+    }
+
+    QDockWidget* dockWidget = dockIt.value();
+
+    mDockWidgets.remove(viewId);
+    mViews.remove(viewId);
+
+    dockWidget->deleteLater();
+
+    emit viewClosed(viewId);
+
+    return {true, QString()};
+}
+
+int TMapViewManager::closeAllViews()
+{
+    const QList<int> viewIds = mDockWidgets.keys();
+    int closedCount = 0;
+
+    for (int viewId : viewIds) {
+        auto [success, msg] = closeView(viewId);
+        if (success) {
+            ++closedCount;
+        }
+    }
+
+    return closedCount;
+}
+
+TMapView* TMapViewManager::getView(int viewId)
+{
+    auto it = mViews.find(viewId);
+    if (it != mViews.end() && it.value()) {
+        return it.value();
+    }
+    return nullptr;
+}
+
+QList<int> TMapViewManager::getViewIds() const
+{
+    QList<int> result;
+    for (auto it = mViews.constBegin(); it != mViews.constEnd(); ++it) {
+        if (it.value()) {
+            result.append(it.key());
+        }
+    }
+    return result;
+}
+
+int TMapViewManager::getViewCount() const
+{
+    int count = 0;
+    for (auto it = mViews.constBegin(); it != mViews.constEnd(); ++it) {
+        if (it.value()) {
+            ++count;
+        }
+    }
+    return count;
+}
+
+void TMapViewManager::updateAllViews()
+{
+    for (auto it = mViews.constBegin(); it != mViews.constEnd(); ++it) {
+        TMapView* view = it.value();
+        if (view && view->get2DMap()) {
+            view->get2DMap()->update();
+            view->updateAreaComboBox();
+        }
+    }
+}
+
+void TMapViewManager::slot_viewClosed()
+{
+    auto* dockWidget = qobject_cast<QDockWidget*>(sender());
+    if (!dockWidget) {
+        return;
+    }
+
+    for (auto it = mDockWidgets.begin(); it != mDockWidgets.end(); ++it) {
+        if (it.value() == dockWidget) {
+            int viewId = it.key();
+            mDockWidgets.remove(viewId);
+            mViews.remove(viewId);
+            emit viewClosed(viewId);
+            return;
+        }
+    }
+}

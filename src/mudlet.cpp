@@ -565,6 +565,7 @@ void mudlet::init()
     connect(dactionReattachDetachedWindows, &QAction::triggered, this, &mudlet::slot_reattachAllDetachedWindows);
     connect(dactionToggleAlwaysOnTop, &QAction::triggered, this, &mudlet::slot_toggleAlwaysOnTop);
     connect(dactionMinimize, &QAction::triggered, this, &mudlet::slot_minimize);
+    connect(dactionNewMapWindow, &QAction::triggered, this, &mudlet::slot_newMapWindow);
 
     connect(dactionHelp, &QAction::triggered, this, &mudlet::slot_showHelpDialog);
     connect(dactionVideo, &QAction::triggered, this, &mudlet::slot_showHelpDialogVideo);
@@ -1728,6 +1729,19 @@ void mudlet::slot_minimize()
     showMinimized();
 }
 
+void mudlet::slot_newMapWindow()
+{
+    Host* pHost = getActiveHost();
+    if (!pHost) {
+        return;
+    }
+
+    auto [viewId, errorMsg] = pHost->createMapView(0);
+    if (viewId == 0) {
+        qWarning() << "mudlet::slot_newMapWindow() - failed to create map view:" << errorMsg;
+    }
+}
+
 void mudlet::updateWindowMenu()
 {
     // Clean up existing window list actions
@@ -2208,6 +2222,7 @@ void mudlet::disableToolbarButtons()
 
     mpActionMapper->setEnabled(false);
     dactionShowMap->setEnabled(false);
+    dactionNewMapWindow->setEnabled(false);
 
     mpActionNotes->setEnabled(false);
     dactionNotepad->setEnabled(false);
@@ -2287,6 +2302,7 @@ void mudlet::updateMainWindowToolbarState()
 
     mpActionMapper->setEnabled(hasActiveProfileInMainWindow);
     dactionShowMap->setEnabled(hasActiveProfileInMainWindow);
+    dactionNewMapWindow->setEnabled(hasActiveProfileInMainWindow);
 
     mpActionNotes->setEnabled(hasActiveProfileInMainWindow);
     dactionNotepad->setEnabled(hasActiveProfileInMainWindow);
@@ -2394,6 +2410,7 @@ void mudlet::enableToolbarButtons()
 
     mpActionMapper->setEnabled(true);
     dactionShowMap->setEnabled(true);
+    dactionNewMapWindow->setEnabled(true);
 
     mpActionNotes->setEnabled(true);
     dactionNotepad->setEnabled(true);

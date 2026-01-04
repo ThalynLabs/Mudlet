@@ -171,7 +171,21 @@ public:
     void addSymbolToPixmapCache(const QString, const QString, const QColor, const bool);
     void setPlayerRoomStyle(const int style);
     void switchArea(const QString& newAreaName);
+    void switchArea(int areaId);
     void clearSelection();
+
+    // Secondary view support (for multiple map views feature)
+    void setSecondaryView(bool isSecondary) { mIsSecondaryView = isSecondary; }
+    bool isSecondaryView() const { return mIsSecondaryView; }
+
+    // View state getters
+    int getAreaId() const { return mAreaID; }
+    int getCenterRoomId() const { return mRoomID; }
+    qreal getZoom() const { return xyzoom; }
+    int getZLevel() const { return mMapCenterZ; }
+
+    // Center view on a room (for secondary views, doesn't update player position)
+    void centerview(int roomId);
     std::pair<bool, QString> exportAreaToImage(int areaId, const QString& filePath, std::optional<int> zLevel = std::nullopt, qreal zoom = 2.0, bool exportAllZLevels = false);
 
 
@@ -421,6 +435,9 @@ private:
     // is initialised to - so that the xyzoom gets read for the first area that
     // is shown - because the value of these two are different:
     int mLastViewedAreaID = -2;
+
+    // Flag to indicate this is a secondary map view (view-only, no edit mode)
+    bool mIsSecondaryView = false;
 
 private slots:
     void slot_createRoom();
