@@ -34,6 +34,7 @@
 #include <QQueue>
 #include <QPoint>
 #include <QPointer>
+#include <QSet>
 #include <QString>
 #include <QStringBuilder>
 #include <QStringList>
@@ -464,6 +465,8 @@ public:
     int getLastLineNumber();
     QStringList getEndLines(int);
     void clear();
+    void clearLinkState();
+    QSet<int> collectActiveLinkIds() const;
     void clearLastLine();
     QPoint getEndPos();
     void translateToPlainText(std::string& incoming, bool isFromServer = false);
