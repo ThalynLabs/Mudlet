@@ -196,13 +196,12 @@ void TMapView::setArea(int areaId)
     mp2dMap->switchArea(areaId);
 }
 
-void TMapView::centerOnRoom(int roomId)
+std::pair<bool, QString> TMapView::centerOnRoom(int roomId)
 {
     if (!mp2dMap) {
-        qWarning() << "TMapView::centerOnRoom() - mp2dMap is null for view" << mViewId;
-        return;
+        return {false, qsl("mp2dMap is null for view %1").arg(mViewId)};
     }
-    mp2dMap->centerview(roomId);
+    return mp2dMap->centerview(roomId);
 }
 
 std::pair<bool, QString> TMapView::setZoom(qreal zoom)

@@ -781,27 +781,24 @@ void T2DMap::switchArea(int areaId)
     switchArea(areaName);
 }
 
-void T2DMap::centerview(int roomId)
+std::pair<bool, QString> T2DMap::centerview(int roomId)
 {
     if (!mpMap || !mpMap->mpRoomDB) {
-        qWarning() << "T2DMap::centerview(int) - map or roomDB is null";
-        return;
+        return {false, qsl("map or roomDB is null")};
     }
 
     TRoom* pR = mpMap->mpRoomDB->getRoom(roomId);
     if (!pR) {
-        qWarning() << "T2DMap::centerview(int) - room" << roomId << "not found";
-        return;
+        return {false, qsl("room %1 not found").arg(roomId)};
     }
 
     const int areaId = pR->getArea();
     TArea* pArea = mpMap->mpRoomDB->getArea(areaId);
     if (!pArea) {
-        qWarning() << "T2DMap::centerview(int) - DATA INTEGRITY: room" << roomId << "references non-existent area" << areaId;
-        return;
+        return {false, qsl("room %1 references non-existent area %2").arg(roomId).arg(areaId)};
     }
 
-    // For secondary views, don't raise events or update player position
+    // For secondary views, don't raise sysMapAreaChanged event
     if (!mIsSecondaryView) {
         TEvent areaViewedChangedEvent{};
         if (mAreaID != areaId) {
@@ -829,6 +826,8 @@ void T2DMap::centerview(int roomId)
     isCenterViewCall = true;
     update();
     isCenterViewCall = false;
+
+    return {true, QString()};
 }
 
 // key format: <QColor.name()><QString of one or more QChars>

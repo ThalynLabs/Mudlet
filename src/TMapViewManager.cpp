@@ -24,6 +24,7 @@
 #include "T2DMap.h"
 #include "TMap.h"
 #include "TMapView.h"
+#include "TRoomDB.h"
 #include "utils.h"
 
 TMapViewManager::TMapViewManager(Host* pHost, TMap* pMap)
@@ -44,6 +45,11 @@ std::pair<int, QString> TMapViewManager::createView(int initialAreaId)
 {
     if (!mpHost || !mpMap) {
         return {0, qsl("no valid host or map")};
+    }
+
+    // Validate area ID if provided
+    if (initialAreaId > 0 && mpMap->mpRoomDB && !mpMap->mpRoomDB->getAreaNamesMap().contains(initialAreaId)) {
+        return {0, qsl("area %1 does not exist").arg(initialAreaId)};
     }
 
     const int viewId = mNextViewId++;

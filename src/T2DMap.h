@@ -175,6 +175,7 @@ public:
     void clearSelection();
 
     // Secondary view support (for multiple map views feature)
+    // Secondary views are view-only displays that don't raise map events or support edit mode
     void setSecondaryView(bool isSecondary) { mIsSecondaryView = isSecondary; }
     bool isSecondaryView() const { return mIsSecondaryView; }
 
@@ -185,7 +186,7 @@ public:
     int getZLevel() const { return mMapCenterZ; }
 
     // Center view on a room. For secondary views, skips raising sysMapAreaChanged events.
-    void centerview(int roomId);
+    std::pair<bool, QString> centerview(int roomId);
     std::pair<bool, QString> exportAreaToImage(int areaId, const QString& filePath, std::optional<int> zLevel = std::nullopt, qreal zoom = 2.0, bool exportAllZLevels = false);
 
 

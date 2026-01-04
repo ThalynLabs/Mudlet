@@ -64,6 +64,7 @@ private slots:
     void slot_viewClosed();
 
 private:
+    // View IDs start at 1; 0 is reserved as an error/invalid indicator in return values
     int mNextViewId = 1;
     QPointer<Host> mpHost;
     QPointer<TMap> mpMap;

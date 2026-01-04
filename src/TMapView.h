@@ -30,9 +30,10 @@ class T2DMap;
 class TMap;
 
 /**
- * A secondary map view widget that provides a view-only display of the map.
+ * A secondary map view widget that provides a non-editing display of the map.
  * Unlike the primary mapper (dlgMapper), secondary views don't support
- * editing operations or affect the player's tracked position.
+ * room editing operations or affect the player's tracked position, but do allow
+ * navigation (area selection, z-level changes, zoom).
  */
 class TMapView : public QWidget
 {
@@ -47,7 +48,7 @@ public:
     T2DMap* get2DMap() { return mp2dMap; }
 
     void setArea(int areaId);
-    void centerOnRoom(int roomId);
+    std::pair<bool, QString> centerOnRoom(int roomId);
     std::pair<bool, QString> setZoom(qreal zoom);
 
     int getCurrentAreaId() const;

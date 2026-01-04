@@ -3206,7 +3206,7 @@ std::pair<bool, QString> Host::setMapperTitle(const QString& title)
 std::pair<int, QString> Host::createMapView(int areaId)
 {
     if (!mpMap) {
-        return {0, qsl("no map present")};
+        return {0, qsl("no map present or loaded")};
     }
 
     auto* viewManager = mpMap->getViewManager();
@@ -3220,7 +3220,7 @@ std::pair<int, QString> Host::createMapView(int areaId)
 std::pair<bool, QString> Host::closeMapView(int viewId)
 {
     if (!mpMap) {
-        return {false, qsl("no map present")};
+        return {false, qsl("no map present or loaded")};
     }
 
     auto* viewManager = mpMap->getViewManager();
@@ -3234,7 +3234,7 @@ std::pair<bool, QString> Host::closeMapView(int viewId)
 std::pair<int, QString> Host::closeAllMapViews()
 {
     if (!mpMap) {
-        return {0, qsl("no map present")};
+        return {0, qsl("no map present or loaded")};
     }
 
     auto* viewManager = mpMap->getViewManager();
@@ -3248,7 +3248,7 @@ std::pair<int, QString> Host::closeAllMapViews()
 QList<int> Host::getMapViewIds() const
 {
     if (!mpMap) {
-        qWarning() << "Host::getMapViewIds() - no map present";
+        qWarning() << "Host::getMapViewIds() - no map present or loaded";
         return {};
     }
 

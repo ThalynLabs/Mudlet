@@ -714,7 +714,10 @@ int TLuaInterpreter::centerview(lua_State* L)
             return warnArgumentValue(L, __func__, qsl("view %1 not found").arg(viewId));
         }
 
-        view->centerOnRoom(roomId);
+        auto [success, errorMsg] = view->centerOnRoom(roomId);
+        if (!success) {
+            return warnArgumentValue(L, __func__, errorMsg);
+        }
         lua_pushboolean(L, true);
         return 1;
     }
@@ -4313,7 +4316,16 @@ int TLuaInterpreter::getMapViewIds(lua_State* L)
 {
     Host& host = getHostFromLua(L);
 
-    const QList<int> viewIds = host.getMapViewIds();
+    if (!host.mpMap) {
+        return warnArgumentValue(L, __func__, "no map present or loaded");
+    }
+
+    auto* viewManager = host.mpMap->getViewManager();
+    if (!viewManager) {
+        return warnArgumentValue(L, __func__, "no view manager available");
+    }
+
+    const QList<int> viewIds = viewManager->getViewIds();
 
     lua_newtable(L);
     int luaIndex = 1;
@@ -4332,7 +4344,7 @@ int TLuaInterpreter::getMapViewInfo(lua_State* L)
     const int viewId = getVerifiedInt(L, __func__, 1, "view id");
 
     if (!host.mpMap) {
-        return warnArgumentValue(L, __func__, "no map present");
+        return warnArgumentValue(L, __func__, "no map present or loaded");
     }
 
     auto* viewManager = host.mpMap->getViewManager();
