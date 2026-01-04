@@ -315,6 +315,7 @@ bool TRoomDB::removeRoom(int id)
             for (const auto& key : profilesWithUserInThisRoom) {
                 mpMap->mRoomIdHash[key] = 0;
             }
+            mpMap->update();
         }
         if (mpMap->mTargetID == id) {
             mpMap->mTargetID = 0;

@@ -729,15 +729,12 @@ int TLuaInterpreter::centerview(lua_State* L)
 
     host.mpMap->mRoomIdHash[host.getName()] = roomId;
     host.mpMap->mNewMove = true;
-#if defined(INCLUDE_3DMAPPER)
-    if (host.mpMap->mpM) {
-        host.mpMap->mpM->update();
-    }
-#endif
 
     if (host.mpMap->mpMapper->mp2dMap) {
         host.mpMap->mpMapper->mp2dMap->isCenterViewCall = true;
-        host.mpMap->mpMapper->mp2dMap->update();
+    }
+    host.mpMap->update();
+    if (host.mpMap->mpMapper->mp2dMap) {
         host.mpMap->mpMapper->mp2dMap->isCenterViewCall = false;
         host.mpMap->mpMapper->resetAreaComboBoxToPlayerRoomArea();
     }

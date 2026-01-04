@@ -3664,14 +3664,7 @@ void cTelnet::setATCPVariables(const QByteArray& msg)
     if (var.startsWith(QLatin1String("RoomNum"))) {
         if (mpHost->mpMap) {
             mpHost->mpMap->mRoomIdHash[mProfileName] = arg.toInt();
-#if defined(INCLUDE_3DMAPPER)
-            if (mpHost->mpMap->mpM && mpHost->mpMap->mpMapper) {
-                mpHost->mpMap->mpM->update();
-            }
-#endif
-            if (mpHost->mpMap->mpMapper && mpHost->mpMap->mpMapper->mp2dMap) {
-                mpHost->mpMap->mpMapper->mp2dMap->update();
-            }
+            mpHost->mpMap->update();
         }
     }
 }

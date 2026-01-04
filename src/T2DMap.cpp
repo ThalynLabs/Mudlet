@@ -3589,7 +3589,7 @@ void T2DMap::slot_setPlayerLocation()
         manualSetEvent.mArgumentList.append(QString::number(_newRoomId));
         manualSetEvent.mArgumentTypeList.append(ARGUMENT_TYPE_NUMBER);
         mpHost->raiseEvent(manualSetEvent);
-        update();
+        mpMap->update();
         // don't update map on player location change, as this would cause unnecessary
         // autosaves while just speedwalking around
     }
@@ -4196,14 +4196,8 @@ void T2DMap::slot_newMap()
     mpMap->mNewMove = true;
     slot_toggleMapViewOnly();
 
-#if defined(INCLUDE_3DMAPPER)
-    if (mpMap->mpM) {
-        mpMap->mpM->update();
-    }
-#endif
-
     isCenterViewCall = true;
-    update();
+    mpMap->update();
     isCenterViewCall = false;
     mpMap->setUnsaved(__func__);
     mpMap->mpMapper->resetAreaComboBoxToPlayerRoomArea();
