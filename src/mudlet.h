@@ -699,7 +699,6 @@ private:
     QPointer<QToolButton> mpButtonAbout;
     QPointer<QToolButton> mpButtonConnect;
     QPointer<QToolButton> mpButtonDiscord;
-    QPointer<QToolButton> mpButtonMapper;
     QPointer<QToolButton> mpButtonMute;
     QPointer<QToolButton> mpButtonPackageManagers;
     QHBoxLayout* mpHBoxLayout_profileContainer = nullptr;
