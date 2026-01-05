@@ -29,9 +29,11 @@
 #include <QCloseEvent>
 #include <QLabel>
 #include <QLineEdit>
+#include <QPlainTextEdit>
 #include <QPointer>
 #include <QSettings>
 #include <QTimer>
+#include <QToolButton>
 
 class Host;
 
@@ -50,12 +52,21 @@ public:
     void saveSettings();
     void restoreSettings();
     void setFont(const QFont &);
+    void setTabsStyleSheet(const QString& styleSheet);
 
 signals:
     void notepadClosing(const QString& profileName);
 
+public slots:
+    int addTab(const QString& name = QString(), const QString& content = QString());
+    void closeTab(int index);
+    void renameTab(int index);
+
 private slots:
-    void slot_textWritten();
+    void slot_tabCloseRequested(int index);
+    void slot_tabContextMenu(const QPoint& pos);
+    void slot_addTabClicked();
+    void slot_textChanged();
     void slot_sendAll();
     void slot_sendLine();
     void slot_sendSelection();
@@ -66,10 +77,13 @@ private slots:
 private:
     void timerEvent(QTimerEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
-    void restoreFile(const QString&, const bool);
+    QPlainTextEdit* currentTextEdit() const;
+    void setupAddTabButton();
+    bool migrateOldNotesFile();
     void startSendingLines(const QStringList& lines);
 
     QPointer<Host> mpHost;
+    QToolButton* mpAddTabButton = nullptr;
     bool mNeedToSave = false;
     QAction* action_stop = nullptr;
     QAction* action_prependText = nullptr;
@@ -79,7 +93,6 @@ private:
     QStringList mLinesToSend;
     QTimer* mSendTimer = nullptr;
     int mCurrentLineIndex = 0;
-
 };
 
 #endif // MUDLET_DLGNOTEPAD_H

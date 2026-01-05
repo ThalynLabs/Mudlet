@@ -4144,7 +4144,7 @@ bool Host::setProfileStyleSheet(const QString& styleSheet)
     }
     if (mpNotePad) {
         mpNotePad->setStyleSheet(styleSheet);
-        mpNotePad->notesEdit->setStyleSheet(styleSheet);
+        mpNotePad->setTabsStyleSheet(styleSheet);
     }
     if (mpDockableMapWidget) {
         mpDockableMapWidget->setStyleSheet(styleSheet);
