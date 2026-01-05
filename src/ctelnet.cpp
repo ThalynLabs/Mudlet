@@ -3669,7 +3669,7 @@ void cTelnet::setATCPVariables(const QByteArray& msg)
             if (auto* pR = mpHost->mpMap->mpRoomDB->getRoom(roomId)) {
                 mpHost->mpMap->updateArea(pR->getArea());
             } else {
-                mpHost->mpMap->update();
+                mpHost->mpMap->updateArea(-1);
             }
         }
     }

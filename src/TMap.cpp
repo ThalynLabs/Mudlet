@@ -3349,11 +3349,6 @@ bool TMap::incrementJsonProgressDialog(const bool isExportNotImport, const bool 
     return mpProgressDialog->wasCanceled();
 }
 
-void TMap::update()
-{
-    updateArea(-1);
-}
-
 void TMap::updateArea(int areaId)
 {
     static bool debounce;

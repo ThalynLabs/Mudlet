@@ -123,7 +123,6 @@ public:
     void logError(QString& msg);
     bool setExit(int from, int to, int dir);
     bool setRoomCoordinates(int id, int x, int y, int z);
-    void update();
     void updateArea(int areaId);
 
     void audit();

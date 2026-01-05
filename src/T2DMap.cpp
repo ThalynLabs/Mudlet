@@ -4189,7 +4189,7 @@ void T2DMap::slot_newMap()
     slot_toggleMapViewOnly();
 
     isCenterViewCall = true;
-    mpMap->update();
+    mpMap->updateArea(-1);
     isCenterViewCall = false;
     mpMap->setUnsaved(__func__);
     mpMap->mpMapper->resetAreaComboBoxToPlayerRoomArea();

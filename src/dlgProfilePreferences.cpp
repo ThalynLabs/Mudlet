@@ -1864,7 +1864,7 @@ void dlgProfilePreferences::slot_resetMapColors()
     setColors2();
 
     if (pHost->mpMap) {
-        pHost->mpMap->update();
+        pHost->mpMap->updateArea(-1);
     }
 }
 
@@ -1930,7 +1930,7 @@ void dlgProfilePreferences::setButtonAndProfileColor(QPushButton* button, QColor
                     pHost->mpMap->restore16ColorSet();
                 }
                 // Redraw the map with the modified color:
-                pHost->mpMap->update();
+                pHost->mpMap->updateArea(-1);
             }
         }
 
@@ -4645,7 +4645,7 @@ void dlgProfilePreferences::slot_deleteMap()
     label_mapFileActionResult->setText(tr("Deleting map - please wait..."));
     qApp->processEvents(); // Allow the above message to show up when erasing big maps
     pHost->mpMap->mapClear();
-    pHost->mpMap->update();
+    pHost->mpMap->updateArea(-1);
 
     // Reset the button but leave it disabled
     pushButton_deleteMap->setChecked(false);
