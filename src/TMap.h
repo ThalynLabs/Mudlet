@@ -80,6 +80,7 @@ class TMap : public QObject
 
 signals:
     void signal_saveErrorChanged(bool hasError);
+    void signal_areaChanged(int areaId);
 
 private:
     QString mDefaultAreaName;
@@ -123,6 +124,7 @@ public:
     bool setExit(int from, int to, int dir);
     bool setRoomCoordinates(int id, int x, int y, int z);
     void update();
+    void updateArea(int areaId);
 
     void audit();
 

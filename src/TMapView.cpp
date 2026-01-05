@@ -52,6 +52,12 @@ TMapView::TMapView(int viewId, Host* pHost, TMap* pMap, QWidget* parent)
         mp2dMap->init();
     }
 
+    connect(mpMap, &TMap::signal_areaChanged, this, [this](int areaId) {
+        if (areaId == -1 || areaId == mp2dMap->getAreaId()) {
+            mp2dMap->update();
+        }
+    });
+
     setFont(qApp->font());
     setPalette(QApplication::palette());
 }

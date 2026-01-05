@@ -3008,7 +3008,7 @@ void T2DMap::updateMapLabel(QRectF labelRectangle, int labelId, TArea* pArea)
 
     if (Q_LIKELY(labelId >= 0)) {
         pArea->mMapLabels.insert(labelId, label);
-        update();
+        mpMap->updateArea(mAreaID);
         if (!label.temporary) {
             mpMap->setUnsaved(__func__);
         }
@@ -3208,13 +3208,8 @@ void T2DMap::slot_createRoom()
     mpMap->setRoomCoordinates(roomID, mContextMenuClickPosition.x, mContextMenuClickPosition.y, mMapCenterZ);
 
     mpMap->mMapGraphNeedsUpdate = true;
-#if defined(INCLUDE_3DMAPPER)
-    if (mpMap->mpM) {
-        mpMap->mpM->update();
-    }
-#endif
     isCenterViewCall = true;
-    update();
+    mpMap->updateArea(mAreaID);
     isCenterViewCall = false;
     mpMap->setUnsaved(__func__);
 }
@@ -3499,7 +3494,7 @@ void T2DMap::slot_doneCustomLine()
             room->calcRoomDimensions();
         }
     }
-    update();
+    mpMap->updateArea(mAreaID);
     mpMap->setUnsaved(__func__);
 }
 
@@ -3561,7 +3556,7 @@ void T2DMap::slot_deleteLabel()
     }
 
     if (updateNeeded) {
-        update();
+        mpMap->updateArea(mAreaID);
         if (saveNeeded) {
             mpMap->setUnsaved(__func__);
         }
@@ -3579,7 +3574,7 @@ void T2DMap::slot_setPlayerLocation()
     }
 
     const int _newRoomId = *(mMultiSelectionSet.constBegin());
-    if (mpMap->mpRoomDB->getRoom(_newRoomId)) {
+    if (auto* pR = mpMap->mpRoomDB->getRoom(_newRoomId)) {
         // No need to check it is a DIFFERENT room - that is taken care of by en/dis-abling the control
         mpMap->mRoomIdHash[mpMap->mProfileName] = _newRoomId;
         mpMap->mNewMove = true;
@@ -3589,9 +3584,7 @@ void T2DMap::slot_setPlayerLocation()
         manualSetEvent.mArgumentList.append(QString::number(_newRoomId));
         manualSetEvent.mArgumentTypeList.append(ARGUMENT_TYPE_NUMBER);
         mpHost->raiseEvent(manualSetEvent);
-        mpMap->update();
-        // don't update map on player location change, as this would cause unnecessary
-        // autosaves while just speedwalking around
+        mpMap->updateArea(pR->getArea());
     }
 }
 
@@ -3962,8 +3955,7 @@ void T2DMap::slot_setRoomProperties(
     if (changeWeight || changeLockStatus) {
         mpMap->mMapGraphNeedsUpdate = true;
     }
-    repaint();
-    update();
+    mpMap->updateArea(mAreaID);
     mpMap->setUnsaved(__func__);
 }
 

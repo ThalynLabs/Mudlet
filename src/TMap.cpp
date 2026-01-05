@@ -3349,17 +3349,17 @@ bool TMap::incrementJsonProgressDialog(const bool isExportNotImport, const bool 
     return mpProgressDialog->wasCanceled();
 }
 
-/**
- * Update the the 2D and 3D map visually.
- *
- * It ensures debouncing internally to ensure that bulk calls are efficient.
- */
 void TMap::update()
+{
+    updateArea(-1);
+}
+
+void TMap::updateArea(int areaId)
 {
     static bool debounce;
     if (!debounce) {
         debounce = true;
-        QTimer::singleShot(0, this, [this]() {
+        QTimer::singleShot(0, this, [this, areaId]() {
             debounce = false;
 
 #if defined(INCLUDE_3DMAPPER)
@@ -3375,10 +3375,7 @@ void TMap::update()
                 }
             }
 
-            // Update all secondary map views
-            if (mpViewManager) {
-                mpViewManager->updateAllViews();
-            }
+            emit signal_areaChanged(areaId);
         });
     }
 }

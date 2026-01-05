@@ -262,11 +262,11 @@ int TLuaInterpreter::getExitWeights(lua_State* L)
 // Documentation: https://wiki.mudlet.org/w/Manual:Lua_Functions#deleteMapLabel
 int TLuaInterpreter::deleteMapLabel(lua_State* L)
 {
-    int area = getVerifiedInt(L, __func__, 1, "areaID");
-    int labelID = getVerifiedInt(L, __func__, 2, "labelID");
+    const int area = getVerifiedInt(L, __func__, 1, "areaID");
+    const int labelID = getVerifiedInt(L, __func__, 2, "labelID");
     Host& host = getHostFromLua(L);
     host.mpMap->deleteMapLabel(area, labelID);
-    host.mpMap->update();
+    host.mpMap->updateArea(area);
     return 0;
 }
 // Documentation: https://wiki.mudlet.org/w/Manual:Lua_Functions#addAreaName
@@ -733,7 +733,7 @@ int TLuaInterpreter::centerview(lua_State* L)
     if (host.mpMap->mpMapper->mp2dMap) {
         host.mpMap->mpMapper->mp2dMap->isCenterViewCall = true;
     }
-    host.mpMap->update();
+    host.mpMap->updateArea(pR->getArea());
     if (host.mpMap->mpMapper->mp2dMap) {
         host.mpMap->mpMapper->mp2dMap->isCenterViewCall = false;
         host.mpMap->mpMapper->resetAreaComboBoxToPlayerRoomArea();
@@ -1081,7 +1081,7 @@ int TLuaInterpreter::createMapLabel(lua_State* L)
 
     const Host& host = getHostFromLua(L);
     lua_pushinteger(L, host.mpMap->createMapLabel(area, text, posx, posy, posz, QColor(fgr, fgg, fgb, foregroundTransparency), QColor(bgr, bgg, bgb, backgroundTransparency), showOnTop, noScaling, temporary, zoom, fontSize, fontName, QColor(olr, olg, olb, foregroundTransparency)));
-    host.mpMap->update();
+    host.mpMap->updateArea(area);
     return 1;
 }
 
@@ -1105,7 +1105,7 @@ int TLuaInterpreter::createMapImageLabel(lua_State* L)
 
     const Host& host = getHostFromLua(L);
     lua_pushinteger(L, host.mpMap->createMapImageLabel(area, imagePathFileName, posx, posy, posz, width, height, zoom, showOnTop, temporary));
-    host.mpMap->update();
+    host.mpMap->updateArea(area);
     return 1;
 }
 
