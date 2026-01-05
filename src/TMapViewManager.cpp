@@ -73,6 +73,7 @@ std::pair<int, QString> TMapViewManager::createView(int initialAreaId)
 
     mudlet::self()->addDockWidget(Qt::RightDockWidgetArea, dockWidget);
     dockWidget->setFloating(true);
+    dockWidget->resize(400, 500);
     dockWidget->show();
     dockWidget->raise();
 
