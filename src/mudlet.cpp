@@ -406,11 +406,20 @@ void mudlet::init()
     mpButtonDiscord->addAction(mpActionIRC);
     mpButtonDiscord->setDefaultAction(mpActionDiscord);
 
+    mpButtonMapper = new QToolButton(this);
+    mpButtonMapper->setObjectName(qsl("mapper"));
+    mpButtonMapper->setContextMenuPolicy(Qt::ActionsContextMenu);
+    mpButtonMapper->setPopupMode(QToolButton::MenuButtonPopup);
+    mpButtonMapper->setAutoRaise(true);
+    mpMainToolBar->addWidget(mpButtonMapper);
+
     mpActionMapper = new QAction(QIcon(qsl(":/icons/applications-internet.png")), tr("Map"), this);
     mpActionMapper->setToolTip(utils::richText(tr("Show/hide the map")));
-    mpMainToolBar->addAction(mpActionMapper);
     mpActionMapper->setObjectName(qsl("map_action"));
-    mpMainToolBar->widgetForAction(mpActionMapper)->setObjectName(mpActionMapper->objectName());
+
+    mpButtonMapper->addAction(mpActionMapper);
+    mpButtonMapper->addAction(dactionNewMapWindow);
+    mpButtonMapper->setDefaultAction(mpActionMapper);
 
     mpActionHelp = new QAction(QIcon(qsl(":/icons/help-hint.png")), tr("Manual"), this);
     mpActionHelp->setToolTip(utils::richText(tr("Browse reference material and documentation")));

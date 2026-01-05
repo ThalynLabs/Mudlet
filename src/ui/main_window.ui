@@ -97,7 +97,6 @@
     <addaction name="dactionScriptEditor"/>
     <addaction name="dactionShowErrors"/>
     <addaction name="dactionShowMap"/>
-    <addaction name="dactionNewMapWindow"/>
     <addaction name="dactionInputLine"/>
     <addaction name="dactionNotepad"/>
     <addaction name="dactionIRC"/>
