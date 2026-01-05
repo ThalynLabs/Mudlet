@@ -26,6 +26,7 @@
 #include <QToolBar>
 #include <QAction>
 #include <QToolButton>
+#include <QKeySequence>
 #include <QLabel>
 #include <QMap>
 #include <QStackedWidget>
@@ -180,6 +181,8 @@ private:
     void checkForWindowMergeOpportunity();  // Check if this window overlaps with another detached window
     void performWindowMerge(TDetachedWindow* otherWindow);  // Automatically merge with another window
     void logWindowState(const QString& context);  // Debug method to track window state
+    void updateMenuShortcuts();
+    QKeySequence resolveShortcut(const QString& key, const QKeySequence& fallback) const;
 
     // Helper method to temporarily set the active host for actions
     void withCurrentProfileActive(const std::function<void()>& action);
@@ -229,6 +232,25 @@ private:
     QAction* mpActionMudletDiscord{nullptr};
     QAction* mpActionIRC{nullptr};
 
+    // Menu actions with shortcuts
+    QAction* mpMenuConnectAction{nullptr};
+    QAction* mpMenuDisconnectAction{nullptr};
+    QAction* mpMenuReconnectAction{nullptr};
+    QAction* mpMenuCloseProfileAction{nullptr};
+    QAction* mpMenuScriptEditorAction{nullptr};
+    QAction* mpMenuShowMapAction{nullptr};
+    QAction* mpMenuCompactInputLineAction{nullptr};
+    QAction* mpMenuNotepadAction{nullptr};
+    QAction* mpMenuPackageManagerAction{nullptr};
+    QAction* mpMenuModuleManagerAction{nullptr};
+    QAction* mpMenuToggleReplayAction{nullptr};
+    QAction* mpMenuToggleLoggingAction{nullptr};
+    QAction* mpMenuToggleEmergencyStopAction{nullptr};
+    QAction* mpMenuPreferencesAction{nullptr};
+    QAction* mpMenuToggleTimeStampAction{nullptr};
+    QAction* mpMenuMuteMediaAction{nullptr};
+    QAction* mpMenuMultiViewAction{nullptr};
+
     // Toolbar buttons
     QToolButton* mpButtonConnect{nullptr};
     QToolButton* mpButtonMute{nullptr};
@@ -260,7 +282,7 @@ private:
     // Window menu management for multiple windows
     QList<QAction*> mWindowListActions;
     QAction* mWindowListSeparator{nullptr};
-    QMenu* mpWindowMenu{nullptr};
+    QPointer<QMenu> mpWindowMenu;
 
     // Docked widgets management
     QMap<QString, QPointer<QDockWidget>> mDockWidgetMap;

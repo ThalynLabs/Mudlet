@@ -32,7 +32,6 @@
 
 #include "TTextCodec.h"
 
-#include "pre_guard.h"
 #include <QDataStream>
 #include <QElapsedTimer>
 #include <QFile>
@@ -42,14 +41,16 @@
 #include <QLabel>
 #include <QPointer>
 #include <QSaveFile>
+#include <QSplitter>
 #include <QVideoWidget>
 #include <QWidget>
-#include "post_guard.h"
 
 #include <hunspell/hunspell.h>
 
+#include <deque>
 #include <list>
 #include <map>
+#include <memory>
 
 // This contains the details of a font that we might want to maintain a record
 // of, independently of a QFont instance:
@@ -157,6 +158,9 @@ class Host;
 class TTextEdit;
 class TCommandLine;
 class TDockWidget;
+class THyperlinkCompactManager;
+class THyperlinkSelectionManager;
+class THyperlinkVisibilityManager;
 class TLabel;
 class TScrollBox;
 class TSplitter;
@@ -257,6 +261,11 @@ public:
     void setHorizontalScrollBar(bool);
     void setScrolling(const bool state);
     bool getScrolling() const { return mScrollingEnabled; }
+    
+    THyperlinkCompactManager& getHyperlinkCompactManager() { Q_ASSERT(mpHyperlinkCompactManager); return *mpHyperlinkCompactManager; }
+    THyperlinkSelectionManager& getHyperlinkSelectionManager() { Q_ASSERT(mpHyperlinkSelectionManager); return *mpHyperlinkSelectionManager; }
+    THyperlinkVisibilityManager& getHyperlinkVisibilityManager() { Q_ASSERT(mpHyperlinkVisibilityManager); return *mpHyperlinkVisibilityManager; }
+    
     void setCmdVisible(bool);
     void changeColors();
     void scrollDown(int lines);
@@ -264,6 +273,7 @@ public:
     void print(const QString& msg);
     void print(const char*);
     void print(const QString& msg, QColor fgColor, QColor bgColor);
+    void printFormatted(const QString& text, const std::deque<TChar>& formatting, const TLinkStore& sourceLinkStore);
     void printSystemMessage(const QString& msg);
     void printCommand(QString&);
     bool hasSelection();
@@ -370,7 +380,7 @@ public:
     QWidget* mpRightToolBar = nullptr;
     QWidget* mpMainDisplay = nullptr;
 
-    dlgMapper* mpMapper = nullptr;
+    QPointer<dlgMapper> mpMapper;
 
     QScrollBar* mpScrollBar = nullptr;
     QScrollBar* mpHScrollBar = nullptr;
@@ -411,6 +421,7 @@ public:
     bool mHScrollBarEnabled = false;
     ControlCharacterMode mControlCharacter = ControlCharacterMode::AsIs;
     QVideoWidget* mpVideoWidget = nullptr;
+    QSplitter* commandSplitter = nullptr;
 
 public slots:
     void slot_searchBufferUp();
@@ -421,6 +432,7 @@ public slots:
     void slot_changeControlCharacterHandling(const ControlCharacterMode);
     void slot_toggleSearchCaseSensitivity(bool);
     void slot_toggleTimeStamps(const bool);
+    void slot_saveCommandSearchSettings();
 
 signals:
     void resized(QResizeEvent* event);
@@ -442,6 +454,19 @@ private slots:
 private:
     void createSearchOptionIcon();
     void raiseFontChangeEvent();
+    void restoreCommandSearchSettings();
+    void initializeOSC8StyleFeature();
+    void initializeOSC8MenuFeature();
+    void initializeOSC8TooltipFeature();
+    void initializeOSC8VisibilityFeature();
+    void initializeOSC8SelectionFeature();
+    void initializeOSC8SpoilerFeature();
+    void initializeOSC8DisabledFeature();
+
+    // OSC 8 hyperlink managers
+    std::unique_ptr<THyperlinkCompactManager> mpHyperlinkCompactManager;
+    std::unique_ptr<THyperlinkSelectionManager> mpHyperlinkSelectionManager;
+    std::unique_ptr<THyperlinkVisibilityManager> mpHyperlinkVisibilityManager;
 
     ConsoleType mType = UnknownType;
     QSize mOldSize;

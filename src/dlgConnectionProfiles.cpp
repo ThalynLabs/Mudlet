@@ -34,14 +34,14 @@
 #include "CredentialManager.h"
 #include "SecureStringUtils.h"
 
-#include "pre_guard.h"
 #include <QtConcurrent>
 #include <QtUiTools>
 #include <QColorDialog>
 #include <QDir>
 #include <QRandomGenerator>
 #include <QSettings>
-#include "post_guard.h"
+#include <QSignalBlocker>
+#include <QTime>
 #include <chrono>
 #include <sstream>
 
@@ -300,6 +300,8 @@ dlgConnectionProfiles::dlgConnectionProfiles(QWidget* parent)
     mSearchTextTimer.setSingleShot(true);
     QCoreApplication::instance()->installEventFilter(this);
     connect(&mSearchTextTimer, &QTimer::timeout, this, &dlgConnectionProfiles::slot_reenableAllProfileItems);
+
+    profile_history->view()->setTextElideMode(Qt::ElideNone);
 }
 
 dlgConnectionProfiles::~dlgConnectionProfiles()
@@ -444,7 +446,7 @@ void dlgConnectionProfiles::writeSecurePassword(const QString& profile, const QS
     // Use async API for QtKeychain integration with file fallback
     auto* credManager = new CredentialManager();
 
-    credManager->storeCredential(profile, "character", pass,
+    credManager->storePassword(profile, "character", pass,
         [credManager, profile](bool success, const QString& errorMessage) {
             if (success) {
                 qDebug() << "dlgConnectionProfiles: Successfully stored password for profile" << profile;
@@ -462,7 +464,7 @@ void dlgConnectionProfiles::deleteSecurePassword(const QString& profile) const
     // Use async API for QtKeychain integration with file fallback
     auto* credManager = new CredentialManager();
 
-    credManager->removeCredential(profile, "character",
+    credManager->removePassword(profile, "character",
         [credManager, profile](bool success, const QString& errorMessage) {
             if (success) {
                 qDebug() << "dlgConnectionProfiles: Successfully removed password for profile" << profile;
@@ -623,13 +625,13 @@ void dlgConnectionProfiles::slot_saveName()
 
         // Check if there are orphaned keychain entries for this profile name
         auto* credManager = new CredentialManager(this);
-        credManager->retrieveCredential(newProfileName, "character",
+        credManager->retrievePassword(newProfileName, "character",
             [this, credManager, newProfileName, pItem, newProfileHost, newProfilePort, newProfileSslTsl]
             (bool foundCharacterEntry, const QString& characterPassword, const QString& errorMessage) {
                 Q_UNUSED(characterPassword)
                 Q_UNUSED(errorMessage)
 
-                credManager->retrieveCredential(newProfileName, "proxy",
+                credManager->retrievePassword(newProfileName, "proxy",
                     [this, credManager, newProfileName, pItem, newProfileHost, newProfilePort, newProfileSslTsl, foundCharacterEntry]
                     (bool foundProxyEntry, const QString& proxyPassword, const QString& errorMessage) {
                         Q_UNUSED(proxyPassword)
@@ -931,9 +933,8 @@ QPair<bool, QString> dlgConnectionProfiles::writeProfileData(const QString& prof
 
     if (file.error() == QFileDevice::NoError) {
         return {true, QString()};
-    } else {
-        return {false, file.errorString()};
     }
+    return {false, file.errorString()};
 }
 
 QString dlgConnectionProfiles::getDescription(const QString& profile_name) const
@@ -955,12 +956,24 @@ QString dlgConnectionProfiles::getDescription(const QString& profile_name) const
 void dlgConnectionProfiles::slot_itemClicked(QListWidgetItem* pItem)
 {
     if (!pItem) {
+        qDebug() << "dlgConnectionProfiles::slot_itemClicked() called with null item";
         return;
     }
 
-    slot_togglePasswordVisibility(false);
-
     const QString profile_name = pItem->data(csmNameRole).toString();
+
+    // Prevent rapid duplicate clicks on the same profile
+    static QString lastProfileClicked;
+    static QTime lastClickTime;
+
+    if (profile_name == lastProfileClicked && lastClickTime.isValid() && lastClickTime.msecsTo(QTime::currentTime()) < 100) {
+        return;
+    }
+
+    lastProfileClicked = profile_name;
+    lastClickTime = QTime::currentTime();
+
+    slot_togglePasswordVisibility(false);
 
     profile_name_entry->setText(profile_name);
 
@@ -1227,8 +1240,8 @@ void dlgConnectionProfiles::fillout_form()
         }
 #endif
     } else {
-        pItem = new QListWidgetItem();
         for (const QString& onlyShownPredefinedProfile : onlyShownPredefinedProfiles) {
+            pItem = new QListWidgetItem();
             auto details = TGameDetails::findGame(onlyShownPredefinedProfile);
             setupMudProfile(pItem, onlyShownPredefinedProfile, (*details).description, (*details).icon);
         }
@@ -1359,7 +1372,7 @@ void dlgConnectionProfiles::loadSecuredPassword(const QString& profile, L callba
     // Use async API for QtKeychain integration with file fallback
     auto* credManager = new CredentialManager();
 
-    credManager->retrieveCredential(profile, "character",
+    credManager->retrievePassword(profile, "character",
         [credManager, callback = std::move(callback)](bool success, const QString& password, const QString& errorMessage) {
             if (success) {
                 callback(password);
@@ -1528,7 +1541,12 @@ void dlgConnectionProfiles::slot_copyProfile()
         discord_optin_checkBox->setChecked(false);
 
         // restore the password, which won't be copied by the disk copy if stored in the credential manager
-        character_password_entry->setText(oldPassword);
+        // Temporarily block textChanged signal to avoid triggering save on programmatic setText
+        {
+            const QSignalBlocker blocker(character_password_entry);
+            character_password_entry->setText(oldPassword);
+        }
+
         if (mudlet::self()->storingPasswordsSecurely() && !oldPassword.trimmed().isEmpty()) {
             writeSecurePassword(profile_name, oldPassword);
         }
@@ -1873,26 +1891,26 @@ bool dlgConnectionProfiles::validateProfile()
             valid = false;
         }
 
-        if (url.indexOf(QRegularExpression(qsl("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$")), 0) != -1) {
-            if (port_ssl_tsl->isChecked()) {
-                notificationAreaIconLabelError->show();
-                notificationAreaMessageBox->setText(
-                        qsl("%1\n%2\n\n%3").arg(notificationAreaMessageBox->text(), tr("Please enter the URL or IP address of the Game server."), check.errorString()));
-                host_name_entry->setPalette(mErrorPalette);
-                validUrl = false;
-                valid = false;
-            }
-        }
-
-        if (url.indexOf(QRegularExpression(qsl("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$")), 0) != -1) {
-            if (port_ssl_tsl->isChecked()) {
-                notificationAreaIconLabelError->show();
-                notificationAreaMessageBox->setText(
-                        qsl("%1\n%2\n\n%3").arg(notificationAreaMessageBox->text(), tr("SSL connections require the URL of the Game server."), check.errorString()));
-                host_name_entry->setPalette(mErrorPalette);
-                validUrl = false;
-                valid = false;
-            }
+        // Need to reject raw IP addresses (of either version 4 or 6 type) as
+        // it is very unlikely that the Security Certificates include them as
+        // a Host Name.
+        if (port_ssl_tsl->isChecked() && (cTelnet::isRawIPv4Address(url) || cTelnet::isRawIPv6Address(url))) {
+            notificationAreaIconLabelError->show();
+            // As the only tags are not on the first line the default
+            // Qt::AutoFormat won't detect that rich-text is present in this text!
+            notificationAreaMessageBox->setTextFormat(Qt::RichText);
+            /*: Please use two line-feeds after the first line so the second
+             *  line can be italicised and spaced out - if appropriate for
+             *  the locale.
+             */
+            notificationAreaMessageBox->setText(qsl("%1%2\n\n%3").arg(!notificationAreaMessageBox->text().isEmpty() ? notificationAreaMessageBox->text().append(QChar::LineFeed) : QString(),
+                                                                      tr("Please enter the URL of the Game server.\n\n"
+                                                                         "<i>SSL/TLS connections require a URL, as an IP address is not a suitable "
+                                                                         "identifier for the certification of the Game Server.</i>"),
+                                                                      check.errorString()));
+            host_name_entry->setPalette(mErrorPalette);
+            validUrl = false;
+            valid = false;
         }
 
         if (valid) {
@@ -2024,7 +2042,6 @@ void dlgConnectionProfiles::setItemName(QListWidgetItem* pI, const QString& name
 
 void dlgConnectionProfiles::setupMudProfile(QListWidgetItem* pItem, const QString& mudServer, const QString& serverDescription, const QString& iconFileName)
 {
-    pItem = new QListWidgetItem();
     setItemName(pItem, mudServer);
 
     listWidget_profiles->addItem(pItem);
@@ -2233,6 +2250,11 @@ void dlgConnectionProfiles::slot_loadPasswordAsync()
 
     const QString profile_name = timer->property("profileName").toString();
 
+    // Prevent duplicate password loading operations for the same profile
+    if (mKeychainOperationInProgress) {
+        return;
+    }
+
     if (profile_name.isEmpty()) {
         return;
     }
@@ -2256,7 +2278,7 @@ void dlgConnectionProfiles::slot_loadPasswordAsync()
     if (mudlet::self()->storingPasswordsSecurely()) {
         mKeychainOperationInProgress = true;
         auto* credManager = new CredentialManager(this);
-        credManager->retrieveCredential(profile_name, "character",
+        credManager->retrievePassword(profile_name, "character",
             [this, credManager, profile_name](bool success, const QString& retrievedPassword, const QString& errorMessage) {
                 // Clear the operation flag first
                 mKeychainOperationInProgress = false;
@@ -2267,14 +2289,21 @@ void dlgConnectionProfiles::slot_loadPasswordAsync()
 
                     if (success) {
                         // Keychain operation succeeded - set the password (even if empty)
-                        character_password_entry->setText(retrievedPassword);
+                        // Temporarily block textChanged signal to avoid triggering save on programmatic setText
+                        {
+                            const QSignalBlocker blocker(character_password_entry);
+                            character_password_entry->setText(retrievedPassword);
+                        }
+
                         if (retrievedPassword.isEmpty()) {
                             qDebug() << "dlgConnectionProfiles: Keychain returned empty password for" << profile_name;
+                        } else {
+                            qDebug() << "dlgConnectionProfiles: Successfully loaded password from keychain for" << profile_name;
                         }
                     } else {
-                        // Fallback to QSettings only if keychain operation failed
+                        // Fallback to QSettings only if credential retrieval failed
                         loadPasswordFromSettings(profile_name);
-                        qDebug() << "dlgConnectionProfiles: Keychain failed for" << profile_name << ", using file fallback:" << errorMessage;
+                        qDebug() << "dlgConnectionProfiles: Credential retrieval unsuccessful for" << profile_name << "-" << errorMessage;
                     }
                 }
 
@@ -2324,15 +2353,20 @@ void dlgConnectionProfiles::loadPasswordFromSettings(const QString& profile_name
     const QString password = settings.value(qsl("password"), QString()).toString();
     const QString oldPassword = settings.value(qsl("login"), QString()).toString();
 
-    if (!password.isEmpty()) {
-        character_password_entry->setText(password);
-    } else if (!oldPassword.isEmpty()) {
-        // Migrate old password
-        character_password_entry->setText(oldPassword);
-        settings.setValue(qsl("password"), oldPassword);
-        settings.remove(qsl("login"));
-    } else {
-        character_password_entry->setText(QString());
+    // Temporarily block textChanged signal to avoid triggering save on programmatic setText
+    {
+        const QSignalBlocker blocker(character_password_entry);
+
+        if (!password.isEmpty()) {
+            character_password_entry->setText(password);
+        } else if (!oldPassword.isEmpty()) {
+            // Migrate old password
+            character_password_entry->setText(oldPassword);
+            settings.setValue(qsl("password"), oldPassword);
+            settings.remove(qsl("login"));
+        } else {
+            character_password_entry->setText(QString());
+        }
     }
 
     settings.endGroup();

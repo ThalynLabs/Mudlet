@@ -24,12 +24,10 @@
 
 #include "Tree.h"
 
-#include "pre_guard.h"
 #include <QDebug>
 #include <QPointer>
 #include <QStringList>
 #include <optional>
-#include "post_guard.h"
 
 class Host;
 class TEvent;
@@ -39,6 +37,8 @@ class TScript : public Tree<TScript>
 {
     friend class XMLexport;
     friend class XMLimport;
+    friend class DeleteItemCommand;
+    friend class EditorDeleteItemCommand;
 
 public:
     virtual ~TScript();
@@ -65,8 +65,8 @@ public:
     bool checkIfNew();
     void unmarkAsNew();
 
-    bool exportItem;
-    bool mModuleMasterFolder;
+    bool exportItem = true;
+    bool mModuleMasterFolder = false;
     bool mIsNew = true;
 
 private:
@@ -74,10 +74,10 @@ private:
     QString mName;
     QString mScript;
     QString mFuncName;
-    QPointer<Host> mpHost;
-    bool mNeedsToBeCompiled;
+    bool mNeedsToBeCompiled = true;
     QStringList mEventHandlerList;
-    bool mModuleMember;
+    QPointer<Host> mpHost;
+    bool mModuleMember = false;
     std::optional<QString> mLoadingError;
 };
 
