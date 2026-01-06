@@ -958,9 +958,9 @@ void T2DMap::initiateSpeedWalk(const int speedWalkStartRoomId, const int speedWa
     double realHeight;
     int borderWidth;
     if (pRoom->mBorderThickness > 0) {
-        borderWidth = pRoom->mBorderThickness / eSize * mRoomWidth * rSize;
+        borderWidth = qMax(1, static_cast<int>(pRoom->mBorderThickness / eSize * mRoomWidth * rSize));
     } else {
-        borderWidth = 1 / eSize * mRoomWidth * rSize;
+        borderWidth = qMax(1, static_cast<int>(1 / eSize * mRoomWidth * rSize));
     }
     const bool shouldDrawBorder = (mpHost->mMapperShowRoomBorders || pRoom->mBorderColor.isValid() || pRoom->mBorderThickness > 0) && !isGridMode;
     bool showThisRoomName = showRoomName;

@@ -4082,6 +4082,9 @@ int TLuaInterpreter::setRoomBorderColor(lua_State* L)
     }
 
     const Host& host = getHostFromLua(L);
+    if (!host.mpMap || !host.mpMap->mpRoomDB) {
+        return warnArgumentValue(L, __func__, "no map present or loaded");
+    }
     TRoom* pR = host.mpMap->mpRoomDB->getRoom(id);
     if (!pR) {
         return warnArgumentValue(L, __func__, csmInvalidRoomID.arg(id));
@@ -4099,6 +4102,9 @@ int TLuaInterpreter::getRoomBorderColor(lua_State* L)
 {
     const int id = getVerifiedInt(L, __func__, 1, "roomID");
     const Host& host = getHostFromLua(L);
+    if (!host.mpMap || !host.mpMap->mpRoomDB) {
+        return warnArgumentValue(L, __func__, "no map present or loaded");
+    }
     TRoom* pR = host.mpMap->mpRoomDB->getRoom(id);
     if (!pR) {
         return warnArgumentValue(L, __func__, csmInvalidRoomID.arg(id));
@@ -4122,6 +4128,9 @@ int TLuaInterpreter::clearRoomBorderColor(lua_State* L)
     const int id = getVerifiedInt(L, __func__, 1, "roomID");
 
     const Host& host = getHostFromLua(L);
+    if (!host.mpMap || !host.mpMap->mpRoomDB) {
+        return warnArgumentValue(L, __func__, "no map present or loaded");
+    }
     TRoom* pR = host.mpMap->mpRoomDB->getRoom(id);
     if (!pR) {
         return warnArgumentValue(L, __func__, csmInvalidRoomID.arg(id));
@@ -4139,11 +4148,14 @@ int TLuaInterpreter::setRoomBorderThickness(lua_State* L)
 {
     const int id = getVerifiedInt(L, __func__, 1, "roomID");
     const int thickness = getVerifiedInt(L, __func__, 2, "thickness");
-    if (thickness < 1) {
-        return warnArgumentValue(L, __func__, qsl("thickness value %1 must be at least 1").arg(thickness));
+    if (thickness < 1 || thickness > 10) {
+        return warnArgumentValue(L, __func__, qsl("thickness %1 is out of range (must be 1 to 10)").arg(thickness));
     }
 
     const Host& host = getHostFromLua(L);
+    if (!host.mpMap || !host.mpMap->mpRoomDB) {
+        return warnArgumentValue(L, __func__, "no map present or loaded");
+    }
     TRoom* pR = host.mpMap->mpRoomDB->getRoom(id);
     if (!pR) {
         return warnArgumentValue(L, __func__, csmInvalidRoomID.arg(id));
@@ -4161,6 +4173,9 @@ int TLuaInterpreter::getRoomBorderThickness(lua_State* L)
 {
     const int id = getVerifiedInt(L, __func__, 1, "roomID");
     const Host& host = getHostFromLua(L);
+    if (!host.mpMap || !host.mpMap->mpRoomDB) {
+        return warnArgumentValue(L, __func__, "no map present or loaded");
+    }
     TRoom* pR = host.mpMap->mpRoomDB->getRoom(id);
     if (!pR) {
         return warnArgumentValue(L, __func__, csmInvalidRoomID.arg(id));
@@ -4181,6 +4196,9 @@ int TLuaInterpreter::clearRoomBorderThickness(lua_State* L)
     const int id = getVerifiedInt(L, __func__, 1, "roomID");
 
     const Host& host = getHostFromLua(L);
+    if (!host.mpMap || !host.mpMap->mpRoomDB) {
+        return warnArgumentValue(L, __func__, "no map present or loaded");
+    }
     TRoom* pR = host.mpMap->mpRoomDB->getRoom(id);
     if (!pR) {
         return warnArgumentValue(L, __func__, csmInvalidRoomID.arg(id));

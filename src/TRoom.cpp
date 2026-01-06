@@ -783,6 +783,9 @@ void TRoom::restore(QDataStream& ifs, int roomID, int version)
     if (version >= 21) {
         ifs >> mBorderColor;
         ifs >> mBorderThickness;
+        if (mBorderThickness < 0 || mBorderThickness > 10) {
+            mBorderThickness = 0;
+        }
     } else {
         auto borderColorFallbackKey = QLatin1String("system.fallback_border_color");
         if (userData.contains(borderColorFallbackKey)) {
@@ -790,7 +793,10 @@ void TRoom::restore(QDataStream& ifs, int roomID, int version)
         }
         auto borderThicknessFallbackKey = QLatin1String("system.fallback_border_thickness");
         if (userData.contains(borderThicknessFallbackKey)) {
-            mBorderThickness = userData.take(borderThicknessFallbackKey).toInt();
+            int thickness = userData.take(borderThicknessFallbackKey).toInt();
+            if (thickness > 0 && thickness <= 10) {
+                mBorderThickness = thickness;
+            }
         }
     }
 
@@ -2336,7 +2342,10 @@ void TRoom::readJsonBorder(const QJsonObject& roomObj)
     }
 
     if (borderObj.contains(QLatin1String("thickness")) && borderObj.value(QLatin1String("thickness")).isDouble()) {
-        mBorderThickness = borderObj.value(QLatin1String("thickness")).toInt();
+        int thickness = borderObj.value(QLatin1String("thickness")).toInt();
+        if (thickness > 0 && thickness <= 10) {
+            mBorderThickness = thickness;
+        }
     }
 }
 

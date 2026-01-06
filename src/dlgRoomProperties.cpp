@@ -625,6 +625,7 @@ void dlgRoomProperties::slot_weightComboBoxItemChanged(const int index)
 
 void dlgRoomProperties::initBorderInstructions()
 {
+    //: Instruction text shown in room properties dialog for the border customization section
     QString instructions = tr("Set a custom border color and thickness for the selected room(s). "
                               "Leave at default to use the global map settings.");
     label_borderInstructions->setText(instructions);
@@ -637,6 +638,7 @@ void dlgRoomProperties::slot_openBorderColorSelector()
     auto* dialog = new QColorDialog(initialColor, this);
     dialog->setOption(QColorDialog::ShowAlphaChannel, true);
     dialog->setAttribute(Qt::WA_DeleteOnClose);
+    //: Title for the color picker dialog when selecting a room border color
     dialog->setWindowTitle(tr("Set border color"));
     connect(dialog, &QColorDialog::colorSelected, this, &dlgRoomProperties::slot_borderColorSelected);
     dialog->open();
