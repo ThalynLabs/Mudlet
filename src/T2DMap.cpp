@@ -1047,7 +1047,7 @@ void T2DMap::initiateSpeedWalk(const int speedWalkStartRoomId, const int speedWa
     roomPen.setJoinStyle(Qt::MiterJoin);
     painter.setBrush(roomColor);
 
-    // Determine if we're actually drawing a border and calculate the inset
+    // Determine if we're actually drawing a border
     bool isDrawingBorder = false;
     qreal borderInset = 0.0;
 
@@ -1070,10 +1070,10 @@ void T2DMap::initiateSpeedWalk(const int speedWalkStartRoomId, const int speedWa
         }
     }
 
-    // Inset the room drawing rectangle by half the border width so the border
-    // is drawn completely inside the room bounds, making it clickable and not
-    // adding to the room's visual size
-    const QRectF roomDrawRectangle = roomRectangle.adjusted(borderInset, borderInset, -borderInset, -borderInset);
+    // Expand the drawing rectangle outward by half the border width so that
+    // after the stroke is drawn (centered on the edge), the visible fill area
+    // matches the original room size and the border grows purely outward
+    const QRectF roomDrawRectangle = roomRectangle.adjusted(-borderInset, -borderInset, borderInset, borderInset);
 
     if (isRoomSelected) {
         QLinearGradient selectionBg(roomDrawRectangle.topLeft(), roomDrawRectangle.bottomRight());
@@ -1088,8 +1088,8 @@ void T2DMap::initiateSpeedWalk(const int speedWalkStartRoomId, const int speedWa
     painter.setPen(roomPen);
 
     if (mBubbleMode) {
-        // Calculate the room radius accounting for the border inset
-        const float roomRadius = (0.5 * rSize * mRoomWidth) - borderInset;
+        // Expand radius by half border width so visible fill stays at original size
+        const float roomRadius = (0.5 * rSize * mRoomWidth) + borderInset;
         const QPointF roomCenter = QPointF(rx, ry);
         if (!isRoomSelected) {
             // CHECK: The use of a gradient fill to a white center on round
