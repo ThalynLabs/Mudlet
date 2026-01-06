@@ -751,11 +751,6 @@ void TRoom::restore(QDataStream& ifs, int roomID, int version)
 
     if (version >= 21) {
         ifs >> mSymbolColor;
-        ifs >> mBorderColor;
-        ifs >> mBorderThickness;
-        if (mBorderThickness < 0 || mBorderThickness > 10) {
-            mBorderThickness = 0;
-        }
     }
 
     if (version >= 10) {
@@ -783,16 +778,16 @@ void TRoom::restore(QDataStream& ifs, int roomID, int version)
         if (userData.contains(symbolColorFallbackKey)) {
             mSymbolColor = QColor(userData.take(symbolColorFallbackKey));
         }
-        auto borderColorFallbackKey = QLatin1String("system.fallback_border_color");
-        if (userData.contains(borderColorFallbackKey)) {
-            mBorderColor = QColor(userData.take(borderColorFallbackKey));
-        }
-        auto borderThicknessFallbackKey = QLatin1String("system.fallback_border_thickness");
-        if (userData.contains(borderThicknessFallbackKey)) {
-            int thickness = userData.take(borderThicknessFallbackKey).toInt();
-            if (thickness > 0 && thickness <= 10) {
-                mBorderThickness = thickness;
-            }
+    }
+
+    // Border properties are stored in userData (not binary stream) to avoid map bloat
+    if (userData.contains(ROOM_UI_BORDERCOLOR)) {
+        mBorderColor = QColor(userData.value(ROOM_UI_BORDERCOLOR));
+    }
+    if (userData.contains(ROOM_UI_BORDERTHICKNESS)) {
+        int thickness = userData.value(ROOM_UI_BORDERTHICKNESS).toInt();
+        if (thickness > 0 && thickness <= 10) {
+            mBorderThickness = thickness;
         }
     }
 

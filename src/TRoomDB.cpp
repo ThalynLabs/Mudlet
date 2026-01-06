@@ -34,6 +34,8 @@ const QString ROOM_UI_SHOWNAME = qsl("room.ui_showName");
 const QString ROOM_UI_NAMEPOS = qsl("room.ui_nameOffset");
 const QString ROOM_UI_NAMEFONT = qsl("room.ui_nameFont");
 const QString ROOM_UI_NAMESIZE = qsl("room.ui_nameSize");
+const QString ROOM_UI_BORDERCOLOR = qsl("room.ui_borderColor");
+const QString ROOM_UI_BORDERTHICKNESS = qsl("room.ui_borderThickness");
 
 TRoomDB::TRoomDB(TMap* pMap)
 : mpMap(pMap)
