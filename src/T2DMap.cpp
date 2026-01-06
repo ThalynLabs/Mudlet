@@ -3839,6 +3839,7 @@ void T2DMap::slot_showPropertiesDialog()
     mpDlgRoomProperties->show();
     mpDlgRoomProperties->raise();
     connect(mpDlgRoomProperties, &dlgRoomProperties::signal_save_symbol, this, &T2DMap::slot_setRoomProperties);
+    connect(mpDlgRoomProperties, &dlgRoomProperties::signal_preview_border, this, &T2DMap::slot_previewBorderProperties);
     connect(mpDlgRoomProperties, &QDialog::finished, this, [=, this]() {
         mpDlgRoomProperties = nullptr;
     });
@@ -3915,6 +3916,13 @@ void T2DMap::slot_setRoomProperties(
     repaint();
     update();
     mpMap->setUnsaved(__func__);
+}
+
+void T2DMap::slot_previewBorderProperties(QSet<TRoom*> rooms)
+{
+    Q_UNUSED(rooms)
+    repaint();
+    update();
 }
 
 void T2DMap::slot_setImage()

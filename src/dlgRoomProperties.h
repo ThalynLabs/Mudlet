@@ -43,6 +43,7 @@ public:
         QHash<bool, int> lockStatus,
         QSet<TRoom*>& pRooms);
     void accept() override;
+    void reject() override;
 
 signals:
     void signal_save_symbol(
@@ -55,6 +56,7 @@ signals:
         bool changeBorderColor, QColor newBorderColor,
         bool changeBorderThickness, int newBorderThickness,
         QSet<TRoom*> mpRooms);
+    void signal_preview_border(QSet<TRoom*> rooms);
 
 private:
     QColor backgroundBasedColor(QColor);
@@ -69,6 +71,8 @@ private:
     QStringList getComboBoxWeightItems();
     void initLockInstructions();
     void initBorderInstructions();
+    void emitBorderPreview();
+    void restoreOriginalBorders();
 
     Host* mpHost = nullptr;
     QSet<TRoom*> mpRooms;
@@ -83,6 +87,8 @@ private:
     int mBorderThickness = 0;
     bool mBorderColorWasChanged = false;
     bool mBorderThicknessWasChanged = false;
+    QHash<TRoom*, QColor> mOriginalBorderColors;
+    QHash<TRoom*, int> mOriginalBorderThicknesses;
     QString multipleValuesPlaceholder = tr("(Multiple values...)");
 
 private slots:

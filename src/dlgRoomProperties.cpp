@@ -75,6 +75,13 @@ void dlgRoomProperties::init(
     // Configure symbols display
     mpSymbols = pSymbols;
     mpRooms = pRooms;
+
+    // Store original border values for live preview restoration on cancel
+    for (TRoom* room : mpRooms) {
+        mOriginalBorderColors[room] = room->mBorderColor;
+        mOriginalBorderThicknesses[room] = room->mBorderThickness;
+    }
+
     if (mpSymbols.isEmpty()) {
         // show simple text-entry box empty
         lineEdit_roomSymbol->setText(QString());
@@ -640,6 +647,7 @@ void dlgRoomProperties::slot_openBorderColorSelector()
     dialog->setAttribute(Qt::WA_DeleteOnClose);
     //: Title for the color picker dialog when selecting a room border color
     dialog->setWindowTitle(tr("Set border color"));
+    connect(dialog, &QColorDialog::currentColorChanged, this, &dlgRoomProperties::slot_borderColorSelected);
     connect(dialog, &QColorDialog::colorSelected, this, &dlgRoomProperties::slot_borderColorSelected);
     dialog->open();
 }
@@ -649,6 +657,7 @@ void dlgRoomProperties::slot_borderColorSelected(const QColor& color)
     selectedBorderColor = color;
     mBorderColorWasChanged = true;
     pushButton_setBorderColor->setStyleSheet(qsl("background-color: %1").arg(color.name()));
+    emitBorderPreview();
 }
 
 void dlgRoomProperties::slot_resetBorderColor()
@@ -656,10 +665,41 @@ void dlgRoomProperties::slot_resetBorderColor()
     selectedBorderColor = QColor();
     mBorderColorWasChanged = true;
     pushButton_setBorderColor->setStyleSheet(QString());
+    emitBorderPreview();
 }
 
 void dlgRoomProperties::slot_borderThicknessChanged(int value)
 {
     mBorderThickness = value;
     mBorderThicknessWasChanged = true;
+    emitBorderPreview();
+}
+
+void dlgRoomProperties::emitBorderPreview()
+{
+    // Apply current border settings directly to rooms for live preview
+    for (TRoom* room : mpRooms) {
+        if (mBorderColorWasChanged) {
+            room->mBorderColor = selectedBorderColor;
+        }
+        if (mBorderThicknessWasChanged) {
+            room->mBorderThickness = mBorderThickness;
+        }
+    }
+    emit signal_preview_border(mpRooms);
+}
+
+void dlgRoomProperties::restoreOriginalBorders()
+{
+    for (TRoom* room : mpRooms) {
+        room->mBorderColor = mOriginalBorderColors.value(room);
+        room->mBorderThickness = mOriginalBorderThicknesses.value(room);
+    }
+}
+
+void dlgRoomProperties::reject()
+{
+    restoreOriginalBorders();
+    emit signal_preview_border(mpRooms);
+    QDialog::reject();
 }
