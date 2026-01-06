@@ -4151,7 +4151,7 @@ int TLuaInterpreter::clearRoomBorderColor(lua_State* L)
              << "spec:" << pR->mBorderColor.spec()
              << "rgba:" << pR->mBorderColor.red() << pR->mBorderColor.green() << pR->mBorderColor.blue() << pR->mBorderColor.alpha();
 
-    pR->mBorderColor = {};
+    pR->mBorderColor = QColor();
 
     qDebug() << "clearRoomBorderColor: room" << id
              << "AFTER isValid:" << pR->mBorderColor.isValid()
