@@ -751,6 +751,11 @@ void TRoom::restore(QDataStream& ifs, int roomID, int version)
 
     if (version >= 21) {
         ifs >> mSymbolColor;
+        ifs >> mBorderColor;
+        ifs >> mBorderThickness;
+        if (mBorderThickness < 0 || mBorderThickness > 10) {
+            mBorderThickness = 0;
+        }
     }
 
     if (version >= 10) {
@@ -778,15 +783,6 @@ void TRoom::restore(QDataStream& ifs, int roomID, int version)
         if (userData.contains(symbolColorFallbackKey)) {
             mSymbolColor = QColor(userData.take(symbolColorFallbackKey));
         }
-    }
-
-    if (version >= 21) {
-        ifs >> mBorderColor;
-        ifs >> mBorderThickness;
-        if (mBorderThickness < 0 || mBorderThickness > 10) {
-            mBorderThickness = 0;
-        }
-    } else {
         auto borderColorFallbackKey = QLatin1String("system.fallback_border_color");
         if (userData.contains(borderColorFallbackKey)) {
             mBorderColor = QColor(userData.take(borderColorFallbackKey));

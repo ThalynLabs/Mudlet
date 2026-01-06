@@ -1720,6 +1720,7 @@ bool TMap::restore(QString location, bool downloadIfNotFound)
                         int labelId = -1;
                         ifs >> labelId;
                         TMapLabel label;
+                        ifs >> label.pos;
                         ifs >> label.size;
                         ifs >> label.text;
                         ifs >> label.fgColor;

@@ -85,7 +85,7 @@ public:
     int getAreaID(TArea* pA);
     void restoreAreaMap(QDataStream&);
     void restoreSingleArea(int, TArea*);
-    void restoreSingleRoom(int, TRoom*);
+    bool restoreSingleRoom(int, TRoom*);
     qreal get2DMapZoom(const int areaId) const;
     bool set2DMapZoom(const int areaId, const qreal zoom) const;
 
