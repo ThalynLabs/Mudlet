@@ -780,6 +780,20 @@ void TRoom::restore(QDataStream& ifs, int roomID, int version)
         }
     }
 
+    if (version >= 21) {
+        ifs >> mBorderColor;
+        ifs >> mBorderThickness;
+    } else {
+        auto borderColorFallbackKey = QLatin1String("system.fallback_border_color");
+        if (userData.contains(borderColorFallbackKey)) {
+            mBorderColor = QColor(userData.take(borderColorFallbackKey));
+        }
+        auto borderThicknessFallbackKey = QLatin1String("system.fallback_border_thickness");
+        if (userData.contains(borderThicknessFallbackKey)) {
+            mBorderThickness = userData.take(borderThicknessFallbackKey).toInt();
+        }
+    }
+
     if (version >= 11) {
         if (version >= 20) {
             // In version 20 we stopped storing a QString form for the line
@@ -1640,6 +1654,10 @@ void TRoom::writeJsonRoom(QJsonArray& obj) const
         writeJsonSymbol(roomObj);
     }
 
+    if (mBorderColor.isValid() || mBorderThickness > 0) {
+        writeJsonBorder(roomObj);
+    }
+
     roomObj.insert(QLatin1String("environment"), static_cast<double>(environment));
 
     const QString hashForRoomID{mpRoomDB->roomIDToHash.value(id)};
@@ -1687,6 +1705,10 @@ int TRoom::readJsonRoom(const QJsonArray& array, const int index, const int area
 
     if (roomObj.contains(QLatin1String("symbol")) && roomObj.value(QLatin1String("symbol")).isObject()) {
         readJsonSymbol(roomObj);
+    }
+
+    if (roomObj.contains(QLatin1String("border")) && roomObj.value(QLatin1String("border")).isObject()) {
+        readJsonBorder(roomObj);
     }
 
     if (roomObj.contains(QLatin1String("environment")) && roomObj.value(QLatin1String("environment")).isDouble()) {
@@ -2283,6 +2305,38 @@ void TRoom::readJsonSymbol(const QJsonObject& roomObj)
     const QColor color = TMap::readJsonColor(symbolObj);
     if (color.isValid()) {
         mSymbolColor = color;
+    }
+}
+
+void TRoom::writeJsonBorder(QJsonObject& roomObj) const
+{
+    QJsonObject borderObj;
+
+    if (mBorderColor.isValid()) {
+        TMap::writeJsonColor(borderObj, mBorderColor);
+    }
+
+    if (mBorderThickness > 0) {
+        borderObj.insert(QLatin1String("thickness"), static_cast<double>(mBorderThickness));
+    }
+
+    if (!borderObj.isEmpty()) {
+        const QJsonValue borderValue{borderObj};
+        roomObj.insert(QLatin1String("border"), borderValue);
+    }
+}
+
+void TRoom::readJsonBorder(const QJsonObject& roomObj)
+{
+    const QJsonObject borderObj{roomObj.value(QLatin1String("border")).toObject()};
+
+    const QColor color = TMap::readJsonColor(borderObj);
+    if (color.isValid()) {
+        mBorderColor = color;
+    }
+
+    if (borderObj.contains(QLatin1String("thickness")) && borderObj.value(QLatin1String("thickness")).isDouble()) {
+        mBorderThickness = borderObj.value(QLatin1String("thickness")).toInt();
     }
 }
 
