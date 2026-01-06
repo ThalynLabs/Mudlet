@@ -1296,18 +1296,6 @@ bool TMap::serialize(QDataStream& ofs, int saveVersion)
             }
         }
 
-        if (mSaveVersion >= 21) {
-            ofs << pR->mBorderColor;
-            ofs << pR->mBorderThickness;
-        } else {
-            if (pR->mBorderColor.isValid()) {
-                pR->userData.insert(QLatin1String("system.fallback_border_color"), pR->mBorderColor.name(QColor::HexArgb));
-            }
-            if (pR->mBorderThickness > 0) {
-                pR->userData.insert(QLatin1String("system.fallback_border_thickness"), QString::number(pR->mBorderThickness));
-            }
-        }
-
         ofs << pR->userData;
         if (mSaveVersion >= 20) {
             // Before version 20 stored the style as an Latin1 string, the color

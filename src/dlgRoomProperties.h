@@ -52,8 +52,6 @@ signals:
         bool changeSymbolColor, QColor newSymbolColor,
         bool changeWeight, int newWeight,
         bool changeLockStatus, std::optional<bool> newLockStatus,
-        bool changeBorderColor, QColor newBorderColor,
-        bool changeBorderThickness, int newBorderThickness,
         QSet<TRoom*> mpRooms);
 
 private:
@@ -68,7 +66,6 @@ private:
     void initWeightInstructions();
     QStringList getComboBoxWeightItems();
     void initLockInstructions();
-    void initBorderInstructions();
 
     Host* mpHost = nullptr;
     QSet<TRoom*> mpRooms;
@@ -79,10 +76,6 @@ private:
     int mRoomColorNumber = -1;
     bool mChangeRoomColor = false;
     bool mSymbolColorWasChanged = false;
-    QColor selectedBorderColor;
-    int mBorderThickness = 0;
-    bool mBorderColorWasChanged = false;
-    bool mBorderThicknessWasChanged = false;
     QString multipleValuesPlaceholder = tr("(Multiple values...)");
 
 private slots:
@@ -97,11 +90,6 @@ private slots:
 
     void slot_symbolComboBoxItemChanged(const int);
     void slot_weightComboBoxItemChanged(const int);
-
-    void slot_openBorderColorSelector();
-    void slot_borderColorSelected(const QColor&);
-    void slot_resetBorderColor();
-    void slot_borderThicknessChanged(int);
 };
 
 #endif // MUDLET_DLGROOMPROPERTIES_H

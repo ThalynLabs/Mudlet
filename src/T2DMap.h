@@ -311,8 +311,6 @@ public slots:
         bool changeSymbolColor, QColor newSymbolColor,
         bool changeWeight, int newWeight,
         bool changeLockStatus, std::optional<bool> newLockStatus,
-        bool changeBorderColor, QColor newBorderColor,
-        bool changeBorderThickness, int newBorderThickness,
         QSet<TRoom*> rooms);
     void slot_setImage();
     void slot_movePosition();

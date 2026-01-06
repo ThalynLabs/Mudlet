@@ -45,9 +45,6 @@ dlgRoomProperties::dlgRoomProperties(Host* pHost, QWidget* pParentWidget)
     connect(pushButton_setSymbolColor, &QAbstractButton::released, this, &dlgRoomProperties::slot_openSymbolColorSelector);
     connect(pushButton_resetSymbolColor, &QAbstractButton::released, this, &dlgRoomProperties::slot_resetSymbolColor);
     connect(pushButton_setRoomColor, &QAbstractButton::released, this, &dlgRoomProperties::slot_openRoomColorSelector);
-    connect(pushButton_setBorderColor, &QAbstractButton::released, this, &dlgRoomProperties::slot_openBorderColorSelector);
-    connect(pushButton_resetBorderColor, &QAbstractButton::released, this, &dlgRoomProperties::slot_resetBorderColor);
-    connect(spinBox_borderThickness, qOverload<int>(&QSpinBox::valueChanged), this, &dlgRoomProperties::slot_borderThicknessChanged);
 
     setAttribute(Qt::WA_DeleteOnClose);
 }
@@ -149,19 +146,6 @@ void dlgRoomProperties::init(
         checkBox_locked->setCheckState(Qt::Unchecked);
     }
     initLockInstructions();
-
-    // Configure border display
-    selectedBorderColor = pFirstRoom->mBorderColor;
-    mBorderThickness = pFirstRoom->mBorderThickness;
-
-    // Set button background to show current color
-    if (selectedBorderColor.isValid()) {
-        pushButton_setBorderColor->setStyleSheet(qsl("background-color: %1").arg(selectedBorderColor.name()));
-    }
-
-    // Set thickness spinbox
-    spinBox_borderThickness->setValue(mBorderThickness);
-    initBorderInstructions();
 
     // Configure dialog display
     adjustSize();
@@ -363,12 +347,6 @@ void dlgRoomProperties::accept()
         }
     }
 
-    // Find border settings to return back
-    bool changeBorderColor = mBorderColorWasChanged;
-    QColor newBorderColor = selectedBorderColor;
-    bool changeBorderThickness = mBorderThicknessWasChanged;
-    int newBorderThickness = mBorderThickness;
-
     emit signal_save_symbol(
         changeName, newName,
         mChangeRoomColor, mRoomColorNumber,
@@ -376,8 +354,6 @@ void dlgRoomProperties::accept()
         changeSymbolColor, newSymbolColor,
         changeWeight, newWeight,
         changeLockStatus, newLockStatus,
-        changeBorderColor, newBorderColor,
-        changeBorderThickness, newBorderThickness,
         mpRooms);
 }
 
@@ -621,43 +597,4 @@ void dlgRoomProperties::slot_weightComboBoxItemChanged(const int index)
     }
 
     comboBox_weight->lineEdit()->selectAll();
-}
-
-void dlgRoomProperties::initBorderInstructions()
-{
-    QString instructions = tr("Set a custom border color and thickness for the selected room(s). "
-                              "Leave at default to use the global map settings.");
-    label_borderInstructions->setText(instructions);
-    label_borderInstructions->setWordWrap(true);
-}
-
-void dlgRoomProperties::slot_openBorderColorSelector()
-{
-    QColor initialColor = selectedBorderColor.isValid() ? selectedBorderColor : mpHost->mRoomBorderColor;
-    auto* dialog = new QColorDialog(initialColor, this);
-    dialog->setOption(QColorDialog::ShowAlphaChannel, true);
-    dialog->setAttribute(Qt::WA_DeleteOnClose);
-    dialog->setWindowTitle(tr("Set border color"));
-    connect(dialog, &QColorDialog::colorSelected, this, &dlgRoomProperties::slot_borderColorSelected);
-    dialog->open();
-}
-
-void dlgRoomProperties::slot_borderColorSelected(const QColor& color)
-{
-    selectedBorderColor = color;
-    mBorderColorWasChanged = true;
-    pushButton_setBorderColor->setStyleSheet(qsl("background-color: %1").arg(color.name()));
-}
-
-void dlgRoomProperties::slot_resetBorderColor()
-{
-    selectedBorderColor = QColor();
-    mBorderColorWasChanged = true;
-    pushButton_setBorderColor->setStyleSheet(QString());
-}
-
-void dlgRoomProperties::slot_borderThicknessChanged(int value)
-{
-    mBorderThickness = value;
-    mBorderThicknessWasChanged = true;
 }

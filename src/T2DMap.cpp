@@ -956,13 +956,8 @@ void T2DMap::initiateSpeedWalk(const int speedWalkStartRoomId, const int speedWa
     QRectF roomRectangle;
     QRectF roomNameRectangle;
     double realHeight;
-    int borderWidth;
-    if (pRoom->mBorderThickness > 0) {
-        borderWidth = pRoom->mBorderThickness / eSize * mRoomWidth * rSize;
-    } else {
-        borderWidth = 1 / eSize * mRoomWidth * rSize;
-    }
-    const bool shouldDrawBorder = (mpHost->mMapperShowRoomBorders || pRoom->mBorderColor.isValid() || pRoom->mBorderThickness > 0) && !isGridMode;
+    const int borderWidth = 1 / eSize * mRoomWidth * rSize;
+    const bool shouldDrawBorder = mpHost->mMapperShowRoomBorders && !isGridMode;
     bool showThisRoomName = showRoomName;
     if (isGridMode) {
         realHeight = mRoomHeight;
@@ -1060,11 +1055,10 @@ void T2DMap::initiateSpeedWalk(const int speedWalkStartRoomId, const int speedWa
         roomPen.setWidth(borderWidth);
         borderInset = borderWidth / 2.0;
         isDrawingBorder = true;
-        QColor borderColor = pRoom->mBorderColor.isValid() ? pRoom->mBorderColor : mpHost->mRoomBorderColor;
         if (mRoomWidth >= 12) {
-            roomPen.setColor(borderColor);
+            roomPen.setColor(mpHost->mRoomBorderColor);
         } else {
-            auto fadingColor = QColor(borderColor);
+            auto fadingColor = QColor(mpHost->mRoomBorderColor);
             fadingColor.setAlpha(255 * (mRoomWidth / 12));
             roomPen.setColor(fadingColor);
         }
@@ -3852,8 +3846,6 @@ void T2DMap::slot_setRoomProperties(
     bool changeSymbolColor, QColor newSymbolColor,
     bool changeWeight, int newWeight,
     bool changeLockStatus, std::optional<bool> newLockStatus,
-    bool changeBorderColor, QColor newBorderColor,
-    bool changeBorderThickness, int newBorderThickness,
     QSet<TRoom*> rooms)
 {
     if (newName.isEmpty()) {
@@ -3901,12 +3893,6 @@ void T2DMap::slot_setRoomProperties(
         }
         if (changeLockStatus && newLockStatus.has_value()) {
             room->isLocked = newLockStatus.value();
-        }
-        if (changeBorderColor) {
-            room->mBorderColor = newBorderColor;
-        }
-        if (changeBorderThickness) {
-            room->mBorderThickness = newBorderThickness;
         }
     }
     if (changeWeight || changeLockStatus) {

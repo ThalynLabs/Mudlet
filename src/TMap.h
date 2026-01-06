@@ -267,7 +267,7 @@ public:
     bool mNewMove = true;
 
     // Replaced CURRENT_MAP_VERSION, default map version that new maps will get:
-    const int mDefaultVersion = 21;
+    const int mDefaultVersion = 20;
 
     // Normally the same as mDefaultVersion but can be higher for development
     // builds and is the maximum version the development build can parse, it is
@@ -288,11 +288,8 @@ public:
      *   directly into the TArea class serialization - for lower map versions it
      *   is placed into a "system.fallback_map2DZoom" value in the Area userdata.
      *   SlySven - 2023/03
-     * * Per-room border color (QColor) and border thickness (int) are now stored
-     *   directly - for lower map versions they are placed in "system.fallback_border_color"
-     *   and "system.fallback_border_thickness" room userdata. - 2026/01
      */
-    const int mMaxVersion = 21;
+    const int mMaxVersion = 20;
 
     // Ideally would be the same as mDefaultVersion but we have it lower,
     // particularly for release builds and is the minimum version allowed for
