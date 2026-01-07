@@ -32,6 +32,7 @@
 #include <QPlainTextEdit>
 #include <QPointer>
 #include <QSettings>
+#include <QShortcut>
 #include <QTimer>
 #include <QToolButton>
 
@@ -73,12 +74,22 @@ private slots:
     void slot_sendNextLine();
     void slot_stopSending();
     void slot_toggleSendControls(bool checked);
+    void slot_showFindBar();
+    void slot_hideFindBar();
+    void slot_findNext();
+    void slot_findPrevious();
+    void slot_findTextChanged(const QString& text);
+    void slot_currentTabChanged(int index);
 
 private:
     void timerEvent(QTimerEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
+    bool eventFilter(QObject* obj, QEvent* event) override;
     QPlainTextEdit* currentTextEdit() const;
     void setupAddTabButton();
+    void setupFindBar();
+    void highlightAllMatches();
+    void clearSearchHighlights();
     bool migrateOldNotesFile();
     void startSendingLines(const QStringList& lines);
 
@@ -93,6 +104,13 @@ private:
     QStringList mLinesToSend;
     QTimer* mSendTimer = nullptr;
     int mCurrentLineIndex = 0;
+
+    QWidget* mpFindBar = nullptr;
+    QLineEdit* mpFindLineEdit = nullptr;
+    QToolButton* mpFindPrevButton = nullptr;
+    QToolButton* mpFindNextButton = nullptr;
+    QToolButton* mpFindCloseButton = nullptr;
+    QShortcut* mpFindShortcut = nullptr;
 };
 
 #endif // MUDLET_DLGNOTEPAD_H

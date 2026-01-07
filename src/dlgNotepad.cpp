@@ -26,13 +26,16 @@
 #include "mudlet.h"
 
 #include <QDir>
+#include <QHBoxLayout>
 #include <QInputDialog>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QKeyEvent>
 #include <QMenu>
 #include <QSaveFile>
 #include <QStringConverter>
+#include <QTextDocument>
 
 using namespace std::chrono;
 
@@ -76,6 +79,9 @@ dlgNotepad::dlgNotepad(Host* pH)
         restoreSettings();
     }
 
+    setupFindBar();
+    connect(tabWidget, &QTabWidget::currentChanged, this, &dlgNotepad::slot_currentTabChanged);
+
     startTimer(2min);
 }
 
@@ -83,9 +89,60 @@ void dlgNotepad::setupAddTabButton()
 {
     mpAddTabButton = new QToolButton(this);
     mpAddTabButton->setText(qsl("+"));
-    mpAddTabButton->setToolTip(tr("Add new note tab"));
+    mpAddTabButton->setToolTip(tr("Add new note tab (Ctrl+T)"));
     connect(mpAddTabButton, &QToolButton::clicked, this, &dlgNotepad::slot_addTabClicked);
     tabWidget->setCornerWidget(mpAddTabButton, Qt::TopRightCorner);
+
+    auto* newTabShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_T), this);
+    connect(newTabShortcut, &QShortcut::activated, this, &dlgNotepad::slot_addTabClicked);
+}
+
+void dlgNotepad::setupFindBar()
+{
+    mpFindBar = new QWidget(this);
+    auto* layout = new QHBoxLayout(mpFindBar);
+    layout->setContentsMargins(4, 2, 4, 2);
+    layout->setSpacing(2);
+
+    mpFindLineEdit = new QLineEdit(mpFindBar);
+    //: Placeholder text for the search field in notepad
+    mpFindLineEdit->setPlaceholderText(tr("Find"));
+    mpFindLineEdit->setClearButtonEnabled(true);
+    mpFindLineEdit->installEventFilter(this);
+
+    mpFindPrevButton = new QToolButton(mpFindBar);
+    mpFindPrevButton->setIcon(QIcon(qsl(":/icons/export.png")));
+    mpFindPrevButton->setToolTip(tr("Find previous"));
+    mpFindPrevButton->setAutoRaise(true);
+    mpFindPrevButton->setMaximumSize(24, 24);
+
+    mpFindNextButton = new QToolButton(mpFindBar);
+    mpFindNextButton->setIcon(QIcon(qsl(":/icons/import.png")));
+    mpFindNextButton->setToolTip(tr("Find next"));
+    mpFindNextButton->setAutoRaise(true);
+    mpFindNextButton->setMaximumSize(24, 24);
+
+    mpFindCloseButton = new QToolButton(mpFindBar);
+    mpFindCloseButton->setIcon(QIcon(qsl(":/icons/dialog-close.png")));
+    mpFindCloseButton->setToolTip(tr("Close find bar"));
+    mpFindCloseButton->setAutoRaise(true);
+    mpFindCloseButton->setMaximumSize(24, 24);
+
+    layout->addWidget(mpFindLineEdit, 1);
+    layout->addWidget(mpFindPrevButton);
+    layout->addWidget(mpFindNextButton);
+    layout->addWidget(mpFindCloseButton);
+
+    verticalLayout->addWidget(mpFindBar);
+    mpFindBar->hide();
+
+    connect(mpFindLineEdit, &QLineEdit::textChanged, this, &dlgNotepad::slot_findTextChanged);
+    connect(mpFindPrevButton, &QToolButton::clicked, this, &dlgNotepad::slot_findPrevious);
+    connect(mpFindNextButton, &QToolButton::clicked, this, &dlgNotepad::slot_findNext);
+    connect(mpFindCloseButton, &QToolButton::clicked, this, &dlgNotepad::slot_hideFindBar);
+
+    mpFindShortcut = new QShortcut(QKeySequence::Find, this);
+    connect(mpFindShortcut, &QShortcut::activated, this, &dlgNotepad::slot_showFindBar);
 }
 
 void dlgNotepad::slot_addTabClicked()
@@ -520,4 +577,143 @@ void dlgNotepad::closeEvent(QCloseEvent *event)
 {
     saveSettings();
     QMainWindow::closeEvent(event);
+}
+
+bool dlgNotepad::eventFilter(QObject* obj, QEvent* event)
+{
+    if (obj == mpFindLineEdit && event->type() == QEvent::KeyPress) {
+        auto* keyEvent = static_cast<QKeyEvent*>(event);
+        if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter) {
+            if (keyEvent->modifiers() & Qt::ShiftModifier) {
+                slot_findPrevious();
+            } else {
+                slot_findNext();
+            }
+            return true;
+        }
+        if (keyEvent->key() == Qt::Key_Escape) {
+            slot_hideFindBar();
+            return true;
+        }
+    }
+    return QMainWindow::eventFilter(obj, event);
+}
+
+void dlgNotepad::slot_showFindBar()
+{
+    mpFindBar->show();
+    mpFindLineEdit->setFocus();
+    mpFindLineEdit->selectAll();
+    highlightAllMatches();
+}
+
+void dlgNotepad::slot_hideFindBar()
+{
+    mpFindBar->hide();
+    clearSearchHighlights();
+    if (auto* textEdit = currentTextEdit()) {
+        textEdit->setFocus();
+    }
+}
+
+void dlgNotepad::slot_findNext()
+{
+    auto* textEdit = currentTextEdit();
+    if (!textEdit || mpFindLineEdit->text().isEmpty()) {
+        return;
+    }
+
+    if (!textEdit->find(mpFindLineEdit->text())) {
+        textEdit->moveCursor(QTextCursor::Start);
+        textEdit->find(mpFindLineEdit->text());
+    }
+    highlightAllMatches();
+}
+
+void dlgNotepad::slot_findPrevious()
+{
+    auto* textEdit = currentTextEdit();
+    if (!textEdit || mpFindLineEdit->text().isEmpty()) {
+        return;
+    }
+
+    if (!textEdit->find(mpFindLineEdit->text(), QTextDocument::FindBackward)) {
+        textEdit->moveCursor(QTextCursor::End);
+        textEdit->find(mpFindLineEdit->text(), QTextDocument::FindBackward);
+    }
+    highlightAllMatches();
+}
+
+void dlgNotepad::slot_findTextChanged(const QString& text)
+{
+    Q_UNUSED(text)
+    highlightAllMatches();
+
+    auto* textEdit = currentTextEdit();
+    if (textEdit && !mpFindLineEdit->text().isEmpty()) {
+        QTextCursor cursor = textEdit->textCursor();
+        cursor.movePosition(QTextCursor::Start);
+        textEdit->setTextCursor(cursor);
+        textEdit->find(mpFindLineEdit->text());
+    }
+}
+
+void dlgNotepad::slot_currentTabChanged(int index)
+{
+    Q_UNUSED(index)
+    if (mpFindBar->isVisible()) {
+        highlightAllMatches();
+    }
+}
+
+void dlgNotepad::highlightAllMatches()
+{
+    auto* textEdit = currentTextEdit();
+    if (!textEdit) {
+        return;
+    }
+
+    QList<QTextEdit::ExtraSelection> extraSelections;
+    const QString searchText = mpFindLineEdit->text();
+
+    if (searchText.isEmpty()) {
+        textEdit->setExtraSelections(extraSelections);
+        return;
+    }
+
+    QTextDocument* doc = textEdit->document();
+    QTextCursor cursor(doc);
+    QTextCursor currentCursor = textEdit->textCursor();
+
+    QColor highlightColor(Qt::yellow);
+    highlightColor.setAlpha(100);
+    QColor currentMatchColor(255, 165, 0);
+    currentMatchColor.setAlpha(150);
+
+    while (!cursor.isNull() && !cursor.atEnd()) {
+        cursor = doc->find(searchText, cursor);
+        if (!cursor.isNull()) {
+            QTextEdit::ExtraSelection selection;
+            selection.cursor = cursor;
+
+            if (cursor.selectionStart() == currentCursor.selectionStart() &&
+                cursor.selectionEnd() == currentCursor.selectionEnd()) {
+                selection.format.setBackground(currentMatchColor);
+            } else {
+                selection.format.setBackground(highlightColor);
+            }
+
+            extraSelections.append(selection);
+        }
+    }
+
+    textEdit->setExtraSelections(extraSelections);
+}
+
+void dlgNotepad::clearSearchHighlights()
+{
+    auto* textEdit = currentTextEdit();
+    if (textEdit) {
+        textEdit->setExtraSelections(QList<QTextEdit::ExtraSelection>());
+    }
 }
