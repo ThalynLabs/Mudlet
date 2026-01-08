@@ -1660,6 +1660,45 @@ void T2DMap::paintEvent(QPaintEvent* e)
         yspan = xyzoom * (widgetHeight / widgetWidth);
     }
 
+    // Constrain map center to keep entire area visible when it fits in viewport
+    {
+        const int zLevel = mMapCenterZ;
+
+        // Get area bounds for current Z level (use overall bounds as fallback)
+        const qreal areaMinX = pDrawnArea->xminForZ.value(zLevel, pDrawnArea->min_x);
+        const qreal areaMaxX = pDrawnArea->xmaxForZ.value(zLevel, pDrawnArea->max_x);
+        // Y is inverted in map coordinates
+        const qreal areaMinY = -pDrawnArea->ymaxForZ.value(zLevel, pDrawnArea->max_y);
+        const qreal areaMaxY = -pDrawnArea->yminForZ.value(zLevel, pDrawnArea->min_y);
+
+        const qreal areaWidth = areaMaxX - areaMinX;
+        const qreal areaHeight = areaMaxY - areaMinY;
+
+        // Only constrain if area fits in viewport
+        if (areaWidth <= xspan) {
+            const qreal areaCenterX = (areaMinX + areaMaxX) / 2.0;
+            const qreal minCenterX = areaMinX + xspan / 2.0;
+            const qreal maxCenterX = areaMaxX - xspan / 2.0;
+            if (minCenterX >= maxCenterX) {
+                // Area fits entirely - center on area center
+                mMapCenterX = areaCenterX;
+            } else {
+                mMapCenterX = qBound(minCenterX, mMapCenterX, maxCenterX);
+            }
+        }
+
+        if (areaHeight <= yspan) {
+            const qreal areaCenterY = (areaMinY + areaMaxY) / 2.0;
+            const qreal minCenterY = areaMinY + yspan / 2.0;
+            const qreal maxCenterY = areaMaxY - yspan / 2.0;
+            if (minCenterY >= maxCenterY) {
+                mMapCenterY = areaCenterY;
+            } else {
+                mMapCenterY = qBound(minCenterY, mMapCenterY, maxCenterY);
+            }
+        }
+    }
+
     mRoomWidth = widgetWidth / xspan;
     mRoomHeight = widgetHeight / yspan;
     mRX = qRound(mRoomWidth * ((xspan / 2.0) - mMapCenterX));
