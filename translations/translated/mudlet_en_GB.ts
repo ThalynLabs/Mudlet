@@ -163,7 +163,7 @@ please wait...</translation>
       <location filename="../src/Host.cpp" line="2048"/>
       <location filename="../src/Host.cpp" line="2075"/>
       <source>[ WARN ]  - Failed to load module &quot;%1&quot;: %2</source>
-      <translation type="unfinished"/>
+      <translation>[ WARN ]  - Failed to load module &quot;%1&quot;: %2</translation>
     </message>
     <message>
       <location filename="../src/Host.cpp" line="2829"/>
@@ -8624,12 +8624,12 @@ Package manager: network error, package couldn&apos;t be downloaded</extracommen
     <message>
       <location filename="../src/dlgProfilePreferences.cpp" line="1225"/>
       <source>unknown error</source>
-      <translation type="unfinished"/>
+      <translation>unknown error</translation>
     </message>
     <message>
       <location filename="../src/dlgProfilePreferences.cpp" line="1227"/>
       <source>This profile could not be loaded correctly (%1). Settings cannot be saved. Close the profile and try loading an older version from &apos;Connect - Options - Profile history&apos;.</source>
-      <translation type="unfinished"/>
+      <translation>This profile could not be loaded correctly (%1). Settings cannot be saved. Close the profile and try loading an older version from &apos;Connect - Options - Profile history&apos;.</translation>
     </message>
     <message>
       <location filename="../src/dlgProfilePreferences.cpp" line="1885"/>
@@ -14164,7 +14164,7 @@ There is NO WARRANTY, to the extent permitted by law.</translation>
     <message>
       <location filename="../src/mudlet.cpp" line="5463"/>
       <source>Could not open profile file: %1</source>
-      <translation type="unfinished"/>
+      <translation>Could not open profile file: %1</translation>
     </message>
     <message>
       <location filename="../src/mudlet.cpp" line="5472"/>
