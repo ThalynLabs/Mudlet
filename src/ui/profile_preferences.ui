@@ -270,6 +270,12 @@
             <property name="toolTip">
              <string>&lt;p&gt;Show a toolbar notification if Mudlet is minimized and new data arrives.&lt;/p&gt;</string>
             </property>
+                        <property name="accessibleName">
+                         <string>Notify on new data</string>
+                        </property>
+                        <property name="accessibleDescription">
+                         <string>Show toolbar notification when Mudlet is minimized and new data arrives</string>
+                        </property>
             <property name="text">
              <string>Notify on new data</string>
             </property>
@@ -277,6 +283,12 @@
           </item>
           <item row="2" column="1">
            <widget class="QCheckBox" name="acceptServerGUI">
+                        <property name="accessibleName">
+                         <string>Allow server to install script packages</string>
+                        </property>
+                        <property name="accessibleDescription">
+                         <string>When checked, allows game server to install script packages to your profile</string>
+                        </property>
             <property name="text">
              <string>Allow server to install script packages</string>
             </property>
@@ -284,6 +296,12 @@
           </item>
           <item row="3" column="0">
            <widget class="QCheckBox" name="mFORCE_SAVE_ON_EXIT">
+                        <property name="accessibleName">
+                         <string>Auto save on exit</string>
+                        </property>
+                        <property name="accessibleDescription">
+                         <string>Automatically save profile data when exiting Mudlet</string>
+                        </property>
             <property name="text">
              <string>Auto save on exit</string>
             </property>
@@ -294,6 +312,12 @@
             <property name="toolTip">
              <string>&lt;p&gt;This also needs GMCP to be enabled in the next group below.&lt;/p&gt;</string>
             </property>
+                        <property name="accessibleName">
+                         <string>Allow server to download and play media</string>
+                        </property>
+                        <property name="accessibleDescription">
+                         <string>When checked, allows game server to download and play media files. Requires GMCP protocol.</string>
+                        </property>
             <property name="text">
              <string>Allow server to download and play media</string>
             </property>
@@ -406,6 +430,12 @@
             <property name="toolTip">
              <string>&lt;p&gt;When checked will cause the date-stamp named log file to be HTML (file extension '.html') which can convey color, font and other formatting information rather than a plain text (file extension '.txt') format.  If changed while logging is already in progress it is necessary to stop and restart logging for this setting to take effect in a new log file.&lt;/p&gt;</string>
             </property>
+                        <property name="accessibleName">
+                         <string>Save log files in HTML format</string>
+                        </property>
+                        <property name="accessibleDescription">
+                         <string>When checked, saves logs as HTML files with color and formatting instead of plain text</string>
+                        </property>
             <property name="text">
              <string>Save log files in HTML format instead of plain text</string>
             </property>
@@ -413,6 +443,12 @@
           </item>
           <item row="0" column="2" colspan="2">
            <widget class="QCheckBox" name="mIsLoggingTimestamps">
+                        <property name="accessibleName">
+                         <string>Add timestamps to log lines</string>
+                        </property>
+                        <property name="accessibleDescription">
+                         <string>When checked, adds timestamp at beginning of each log line</string>
+                        </property>
             <property name="text">
              <string>Add timestamps at the beginning of log lines</string>
             </property>
@@ -430,6 +466,12 @@
           </item>
           <item row="1" column="1">
            <widget class="QLineEdit" name="lineEdit_logFileFolder">
+                        <property name="accessibleName">
+                         <string>Log file folder path</string>
+                        </property>
+                        <property name="accessibleDescription">
+                         <string>The directory path where log files will be saved</string>
+                        </property>
             <property name="readOnly">
              <bool>true</bool>
             </property>
@@ -437,6 +479,12 @@
           </item>
           <item row="1" column="2">
            <widget class="QPushButton" name="pushButton_whereToLog">
+                        <property name="accessibleName">
+                         <string>Browse for log folder</string>
+                        </property>
+                        <property name="accessibleDescription">
+                         <string>Click to select a directory where log files will be saved</string>
+                        </property>
             <property name="text">
              <string>Browse...</string>
             </property>
@@ -444,6 +492,12 @@
           </item>
           <item row="1" column="3">
            <widget class="QPushButton" name="pushButton_resetLogDir">
+                        <property name="accessibleName">
+                         <string>Reset log directory</string>
+                        </property>
+                        <property name="accessibleDescription">
+                         <string>Reset the log directory to the default profile log folder</string>
+                        </property>
             <property name="text">
              <string>Reset</string>
             </property>
@@ -461,6 +515,12 @@
           </item>
           <item row="2" column="1" colspan="3">
            <widget class="QComboBox" name="comboBox_logFileNameFormat"/>
+          <property name="accessibleName">
+           <string>Log file name format</string>
+          </property>
+          <property name="accessibleDescription">
+           <string>Choose the format for log file names: timestamped or custom</string>
+          </property>
           </item>
           <item row="3" column="0" alignment="Qt::AlignRight">
            <widget class="QLabel" name="label_logFileName">
@@ -474,6 +534,12 @@
           </item>
           <item row="3" column="1" colspan="2">
            <widget class="QLineEdit" name="lineEdit_logFileName">
+                        <property name="accessibleName">
+                         <string>Custom log file name</string>
+                        </property>
+                        <property name="accessibleDescription">
+                         <string>Enter a custom name for your log files</string>
+                        </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
@@ -535,6 +601,12 @@
             <property name="toolTip">
              <string>use strict UNIX line endings on commands for old UNIX servers that can't handle windows line endings correctly</string>
             </property>
+                        <property name="accessibleName">
+                         <string>Strict UNIX line endings</string>
+                        </property>
+                        <property name="accessibleDescription">
+                         <string>Use strict UNIX line endings on commands for old UNIX servers</string>
+                        </property>
             <property name="text">
              <string>Strict UNIX line endings</string>
             </property>
@@ -542,6 +614,12 @@
           </item>
           <item row="0" column="1">
            <widget class="QCheckBox" name="auto_clear_input_line_checkbox">
+                        <property name="accessibleName">
+                         <string>Auto clear input line</string>
+                        </property>
+                        <property name="accessibleDescription">
+                         <string>Automatically clear the input line after sending text</string>
+                        </property>
             <property name="text">
              <string>Auto clear the input line after you sent text</string>
             </property>
@@ -552,6 +630,12 @@
             <property name="toolTip">
              <string>&lt;p&gt;Echo the text you send in the display box.&lt;/p&gt;&lt;p&gt;&lt;i&gt;This can be disabled by the game server if it negotiates to use the telnet ECHO option&lt;/i&gt;&lt;/p&gt;</string>
             </property>
+                        <property name="accessibleName">
+                         <string>Show sent text</string>
+                        </property>
+                        <property name="accessibleDescription">
+                         <string>Echo the text you send in the display window</string>
+                        </property>
             <property name="text">
              <string>Show the text you sent</string>
             </property>
@@ -562,6 +646,12 @@
             <property name="toolTip">
              <string>Highlights your input line text when scrolling through your history for easy cancellation</string>
             </property>
+                        <property name="accessibleName">
+                         <string>Highlight history</string>
+                        </property>
+                        <property name="accessibleDescription">
+                         <string>Highlights input line text when scrolling through history for easy cancellation</string>
+                        </property>
             <property name="text">
              <string>Highlight history</string>
             </property>
