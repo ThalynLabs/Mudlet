@@ -1686,7 +1686,8 @@ void T2DMap::paintEvent(QPaintEvent* e)
     // it at the end of the paintEvent:
     TEvent areaViewedChangedEvent{};
 
-    if ((!mPick && !mShiftMode) || mpMap->mNewMove) {
+    // Secondary views don't follow the player - they maintain their own independent view
+    if (!mIsSecondaryView && ((!mPick && !mShiftMode) || mpMap->mNewMove)) {
         mShiftMode = true;
         // that's of interest only here because the map editor is here ->
         // map might not be updated, thus I force a map update on centerview()
