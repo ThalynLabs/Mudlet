@@ -138,14 +138,24 @@ dlgProfilePreferences::dlgProfilePreferences(QWidget* pParentWidget, Host* pHost
     }
 
     // Set the properties of the log options
-    lineEdit_logFileFolder->setToolTip(utils::richText(tr("Location which will be used to store log files - matching logs will be appended to.")));
-    pushButton_whereToLog->setToolTip(utils::richText(tr("Select a directory where logs will be saved.")));
-    pushButton_resetLogDir->setToolTip(utils::richText(tr("Reset the directory so that logs are saved to the profile's <i>log</i> directory.")));
+    lineEdit_logFileFolder->setToolTip(tr("Location which will be used to store log files - matching logs will be appended to."));
+    lineEdit_logFileFolder->setAccessibleName(tr("Log file folder"));
+    lineEdit_logFileFolder->setAccessibleDescription(tr("Location which will be used to store log files - matching logs will be appended to."));
+    pushButton_whereToLog->setToolTip(tr("Select a directory where logs will be saved."));
+    pushButton_whereToLog->setAccessibleName(tr("Browse for log folder"));
+    pushButton_whereToLog->setAccessibleDescription(tr("Select a directory where logs will be saved."));
+    pushButton_resetLogDir->setToolTip(tr("Reset the directory so that logs are saved to the profile's log directory."));
+    pushButton_resetLogDir->setAccessibleName(tr("Reset log directory"));
+    pushButton_resetLogDir->setAccessibleDescription(tr("Reset the directory so that logs are saved to the profile's log directory."));
     comboBox_logFileNameFormat->setToolTip(tr("<p>This option sets the format of the log name.</p>"
                                               "<p>If <i>Named file</i> is selected, you can set a custom file name. (Logs are appended "
                                               "if a log file of the same name already exists.)</p>"));
-    lineEdit_logFileName->setToolTip(utils::richText(tr("Set a custom name for your log. (New logs are appended if a log file of the same name "
-                                                        "already exists).")));
+    comboBox_logFileNameFormat->setAccessibleName(tr("Log file name format"));
+    comboBox_logFileNameFormat->setAccessibleDescription(tr("This option sets the format of the log name. If Named file is selected, you can set a custom file name."));
+    lineEdit_logFileName->setToolTip(tr("Set a custom name for your log. (New logs are appended if a log file of the same name "
+                                        "already exists)."));
+    lineEdit_logFileName->setAccessibleName(tr("Log file name"));
+    lineEdit_logFileName->setAccessibleDescription(tr("Set a custom name for your log. New logs are appended if a log file of the same name already exists."));
     //: Must be a valid default filename for a log-file and is used if the user does not enter any other value (Ensure all instances have the same translation {one of two copies}).
     lineEdit_logFileName->setPlaceholderText(tr("logfile"));
     label_logFileNameExtension->setVisible(false);
@@ -173,7 +183,9 @@ dlgProfilePreferences::dlgProfilePreferences(QWidget* pParentWidget, Host* pHost
         // disabled in dev builds
         checkbox_noAutomaticUpdates->setChecked(true);
         checkbox_noAutomaticUpdates->setDisabled(true);
-        checkbox_noAutomaticUpdates->setToolTip(utils::richText(tr("Automatic updates are disabled in development builds to prevent an update from overwriting your Mudlet.")));
+        checkbox_noAutomaticUpdates->setToolTip(tr("Automatic updates are disabled in development builds to prevent an update from overwriting your Mudlet."));
+        checkbox_noAutomaticUpdates->setAccessibleName(tr("Disable automatic updates"));
+        checkbox_noAutomaticUpdates->setAccessibleDescription(tr("Automatic updates are disabled in development builds to prevent an update from overwriting your Mudlet."));
     } else {
         checkbox_noAutomaticUpdates->setChecked(!pMudlet->pUpdater->updateAutomatically());
         // This is the extra connect(...) relating to settings' changes saved by
@@ -200,19 +212,25 @@ dlgProfilePreferences::dlgProfilePreferences(QWidget* pParentWidget, Host* pHost
                                                           "run <b>correctly</b> when the timer's interval is less than this setting.</p>"
                                                           "<p><u>Any timer script that has errors will still have its error messages reported whatever the setting.</u></p>"));
 
-    pushButton_showGlyphUsage->setToolTip(utils::richText(tr("This will bring up a display showing all the symbols used in the current "
-                                                             "map and whether they can be drawn using just the specified font, any other "
-                                                             "font, or not at all.  It also shows the sequence of Unicode <i>code-points</i> "
-                                                             "that make up that symbol, so that they can be identified even if they "
-                                                             "cannot be displayed; also, up to the first thirty two rooms that are using "
-                                                             "that symbol are listed, which may help to identify any unexpected or odd cases.")));
-    fontComboBox_mapSymbols->setToolTip(utils::richText(tr("Select the only or the primary font used (depending on <i>Only use symbols "
-                                                               "(glyphs) from chosen font</i> setting) to produce the 2D mapper room symbols.")));
-    checkBox_isOnlyMapSymbolFontToBeUsed->setToolTip(utils::richText(tr("Using a single font is likely to produce a more consistent style but may "
-                                                                        "cause the <i>font replacement character</i> '<b>�</b>' to show if the font "
-                                                                        "does not have a needed glyph (a font's individual character/symbol) to represent "
-                                                                        "the grapheme (what is to be represented).  Clearing this checkbox will allow "
-                                                                        "the best alternative glyph from another font to be used to draw that grapheme.")));
+    pushButton_showGlyphUsage->setToolTip(tr("This will bring up a display showing all the symbols used in the current "
+                                             "map and whether they can be drawn using just the specified font, any other "
+                                             "font, or not at all.  It also shows the sequence of Unicode code-points "
+                                             "that make up that symbol, so that they can be identified even if they "
+                                             "cannot be displayed; also, up to the first thirty two rooms that are using "
+                                             "that symbol are listed, which may help to identify any unexpected or odd cases."));
+    pushButton_showGlyphUsage->setAccessibleName(tr("Show glyph usage"));
+    pushButton_showGlyphUsage->setAccessibleDescription(tr("Display all symbols used in the current map and which fonts can draw them, with examples of where they are used."));
+    fontComboBox_mapSymbols->setToolTip(tr("Select the only or the primary font used (depending on 'Only use symbols "
+                                               "(glyphs) from chosen font' setting) to produce the 2D mapper room symbols."));
+    fontComboBox_mapSymbols->setAccessibleName(tr("Map symbol font"));
+    fontComboBox_mapSymbols->setAccessibleDescription(tr("Select the primary font used to produce the 2D mapper room symbols."));
+    checkBox_isOnlyMapSymbolFontToBeUsed->setToolTip(tr("Using a single font is likely to produce a more consistent style but may "
+                                                         "cause the font replacement character '�' to show if the font "
+                                                         "does not have a needed glyph (a font's individual character/symbol) to represent "
+                                                         "the grapheme (what is to be represented).  Clearing this checkbox will allow "
+                                                         "the best alternative glyph from another font to be used to draw that grapheme."));
+    checkBox_isOnlyMapSymbolFontToBeUsed->setAccessibleName(tr("Only use symbols from chosen font"));
+    checkBox_isOnlyMapSymbolFontToBeUsed->setAccessibleDescription(tr("Using a single font produces consistent style but may show replacement character if the font lacks a symbol. Uncheck to allow alternatives from other fonts."));
     checkBox_runAllKeyBindings->setToolTip(tr("<p>If <b>not</b> checked Mudlet will only react to the first matching keybinding "
                                               "(combination of key and modifiers) even if more than one of them is set to be "
                                               "active. This means that a temporary keybinding (not visible in the Editor) "
@@ -718,7 +736,7 @@ void dlgProfilePreferences::initWithHost(Host* pHost)
             key.replace(QLatin1String("-"), QLatin1String("_"));
             if (mudlet::self()->mDictionaryLanguageCodeMap.contains(key)) {
                 item->setText(mudlet::self()->mDictionaryLanguageCodeMap.value(key));
-                item->setToolTip(utils::richText(tr("From the dictionary file <tt>%1.dic</tt> (and its companion affix <tt>.aff</tt> file).").arg(dir.absoluteFilePath(entries.at(i)))));
+                item->setToolTip(tr("From the dictionary file <tt>%1.dic</tt> (and its companion affix <tt>.aff</tt> file).").arg(dir.absoluteFilePath(entries.at(i))));
             } else {
                 item->setText(tr("%1 - not recognised").arg(entries.at(i)));
                 item->setToolTip(tr("<p>Mudlet does not recognise the code \"%1\", please report it to the Mudlet developers so we can describe it properly in future Mudlet versions!</p>"
@@ -746,7 +764,7 @@ void dlgProfilePreferences::initWithHost(Host* pHost)
 
     } else {
         dictList->setEnabled(false);
-        dictList->setToolTip(utils::richText(tr("No Hunspell dictionary files found, spell-checking will not be available.")));
+        dictList->setToolTip(tr("No Hunspell dictionary files found, spell-checking will not be available."));
     }
     dictList->blockSignals(false);
 
@@ -3720,12 +3738,12 @@ void dlgProfilePreferences::generateMapGlyphDisplay()
         }
         auto * pSymbolInFont = new QTableWidgetItem();
         pSymbolInFont->setTextAlignment(Qt::AlignCenter);
-        pSymbolInFont->setToolTip(utils::richText(tr("The room symbol will appear like this if only symbols (glyphs) from the specific font are used.")));
+        pSymbolInFont->setToolTip(tr("The room symbol will appear like this if only symbols (glyphs) from the specific font are used."));
         pSymbolInFont->setFont(selectedFont);
 
         auto * pSymbolAnyFont = new QTableWidgetItem();
         pSymbolAnyFont->setTextAlignment(Qt::AlignCenter);
-        pSymbolAnyFont->setToolTip(utils::richText(tr("The room symbol will appear like this if symbols (glyphs) from any font can be used.")));
+        pSymbolAnyFont->setToolTip(tr("The room symbol will appear like this if symbols (glyphs) from any font can be used."));
         pSymbolAnyFont->setFont(anyFont);
 
         const QFontMetrics SymbolInFontMetrics(selectedFont);
@@ -3765,7 +3783,7 @@ void dlgProfilePreferences::generateMapGlyphDisplay()
         // Need to pad the numbers with spaces so that sorting works correctly:
         QTableWidgetItem* pUsageCount = new QTableWidgetItem(qsl("%1").arg(roomsWithSymbol.count(), 5, 10, QChar(' ')));
         pUsageCount->setTextAlignment(Qt::AlignCenter);
-        pUsageCount->setToolTip(utils::richText(tr("How many rooms in the whole map have this symbol.")));
+        pUsageCount->setToolTip(tr("How many rooms in the whole map have this symbol."));
 
         QStringList roomNumberStringList;
         QListIterator<int> itRoom(roomsWithSymbol);
@@ -3783,15 +3801,15 @@ void dlgProfilePreferences::generateMapGlyphDisplay()
             }
         }
         QTableWidgetItem* pRoomNumbers = new QTableWidgetItem(roomNumberStringList.join(qsl(", ")));
-        pRoomNumbers->setToolTip(utils::richText(tr("The rooms with this symbol, up to a maximum of thirty-two, if there are more "
-                                                    "than this, it is indicated but they are not shown.")));
+        pRoomNumbers->setToolTip(tr("The rooms with this symbol, up to a maximum of thirty-two, if there are more "
+                                                    "than this, it is indicated but they are not shown."));
 
         auto * pDummyButton = new QToolButton();
         if (isSingleFontUsable) {
             pSymbolInFont->setText(symbol);
             pSymbolAnyFont->setText(symbol);
             pDummyButton->setIcon(QIcon(qsl(":/icons/dialog-ok-apply.png")));
-            pDummyButton->setToolTip(utils::richText(tr("The symbol can be made entirely from glyphs in the specified font.")));
+            pDummyButton->setToolTip(tr("The symbol can be made entirely from glyphs in the specified font."));
         } else {
             // Need to switch to a different font as it is possible that the
             // single font may not have the replacement glyph either...!
@@ -3809,13 +3827,13 @@ void dlgProfilePreferences::generateMapGlyphDisplay()
             } else {
                 pSymbolAnyFont->setText(QString(QChar::ReplacementCharacter));
                 pDummyButton->setIcon(QIcon(qsl(":/icons/dialog-error.png")));
-                pDummyButton->setToolTip(utils::richText(tr("The symbol cannot be drawn using any of the fonts in the system, either an "
+                pDummyButton->setToolTip(tr("The symbol cannot be drawn using any of the fonts in the system, either an "
                                                             "invalid string was entered as the symbol for the indicated rooms or the map was "
                                                             "created on a different systems with a different set of fonts available to use. "
                                                             "You may be able to correct this by installing an additional font using whatever "
                                                             "method is appropriate for this system or by editing the map to use a different "
                                                             "symbol. It may be possible to do the latter via a lua script using the "
-                                                            "<i>getRoomChar</i> and <i>setRoomChar</i> functions.")));
+                                                            "<i>getRoomChar</i> and <i>setRoomChar</i> functions."));
             }
         }
         pTableWidget->setCellWidget(++row, 0, pDummyButton);

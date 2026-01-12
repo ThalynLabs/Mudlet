@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <ui version="4.0">
  <class>connection_profiles</class>
  <widget class="QDialog" name="connection_profiles">
@@ -23,6 +23,12 @@
   </property>
   <property name="windowTitle">
    <string>Select a profile to connect with</string>
+  </property>
+  <property name="accessibleName">
+   <string>Connection Profiles</string>
+  </property>
+  <property name="accessibleDescription">
+   <string>Select a profile to connect with or manage profiles</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="spacing">
@@ -182,7 +188,7 @@
                <bool>true</bool>
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="pixmap">
                <pixmap resource="../mudlet.qrc">:/icons/dialog-warning.png</pixmap>
@@ -216,7 +222,7 @@
                <bool>true</bool>
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="pixmap">
                <pixmap resource="../mudlet.qrc">:/icons/dialog-error.png</pixmap>
@@ -250,7 +256,7 @@
                <bool>true</bool>
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="pixmap">
                <pixmap resource="../mudlet.qrc">:/icons/dialog-information.png</pixmap>
@@ -290,7 +296,7 @@
                <bool>true</bool>
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="scaledContents">
                <bool>true</bool>
@@ -599,7 +605,7 @@
                 <string>The port that is used together with the server name to make the connection to the game server. If not specified a default of 23 for "Telnet" connections is used. Secure connections may require a different port number.</string>
                </property>
                <property name="text">
-                <string/>
+                <string />
                </property>
                <property name="maxLength">
                 <number>32767</number>
@@ -660,9 +666,6 @@
              </item>
              <item row="0" column="1">
               <widget class="QLineEdit" name="login_entry">
-               <property name="toolTip">
-                <string>The characters name</string>
-               </property>
                <property name="accessibleName">
                 <string>Character name</string>
                </property>
@@ -686,9 +689,6 @@
              </item>
              <item row="1" column="1">
               <widget class="QLineEdit" name="character_password_entry">
-               <property name="toolTip">
-                <string>Characters password. Note that the password isn't encrypted in storage</string>
-               </property>
                <property name="accessibleName">
                 <string>Password</string>
                </property>
@@ -747,9 +747,6 @@
                <property name="enabled">
                 <bool>false</bool>
                </property>
-               <property name="toolTip">
-                <string>Enable Discord integration (not supported by game)</string>
-               </property>
                <property name="accessibleName">
                 <string>Discord integration</string>
                </property>
@@ -757,7 +754,7 @@
                 <string>Allow this profile to use Mudlet's Discord "Rich Presence"  features</string>
                </property>
                <property name="text">
-                <string/>
+                <string />
                </property>
                <property name="icon">
                 <iconset resource="../mudlet.qrc">
@@ -779,9 +776,6 @@
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
-               </property>
-               <property name="toolTip">
-                <string>With this enabled, Mudlet will automatically start and connect on this profile when it is launched</string>
                </property>
                <property name="accessibleName">
                 <string>Auto-open profile</string>
@@ -861,7 +855,7 @@
                </font>
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="scaledContents">
                <bool>true</bool>
@@ -887,9 +881,6 @@
                 <width>16777215</width>
                 <height>16777215</height>
                </size>
-              </property>
-              <property name="toolTip">
-               <string>Game description or your notes</string>
               </property>
               <property name="accessibleName">
                <string>Game description or your notes</string>
@@ -947,6 +938,12 @@
           <height>16777215</height>
          </size>
         </property>
+        <property name="accessibleName">
+         <string>Dialog buttons</string>
+        </property>
+        <property name="accessibleDescription">
+         <string>Connect and other action buttons for profile selection</string>
+        </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
@@ -983,7 +980,7 @@
   <tabstop>new_profile_button</tabstop>
  </tabstops>
  <resources>
-  <include location="../mudlet.qrc"/>
+  <include location="../mudlet.qrc" />
  </resources>
- <connections/>
+ <connections />
 </ui>

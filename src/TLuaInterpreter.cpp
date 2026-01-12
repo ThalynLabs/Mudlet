@@ -4147,7 +4147,7 @@ bool TLuaInterpreter::callConditionFunction(std::string& function, const QString
 {
     lua_State* L = pGlobalLua;
 
-    lua_getfield(L, LUA_GLOBALSINDEX, function.c_str());
+    lua_getglobal(L, function.c_str());
     const int error = lua_pcall(L, 0, 1, 0);
     if (error) {
         const int nbpossible_errors = lua_gettop(L);
@@ -4566,7 +4566,7 @@ double TLuaInterpreter::condenseMapLoad()
 
     lua_State* L = pGlobalLua;
 
-    lua_getfield(L, LUA_GLOBALSINDEX, "condenseMapLoad");
+    lua_getglobal(L, "condenseMapLoad");
     const int error = lua_pcall(L, 0, 1, 0);
     if (error) {
         const int nbpossible_errors = lua_gettop(L);
@@ -4946,17 +4946,14 @@ void TLuaInterpreter::initLuaGlobals()
 
     luaL_openlibs(pGlobalLua);
 
-    lua_pushstring(pGlobalLua, "SESSION");
     lua_pushnumber(pGlobalLua, mHostID);
-    lua_settable(pGlobalLua, LUA_GLOBALSINDEX);
+    lua_setglobal(pGlobalLua, "SESSION");
 
-    lua_pushstring(pGlobalLua, "SCRIPT_NAME");
     lua_pushstring(pGlobalLua, "Global Lua Session Interpreter");
-    lua_settable(pGlobalLua, LUA_GLOBALSINDEX);
+    lua_setglobal(pGlobalLua, "SCRIPT_NAME");
 
-    lua_pushstring(pGlobalLua, "SCRIPT_ID");
     lua_pushnumber(pGlobalLua, -1); // ID 1 is used to indicate that this is the global Lua interpreter
-    lua_settable(pGlobalLua, LUA_GLOBALSINDEX);
+    lua_setglobal(pGlobalLua, "SCRIPT_ID");
     lua_register(pGlobalLua, "showUnzipProgress", TLuaInterpreter::showUnzipProgress); //internal function used by the package system NOT FOR USERS
     lua_register(pGlobalLua, "wait", TLuaInterpreter::Wait);
     lua_register(pGlobalLua, "expandAlias", TLuaInterpreter::expandAlias);
@@ -5667,17 +5664,14 @@ void TLuaInterpreter::initIndenterGlobals()
 
     luaL_openlibs(pIndenterState.get());
 
-    lua_pushstring(pIndenterState.get(), "SESSION");
     lua_pushnumber(pIndenterState.get(), mHostID);
-    lua_settable(pIndenterState.get(), LUA_GLOBALSINDEX);
+    lua_setglobal(pIndenterState.get(), "SESSION");
 
-    lua_pushstring(pIndenterState.get(), "SCRIPT_NAME");
     lua_pushstring(pIndenterState.get(), "Lua Indenter Interpreter");
-    lua_settable(pIndenterState.get(), LUA_GLOBALSINDEX);
+    lua_setglobal(pIndenterState.get(), "SCRIPT_NAME");
 
-    lua_pushstring(pIndenterState.get(), "SCRIPT_ID");
     lua_pushnumber(pIndenterState.get(), -2); // ID 2 is used to indicate that this is the indenter Lua interpreter
-    lua_settable(pIndenterState.get(), LUA_GLOBALSINDEX);
+    lua_setglobal(pIndenterState.get(), "SCRIPT_ID");
     lua_register(pIndenterState.get(), "echo", TLuaInterpreter::echo);
     lua_register(pIndenterState.get(), "tempTimer", TLuaInterpreter::tempTimer);
     lua_register(pIndenterState.get(), "send", TLuaInterpreter::sendRaw);
@@ -6692,7 +6686,7 @@ void TLuaInterpreter::insertColorTableEntry(lua_State* L, const QColor& color, c
     lua_pushnumber(L, color.blue());
     lua_rawseti(L, -2, 3);
 
-    lua_getfield(L, LUA_GLOBALSINDEX, "color_table");
+    lua_getglobal(L, "color_table");
     lua_insert(L, -2);
 
     lua_pushstring(L, name.toUtf8().constData());
@@ -6709,7 +6703,7 @@ void TLuaInterpreter::updateAnsi16ColorsInTable()
     // Does the color_table already exist:
     // Equivalent to Lua:
     // color_table = color_table or {}
-    lua_getfield(L, LUA_GLOBALSINDEX, "color_table");
+    lua_getglobal(L, "color_table");
     if (!(lua_toboolean(L,-1))) {
         // no it doesn't
         lua_pop(L, 1);
@@ -6718,7 +6712,7 @@ void TLuaInterpreter::updateAnsi16ColorsInTable()
     }
 
     // Okay so now we point ourselves at the wanted table:
-    lua_setfield(L, LUA_GLOBALSINDEX, "color_table");
+    lua_setglobal(L, "color_table");
 
     // Now we can add/update the items we need to, though it is a bit repetitive:
     QColor color = mpHost->mBlack;
@@ -6813,7 +6807,7 @@ void TLuaInterpreter::updateExtendedAnsiColorsInTable()
     // Does the color_table already exist:
     // Equivalent to Lua:
     // color_table = color_table or {}
-    lua_getfield(L, LUA_GLOBALSINDEX, "color_table");
+    lua_getglobal(L, "color_table");
     if (!(lua_toboolean(L,-1))) {
         // no it doesn't
         lua_pop(L, 1);
@@ -6822,7 +6816,7 @@ void TLuaInterpreter::updateExtendedAnsiColorsInTable()
     }
 
     // Okay so now we point ourselves at the wanted table:
-    lua_setfield(L, LUA_GLOBALSINDEX, "color_table");
+    lua_setglobal(L, "color_table");
 
     // And insert the 6x6x6 RGB colours
     for (int i = 0; i < 216; ++i) {
@@ -6841,7 +6835,7 @@ void TLuaInterpreter::updateExtendedAnsiColorsInTable()
         lua_pushnumber(L, b == 0 ? 0 : (b - 1) * 40 + 95);
         lua_rawseti(L, -2, 3);
 
-        lua_getfield(L, LUA_GLOBALSINDEX, "color_table");
+        lua_getglobal(L, "color_table");
         lua_insert(L, -2);
 
         const QString name = qsl("ansi_%1").arg(i + 16, 3, 10, QLatin1Char('0'));
@@ -6866,7 +6860,7 @@ void TLuaInterpreter::updateExtendedAnsiColorsInTable()
         lua_pushnumber(L, value);
         lua_rawseti(L, -2, 3);
 
-        lua_getfield(L, LUA_GLOBALSINDEX, "color_table");
+        lua_getglobal(L, "color_table");
         lua_insert(L, -2);
 
         const QString name = qsl("ansi_%1").arg(i, 3, 10, QLatin1Char('0'));

@@ -259,6 +259,8 @@ void mudlet::init()
     mpButtonConnect->setPopupMode(QToolButton::MenuButtonPopup);
     mpButtonConnect->setAutoRaise(true);
     mpMainToolBar->addWidget(mpButtonConnect);
+    mpButtonConnect->setAccessibleName(tr("Connect"));
+    mpButtonConnect->setAccessibleDescription(tr("Open the connect menu to connect, disconnect, or close the profile"));
 
     mpActionConnect = new QAction(tr("Connect"), this);
     mpActionConnect->setIcon(QIcon(qsl(":/icons/preferences-web-browser-cache.png")));
@@ -279,48 +281,62 @@ void mudlet::init()
     mpButtonConnect->setDefaultAction(mpActionConnect);
 
     mpActionTriggers = new QAction(QIcon(qsl(":/icons/tools-wizard.png")), tr("Triggers"), this);
-    mpActionTriggers->setToolTip(utils::richText(tr("Show and edit triggers")));
+    mpActionTriggers->setToolTip(tr("Show and edit triggers"));
     mpMainToolBar->addAction(mpActionTriggers);
     mpActionTriggers->setObjectName(qsl("triggers_action"));
     // add name to the action's widget in the toolbar, which doesn't have one by default
     // see https://stackoverflow.com/a/32460562/72944
     mpMainToolBar->widgetForAction(mpActionTriggers)->setObjectName(mpActionTriggers->objectName());
+    mpMainToolBar->widgetForAction(mpActionTriggers)->setAccessibleName(tr("Triggers"));
+    mpMainToolBar->widgetForAction(mpActionTriggers)->setAccessibleDescription(tr("Show and edit triggers"));
 
     mpActionAliases = new QAction(QIcon(qsl(":/icons/system-users.png")), tr("Aliases"), this);
-    mpActionAliases->setToolTip(utils::richText(tr("Show and edit aliases")));
+    mpActionAliases->setToolTip(tr("Show and edit aliases"));
     mpMainToolBar->addAction(mpActionAliases);
     mpActionAliases->setObjectName(qsl("aliases_action"));
     mpMainToolBar->widgetForAction(mpActionAliases)->setObjectName(mpActionAliases->objectName());
+    mpMainToolBar->widgetForAction(mpActionAliases)->setAccessibleName(tr("Aliases"));
+    mpMainToolBar->widgetForAction(mpActionAliases)->setAccessibleDescription(tr("Show and edit aliases"));
 
     mpActionTimers = new QAction(QIcon(qsl(":/icons/chronometer.png")), tr("Timers"), this);
-    mpActionTimers->setToolTip(utils::richText(tr("Show and edit timers")));
+    mpActionTimers->setToolTip(tr("Show and edit timers"));
     mpMainToolBar->addAction(mpActionTimers);
     mpActionTimers->setObjectName(qsl("timers_action"));
     mpMainToolBar->widgetForAction(mpActionTimers)->setObjectName(mpActionTimers->objectName());
+    mpMainToolBar->widgetForAction(mpActionTimers)->setAccessibleName(tr("Timers"));
+    mpMainToolBar->widgetForAction(mpActionTimers)->setAccessibleDescription(tr("Show and edit timers"));
 
     mpActionButtons = new QAction(QIcon(qsl(":/icons/bookmarks.png")), tr("Buttons"), this);
-    mpActionButtons->setToolTip(utils::richText(tr("Show and edit easy buttons")));
+    mpActionButtons->setToolTip(tr("Show and edit easy buttons"));
     mpMainToolBar->addAction(mpActionButtons);
     mpActionButtons->setObjectName(qsl("buttons_action"));
     mpMainToolBar->widgetForAction(mpActionButtons)->setObjectName(mpActionButtons->objectName());
+    mpMainToolBar->widgetForAction(mpActionButtons)->setAccessibleName(tr("Buttons"));
+    mpMainToolBar->widgetForAction(mpActionButtons)->setAccessibleDescription(tr("Show and edit easy buttons"));
 
     mpActionScripts = new QAction(QIcon(qsl(":/icons/document-properties.png")), tr("Scripts"), this);
-    mpActionScripts->setToolTip(utils::richText(tr("Show and edit scripts")));
+    mpActionScripts->setToolTip(tr("Show and edit scripts"));
     mpMainToolBar->addAction(mpActionScripts);
     mpActionScripts->setObjectName(qsl("scripts_action"));
     mpMainToolBar->widgetForAction(mpActionScripts)->setObjectName(mpActionScripts->objectName());
+    mpMainToolBar->widgetForAction(mpActionScripts)->setAccessibleName(tr("Scripts"));
+    mpMainToolBar->widgetForAction(mpActionScripts)->setAccessibleDescription(tr("Show and edit scripts"));
 
     mpActionKeys = new QAction(QIcon(qsl(":/icons/preferences-desktop-keyboard.png")), tr("Keys"), this);
-    mpActionKeys->setToolTip(utils::richText(tr("Show and edit keys")));
+    mpActionKeys->setToolTip(tr("Show and edit keys"));
     mpMainToolBar->addAction(mpActionKeys);
     mpActionKeys->setObjectName(qsl("keys_action"));
     mpMainToolBar->widgetForAction(mpActionKeys)->setObjectName(mpActionKeys->objectName());
+    mpMainToolBar->widgetForAction(mpActionKeys)->setAccessibleName(tr("Keys"));
+    mpMainToolBar->widgetForAction(mpActionKeys)->setAccessibleDescription(tr("Show and edit keys"));
 
     mpActionVariables = new QAction(QIcon(qsl(":/icons/variables.png")), tr("Variables"), this);
-    mpActionVariables->setToolTip(utils::richText(tr("Show and edit Lua variables")));
+    mpActionVariables->setToolTip(tr("Show and edit Lua variables"));
     mpMainToolBar->addAction(mpActionVariables);
     mpActionVariables->setObjectName(qsl("variables_action"));
     mpMainToolBar->widgetForAction(mpActionVariables)->setObjectName(mpActionVariables->objectName());
+    mpMainToolBar->widgetForAction(mpActionVariables)->setAccessibleName(tr("Variables"));
+    mpMainToolBar->widgetForAction(mpActionVariables)->setAccessibleDescription(tr("Show and edit Lua variables"));
 
     mpButtonMute = new QToolButton(this);
     mpButtonMute->setText(tr("Mute"));
@@ -329,6 +345,8 @@ void mudlet::init()
     mpButtonMute->setPopupMode(QToolButton::MenuButtonPopup);
     mpButtonMute->setAutoRaise(true);
     mpMainToolBar->addWidget(mpButtonMute);
+    mpButtonMute->setAccessibleName(tr("Mute"));
+    mpButtonMute->setAccessibleDescription(tr("Open mute options to control media, API, and game sounds"));
 
     mpActionMuteMedia = new QAction(tr("Mute all media"), this);
     mpActionMuteMedia->setIcon(QIcon(qsl(":/icons/mute.png")));
@@ -360,6 +378,8 @@ void mudlet::init()
     mpButtonDiscord->setPopupMode(QToolButton::MenuButtonPopup);
     mpButtonDiscord->setAutoRaise(true);
     mpMainToolBar->addWidget(mpButtonDiscord);
+    mpButtonDiscord->setAccessibleName(tr("Discord"));
+    mpButtonDiscord->setAccessibleDescription(tr("Open Discord menu to chat or use IRC"));
 
     mpActionDiscord = new QAction(tr("Open Discord"), this);
     mpActionDiscord->setIcon(QIcon(qsl(":/icons/Discord-Logo-Color.png")));
@@ -367,10 +387,12 @@ void mudlet::init()
     mpActionDiscord->setObjectName(qsl("openDiscord"));
 
     mpActionMudletDiscord = new QAction(QIcon(qsl(":/icons/mudlet_discord.png")), tr("Mudlet chat"), this);
-    mpActionMudletDiscord->setToolTip(utils::richText(tr("Open a link to the Mudlet server on Discord")));
+    mpActionMudletDiscord->setToolTip(tr("Open a link to the Mudlet server on Discord"));
     mpMainToolBar->addAction(mpActionMudletDiscord);
     mpActionMudletDiscord->setObjectName(qsl("mudlet_discord"));
     mpMainToolBar->widgetForAction(mpActionMudletDiscord)->setObjectName(mpActionMudletDiscord->objectName());
+    mpMainToolBar->widgetForAction(mpActionMudletDiscord)->setAccessibleName(tr("Mudlet chat"));
+    mpMainToolBar->widgetForAction(mpActionMudletDiscord)->setAccessibleDescription(tr("Open the Mudlet Discord server link"));
     mpActionMudletDiscord->setVisible(false); // Mudlet Discord becomes visible if game has custom invite
 
     mpActionIRC = new QAction(tr("Open IRC"), this);
@@ -382,31 +404,39 @@ void mudlet::init()
     mpButtonDiscord->setDefaultAction(mpActionDiscord);
 
     mpActionMapper = new QAction(QIcon(qsl(":/icons/applications-internet.png")), tr("Map"), this);
-    mpActionMapper->setToolTip(utils::richText(tr("Show/hide the map")));
+    mpActionMapper->setToolTip(tr("Show/hide the map"));
     mpMainToolBar->addAction(mpActionMapper);
     mpActionMapper->setObjectName(qsl("map_action"));
     mpMainToolBar->widgetForAction(mpActionMapper)->setObjectName(mpActionMapper->objectName());
+    mpMainToolBar->widgetForAction(mpActionMapper)->setAccessibleName(tr("Map"));
+    mpMainToolBar->widgetForAction(mpActionMapper)->setAccessibleDescription(tr("Show or hide the map"));
 
     mpActionHelp = new QAction(QIcon(qsl(":/icons/help-hint.png")), tr("Manual"), this);
-    mpActionHelp->setToolTip(utils::richText(tr("Browse reference material and documentation")));
+    mpActionHelp->setToolTip(tr("Browse reference material and documentation"));
     mpMainToolBar->addAction(mpActionHelp);
     mpActionHelp->setObjectName(qsl("manual_action"));
     mpMainToolBar->widgetForAction(mpActionHelp)->setObjectName(mpActionHelp->objectName());
+    mpMainToolBar->widgetForAction(mpActionHelp)->setAccessibleName(tr("Manual"));
+    mpMainToolBar->widgetForAction(mpActionHelp)->setAccessibleDescription(tr("Browse reference material and documentation"));
 
     mpActionOptions = new QAction(QIcon(qsl(":/icons/configure.png")), tr("Settings"), this);
-    mpActionOptions->setToolTip(utils::richText(tr("See and edit profile preferences")));
+    mpActionOptions->setToolTip(tr("See and edit profile preferences"));
     mpMainToolBar->addAction(mpActionOptions);
     mpActionOptions->setObjectName(qsl("settings_action"));
     mpMainToolBar->widgetForAction(mpActionOptions)->setObjectName(mpActionOptions->objectName());
+    mpMainToolBar->widgetForAction(mpActionOptions)->setAccessibleName(tr("Settings"));
+    mpMainToolBar->widgetForAction(mpActionOptions)->setAccessibleDescription(tr("See and edit profile preferences"));
 
     // TODO: Consider changing to ":/icons/mudlet_notepad.png" as per the icon
     // now used for the window when the visual change to the toolbar caused can
     // be managed
     mpActionNotes = new QAction(QIcon(qsl(":/icons/applications-accessories.png")), tr("Notepad"), this);
-    mpActionNotes->setToolTip(utils::richText(tr("Open a notepad that you can store your notes in")));
+    mpActionNotes->setToolTip(tr("Open a notepad that you can store your notes in"));
     mpMainToolBar->addAction(mpActionNotes);
     mpActionNotes->setObjectName(qsl("notepad_action"));
     mpMainToolBar->widgetForAction(mpActionNotes)->setObjectName(mpActionNotes->objectName());
+    mpMainToolBar->widgetForAction(mpActionNotes)->setAccessibleName(tr("Notepad"));
+    mpMainToolBar->widgetForAction(mpActionNotes)->setAccessibleDescription(tr("Open a notepad to store your notes"));
 
     mpButtonPackageManagers = new QToolButton(this);
     mpButtonPackageManagers->setText(tr("Packages"));
@@ -415,6 +445,8 @@ void mudlet::init()
     mpButtonPackageManagers->setPopupMode(QToolButton::MenuButtonPopup);
     mpButtonPackageManagers->setAutoRaise(true);
     mpMainToolBar->addWidget(mpButtonPackageManagers);
+    mpButtonPackageManagers->setAccessibleName(tr("Packages"));
+    mpButtonPackageManagers->setAccessibleDescription(tr("Open the package managers menu"));
 
     mpActionPackageManager = new QAction(tr("Package Manager"), this);
     mpActionPackageManager->setIcon(QIcon(qsl(":/icons/package-manager.png")));
@@ -441,14 +473,14 @@ void mudlet::init()
     mpMainToolBar->widgetForAction(mpActionReplay)->setObjectName(mpActionReplay->objectName());
 
     mpActionReconnect = new QAction(QIcon(qsl(":/icons/system-restart.png")), tr("Reconnect"), this);
-    mpActionReconnect->setToolTip(utils::richText(tr("Disconnects you from the game and connects once again")));
+    mpActionReconnect->setToolTip(tr("Disconnects you from the game and connects once again"));
     mpMainToolBar->addAction(mpActionReconnect);
     mpActionReconnect->setObjectName(qsl("reconnect_action"));
     mpMainToolBar->widgetForAction(mpActionReconnect)->setObjectName(mpActionReconnect->objectName());
 
     mpActionMultiView = new QAction(QIcon(qsl(":/icons/view-split-left-right.png")), tr("MultiView"), this);
     //: Same text is used in 2 places.
-    mpActionMultiView->setToolTip(utils::richText(tr("Splits the Mudlet screen to show multiple profiles at once; disabled when less than two are loaded.")));
+    mpActionMultiView->setToolTip(tr("Splits the Mudlet screen to show multiple profiles at once; disabled when less than two are loaded."));
     mpMainToolBar->addAction(mpActionMultiView);
     mpActionMultiView->setCheckable(true);
     mpActionMultiView->setChecked(false);
@@ -463,7 +495,7 @@ void mudlet::init()
         const QStringList issueReportIcons {"face-uncertain.png", "face-surprise.png", "face-smile.png", "face-sad.png", "face-plain.png"};
         auto randomIcon = QRandomGenerator::global()->bounded(issueReportIcons.size());
         mpActionReportIssue->setIcon(QIcon(qsl(":/icons/%1").arg(issueReportIcons.at(randomIcon))));
-        mpActionReportIssue->setToolTip(utils::richText(tr("The public test build gets newer features to you quicker, and you help us find issues in them quicker. Spotted something odd? Let us know asap!")));
+        mpActionReportIssue->setToolTip(tr("The public test build gets newer features to you quicker, and you help us find issues in them quicker. Spotted something odd? Let us know asap!"));
         mpMainToolBar->addAction(mpActionReportIssue);
         mpActionReportIssue->setObjectName(qsl("reportissue_action"));
         mpMainToolBar->widgetForAction(mpActionReportIssue)->setObjectName(mpActionReportIssue->objectName());
@@ -472,7 +504,7 @@ void mudlet::init()
 
     mpActionAbout = new QAction(QIcon(qsl(":/icons/mudlet_information.png")), tr("About"), this);
     //: Tooltip for About Mudlet sub-menu item and main toolbar button (or menu item if an update has changed that control to have a popup menu instead) (Used in 3 places - please ensure all have the same translation).
-    mpActionAbout->setToolTip(utils::richText(tr("Inform yourself about this version of Mudlet, the people who made it and the licence under which you can share it.")));
+    mpActionAbout->setToolTip(tr("Inform yourself about this version of Mudlet, the people who made it and the licence under which you can share it."));
     mpMainToolBar->addAction(mpActionAbout);
     mpActionAbout->setObjectName(qsl("about_action"));
     mpMainToolBar->widgetForAction(mpActionAbout)->setObjectName(mpActionAbout->objectName());
@@ -1808,7 +1840,7 @@ void mudlet::enableToolbarButtons()
         // toolbar pointer will be non-null}:
         mpActionReplay->setEnabled(true);
         dactionReplay->setEnabled(true);
-        mpActionReplay->setToolTip(utils::richText(tr("Load a Mudlet replay.")));
+        mpActionReplay->setToolTip(tr("Load a Mudlet replay."));
         // The menu items will not show tool-tips unless the parent menu is set to
         // show tool-tips which is likely to be done in near future when there are
         // more texts to show {the default is to repeat the menu text which is not
@@ -3345,7 +3377,7 @@ bool mudlet::replayStart()
     mpActionReplay->setChecked(true);
     mpActionReplay->setEnabled(false);
     dactionReplay->setEnabled(false);
-    mpActionReplay->setToolTip(utils::richText(tr("Cannot load a replay as one is already in progress in this or another profile.")));
+    mpActionReplay->setToolTip(tr("Cannot load a replay as one is already in progress in this or another profile."));
     dactionReplay->setToolTip(mpActionReplay->toolTip());
 
     mpToolBarReplay = new QToolBar(this);
@@ -3364,13 +3396,13 @@ bool mudlet::replayStart()
 
     mpActionReplaySpeedUp = new QAction(QIcon(qsl(":/icons/export.png")), tr("Faster"), this);
     mpActionReplaySpeedUp->setObjectName(qsl("replay_speed_up_action"));
-    mpActionReplaySpeedUp->setToolTip(utils::richText(tr("Replay each step with a shorter time interval between steps.")));
+    mpActionReplaySpeedUp->setToolTip(tr("Replay each step with a shorter time interval between steps."));
     mpToolBarReplay->addAction(mpActionReplaySpeedUp);
     mpToolBarReplay->widgetForAction(mpActionReplaySpeedUp)->setObjectName(mpActionReplaySpeedUp->objectName());
 
     mpActionReplaySpeedDown = new QAction(QIcon(qsl(":/icons/import.png")), tr("Slower"), this);
     mpActionReplaySpeedDown->setObjectName(qsl("replay_speed_down_action"));
-    mpActionReplaySpeedDown->setToolTip(utils::richText(tr("Replay each step with a longer time interval between steps.")));
+    mpActionReplaySpeedDown->setToolTip(tr("Replay each step with a longer time interval between steps."));
     mpToolBarReplay->addAction(mpActionReplaySpeedDown);
     mpToolBarReplay->widgetForAction(mpActionReplaySpeedDown)->setObjectName(mpActionReplaySpeedDown->objectName());
 
@@ -3441,7 +3473,7 @@ void mudlet::replayOver()
     mpActionReplay->setCheckable(false);
     mpActionReplay->setEnabled(true);
     dactionReplay->setEnabled(true);
-    mpActionReplay->setToolTip(utils::richText(tr("Load a Mudlet replay.")));
+    mpActionReplay->setToolTip(tr("Load a Mudlet replay."));
     dactionReplay->setToolTip(mpActionReplay->toolTip());
 }
 
@@ -3888,7 +3920,7 @@ void mudlet::slot_updateAvailable(const int updateCount)
     Tooltip for About Mudlet sub-menu item and main toolbar button (or menu item if an update has changed that control to have a popup menu instead) (Used in 3 places -
     please ensure all have the same translation).
     */
-    mpActionAbout->setToolTip(utils::richText(tr("Inform yourself about this version of Mudlet, the people who made it and the licence under which you can share it.")));
+    mpActionAbout->setToolTip(tr("Inform yourself about this version of Mudlet, the people who made it and the licence under which you can share it."));
 
     // Create a new button (QActions actually turn into QToolButtons when they
     // are placed on a QToolBar - but we need to generate one ourselves so we
@@ -3921,7 +3953,7 @@ void mudlet::slot_updateAvailable(const int updateCount)
     auto pActionReview = pUpdateMenu->addAction(tr("Review %n update(s)...", nullptr, updateCount),
                                                 this, &mudlet::slot_manualUpdateCheck);
     //: Tool-tip for review update(s) menu item, given that the count of how many updates are available is already shown in the menu, the %n parameter that is that number need not be used here
-    pActionReview->setToolTip(utils::richText(tr("Review the update(s) available...", nullptr, updateCount)));
+    pActionReview->setToolTip(tr("Review the update(s) available...", nullptr, updateCount));
     // Override the default hide tooltips state:
     pUpdateMenu->setToolTipsVisible(true);
     // Screw the menu onto the button
