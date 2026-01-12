@@ -41,6 +41,7 @@
 #include "mudlet.h"
 
 #include "pre_guard.h"
+#include <QAccessible>
 #include <QAccessibleInterface>
 #include <QAccessibleWidget>
 #include <QLineEdit>
@@ -54,6 +55,20 @@
 #include "post_guard.h"
 
 const QString TConsole::cmLuaLineVariable("line");
+
+namespace {
+#ifdef Q_OS_MACOS
+bool isToolbarA11yModeEnabled()
+{
+    return QAccessible::isActive() || qEnvironmentVariableIsSet("MUDLET_FORCE_ACCESSIBLE_TOOLBAR");
+}
+#else
+bool isToolbarA11yModeEnabled()
+{
+    return false;
+}
+#endif
+}
 
 // A high-performance text widget with split screen ability for scrolling back
 // Contains two TTextEdits, and is backed by a TBuffer
@@ -272,6 +287,8 @@ TConsole::TConsole(Host* pH, const QString& name, const ConsoleType type, QWidge
     layerCommandLine->setSizePolicy(sizePolicy2);
     layerCommandLine->setMaximumHeight(31);
     layerCommandLine->setMinimumHeight(31);
+    layerCommandLine->setFocusPolicy(Qt::NoFocus);
+    layerCommandLine->setAttribute(Qt::WA_TransparentForMouseEvents, false);
 
     layoutLayer2 = new QHBoxLayout(layerCommandLine);
     layoutLayer2->setContentsMargins(0, 0, 0, 0);
@@ -281,6 +298,7 @@ TConsole::TConsole(Host* pH, const QString& name, const ConsoleType type, QWidge
     mpButtonMainLayer->setObjectName(qsl("mpButtonMainLayer"));
     mpButtonMainLayer->setSizePolicy(sizePolicy);
     mpButtonMainLayer->setContentsMargins(0, 0, 0, 0);
+    mpButtonMainLayer->setFocusPolicy(Qt::NoFocus);
     auto layoutButtonMainLayer = new QVBoxLayout(mpButtonMainLayer);
     layoutButtonMainLayer->setObjectName(qsl("layoutButtonMainLayer"));
     layoutButtonMainLayer->setContentsMargins(0, 0, 0, 0);
@@ -290,13 +308,17 @@ TConsole::TConsole(Host* pH, const QString& name, const ConsoleType type, QWidge
            mpButtonMainLayer->setMaximumHeight(31);*/
     auto buttonLayer = new QWidget;
     buttonLayer->setObjectName(qsl("buttonLayer"));
+    buttonLayer->setFocusPolicy(Qt::NoFocus);
     auto layoutButtonLayer = new QGridLayout(buttonLayer);
     layoutButtonLayer->setObjectName(qsl("layoutButtonLayer"));
     layoutButtonLayer->setContentsMargins(0, 0, 0, 0);
     layoutButtonLayer->setSpacing(0);
 
+    const bool a11yToolbarMode = isToolbarA11yModeEnabled();
+
     auto buttonLayerSpacer = new QWidget(buttonLayer);
     buttonLayerSpacer->setSizePolicy(sizePolicy4);
+    buttonLayerSpacer->setFocusPolicy(Qt::NoFocus);
     layoutButtonMainLayer->addWidget(buttonLayerSpacer);
     layoutButtonMainLayer->addWidget(buttonLayer);
 
@@ -305,9 +327,18 @@ TConsole::TConsole(Host* pH, const QString& name, const ConsoleType type, QWidge
     timeStampButton->setMinimumSize(QSize(30, 30));
     timeStampButton->setMaximumSize(QSize(30, 30));
     timeStampButton->setSizePolicy(sizePolicy5);
-    timeStampButton->setFocusPolicy(Qt::NoFocus);
+    timeStampButton->setFocusPolicy(a11yToolbarMode ? Qt::TabFocus : Qt::NoFocus);
     timeStampButton->setIcon(QIcon(qsl(":/icons/dialog-information.png")));
-    timeStampButton->setToolTip(utils::richText(tr("Toggle time stamps")));
+    timeStampButton->setText(tr("Toggle time stamps"));
+    if (a11yToolbarMode) {
+        timeStampButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        timeStampButton->setToolTip(QString());
+    } else {
+        timeStampButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
+        timeStampButton->setToolTip(tr("Show or hide time stamps in the console output"));
+    }
+    timeStampButton->setAccessibleName(tr("Toggle time stamps"));
+    timeStampButton->setAccessibleDescription(tr("Show or hide time stamps in the console output"));
 
     connect(timeStampButton, &QAbstractButton::toggled, mUpperPane, &TTextEdit::slot_toggleTimeStamps);
     connect(timeStampButton, &QAbstractButton::toggled, mLowerPane, &TTextEdit::slot_toggleTimeStamps);
@@ -317,9 +348,18 @@ TConsole::TConsole(Host* pH, const QString& name, const ConsoleType type, QWidge
     replayButton->setMinimumSize(QSize(30, 30));
     replayButton->setMaximumSize(QSize(30, 30));
     replayButton->setSizePolicy(sizePolicy5);
-    replayButton->setFocusPolicy(Qt::NoFocus);
+    replayButton->setFocusPolicy(a11yToolbarMode ? Qt::TabFocus : Qt::NoFocus);
     replayButton->setIcon(QIcon(qsl(":/icons/media-tape.png")));
-    replayButton->setToolTip(utils::richText(tr("Toggle recording of replays")));
+    replayButton->setText(tr("Toggle replay recording"));
+    if (a11yToolbarMode) {
+        replayButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        replayButton->setToolTip(QString());
+    } else {
+        replayButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
+        replayButton->setToolTip(tr("Start or stop recording of gameplay replays"));
+    }
+    replayButton->setAccessibleName(tr("Toggle replay recording"));
+    replayButton->setAccessibleDescription(tr("Start or stop recording of gameplay replays"));
     connect(replayButton, &QAbstractButton::clicked, this, &TConsole::slot_toggleReplayRecording);
 
     logButton = new QToolButton;
@@ -327,13 +367,21 @@ TConsole::TConsole(Host* pH, const QString& name, const ConsoleType type, QWidge
     logButton->setMaximumSize(QSize(30, 30));
     logButton->setCheckable(true);
     logButton->setSizePolicy(sizePolicy5);
-    logButton->setFocusPolicy(Qt::NoFocus);
-    logButton->setToolTip(utils::richText(tr("Toggle logging")));
+    logButton->setFocusPolicy(a11yToolbarMode ? Qt::TabFocus : Qt::NoFocus);
+    if (a11yToolbarMode) {
+        logButton->setToolTip(QString());
+    } else {
+        logButton->setToolTip(tr("Start or stop logging game output to a file"));
+    }
+    logButton->setAccessibleName(tr("Toggle logging"));
+    logButton->setAccessibleDescription(tr("Start or stop logging game output to a file"));
 
     QIcon logIcon;
     logIcon.addPixmap(QPixmap(qsl(":/icons/folder-downloads.png")), QIcon::Normal, QIcon::Off);
     logIcon.addPixmap(QPixmap(qsl(":/icons/folder-downloads-red-cross.png")), QIcon::Normal, QIcon::On);
     logButton->setIcon(logIcon);
+    logButton->setText(tr("Toggle logging"));
+    logButton->setToolButtonStyle(a11yToolbarMode ? Qt::ToolButtonTextBesideIcon : Qt::ToolButtonIconOnly);
     connect(logButton, &QAbstractButton::clicked, this, &TConsole::slot_toggleLogging);
 
     if (mType == MainConsole) {
@@ -341,13 +389,14 @@ TConsole::TConsole(Host* pH, const QString& name, const ConsoleType type, QWidge
         mpLineEdit_networkLatency->setReadOnly(true);
         mpLineEdit_networkLatency->setSizePolicy(sizePolicy4);
         mpLineEdit_networkLatency->setFocusPolicy(Qt::NoFocus);
-        mpLineEdit_networkLatency->setToolTip(utils::richText(tr("<i>N:</i> is the latency of the game server and network (aka ping, in seconds),<br>"
-                                                                 "<i>S:</i> is the system processing time - how long your triggers took to process the last line(s).")));
+        mpLineEdit_networkLatency->setToolTip(tr("N: network latency, S: system processing time"));
         mpLineEdit_networkLatency->setMaximumSize(120, 30);
         mpLineEdit_networkLatency->setMinimumSize(120, 30);
         mpLineEdit_networkLatency->setAutoFillBackground(true);
         mpLineEdit_networkLatency->setContentsMargins(0, 0, 0, 0);
         mpLineEdit_networkLatency->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+        mpLineEdit_networkLatency->setAccessibleName(tr("Network latency and system processing time"));
+        mpLineEdit_networkLatency->setAccessibleDescription(tr("Displays N (network latency) and S (system processing time) values"));
 
         int latencyFontPointSize = 21;
         QFont latencyFont = QFont(qsl("Bitstream Vera Sans Mono"), latencyFontPointSize, QFont::Normal);
@@ -381,9 +430,18 @@ TConsole::TConsole(Host* pH, const QString& name, const ConsoleType type, QWidge
     emergencyStop->setMaximumSize(QSize(30, 30));
     emergencyStop->setIcon(QIcon(qsl(":/icons/edit-bomb.png")));
     emergencyStop->setSizePolicy(sizePolicy4);
-    emergencyStop->setFocusPolicy(Qt::NoFocus);
+    emergencyStop->setFocusPolicy(a11yToolbarMode ? Qt::TabFocus : Qt::NoFocus);
     emergencyStop->setCheckable(true);
-    emergencyStop->setToolTip(utils::richText(tr("Emergency stop! Stop all scripts")));
+    emergencyStop->setText(tr("Emergency stop"));
+    if (a11yToolbarMode) {
+        emergencyStop->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        emergencyStop->setToolTip(QString());
+    } else {
+        emergencyStop->setToolButtonStyle(Qt::ToolButtonIconOnly);
+        emergencyStop->setToolTip(tr("Stop all scripts immediately"));
+    }
+    emergencyStop->setAccessibleName(tr("Emergency stop"));
+    emergencyStop->setAccessibleDescription(tr("Stop all scripts immediately"));
 
     connect(emergencyStop, &QAbstractButton::clicked, this, &TConsole::slot_stopAllItems);
 
@@ -408,7 +466,13 @@ TConsole::TConsole(Host* pH, const QString& name, const ConsoleType type, QWidge
     commandLinePalette.setColor(QPalette::HighlightedText, QColor(Qt::white));
     commandLinePalette.setColor(QPalette::Base, mpHost->mCommandLineBgColor);
     commandLinePalette.setColor(QPalette::Window, mpHost->mCommandLineBgColor);
-    mpBufferSearchBox->setToolTip(utils::richText(tr("Search buffer.")));
+    if (a11yToolbarMode) {
+        mpBufferSearchBox->setToolTip(QString());
+    } else {
+        mpBufferSearchBox->setToolTip(tr("Enter text to search in the console output"));
+    }
+    mpBufferSearchBox->setAccessibleName(tr("Search buffer"));
+    mpBufferSearchBox->setAccessibleDescription(tr("Enter text to search in the console output"));
     connect(mpBufferSearchBox, &QLineEdit::returnPressed, this, &TConsole::slot_searchBufferUp);
 
     mpAction_searchOptions = new QAction(tr("Search Options"), this);
@@ -420,7 +484,7 @@ TConsole::TConsole(Host* pH, const QString& name, const ConsoleType type, QWidge
 
     mpAction_searchCaseSensitive = new QAction(tr("Case sensitive"), this);
     mpAction_searchCaseSensitive->setObjectName(qsl("mpAction_searchCaseSensitive"));
-    mpAction_searchCaseSensitive->setToolTip(utils::richText(tr("Match case precisely")));
+    mpAction_searchCaseSensitive->setToolTip(tr("Match case precisely"));
     mpAction_searchCaseSensitive->setCheckable(true);
     pMenu_searchOptions->insertAction(nullptr, mpAction_searchCaseSensitive);
 
@@ -433,18 +497,34 @@ TConsole::TConsole(Host* pH, const QString& name, const ConsoleType type, QWidge
     mpBufferSearchUp->setMinimumSize(QSize(30, 30));
     mpBufferSearchUp->setMaximumSize(QSize(30, 30));
     mpBufferSearchUp->setSizePolicy(sizePolicy5);
-    mpBufferSearchUp->setToolTip(utils::richText(tr("Earlier search result.")));
-    mpBufferSearchUp->setFocusPolicy(Qt::NoFocus);
+    if (a11yToolbarMode) {
+        mpBufferSearchUp->setToolTip(QString());
+    } else {
+        mpBufferSearchUp->setToolTip(tr("Navigate to the earlier search result in the output"));
+    }
+    mpBufferSearchUp->setAccessibleName(tr("Previous search result"));
+    mpBufferSearchUp->setAccessibleDescription(tr("Navigate to the earlier search result in the output"));
+    mpBufferSearchUp->setFocusPolicy(a11yToolbarMode ? Qt::TabFocus : Qt::NoFocus);
     mpBufferSearchUp->setIcon(QIcon(qsl(":/icons/export.png")));
+    mpBufferSearchUp->setText(tr("Previous search result"));
+    mpBufferSearchUp->setToolButtonStyle(a11yToolbarMode ? Qt::ToolButtonTextBesideIcon : Qt::ToolButtonIconOnly);
     connect(mpBufferSearchUp, &QAbstractButton::clicked, this, &TConsole::slot_searchBufferUp);
 
 
     mpBufferSearchDown->setMinimumSize(QSize(30, 30));
     mpBufferSearchDown->setMaximumSize(QSize(30, 30));
     mpBufferSearchDown->setSizePolicy(sizePolicy5);
-    mpBufferSearchDown->setFocusPolicy(Qt::NoFocus);
-    mpBufferSearchDown->setToolTip(utils::richText(tr("Later search result.")));
+    mpBufferSearchDown->setFocusPolicy(a11yToolbarMode ? Qt::TabFocus : Qt::NoFocus);
+    if (a11yToolbarMode) {
+        mpBufferSearchDown->setToolTip(QString());
+    } else {
+        mpBufferSearchDown->setToolTip(tr("Navigate to the later search result in the output"));
+    }
+    mpBufferSearchDown->setAccessibleName(tr("Next search result"));
+    mpBufferSearchDown->setAccessibleDescription(tr("Navigate to the later search result in the output"));
     mpBufferSearchDown->setIcon(QIcon(qsl(":/icons/import.png")));
+    mpBufferSearchDown->setText(tr("Next search result"));
+    mpBufferSearchDown->setToolButtonStyle(a11yToolbarMode ? Qt::ToolButtonTextBesideIcon : Qt::ToolButtonIconOnly);
     connect(mpBufferSearchDown, &QAbstractButton::clicked, this, &TConsole::slot_searchBufferDown);
 
 

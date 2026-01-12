@@ -38,6 +38,7 @@
 #include "GifTracker.h"
 
 #include "pre_guard.h"
+#include <QAccessible>
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QMimeData>
@@ -49,6 +50,20 @@
 #include <QPainter>
 #include "post_guard.h"
 
+
+namespace {
+#ifdef Q_OS_MACOS
+bool isToolbarA11yModeEnabled()
+{
+    return QAccessible::isActive() || qEnvironmentVariableIsSet("MUDLET_FORCE_ACCESSIBLE_TOOLBAR");
+}
+#else
+bool isToolbarA11yModeEnabled()
+{
+    return false;
+}
+#endif
+}
 
 TMainConsole::TMainConsole(Host* pH, QWidget* parent)
 : TConsole(pH, qsl("main"), TConsole::MainConsole, parent)
@@ -323,7 +338,16 @@ void TMainConsole::toggleLogging(bool isMessageEnabled)
                          .arg(logDateTime.toString(tr("'Log session starting at 'hh:mm:ss' on 'dddd', 'd' 'MMMM' 'yyyy'.")));
 
         }
-        logButton->setToolTip(utils::richText(tr("Stop logging game output to log file.")));
+        logButton->setText(tr("Toggle logging"));
+        if (isToolbarA11yModeEnabled()) {
+            logButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+            logButton->setToolTip(QString());
+        } else {
+            logButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
+            logButton->setToolTip(tr("Stop logging game output to a file"));
+        }
+        logButton->setAccessibleName(tr("Toggle logging"));
+        logButton->setAccessibleDescription(tr("Stop logging game output to a file"));
     } else {
         // Logging is being turned off
         buffer.logRemainingOutput();
@@ -339,7 +363,16 @@ void TMainConsole::toggleLogging(bool isMessageEnabled)
         }
         mLogFile.flush();
         mLogFile.close();
-        logButton->setToolTip(utils::richText(tr("Start logging game output to log file.")));
+        logButton->setText(tr("Toggle logging"));
+        if (isToolbarA11yModeEnabled()) {
+            logButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+            logButton->setToolTip(QString());
+        } else {
+            logButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
+            logButton->setToolTip(tr("Start logging game output to a file"));
+        }
+        logButton->setAccessibleName(tr("Toggle logging"));
+        logButton->setAccessibleDescription(tr("Start logging game output to a file"));
     }
 }
 
