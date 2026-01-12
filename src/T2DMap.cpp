@@ -1622,7 +1622,10 @@ void T2DMap::paintEvent(QPaintEvent* e)
     // it at the end of the paintEvent:
     TEvent areaViewedChangedEvent{};
 
-    if ((!mPick && !mShiftMode) || mpMap->mNewMove) {
+    // Track if we're auto-centering on the player (vs user manually panning)
+    const bool centeringOnPlayer = (!mPick && !mShiftMode) || mpMap->mNewMove;
+
+    if (centeringOnPlayer) {
         mShiftMode = true;
         // that's of interest only here because the map editor is here ->
         // map might not be updated, thus I force a map update on centerview()
@@ -1660,8 +1663,9 @@ void T2DMap::paintEvent(QPaintEvent* e)
         yspan = xyzoom * (widgetHeight / widgetWidth);
     }
 
-    // Center map on area when it fits entirely in viewport
-    {
+    // Center map on area when it fits entirely in viewport, but only when
+    // following player movement - not during manual panning or editing
+    if (centeringOnPlayer && !mRoomBeingMoved && !mMultiSelection) {
         const int zLevel = mMapCenterZ;
 
         // Get area bounds for current Z level (use overall bounds as fallback)
