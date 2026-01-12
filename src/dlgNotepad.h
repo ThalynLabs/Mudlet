@@ -25,18 +25,17 @@
 
 
 #include "ui_notes_editor.h"
-#include <QCheckBox>
-#include <QCloseEvent>
-#include <QLabel>
-#include <QLineEdit>
-#include <QPlainTextEdit>
 #include <QPointer>
-#include <QSettings>
-#include <QShortcut>
-#include <QTimer>
-#include <QToolButton>
 
 class Host;
+class QCloseEvent;
+class QLabel;
+class QLineEdit;
+class QPlainTextEdit;
+class QShortcut;
+class QTimer;
+class QTimerEvent;
+class QToolButton;
 
 
 class dlgNotepad : public QMainWindow, public Ui::notes_editor

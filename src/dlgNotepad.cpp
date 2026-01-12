@@ -25,6 +25,7 @@
 
 #include "mudlet.h"
 
+#include <QCloseEvent>
 #include <QDir>
 #include <QHBoxLayout>
 #include <QInputDialog>
@@ -32,10 +33,16 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QKeyEvent>
+#include <QLabel>
+#include <QLineEdit>
 #include <QMenu>
+#include <QPlainTextEdit>
 #include <QSaveFile>
+#include <QShortcut>
 #include <QStringConverter>
 #include <QTextDocument>
+#include <QTimer>
+#include <QToolButton>
 
 using namespace std::chrono;
 
