@@ -4092,10 +4092,6 @@ int TLuaInterpreter::setRoomBorderColor(lua_State* L)
 
     pR->mBorderColor = QColor(r, g, b, a);
 
-    qDebug() << "setRoomBorderColor: room" << id
-             << "set to rgba:" << r << g << b << a
-             << "isValid:" << pR->mBorderColor.isValid();
-
     host.mpMap->setUnsaved(__func__);
     host.mpMap->update();
     lua_pushboolean(L, true);
@@ -4114,11 +4110,6 @@ int TLuaInterpreter::getRoomBorderColor(lua_State* L)
     if (!pR) {
         return warnArgumentValue(L, __func__, csmInvalidRoomID.arg(id));
     }
-
-    qDebug() << "getRoomBorderColor: room" << id
-             << "isValid:" << pR->mBorderColor.isValid()
-             << "spec:" << pR->mBorderColor.spec()
-             << "rgba:" << pR->mBorderColor.red() << pR->mBorderColor.green() << pR->mBorderColor.blue() << pR->mBorderColor.alpha();
 
     if (!pR->mBorderColor.isValid()) {
         lua_pushnil(L);
@@ -4146,17 +4137,7 @@ int TLuaInterpreter::clearRoomBorderColor(lua_State* L)
         return warnArgumentValue(L, __func__, csmInvalidRoomID.arg(id));
     }
 
-    qDebug() << "clearRoomBorderColor: room" << id
-             << "BEFORE isValid:" << pR->mBorderColor.isValid()
-             << "spec:" << pR->mBorderColor.spec()
-             << "rgba:" << pR->mBorderColor.red() << pR->mBorderColor.green() << pR->mBorderColor.blue() << pR->mBorderColor.alpha();
-
     pR->mBorderColor = QColor();
-
-    qDebug() << "clearRoomBorderColor: room" << id
-             << "AFTER isValid:" << pR->mBorderColor.isValid()
-             << "spec:" << pR->mBorderColor.spec()
-             << "rgba:" << pR->mBorderColor.red() << pR->mBorderColor.green() << pR->mBorderColor.blue() << pR->mBorderColor.alpha();
 
     host.mpMap->setUnsaved(__func__);
     host.mpMap->update();
