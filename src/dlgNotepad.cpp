@@ -554,6 +554,8 @@ void dlgNotepad::saveSettings()
 
     mpHost->writeProfileIniData(qsl("Notepad/SendControlsVisible"),
                                  action_toggleSendControls->isChecked() ? qsl("true") : qsl("false"));
+    mpHost->writeProfileIniData(qsl("Notepad/WindowState"),
+                                 QString::fromLatin1(saveState().toBase64()));
 }
 
 void dlgNotepad::restoreSettings()
@@ -571,6 +573,11 @@ void dlgNotepad::restoreSettings()
     action_toggleSendControls->blockSignals(wasBlocked);
 
     slot_toggleSendControls(sendControlsVisible);
+
+    const QString windowStateStr = mpHost->readProfileIniData(qsl("Notepad/WindowState"));
+    if (!windowStateStr.isEmpty()) {
+        restoreState(QByteArray::fromBase64(windowStateStr.toLatin1()));
+    }
 }
 
 void dlgNotepad::closeEvent(QCloseEvent *event)
