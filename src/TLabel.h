@@ -6,7 +6,8 @@
  *   Copyright (C) 2014 by Ahmed Charles - acharles@outlook.com            *
  *   Copyright (C) 2016 by Ian Adkins - ieadkins@gmail.com                 *
  *   Copyright (C) 2017 by Chris Reid - WackyWormer@hotmail.com            *
- *   Copyright (C) 2020 by Stephen Lyons - slysven@virginmedia.com         *
+ *   Copyright (C) 2020, 2022-2023 by Stephen Lyons                        *
+ *                                               - slysven@virginmedia.com *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -26,14 +27,16 @@
 
 #include "TEvent.h"
 
+#include "utils.h"
+
 #include "pre_guard.h"
 #include <QLabel>
+#include <QMovie>
 #include <QPointer>
 #include <QString>
 #include "post_guard.h"
 
 class Host;
-
 class QMouseEvent;
 
 class TLabel : public QLabel
@@ -42,43 +45,42 @@ class TLabel : public QLabel
 
 public:
     Q_DISABLE_COPY(TLabel)
-    TLabel(Host* pH, QWidget* pW = nullptr);
-    void setClick(const QString& func, const TEvent& args);
-    void setDoubleClick(const QString& func, const TEvent& args);
-    void setRelease(const QString& func, const TEvent& args);
-    void setMove(const QString& func, const TEvent& args);
-    void setWheel(const QString& func, const TEvent& args);
-    void setEnter(const QString& func, const TEvent& args);
-    void setLeave(const QString& func, const TEvent& args);
+    explicit TLabel(Host*, const QString&, QWidget* pW = nullptr);
+    ~TLabel();
+
+    void setClick(const int func);
+    void setDoubleClick(const int func);
+    void setRelease(const int func);
+    void setMove(const int func);
+    void setWheel(const int func);
+    void setEnter(const int func);
+    void setLeave(const int func);
     void mousePressEvent(QMouseEvent*) override;
     void mouseDoubleClickEvent(QMouseEvent*) override;
     void mouseReleaseEvent(QMouseEvent*) override;
     void wheelEvent(QWheelEvent*) override;
     void mouseMoveEvent(QMouseEvent*) override;
     void leaveEvent(QEvent*) override;
-    void enterEvent(QEvent*) override;
+    void enterEvent(TEnterEvent*) override;
+    void resizeEvent(QResizeEvent* event) override;
     void setClickThrough(bool clickthrough);
 
-    bool forwardEventToMapper(QEvent*);
-
     QPointer<Host> mpHost;
-    QString mClick;
-    QString mDoubleClick;
-    QString mRelease;
-    QString mMove;
-    QString mWheel;
-    QString mEnter;
-    QString mLeave;
-    TEvent mClickParams;
-    TEvent mDoubleClickParams;
-    TEvent mReleaseParams;
-    TEvent mMoveParams;
-    TEvent mWheelParams;
-    TEvent mLeaveParams;
-    TEvent mEnterParams;
+    QString mName;
+    int mClickFunction = 0;
+    int mDoubleClickFunction = 0;
+    int mReleaseFunction = 0;
+    int mMoveFunction = 0;
+    int mWheelFunction = 0;
+    int mEnterFunction = 0;
+    int mLeaveFunction = 0;
+    QMovie* mpMovie = nullptr;
 
 private:
-    void releaseParams(TEvent& params);
+    void releaseFunc(const int existingFunction, const int newFunction);
+
+signals:
+    void resized();
 };
 
 #endif // MUDLET_TLABEL_H

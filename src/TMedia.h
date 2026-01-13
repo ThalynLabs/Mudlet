@@ -4,7 +4,8 @@
 /***************************************************************************
  *   Copyright (C) 2008-2013 by Heiko Koehn - KoehnHeiko@googlemail.com    *
  *   Copyright (C) 2014-2017 by Ahmed Charles - acharles@outlook.com       *
- *   Copyright (C) 2014-2019 by Stephen Lyons - slysven@virginmedia.com    *
+ *   Copyright (C) 2014-2019, 2022. 2024 by Stephen Lyons                  *
+ *                                            - slysven@virginmedia.com    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -26,92 +27,73 @@
 #include "Host.h"
 #include "TEvent.h"
 #include "mudlet.h"
+#include "TMediaData.h"
+#include "TMediaPlaylist.h"
 
-class TMediaData
-{
-public:
-    enum MediaProtocol { MediaProtocolMSP = 90, MediaProtocolGMCP = 201, MediaProtocolNotSet = 0 };
+#include "pre_guard.h"
+#include <QAudioOutput>
+#include <QMediaPlayer>
+#include "post_guard.h"
 
-    enum MediaType { MediaTypeSound = 1, MediaTypeMusic = 2, MediaTypeNotSet = 0 };
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+using QMediaPlayerPlaybackState = QMediaPlayer::State;
+#else
+using QMediaPlayerPlaybackState = QMediaPlayer::PlaybackState;
+#endif
 
-    enum MediaVolume { MediaVolumeMax = 100, MediaVolumeHigh = 75, MediaVolumeDefault = 50, MediaVolumeLow = 25, MediaVolumeMin = 1, MediaVolumePreload = 0 };
-
-    enum MediaLoops { MediaLoopsDefault = 1, MediaLoopsRepeat = -1 };
-
-    enum MediaPriority { MediaPriorityMax = 100, MediaPriorityHigh = 75, MediaPriorityDefault = 50, MediaPriorityLow = 25, MediaPriorityMin = 1, MediaPriorityNotSet = 0 };
-
-    enum MediaContinue { MediaContinueDefault = true, MediaContinueRestart = false };
-
-    TMediaData()
-    {
-        mMediaProtocol = MediaProtocolNotSet;
-        mMediaType = MediaTypeNotSet;
-        mMediaVolume = MediaVolumeDefault;
-        mMediaLoops = MediaLoopsDefault;
-        mMediaPriority = MediaPriorityNotSet;
-        mMediaContinue = MediaContinueDefault;
-    }
-
-    int getMediaProtocol() { return mMediaProtocol; }
-    void setMediaProtocol(int mediaProtocol) { mMediaProtocol = mediaProtocol; }
-    int getMediaType() { return mMediaType; }
-    void setMediaType(int mediaType) { mMediaType = mediaType; }
-    QString getMediaFileName() { return mMediaFileName; }
-    void setMediaFileName(QString mediaFileName) { mMediaFileName = mediaFileName; }
-    int getMediaVolume() { return mMediaVolume; }
-    void setMediaVolume(int mediaVolume) { mMediaVolume = mediaVolume; }
-    int getMediaLoops() { return mMediaLoops; }
-    void setMediaLoops(int mediaLoops) { mMediaLoops = mediaLoops; }
-    int getMediaPriority() { return mMediaPriority; }
-    void setMediaPriority(int mediaPriority) { mMediaPriority = mediaPriority; }
-    bool getMediaContinue() { return mMediaContinue; }
-    void setMediaContinue(bool mediaContinue) { mMediaContinue = mediaContinue; }
-    QString getMediaTag() { return mMediaTag; }
-    void setMediaTag(QString mediaTag) { mMediaTag = mediaTag; }
-    QString getMediaUrl() { return mMediaUrl; }
-    void setMediaUrl(QString mediaUrl) { mMediaUrl = mediaUrl; }
-    QString getMediaKey() { return mMediaUrl; }
-    void setMediaKey(QString mediaKey) { mMediaKey = mediaKey; }
-    QString getMediaAbsolutePathFileName() { return mMediaAbsolutePathFileName; }
-    void setMediaAbsolutePathFileName(QString mediaAbsolutePathFileName) { mMediaAbsolutePathFileName = mediaAbsolutePathFileName; }
-
-private:
-    int mMediaProtocol;
-    int mMediaType;
-    QString mMediaFileName;
-    int mMediaVolume;
-    int mMediaLoops;
-    int mMediaPriority;
-    bool mMediaContinue;
-    QString mMediaTag;
-    QString mMediaUrl;
-    QString mMediaKey;
-    QString mMediaAbsolutePathFileName;
-};
 
 class TMediaPlayer
 {
 public:
-    TMediaPlayer() {}
-    ~TMediaPlayer() {}
-
+    TMediaPlayer()
+    : mMediaData()
+    {}
     TMediaPlayer(Host* pHost, TMediaData& mediaData)
+    : mpHost(pHost)
+    , mMediaData(mediaData)
+    , mMediaPlayer(new QMediaPlayer(pHost))
+    , mPlaylist(new TMediaPlaylist())
+    , initialized(true)
     {
-        mpHost = pHost;
-        mMediaPlayer = new QMediaPlayer(pHost);
-        mMediaData = mediaData;
-        initialized = true;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        mMediaPlayer->setAudioOutput(new QAudioOutput());
+#endif
     }
+    ~TMediaPlayer() = default;
 
-    TMediaData getMediaData() { return mMediaData; }
+    TMediaData getMediaData() const { return mMediaData; }
     void setMediaData(TMediaData& mediaData) { mMediaData = mediaData; }
     QMediaPlayer* getMediaPlayer() const { return mMediaPlayer; }
-    bool isInitialized() { return initialized; }
+    bool isInitialized() const { return initialized; }
+    QMediaPlayerPlaybackState getPlaybackState() const {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        return mMediaPlayer->state();
+#else
+        return mMediaPlayer->playbackState();
+#endif
+    }
+    void setVolume(int volume) const {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        return mMediaPlayer->setVolume(volume);
+#else
+        return mMediaPlayer->audioOutput()->setVolume(volume / 100.0f);
+#endif
+    }
+    TMediaPlaylist* playlist() const {
+        return mPlaylist;
+    }
+    void setPlaylist(TMediaPlaylist* playlist) {
+        if (mPlaylist != playlist) {
+            delete mPlaylist;
+            mPlaylist = playlist;
+        }
+    }
 
 private:
     QPointer<Host> mpHost;
     TMediaData mMediaData;
-    QMediaPlayer* mMediaPlayer;
+    QMediaPlayer* mMediaPlayer = nullptr;
+    TMediaPlaylist* mPlaylist = nullptr;
     bool initialized = false;
 };
 
@@ -122,40 +104,57 @@ class TMedia : public QObject
 public:
     Q_DISABLE_COPY(TMedia)
     TMedia(Host* pHost, const QString& profileName);
-    ~TMedia();
+    ~TMedia() = default;
 
     void playMedia(TMediaData& mediaData);
+    QList<TMediaData> playingMedia(TMediaData& mediaData);
     void stopMedia(TMediaData& mediaData);
     void parseGMCP(QString& packageMessage, QString& gmcp);
+    bool purgeMediaCache();
+    void muteMedia(const TMediaData::MediaProtocol mediaProtocol);
+    void unmuteMedia(const TMediaData::MediaProtocol mediaProtocol);
+
+private slots:
+    void slot_writeFile(QNetworkReply* reply);
 
 private:
+    void stopAllMediaPlayers();
+    void setMediaPlayersMuted(const TMediaData::MediaProtocol mediaProtocol, const bool state);
+    void transitionNonRelativeFile(TMediaData& mediaData);
     QUrl parseUrl(TMediaData& mediaData);
-    bool isValidUrl(QUrl& url);
-    bool isFileRelative(TMediaData& mediaData);
+    static bool isValidUrl(QUrl& url);
+    static bool isFileRelative(TMediaData& mediaData);
     QStringList parseFileNameList(TMediaData& mediaData, QDir& dir);
     QStringList getFileNameList(TMediaData& mediaData);
     QUrl getFileUrl(TMediaData& mediaData);
     bool processUrl(TMediaData& mediaData);
-    void writeFile(QNetworkReply* reply);
     void downloadFile(TMediaData& mediaData);
     QString setupMediaAbsolutePathFileName(TMediaData& mediaData);
     QList<TMediaPlayer> getMediaPlayerList(TMediaData& mediaData);
+    void connectMediaPlayer(TMediaPlayer& player);
+    void updateMediaPlayerList(TMediaPlayer& player);
     TMediaPlayer getMediaPlayer(TMediaData& mediaData);
-    TMediaPlayer matchMediaPlayer(TMediaData& mediaData, QString absolutePathFileName);
-    bool doesMediaHavePriorityToPlay(TMediaData& mediaData, QString absolutePathFileName);
-    void matchMediaKeyAndStopMediaVariants(TMediaData& mediaData, QString absolutePathFileName);
+    TMediaPlayer matchMediaPlayer(TMediaData& mediaData, const QString& absolutePathFileName);
+    bool doesMediaHavePriorityToPlay(TMediaData& mediaData, const QString& absolutePathFileName);
+    void matchMediaKeyAndStopMediaVariants(TMediaData& mediaData, const QString& absolutePathFileName);
+    void handlePlayerPlaybackStateChanged(QMediaPlayerPlaybackState playbackState, const TMediaPlayer& pPlayer);
 
     void play(TMediaData& mediaData);
 
-    TMediaData::MediaType parseJSONByMediaType(QJsonObject& json);
-    QString parseJSONByMediaFileName(QJsonObject& json);
-    int parseJSONByMediaVolume(QJsonObject& json);
-    int parseJSONByMediaPriority(QJsonObject& json);
-    int parseJSONByMediaLoops(QJsonObject& json);
-    TMediaData::MediaContinue parseJSONByMediaContinue(QJsonObject& json);
-    QString parseJSONByMediaTag(QJsonObject& json);
-    QString parseJSONByMediaUrl(QJsonObject& json);
-    QString parseJSONByMediaKey(QJsonObject& json);
+    static TMediaData::MediaType parseJSONByMediaType(QJsonObject& json);
+    static QString parseJSONByMediaFileName(QJsonObject& json);
+    static int parseJSONByMediaVolume(QJsonObject& json);
+    static int parseJSONByMediaFadeIn(QJsonObject& json);
+    static int parseJSONByMediaFadeOut(QJsonObject& json);
+    static int parseJSONByMediaStart(QJsonObject& json);
+    static int parseJSONByMediaFinish(QJsonObject& json);
+    static int parseJSONByMediaPriority(QJsonObject& json);
+    static int parseJSONByMediaLoops(QJsonObject& json);
+    static TMediaData::MediaContinue parseJSONByMediaContinue(QJsonObject& json);
+    static QString parseJSONByMediaTag(QJsonObject& json);
+    static QString parseJSONByMediaUrl(QJsonObject& json);
+    static QString parseJSONByMediaKey(QJsonObject& json);
+    static TMediaData::MediaFadeAway parseJSONByMediaFadeAway(QJsonObject& json);
 
     void parseJSONForMediaDefault(QJsonObject& json);
     void parseJSONForMediaLoad(QJsonObject& json);
@@ -169,8 +168,10 @@ private:
     QList<TMediaPlayer> mMSPMusicList;
     QList<TMediaPlayer> mGMCPSoundList;
     QList<TMediaPlayer> mGMCPMusicList;
+    QList<TMediaPlayer> mAPISoundList;
+    QList<TMediaPlayer> mAPIMusicList;
 
-    QNetworkAccessManager* mpNetworkAccessManager;
+    QNetworkAccessManager* mpNetworkAccessManager = nullptr;
     QMap<QNetworkReply*, TMediaData> mMediaDownloads;
 };
 #endif // MUDLET_TMEDIA_H

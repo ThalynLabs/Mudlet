@@ -1,7 +1,8 @@
 /***************************************************************************
  *   Copyright (C) 2008-2013 by Heiko Koehn - KoehnHeiko@googlemail.com    *
  *   Copyright (C) 2014 by Ahmed Charles - acharles@outlook.com            *
- *   Copyright (C) 2014-2018 by Stephen Lyons - slysven@virginmedia.com    *
+ *   Copyright (C) 2014-2018, 2020, 2022-2024 by Stephen Lyons             *
+ *                                               - slysven@virginmedia.com *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -23,7 +24,8 @@
 #include "TBuffer.h"
 
 #include "mudlet.h"
-#include "TConsole.h"
+#include "TEvent.h"
+#include "TStringUtils.h"
 
 #include "pre_guard.h"
 #include <QTextBoundaryFinder>
@@ -31,639 +33,19 @@
 #include <QRegularExpression>
 #include "post_guard.h"
 
-// Define this to get qDebug() messages about the decoding of UTF-8 data when it
-// is not the single bytes of pure ASCII text:
-// #define DEBUG_UTF8_PROCESSING
-// Define this to get qDebug() messages about the decoding of GB2312/GBK/GB18030
-// data when it is not the single bytes of pure ASCII text:
-// #define DEBUG_GB_PROCESSING
-// Define this to get qDebug() messages about the decoding of BIG5
-// data when it is not the single bytes of pure ASCII text:
-// #define DEBUG_BIG5_PROCESSING
-// Define this to get qDebug() messages about the decoding of ANSI SGR sequences:
-// #define DEBUG_SGR_PROCESSING
-// Define this to get qDebug() messages about the decoding of ANSI OSC sequences:
-// #define DEBUG_OSC_PROCESSING
-// Define this to get qDebug() messages about the decoding of ANSI MXP sequences
-// although there is not much against this item at present {only an announcement
-// of the type (?) of an `\x1b[?z` received}:
-//#define DEBUG_MXP_PROCESSING
-
-
-// These tables have been regenerated from examination of the Qt source code
-// particularly from:
-// https://gitorious.org/qt/qt?p=qt:qt.git;a=blob;f=src/corelib/codecs/qsimplecodec.cpp;h=cb52ce35f369f7fbe5b04ff2c2cf1600bd794f4e;hb=HEAD
-// It represents the Unicode codepoints that are to be used to represent
-// extended ASCII characters with the MS Bit set.  The name is one that will
-// be recognized as a valid encoding name to supply to:
-// QTextCodec::codecForName(...)
-// "ISO 885901" is not included here as it is inherent in Qt and has a straight
-// one for one mapping of characters in the range 128 to 255 to the
-// corresponding Unicode codepoint.
-// Note that the codepoint 0xFFFD is the Unicode replacement character and
-// is reserved to show, amongst other things, where a UTF-8 sequence of bytes
-// is not a known character or, in these tables, the fact that no character was
-// defined at that Extended ASCII character code.
-
-// a map of computer-friendly encoding names as keys
-// values are a pair of human-friendly name + encoding data
-
-// clang-format off
-// Do not let code reformatting tool mess this around!
-// PLACEMARKER: Extended ASCII decoder Unicode codepoint lookup tables
-const QMap<QString, QPair<QString, QVector<QChar>>> TBuffer::csmEncodingTable = {
-    {QStringLiteral("ISO 8859-2"),
-    qMakePair(tr("ISO 8859-2 (Central European)", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x0080), QChar(0x0081), QChar(0x0082), QChar(0x0083), QChar(0x0084), QChar(0x0085), QChar(0x0086), QChar(0x0087),  // 80-87
-        QChar(0x0088), QChar(0x0089), QChar(0x008A), QChar(0x008B), QChar(0x008C), QChar(0x008D), QChar(0x008E), QChar(0x008F),  // 88-8F
-        QChar(0x0090), QChar(0x0091), QChar(0x0092), QChar(0x0093), QChar(0x0094), QChar(0x0095), QChar(0x0096), QChar(0x0097),  // 90-97
-        QChar(0x0098), QChar(0x0099), QChar(0x009A), QChar(0x009B), QChar(0x009C), QChar(0x009D), QChar(0x009E), QChar(0x009F),  // 98-9F
-        QChar(0x00A0), QChar(0x0104), QChar(0x02D8), QChar(0x0141), QChar(0x00A4), QChar(0x013D), QChar(0x015A), QChar(0x00A7),  // A0-A7
-        QChar(0x00A8), QChar(0x0160), QChar(0x015E), QChar(0x0164), QChar(0x0179), QChar(0x00AD), QChar(0x017D), QChar(0x017B),  // A8-AF
-        QChar(0x00B0), QChar(0x0105), QChar(0x02DB), QChar(0x0142), QChar(0x00B4), QChar(0x013E), QChar(0x015B), QChar(0x02C7),  // B0-B7
-        QChar(0x00B8), QChar(0x0161), QChar(0x015F), QChar(0x0165), QChar(0x017A), QChar(0x02DD), QChar(0x017E), QChar(0x017C),  // B8-BF
-        QChar(0x0154), QChar(0x00C1), QChar(0x00C2), QChar(0x0102), QChar(0x00C4), QChar(0x0139), QChar(0x0106), QChar(0x00C7),  // C0-C7
-        QChar(0x010C), QChar(0x00C9), QChar(0x0118), QChar(0x00CB), QChar(0x011A), QChar(0x00CD), QChar(0x00CE), QChar(0x010E),  // C8-CF
-        QChar(0x0110), QChar(0x0143), QChar(0x0147), QChar(0x00D3), QChar(0x00D4), QChar(0x0150), QChar(0x00D6), QChar(0x00D7),  // D0-D7
-        QChar(0x0158), QChar(0x016E), QChar(0x00DA), QChar(0x0170), QChar(0x00DC), QChar(0x00DD), QChar(0x0162), QChar(0x00DF),  // D8-DF
-        QChar(0x0155), QChar(0x00E1), QChar(0x00E2), QChar(0x0103), QChar(0x00E4), QChar(0x013A), QChar(0x0107), QChar(0x00E7),  // E0-E7
-        QChar(0x010D), QChar(0x00E9), QChar(0x0119), QChar(0x00EB), QChar(0x011B), QChar(0x00ED), QChar(0x00EE), QChar(0x010F),  // E8-EF
-        QChar(0x0111), QChar(0x0144), QChar(0x0148), QChar(0x00F3), QChar(0x00F4), QChar(0x0151), QChar(0x00F6), QChar(0x00F7),  // F0=F7
-        QChar(0x0159), QChar(0x016F), QChar(0x00FA), QChar(0x0171), QChar(0x00FC), QChar(0x00FD), QChar(0x0163), QChar(0x02D9)}))}, // F8-FF
-    {QStringLiteral("ISO 8859-3"),
-    qMakePair(tr("ISO 8859-3 (South European)", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x0080), QChar(0x0081), QChar(0x0082), QChar(0x0083), QChar(0x0084), QChar(0x0085), QChar(0x0086), QChar(0x0087),  // 80-87
-        QChar(0x0088), QChar(0x0089), QChar(0x008A), QChar(0x008B), QChar(0x008C), QChar(0x008D), QChar(0x008E), QChar(0x008F),  // 88-8F
-        QChar(0x0090), QChar(0x0091), QChar(0x0092), QChar(0x0093), QChar(0x0094), QChar(0x0095), QChar(0x0096), QChar(0x0097),  // 90-97
-        QChar(0x0098), QChar(0x0099), QChar(0x009A), QChar(0x009B), QChar(0x009C), QChar(0x009D), QChar(0x009E), QChar(0x009F),  // 98-9F
-        QChar(0x00A0), QChar(0x0126), QChar(0x02D8), QChar(0x00A3), QChar(0x00A4), QChar(0xFFFD), QChar(0x0124), QChar(0x00A7),  // A0-A7
-        QChar(0x00A8), QChar(0x0130), QChar(0x015E), QChar(0x011E), QChar(0x0134), QChar(0x00AD), QChar(0xFFFD), QChar(0x017B),  // A8-AF
-        QChar(0x00B0), QChar(0x0127), QChar(0x00B2), QChar(0x00B3), QChar(0x00B4), QChar(0x00B5), QChar(0x0125), QChar(0x00B7),  // B0-B7
-        QChar(0x00B8), QChar(0x0131), QChar(0x015F), QChar(0x011F), QChar(0x0135), QChar(0x00BD), QChar(0xFFFD), QChar(0x017C),  // B8-BF
-        QChar(0x00C0), QChar(0x00C1), QChar(0x00C2), QChar(0xFFFD), QChar(0x00C4), QChar(0x010A), QChar(0x0108), QChar(0x00C7),  // C0-C7
-        QChar(0x00C8), QChar(0x00C9), QChar(0x00CA), QChar(0x00CB), QChar(0x00CC), QChar(0x00CD), QChar(0x00CE), QChar(0x00CF),  // C8-CF
-        QChar(0xFFFD), QChar(0x00D1), QChar(0x00D2), QChar(0x00D3), QChar(0x00D4), QChar(0x0120), QChar(0x00D6), QChar(0x00D7),  // D0-D7
-        QChar(0x011C), QChar(0x00D9), QChar(0x00DA), QChar(0x00DB), QChar(0x00DC), QChar(0x016C), QChar(0x015C), QChar(0x00DF),  // D8-DF
-        QChar(0x00E0), QChar(0x00E1), QChar(0x00E2), QChar(0xFFFD), QChar(0x00E4), QChar(0x010B), QChar(0x0109), QChar(0x00E7),  // E0-E7
-        QChar(0x00E8), QChar(0x00E9), QChar(0x00EA), QChar(0x00EB), QChar(0x00EC), QChar(0x00ED), QChar(0x00EE), QChar(0x00EF),  // E8-EF
-        QChar(0xFFFD), QChar(0x00F1), QChar(0x00F2), QChar(0x00F3), QChar(0x00F4), QChar(0x0121), QChar(0x00F6), QChar(0x00F7),  // F0=F7
-        QChar(0x011D), QChar(0x00F9), QChar(0x00FA), QChar(0x00FB), QChar(0x00FC), QChar(0x016D), QChar(0x015D), QChar(0x02D9)}))},// F8-FF
-    {QStringLiteral("ISO 8859-4"),
-    qMakePair(tr("ISO 8859-4 (Baltic)", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x0080), QChar(0x0081), QChar(0x0082), QChar(0x0083), QChar(0x0084), QChar(0x0085), QChar(0x0086), QChar(0x0087),  // 80-87
-        QChar(0x0088), QChar(0x0089), QChar(0x008A), QChar(0x008B), QChar(0x008C), QChar(0x008D), QChar(0x008E), QChar(0x008F),  // 88-8F
-        QChar(0x0090), QChar(0x0091), QChar(0x0092), QChar(0x0093), QChar(0x0094), QChar(0x0095), QChar(0x0096), QChar(0x0097),  // 90-97
-        QChar(0x0098), QChar(0x0099), QChar(0x009A), QChar(0x009B), QChar(0x009C), QChar(0x009D), QChar(0x009E), QChar(0x009F),  // 98-9F
-        QChar(0x00A0), QChar(0x0104), QChar(0x0138), QChar(0x0156), QChar(0x00A4), QChar(0x0128), QChar(0x013B), QChar(0x00A7),  // A0-A7
-        QChar(0x00A8), QChar(0x0160), QChar(0x0112), QChar(0x0122), QChar(0x0166), QChar(0x00AD), QChar(0x017D), QChar(0x00AF),  // A8-AF
-        QChar(0x00B0), QChar(0x0105), QChar(0x02DB), QChar(0x0157), QChar(0x00B4), QChar(0x0129), QChar(0x013C), QChar(0x02C7),  // B0-B7
-        QChar(0x00B8), QChar(0x0161), QChar(0x0113), QChar(0x0123), QChar(0x0167), QChar(0x014A), QChar(0x017E), QChar(0x014B),  // B8-BF
-        QChar(0x0100), QChar(0x00C1), QChar(0x00C2), QChar(0x00C3), QChar(0x00C4), QChar(0x00C5), QChar(0x00C6), QChar(0x012E),  // C0-C7
-        QChar(0x010C), QChar(0x00C9), QChar(0x0118), QChar(0x00CB), QChar(0x0116), QChar(0x00CD), QChar(0x00CE), QChar(0x012A),  // C8-CF
-        QChar(0x0110), QChar(0x0145), QChar(0x014C), QChar(0x0136), QChar(0x00D4), QChar(0x00D5), QChar(0x00D6), QChar(0x00D7),  // D0-D7
-        QChar(0x00D8), QChar(0x0172), QChar(0x00DA), QChar(0x00DB), QChar(0x00DC), QChar(0x0168), QChar(0x016A), QChar(0x00DF),  // D8-DF
-        QChar(0x0101), QChar(0x00E1), QChar(0x00E2), QChar(0x00E3), QChar(0x00E4), QChar(0x00E5), QChar(0x00E6), QChar(0x012F),  // E0-E7
-        QChar(0x010D), QChar(0x00E9), QChar(0x0119), QChar(0x00EB), QChar(0x0117), QChar(0x00ED), QChar(0x00EE), QChar(0x012B),  // E8-EF
-        QChar(0x0111), QChar(0x0146), QChar(0x014D), QChar(0x0137), QChar(0x00F4), QChar(0x00F5), QChar(0x00F6), QChar(0x00F7),  // F0=F7
-        QChar(0x00F8), QChar(0x0173), QChar(0x00FA), QChar(0x00FB), QChar(0x00FC), QChar(0x0169), QChar(0x016B), QChar(0x02D9)}))},// F8-FF
-    {QStringLiteral("ISO 8859-5"),
-    qMakePair(tr("ISO 8859-5 (Cyrillic)", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x0080), QChar(0x0081), QChar(0x0082), QChar(0x0083), QChar(0x0084), QChar(0x0085), QChar(0x0086), QChar(0x0087),  // 80-87
-        QChar(0x0088), QChar(0x0089), QChar(0x008A), QChar(0x008B), QChar(0x008C), QChar(0x008D), QChar(0x008E), QChar(0x008F),  // 88-8F
-        QChar(0x0090), QChar(0x0091), QChar(0x0092), QChar(0x0093), QChar(0x0094), QChar(0x0095), QChar(0x0096), QChar(0x0097),  // 90-97
-        QChar(0x0098), QChar(0x0099), QChar(0x009A), QChar(0x009B), QChar(0x009C), QChar(0x009D), QChar(0x009E), QChar(0x009F),  // 98-9F
-        QChar(0x00A0), QChar(0x0401), QChar(0x0402), QChar(0x0403), QChar(0x0404), QChar(0x0405), QChar(0x0406), QChar(0x0407),  // A0-A7
-        QChar(0x0408), QChar(0x0409), QChar(0x040A), QChar(0x040B), QChar(0x040C), QChar(0x00AD), QChar(0x040E), QChar(0x040F),  // A8-AF
-        QChar(0x0410), QChar(0x0411), QChar(0x0412), QChar(0x0413), QChar(0x0414), QChar(0x0415), QChar(0x0416), QChar(0x0417),  // B0-B7
-        QChar(0x0418), QChar(0x0419), QChar(0x041A), QChar(0x041B), QChar(0x041C), QChar(0x041D), QChar(0x041E), QChar(0x041F),  // B8-BF
-        QChar(0x0420), QChar(0x0421), QChar(0x0422), QChar(0x0423), QChar(0x0424), QChar(0x0425), QChar(0x0426), QChar(0x0427),  // C0-C7
-        QChar(0x0428), QChar(0x0429), QChar(0x042A), QChar(0x042B), QChar(0x042C), QChar(0x042D), QChar(0x042E), QChar(0x042F),  // C8-CF
-        QChar(0x0430), QChar(0x0431), QChar(0x0432), QChar(0x0433), QChar(0x0434), QChar(0x0435), QChar(0x0436), QChar(0x0437),  // D0-D7
-        QChar(0x0438), QChar(0x0439), QChar(0x043A), QChar(0x043B), QChar(0x043C), QChar(0x043D), QChar(0x043E), QChar(0x043F),  // D8-DF
-        QChar(0x0440), QChar(0x0441), QChar(0x0442), QChar(0x0443), QChar(0x0444), QChar(0x0445), QChar(0x0446), QChar(0x0447),  // E0-E7
-        QChar(0x0448), QChar(0x0449), QChar(0x044A), QChar(0x044B), QChar(0x044C), QChar(0x044D), QChar(0x044E), QChar(0x044F),  // E8-EF
-        QChar(0x2116), QChar(0x0451), QChar(0x0452), QChar(0x0453), QChar(0x0454), QChar(0x0455), QChar(0x0456), QChar(0x0457),  // F0=F7
-        QChar(0x0458), QChar(0x0459), QChar(0x045A), QChar(0x045B), QChar(0x045C), QChar(0x00A7), QChar(0x045E), QChar(0x045F)}))},// F8-FF
-    {QStringLiteral("ISO 8859-6"),
-    qMakePair(tr("ISO 8859-6 (Arabic)", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x0080), QChar(0x0081), QChar(0x0082), QChar(0x0083), QChar(0x0084), QChar(0x0085), QChar(0x0086), QChar(0x0087),  // 80-87
-        QChar(0x0088), QChar(0x0089), QChar(0x008A), QChar(0x008B), QChar(0x008C), QChar(0x008D), QChar(0x008E), QChar(0x008F),  // 88-8F
-        QChar(0x0090), QChar(0x0091), QChar(0x0092), QChar(0x0093), QChar(0x0094), QChar(0x0095), QChar(0x0096), QChar(0x0097),  // 90-97
-        QChar(0x0098), QChar(0x0099), QChar(0x009A), QChar(0x009B), QChar(0x009C), QChar(0x009D), QChar(0x009E), QChar(0x009F),  // 98-9F
-        QChar(0x00A0), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0x00A4), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD),  // A0-A7
-        QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0x060C), QChar(0x00AD), QChar(0xFFFD), QChar(0xFFFD),  // A8-AF
-        QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD),  // B0-B7
-        QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0x061B), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0x061F),  // B8-BF
-        QChar(0xFFFD), QChar(0x0621), QChar(0x0622), QChar(0x0623), QChar(0x0624), QChar(0x0625), QChar(0x0626), QChar(0x0627),  // C0-C7
-        QChar(0x0628), QChar(0x0629), QChar(0x062A), QChar(0x062B), QChar(0x062C), QChar(0x062D), QChar(0x062E), QChar(0x062F),  // C8-CF
-        QChar(0x0630), QChar(0x0631), QChar(0x0632), QChar(0x0633), QChar(0x0634), QChar(0x0635), QChar(0x0636), QChar(0x0637),  // D0-D7
-        QChar(0x0638), QChar(0x0639), QChar(0x063A), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD),  // D8-DF
-        QChar(0x0640), QChar(0x0641), QChar(0x0642), QChar(0x0643), QChar(0x0644), QChar(0x0645), QChar(0x0646), QChar(0x0647),  // E0-E7
-        QChar(0x0648), QChar(0x0649), QChar(0x064A), QChar(0x064B), QChar(0x064C), QChar(0x064D), QChar(0x064E), QChar(0x064F),  // E8-EF
-        QChar(0x0650), QChar(0x0651), QChar(0x0652), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD),  // F0=F7
-        QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD)}))},// F8-FF
-    {QStringLiteral("ISO 8859-7"),
-    qMakePair(tr("ISO 8859-7 (Greek)", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x0080), QChar(0x0081), QChar(0x0082), QChar(0x0083), QChar(0x0084), QChar(0x0085), QChar(0x0086), QChar(0x0087),  // 80-87
-        QChar(0x0088), QChar(0x0089), QChar(0x008A), QChar(0x008B), QChar(0x008C), QChar(0x008D), QChar(0x008E), QChar(0x008F),  // 88-8F
-        QChar(0x0090), QChar(0x0091), QChar(0x0092), QChar(0x0093), QChar(0x0094), QChar(0x0095), QChar(0x0096), QChar(0x0097),  // 90-97
-        QChar(0x0098), QChar(0x0099), QChar(0x009A), QChar(0x009B), QChar(0x009C), QChar(0x009D), QChar(0x009E), QChar(0x009F),  // 98-9F
-        QChar(0x00A0), QChar(0x2018), QChar(0x2019), QChar(0x00A3), QChar(0xFFFD), QChar(0xFFFD), QChar(0x00A6), QChar(0x00A7),  // A0-A7
-        QChar(0x00A8), QChar(0x00A9), QChar(0xFFFD), QChar(0x00AB), QChar(0x00AC), QChar(0x00AD), QChar(0xFFFD), QChar(0x2015),  // A8-AF
-        QChar(0x00B0), QChar(0x00B1), QChar(0x00B2), QChar(0x00B3), QChar(0x0384), QChar(0x0385), QChar(0x0386), QChar(0x00B7),  // B0-B7
-        QChar(0x0388), QChar(0x0389), QChar(0x038A), QChar(0x00BB), QChar(0x038C), QChar(0x00BD), QChar(0x038E), QChar(0x038F),  // B8-BF
-        QChar(0x0390), QChar(0x0391), QChar(0x0392), QChar(0x0393), QChar(0x0394), QChar(0x0395), QChar(0x0396), QChar(0x0397),  // C0-C7
-        QChar(0x0398), QChar(0x0399), QChar(0x039A), QChar(0x039B), QChar(0x039C), QChar(0x039D), QChar(0x039E), QChar(0x039F),  // C8-CF
-        QChar(0x03A0), QChar(0x03A1), QChar(0xFFFD), QChar(0x03A3), QChar(0x03A4), QChar(0x03A5), QChar(0x03A6), QChar(0x03A7),  // D0-D7
-        QChar(0x03A8), QChar(0x03A9), QChar(0x03AA), QChar(0x03AB), QChar(0x03AC), QChar(0x03AD), QChar(0x03AE), QChar(0x03AF),  // D8-DF
-        QChar(0x03B0), QChar(0x03B1), QChar(0x03B2), QChar(0x03B3), QChar(0x03B4), QChar(0x03B5), QChar(0x03B6), QChar(0x03B7),  // E0-E7
-        QChar(0x03B8), QChar(0x03B9), QChar(0x03BA), QChar(0x03BB), QChar(0x03BC), QChar(0x03BD), QChar(0x03BE), QChar(0x03BF),  // E8-EF
-        QChar(0x03C0), QChar(0x03C1), QChar(0x03C2), QChar(0x03C3), QChar(0x03C4), QChar(0x03C5), QChar(0x03C6), QChar(0x03C7),  // F0=F7
-        QChar(0x03C8), QChar(0x03C9), QChar(0x03CA), QChar(0x03CB), QChar(0x03CC), QChar(0x03CD), QChar(0x03CE), QChar(0xFFFD)}))},// F8-FF
-    {QStringLiteral("ISO 8859-8"),
-    qMakePair(tr("ISO 8859-8 (Hebrew Visual)", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x0080), QChar(0x0081), QChar(0x0082), QChar(0x0083), QChar(0x0084), QChar(0x0085), QChar(0x0086), QChar(0x0087),  // 80-87
-        QChar(0x0088), QChar(0x0089), QChar(0x008A), QChar(0x008B), QChar(0x008C), QChar(0x008D), QChar(0x008E), QChar(0x008F),  // 88-8F
-        QChar(0x0090), QChar(0x0091), QChar(0x0092), QChar(0x0093), QChar(0x0094), QChar(0x0095), QChar(0x0096), QChar(0x0097),  // 90-97
-        QChar(0x0098), QChar(0x0099), QChar(0x009A), QChar(0x009B), QChar(0x009C), QChar(0x009D), QChar(0x009E), QChar(0x009F),  // 98-9F
-        QChar(0x00A0), QChar(0xFFFD), QChar(0x00A2), QChar(0x00A3), QChar(0x00A4), QChar(0x00A5), QChar(0x00A6), QChar(0x00A7),  // A0-A7
-        QChar(0x00A8), QChar(0x00A9), QChar(0x00D7), QChar(0x00AB), QChar(0x00AC), QChar(0x00AD), QChar(0x00AE), QChar(0x203E),  // A8-AF
-        QChar(0x00B0), QChar(0x00B1), QChar(0x00B2), QChar(0x00B3), QChar(0x00B4), QChar(0x00B5), QChar(0x00B6), QChar(0x00B7),  // B0-B7
-        QChar(0x00B8), QChar(0x00B9), QChar(0x00F7), QChar(0x00BB), QChar(0x00BC), QChar(0x00BD), QChar(0x00BE), QChar(0xFFFD),  // B8-BF
-        QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD),  // C0-C7
-        QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD),  // C8-CF
-        QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD),  // D0-D7
-        QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0x2017),  // D8-DF
-        QChar(0x05D0), QChar(0x05D1), QChar(0x05D2), QChar(0x05D3), QChar(0x05D4), QChar(0x05D5), QChar(0x05D6), QChar(0x05D7),  // E0-E7
-        QChar(0x05D8), QChar(0x05D9), QChar(0x05DA), QChar(0x05DB), QChar(0x05DC), QChar(0x05DD), QChar(0x05DE), QChar(0x05DF),  // E8-EF
-        QChar(0x05E0), QChar(0x05E1), QChar(0x05E2), QChar(0x05E3), QChar(0x05E4), QChar(0x05E5), QChar(0x05E6), QChar(0x05E7),  // F0=F7
-        QChar(0x05E8), QChar(0x05E9), QChar(0x05EA), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD)}))},// F8-FF
-    {QStringLiteral("ISO 8859-9"),
-    qMakePair(tr("ISO 8859-9 (Turkish)", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x0080), QChar(0x0081), QChar(0x0082), QChar(0x0083), QChar(0x0084), QChar(0x0085), QChar(0x0086), QChar(0x0087),  // 80-87
-        QChar(0x0088), QChar(0x0089), QChar(0x008A), QChar(0x008B), QChar(0x008C), QChar(0x008D), QChar(0x008E), QChar(0x008F),  // 88-8F
-        QChar(0x0090), QChar(0x0091), QChar(0x0092), QChar(0x0093), QChar(0x0094), QChar(0x0095), QChar(0x0096), QChar(0x0097),  // 90-97
-        QChar(0x0098), QChar(0x0099), QChar(0x009A), QChar(0x009B), QChar(0x009C), QChar(0x009D), QChar(0x009E), QChar(0x009F),  // 98-9F
-        QChar(0x00A0), QChar(0x00A1), QChar(0x00A2), QChar(0x00A3), QChar(0x00A4), QChar(0x00A5), QChar(0x00A6), QChar(0x00A7),  // A0-A7
-        QChar(0x00A8), QChar(0x00A9), QChar(0x00AA), QChar(0x00AB), QChar(0x00AC), QChar(0x00AD), QChar(0x00AE), QChar(0x00AF),  // A8-AF
-        QChar(0x00B0), QChar(0x00B1), QChar(0x00B2), QChar(0x00B3), QChar(0x00B4), QChar(0x00B5), QChar(0x00B6), QChar(0x00B7),  // B0-B7
-        QChar(0x00B8), QChar(0x00B9), QChar(0x00BA), QChar(0x00BB), QChar(0x00BC), QChar(0x00BD), QChar(0x00BE), QChar(0x00BF),  // B8-BF
-        QChar(0x00C0), QChar(0x00C1), QChar(0x00C2), QChar(0x00C3), QChar(0x00C4), QChar(0x00C5), QChar(0x00C6), QChar(0x00C7),  // C0-C7
-        QChar(0x00C8), QChar(0x00C9), QChar(0x00CA), QChar(0x00CB), QChar(0x00CC), QChar(0x00CD), QChar(0x00CE), QChar(0x00CF),  // C8-CF
-        QChar(0x011E), QChar(0x00D1), QChar(0x00D2), QChar(0x00D3), QChar(0x00D4), QChar(0x00D5), QChar(0x00D6), QChar(0x00D7),  // D0-D7
-        QChar(0x00D8), QChar(0x00D9), QChar(0x00DA), QChar(0x00DB), QChar(0x00DC), QChar(0x0130), QChar(0x015E), QChar(0x00DF),  // D8-DF
-        QChar(0x00E0), QChar(0x00E1), QChar(0x00E2), QChar(0x00E3), QChar(0x00E4), QChar(0x00E5), QChar(0x00E6), QChar(0x00E7),  // E0-E7
-        QChar(0x00E8), QChar(0x00E9), QChar(0x00EA), QChar(0x00EB), QChar(0x00EC), QChar(0x00ED), QChar(0x00EE), QChar(0x00EF),  // E8-EF
-        QChar(0x011F), QChar(0x00F1), QChar(0x00F2), QChar(0x00F3), QChar(0x00F4), QChar(0x00F5), QChar(0x00F6), QChar(0x00F7),  // F0=F7
-        QChar(0x00F8), QChar(0x00F9), QChar(0x00FA), QChar(0x00FB), QChar(0x00FC), QChar(0x0131), QChar(0x015F), QChar(0x00FF)}))},// F8-FF
-    {QStringLiteral("ISO 8859-10"),
-    qMakePair(tr("ISO 8859-10 (Nordic)", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x0080), QChar(0x0081), QChar(0x0082), QChar(0x0083), QChar(0x0084), QChar(0x0085), QChar(0x0086), QChar(0x0087),  // 80-87
-        QChar(0x0088), QChar(0x0089), QChar(0x008A), QChar(0x008B), QChar(0x008C), QChar(0x008D), QChar(0x008E), QChar(0x008F),  // 88-8F
-        QChar(0x0090), QChar(0x0091), QChar(0x0092), QChar(0x0093), QChar(0x0094), QChar(0x0095), QChar(0x0096), QChar(0x0097),  // 90-97
-        QChar(0x0098), QChar(0x0099), QChar(0x009A), QChar(0x009B), QChar(0x009C), QChar(0x009D), QChar(0x009E), QChar(0x009F),  // 98-9F
-        QChar(0x00A0), QChar(0x0104), QChar(0x0112), QChar(0x0122), QChar(0x012A), QChar(0x0128), QChar(0x0136), QChar(0x00A7),  // A0-A7
-        QChar(0x013B), QChar(0x0110), QChar(0x0160), QChar(0x0166), QChar(0x017D), QChar(0x00AD), QChar(0x016A), QChar(0x014A),  // A8-AF
-        QChar(0x00B0), QChar(0x0105), QChar(0x0113), QChar(0x0123), QChar(0x012B), QChar(0x0129), QChar(0x0137), QChar(0x00B7),  // B0-B7
-        QChar(0x013C), QChar(0x0111), QChar(0x0161), QChar(0x0167), QChar(0x017E), QChar(0x2015), QChar(0x016B), QChar(0x014B),  // B8-BF
-        QChar(0x0100), QChar(0x00C1), QChar(0x00C2), QChar(0x00C3), QChar(0x00C4), QChar(0x00C5), QChar(0x00C6), QChar(0x012E),  // C0-C7
-        QChar(0x010C), QChar(0x00C9), QChar(0x0118), QChar(0x00CB), QChar(0x0116), QChar(0x00CD), QChar(0x00CE), QChar(0x00CF),  // C8-CF
-        QChar(0x00D0), QChar(0x0145), QChar(0x014C), QChar(0x00D3), QChar(0x00D4), QChar(0x00D5), QChar(0x00D6), QChar(0x0168),  // D0-D7
-        QChar(0x00D8), QChar(0x0172), QChar(0x00DA), QChar(0x00DB), QChar(0x00DC), QChar(0x00DD), QChar(0x00DE), QChar(0x00DF),  // D8-DF
-        QChar(0x0101), QChar(0x00E1), QChar(0x00E2), QChar(0x00E3), QChar(0x00E4), QChar(0x00E5), QChar(0x00E6), QChar(0x012F),  // E0-E7
-        QChar(0x010D), QChar(0x00E9), QChar(0x0119), QChar(0x00EB), QChar(0x0117), QChar(0x00ED), QChar(0x00EE), QChar(0x00EF),  // E8-EF
-        QChar(0x00F0), QChar(0x0146), QChar(0x014D), QChar(0x00F3), QChar(0x00F4), QChar(0x00F5), QChar(0x00F6), QChar(0x0169),  // F0=F7
-        QChar(0x00F8), QChar(0x0173), QChar(0x00FA), QChar(0x00FB), QChar(0x00FC), QChar(0x00FD), QChar(0x00FE), QChar(0x0138)}))},// F8-FF
-    {QStringLiteral("ISO 8859-11"),
-    qMakePair(tr("ISO 8859-11 (Latin/Thai)", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x20AC), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0x2026), QChar(0xFFFD), QChar(0xFFFD),  // 80-87
-        QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD),  // 88-8F
-        QChar(0xFFFD), QChar(0x2018), QChar(0x2019), QChar(0x201C), QChar(0x201D), QChar(0x2022), QChar(0x2013), QChar(0x2014),  // 90-97
-        QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD),  // 98-9F
-        QChar(0xFFFD), QChar(0x0E01), QChar(0x0E02), QChar(0x0E03), QChar(0x0E04), QChar(0x0E05), QChar(0x0E06), QChar(0x0E07),  // A0-A7
-        QChar(0x0E08), QChar(0x0E09), QChar(0x0E0A), QChar(0x0E0B), QChar(0x0E0C), QChar(0x0E0D), QChar(0x0E0E), QChar(0x0E0F),  // A8-AF
-        QChar(0x0E10), QChar(0x0E11), QChar(0x0E12), QChar(0x0E13), QChar(0x0E14), QChar(0x0E15), QChar(0x0E16), QChar(0x0E17),  // B0-B7
-        QChar(0x0E18), QChar(0x0E19), QChar(0x0E1A), QChar(0x0E1B), QChar(0x0E1C), QChar(0x0E1D), QChar(0x0E1E), QChar(0x0E1F),  // B8-BF
-        QChar(0x0E20), QChar(0x0E21), QChar(0x0E22), QChar(0x0E23), QChar(0x0E24), QChar(0x0E25), QChar(0x0E26), QChar(0x0E27),  // C0-C7
-        QChar(0x0E28), QChar(0x0E29), QChar(0x0E2A), QChar(0x0E2B), QChar(0x0E2C), QChar(0x0E2D), QChar(0x0E2E), QChar(0x0E2F),  // C8-CF
-        QChar(0x0E30), QChar(0x0E31), QChar(0x0E32), QChar(0x0E33), QChar(0x0E34), QChar(0x0E35), QChar(0x0E36), QChar(0x0E37),  // D0-D7
-        QChar(0x0E38), QChar(0x0E39), QChar(0x0E3A), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0x0E3F),  // D8-DF
-        QChar(0x0E40), QChar(0x0E41), QChar(0x0E42), QChar(0x0E43), QChar(0x0E44), QChar(0x0E45), QChar(0x0E46), QChar(0x0E47),  // E0-E7
-        QChar(0x0E48), QChar(0x0E49), QChar(0x0E4A), QChar(0x0E4B), QChar(0x0E4C), QChar(0x0E4D), QChar(0x0E4E), QChar(0x0E4F),  // E8-EF
-        QChar(0x0E50), QChar(0x0E51), QChar(0x0E52), QChar(0x0E53), QChar(0x0E54), QChar(0x0E55), QChar(0x0E56), QChar(0x0E57),  // F0=F7
-        QChar(0x0E58), QChar(0x0E59), QChar(0x0E5A), QChar(0x0E5B), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD)}))},// F8-FF
-    {QStringLiteral("ISO 8859-13"),
-    qMakePair(tr("ISO 8859-13 (Baltic)", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x0080), QChar(0x0081), QChar(0x0082), QChar(0x0083), QChar(0x0084), QChar(0x0085), QChar(0x0086), QChar(0x0087),  // 80-87
-        QChar(0x0088), QChar(0x0089), QChar(0x008A), QChar(0x008B), QChar(0x008C), QChar(0x008D), QChar(0x008E), QChar(0x008F),  // 88-8F
-        QChar(0x0090), QChar(0x0091), QChar(0x0092), QChar(0x0093), QChar(0x0094), QChar(0x0095), QChar(0x0096), QChar(0x0097),  // 90-97
-        QChar(0x0098), QChar(0x0099), QChar(0x009A), QChar(0x009B), QChar(0x009C), QChar(0x009D), QChar(0x009E), QChar(0x009F),  // 98-9F
-        QChar(0x00A0), QChar(0x201D), QChar(0x00A2), QChar(0x00A3), QChar(0x00A4), QChar(0x201E), QChar(0x00A6), QChar(0x00A7),  // A0-A7
-        QChar(0x00D8), QChar(0x00A9), QChar(0x0156), QChar(0x00AB), QChar(0x00AC), QChar(0x00AD), QChar(0x00AE), QChar(0x00C6),  // A8-AF
-        QChar(0x00B0), QChar(0x00B1), QChar(0x00B2), QChar(0x00B3), QChar(0x201C), QChar(0x00B5), QChar(0x00B6), QChar(0x00B7),  // B0-B7
-        QChar(0x00F8), QChar(0x00B9), QChar(0x0157), QChar(0x00BB), QChar(0x00BC), QChar(0x00BD), QChar(0x00BE), QChar(0x00E6),  // B8-BF
-        QChar(0x0104), QChar(0x012E), QChar(0x0100), QChar(0x0106), QChar(0x00C4), QChar(0x00C5), QChar(0x0118), QChar(0x0112),  // C0-C7
-        QChar(0x010C), QChar(0x00C9), QChar(0x0179), QChar(0x0116), QChar(0x0122), QChar(0x0136), QChar(0x012A), QChar(0x013B),  // C8-CF
-        QChar(0x0160), QChar(0x0143), QChar(0x0145), QChar(0x00D3), QChar(0x014C), QChar(0x00D5), QChar(0x00D6), QChar(0x00D7),  // D0-D7
-        QChar(0x0172), QChar(0x0141), QChar(0x015A), QChar(0x016A), QChar(0x00DC), QChar(0x017B), QChar(0x017D), QChar(0x00DF),  // D8-DF
-        QChar(0x0105), QChar(0x012F), QChar(0x0101), QChar(0x0107), QChar(0x00E4), QChar(0x00E5), QChar(0x0119), QChar(0x0113),  // E0-E7
-        QChar(0x010D), QChar(0x00E9), QChar(0x017A), QChar(0x0117), QChar(0x0123), QChar(0x0137), QChar(0x012B), QChar(0x013C),  // E8-EF
-        QChar(0x0161), QChar(0x0144), QChar(0x0146), QChar(0x00F3), QChar(0x014D), QChar(0x00F5), QChar(0x00F6), QChar(0x00F7),  // F0=F7
-        QChar(0x0173), QChar(0x0142), QChar(0x015B), QChar(0x016B), QChar(0x00FC), QChar(0x017C), QChar(0x017E), QChar(0x2019)}))},// F8-FF
-    {QStringLiteral("ISO 8859-14"),
-    qMakePair(tr("ISO 8859-14 (Celtic)", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x0080), QChar(0x0081), QChar(0x0082), QChar(0x0083), QChar(0x0084), QChar(0x0085), QChar(0x0086), QChar(0x0087),  // 80-87
-        QChar(0x0088), QChar(0x0089), QChar(0x008A), QChar(0x008B), QChar(0x008C), QChar(0x008D), QChar(0x008E), QChar(0x008F),  // 88-8F
-        QChar(0x0090), QChar(0x0091), QChar(0x0092), QChar(0x0093), QChar(0x0094), QChar(0x0095), QChar(0x0096), QChar(0x0097),  // 90-97
-        QChar(0x0098), QChar(0x0099), QChar(0x009A), QChar(0x009B), QChar(0x009C), QChar(0x009D), QChar(0x009E), QChar(0x009F),  // 98-9F
-        QChar(0x00A0), QChar(0x1E02), QChar(0x1E03), QChar(0x00A3), QChar(0x010A), QChar(0x010B), QChar(0x1E0A), QChar(0x00A7),  // A0-A7
-        QChar(0x1E80), QChar(0x00A9), QChar(0x1E82), QChar(0x1E0B), QChar(0x1EF2), QChar(0x00AD), QChar(0x00AE), QChar(0x0178),  // A8-AF
-        QChar(0x1E1E), QChar(0x1E1F), QChar(0x0120), QChar(0x0121), QChar(0x1E40), QChar(0x1E41), QChar(0x00B6), QChar(0x1E56),  // B0-B7
-        QChar(0x1E81), QChar(0x1E57), QChar(0x1E83), QChar(0x1E60), QChar(0x1EF3), QChar(0x1E84), QChar(0x1E85), QChar(0x1E61),  // B8-BF
-        QChar(0x00C0), QChar(0x00C1), QChar(0x00C2), QChar(0x00C3), QChar(0x00C4), QChar(0x00C5), QChar(0x00C6), QChar(0x00C7),  // C0-C7
-        QChar(0x00C8), QChar(0x00C9), QChar(0x00CA), QChar(0x00CB), QChar(0x00CC), QChar(0x00CD), QChar(0x00CE), QChar(0x00CF),  // C8-CF
-        QChar(0x0174), QChar(0x00D1), QChar(0x00D2), QChar(0x00D3), QChar(0x00D4), QChar(0x00D5), QChar(0x00D6), QChar(0x1E6A),  // D0-D7
-        QChar(0x00D8), QChar(0x00D9), QChar(0x00DA), QChar(0x00DB), QChar(0x00DC), QChar(0x00DD), QChar(0x0176), QChar(0x00DF),  // D8-DF
-        QChar(0x00E0), QChar(0x00E1), QChar(0x00E2), QChar(0x00E3), QChar(0x00E4), QChar(0x00E5), QChar(0x00E6), QChar(0x00E7),  // E0-E7
-        QChar(0x00E8), QChar(0x00E9), QChar(0x00EA), QChar(0x00EB), QChar(0x00EC), QChar(0x00ED), QChar(0x00EE), QChar(0x00EF),  // E8-EF
-        QChar(0x0175), QChar(0x00F1), QChar(0x00F2), QChar(0x00F3), QChar(0x00F4), QChar(0x00F5), QChar(0x00F6), QChar(0x1E6B),  // F0=F7
-        QChar(0x00F8), QChar(0x00F9), QChar(0x00FA), QChar(0x00FB), QChar(0x00FC), QChar(0x00FD), QChar(0x0177), QChar(0x00FF)}))},// F8-FF
-    {QStringLiteral("ISO 8859-15"),
-    qMakePair(tr("ISO 8859-15 (Western)", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x0080), QChar(0x0081), QChar(0x0082), QChar(0x0083), QChar(0x0084), QChar(0x0085), QChar(0x0086), QChar(0x0087),  // 80-87
-        QChar(0x0088), QChar(0x0089), QChar(0x008A), QChar(0x008B), QChar(0x008C), QChar(0x008D), QChar(0x008E), QChar(0x008F),  // 88-8F
-        QChar(0x0090), QChar(0x0091), QChar(0x0092), QChar(0x0093), QChar(0x0094), QChar(0x0095), QChar(0x0096), QChar(0x0097),  // 90-97
-        QChar(0x0098), QChar(0x0099), QChar(0x009A), QChar(0x009B), QChar(0x009C), QChar(0x009D), QChar(0x009E), QChar(0x009F),  // 98-9F
-        QChar(0x00A0), QChar(0x00A1), QChar(0x00A2), QChar(0x00A3), QChar(0x20AC), QChar(0x00A5), QChar(0x0160), QChar(0x00A7),  // A0-A7
-        QChar(0x0161), QChar(0x00A9), QChar(0x00AA), QChar(0x00AB), QChar(0x00AC), QChar(0x00AD), QChar(0x00AE), QChar(0x00AF),  // A8-AF
-        QChar(0x00B0), QChar(0x00B1), QChar(0x00B2), QChar(0x00B3), QChar(0x017D), QChar(0x00B5), QChar(0x00B6), QChar(0x00B7),  // B0-B7
-        QChar(0x017E), QChar(0x00B9), QChar(0x00BA), QChar(0x00BB), QChar(0x0152), QChar(0x0153), QChar(0x0178), QChar(0x00BF),  // B8-BF
-        QChar(0x00C0), QChar(0x00C1), QChar(0x00C2), QChar(0x00C3), QChar(0x00C4), QChar(0x00C5), QChar(0x00C6), QChar(0x00C7),  // C0-C7
-        QChar(0x00C8), QChar(0x00C9), QChar(0x00CA), QChar(0x00CB), QChar(0x00CC), QChar(0x00CD), QChar(0x00CE), QChar(0x00CF),  // C8-CF
-        QChar(0x00D0), QChar(0x00D1), QChar(0x00D2), QChar(0x00D3), QChar(0x00D4), QChar(0x00D5), QChar(0x00D6), QChar(0x00D7),  // D0-D7
-        QChar(0x00D8), QChar(0x00D9), QChar(0x00DA), QChar(0x00DB), QChar(0x00DC), QChar(0x00DD), QChar(0x00DE), QChar(0x00DF),  // D8-DF
-        QChar(0x00E0), QChar(0x00E1), QChar(0x00E2), QChar(0x00E3), QChar(0x00E4), QChar(0x00E5), QChar(0x00E6), QChar(0x00E7),  // E0-E7
-        QChar(0x00E8), QChar(0x00E9), QChar(0x00EA), QChar(0x00EB), QChar(0x00EC), QChar(0x00ED), QChar(0x00EE), QChar(0x00EF),  // E8-EF
-        QChar(0x00F0), QChar(0x00F1), QChar(0x00F2), QChar(0x00F3), QChar(0x00F4), QChar(0x00F5), QChar(0x00F6), QChar(0x00F7),  // F0=F7
-        QChar(0x00F8), QChar(0x00F9), QChar(0x00FA), QChar(0x00FB), QChar(0x00FC), QChar(0x00FD), QChar(0x00FE), QChar(0x00FF)}))},// F8-FF
-    {QStringLiteral("ISO 8859-16"),
-    qMakePair(tr("ISO 8859-16 (Romanian)", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x0080), QChar(0x0081), QChar(0x0082), QChar(0x0083), QChar(0x0084), QChar(0x0085), QChar(0x0086), QChar(0x0087),  // 80-87
-        QChar(0x0088), QChar(0x0089), QChar(0x008A), QChar(0x008B), QChar(0x008C), QChar(0x008D), QChar(0x008E), QChar(0x008F),  // 88-8F
-        QChar(0x0090), QChar(0x0091), QChar(0x0092), QChar(0x0093), QChar(0x0094), QChar(0x0095), QChar(0x0096), QChar(0x0097),  // 90-97
-        QChar(0x0098), QChar(0x0099), QChar(0x009A), QChar(0x009B), QChar(0x009C), QChar(0x009D), QChar(0x009E), QChar(0x009F),  // 98-9F
-        QChar(0x00A0), QChar(0x0104), QChar(0x0105), QChar(0x0141), QChar(0x20AC), QChar(0x201E), QChar(0x0160), QChar(0x00A7),  // A0-A7
-        QChar(0x0161), QChar(0x00A9), QChar(0x0218), QChar(0x00AB), QChar(0x0179), QChar(0x00AD), QChar(0x017A), QChar(0x017B),  // A8-AF
-        QChar(0x00B0), QChar(0x00B1), QChar(0x010C), QChar(0x0142), QChar(0x017D), QChar(0x201D), QChar(0x00B6), QChar(0x00B7),  // B0-B7
-        QChar(0x017E), QChar(0x010D), QChar(0x0219), QChar(0x00BB), QChar(0x0152), QChar(0x0153), QChar(0x0178), QChar(0x017C),  // B8-BF
-        QChar(0x00C0), QChar(0x00C1), QChar(0x00C2), QChar(0x0102), QChar(0x00C4), QChar(0x0106), QChar(0x00C6), QChar(0x00C7),  // C0-C7
-        QChar(0x00C8), QChar(0x00C9), QChar(0x00CA), QChar(0x00CB), QChar(0x00CC), QChar(0x00CD), QChar(0x00CE), QChar(0x00CF),  // C8-CF
-        QChar(0x0110), QChar(0x0143), QChar(0x00D2), QChar(0x00D3), QChar(0x00D4), QChar(0x0150), QChar(0x00D6), QChar(0x015A),  // D0-D7
-        QChar(0x0170), QChar(0x00D9), QChar(0x00DA), QChar(0x00DB), QChar(0x00DC), QChar(0x0118), QChar(0x021A), QChar(0x00DF),  // D8-DF
-        QChar(0x00E0), QChar(0x00E1), QChar(0x00E2), QChar(0x0103), QChar(0x00E4), QChar(0x0107), QChar(0x00E6), QChar(0x00E7),  // E0-E7
-        QChar(0x00E8), QChar(0x00E9), QChar(0x00EA), QChar(0x00EB), QChar(0x00EC), QChar(0x00ED), QChar(0x00EE), QChar(0x00EF),  // E8-EF
-        QChar(0x0111), QChar(0x0144), QChar(0x00F2), QChar(0x00F3), QChar(0x00F4), QChar(0x0151), QChar(0x00F6), QChar(0x015B),  // F0=F7
-        QChar(0x0171), QChar(0x00F9), QChar(0x00FA), QChar(0x00FB), QChar(0x00FC), QChar(0x0119), QChar(0x021B), QChar(0x00FF)}))},// F8-FF
-    {QStringLiteral("CP850"),
-    qMakePair(tr("CP850 (Western Europe)", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x00C7), QChar(0x00FC), QChar(0x00E9), QChar(0x00E2), QChar(0x00E4), QChar(0x00E0), QChar(0x00E5), QChar(0x00E7),  // 80-87
-        QChar(0x00EA), QChar(0x00EB), QChar(0x00E8), QChar(0x00EF), QChar(0x00EE), QChar(0x00EC), QChar(0x00C4), QChar(0x00C5),  // 88-8F
-        QChar(0x00C9), QChar(0x00E6), QChar(0x00C6), QChar(0x00F4), QChar(0x00F6), QChar(0x00F2), QChar(0x00FB), QChar(0x00F9),  // 90-97
-        QChar(0x00FF), QChar(0x00D6), QChar(0x00DC), QChar(0x00F8), QChar(0x00A3), QChar(0x00D8), QChar(0x00D7), QChar(0x0192),  // 98-9F
-        QChar(0x00E1), QChar(0x00ED), QChar(0x00F3), QChar(0x00FA), QChar(0x00F1), QChar(0x00D1), QChar(0x00AA), QChar(0x00BA),  // A0-A7
-        QChar(0x00BF), QChar(0x00AE), QChar(0x00AC), QChar(0x00BD), QChar(0x00BC), QChar(0x00A1), QChar(0x00AB), QChar(0x00BB),  // A8-AF
-        QChar(0x2591), QChar(0x2592), QChar(0x2593), QChar(0x2502), QChar(0x2524), QChar(0x00C1), QChar(0x00C2), QChar(0x00C0),  // B0-B7
-        QChar(0x00A9), QChar(0x2563), QChar(0x2551), QChar(0x2557), QChar(0x255D), QChar(0x00A2), QChar(0x00A5), QChar(0x2510),  // B8-BF
-        QChar(0x2514), QChar(0x2534), QChar(0x252C), QChar(0x251C), QChar(0x2500), QChar(0x253C), QChar(0x00E3), QChar(0x00C3),  // C0-C7
-        QChar(0x255A), QChar(0x2554), QChar(0x2569), QChar(0x2566), QChar(0x2560), QChar(0x2550), QChar(0x256C), QChar(0x00A4),  // C8-CF
-        QChar(0x00F0), QChar(0x00D0), QChar(0x00CA), QChar(0x00CB), QChar(0x00C8), QChar(0x0131), QChar(0x00CD), QChar(0x00CE),  // D0-D7
-        QChar(0x00CF), QChar(0x2518), QChar(0x250C), QChar(0x2588), QChar(0x2584), QChar(0x00A6), QChar(0x00CC), QChar(0x2580),  // D8-DF
-        QChar(0x00D3), QChar(0x00DF), QChar(0x00D4), QChar(0x00D2), QChar(0x00F5), QChar(0x00D5), QChar(0x00B5), QChar(0x00FE),  // E0-E7
-        QChar(0x00DE), QChar(0x00DA), QChar(0x00DB), QChar(0x00D9), QChar(0x00FD), QChar(0x00DD), QChar(0x00AF), QChar(0x00B4),  // E8-EF
-        QChar(0x00AD), QChar(0x00B1), QChar(0x2017), QChar(0x00BE), QChar(0x00B6), QChar(0x00A7), QChar(0x00F7), QChar(0x00B8),  // F0=F7
-        QChar(0x00B0), QChar(0x00A8), QChar(0x00B7), QChar(0x00B9), QChar(0x00B3), QChar(0x00B2), QChar(0x25A0), QChar(0x00A0)}))},// F8-FF
-    {QStringLiteral("CP866"),
-    qMakePair(tr("CP866 (Cyrillic/Russian)", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x0410), QChar(0x0411), QChar(0x0412), QChar(0x0413), QChar(0x0414), QChar(0x0415), QChar(0x0416), QChar(0x0417),  // 80-87
-        QChar(0x0418), QChar(0x0419), QChar(0x041A), QChar(0x041B), QChar(0x041C), QChar(0x041D), QChar(0x041E), QChar(0x041F),  // 88-8F
-        QChar(0x0420), QChar(0x0421), QChar(0x0422), QChar(0x0423), QChar(0x0424), QChar(0x0425), QChar(0x0426), QChar(0x0427),  // 90-97
-        QChar(0x0428), QChar(0x0429), QChar(0x042A), QChar(0x042B), QChar(0x042C), QChar(0x042D), QChar(0x042E), QChar(0x042F),  // 98-9F
-        QChar(0x0430), QChar(0x0431), QChar(0x0432), QChar(0x0433), QChar(0x0434), QChar(0x0435), QChar(0x0436), QChar(0x0437),  // A0-A7
-        QChar(0x0438), QChar(0x0439), QChar(0x043A), QChar(0x043B), QChar(0x043C), QChar(0x043D), QChar(0x043E), QChar(0x043F),  // A8-AF
-        QChar(0x2591), QChar(0x2592), QChar(0x2593), QChar(0x2502), QChar(0x2524), QChar(0x2561), QChar(0x2562), QChar(0x2556),  // B0-B7
-        QChar(0x2555), QChar(0x2563), QChar(0x2551), QChar(0x2557), QChar(0x255D), QChar(0x255C), QChar(0x255B), QChar(0x2510),  // B8-BF
-        QChar(0x2514), QChar(0x2534), QChar(0x252C), QChar(0x251C), QChar(0x2500), QChar(0x253C), QChar(0x255E), QChar(0x255F),  // C0-C7
-        QChar(0x255A), QChar(0x2554), QChar(0x2569), QChar(0x2566), QChar(0x2560), QChar(0x2550), QChar(0x256C), QChar(0x2567),  // C8-CF
-        QChar(0x2568), QChar(0x2564), QChar(0x2565), QChar(0x2559), QChar(0x2558), QChar(0x2552), QChar(0x2553), QChar(0x256B),  // D0-D7
-        QChar(0x256A), QChar(0x2518), QChar(0x250C), QChar(0x2588), QChar(0x2584), QChar(0x258C), QChar(0x2590), QChar(0x2580),  // D8-DF
-        QChar(0x0440), QChar(0x0441), QChar(0x0442), QChar(0x0443), QChar(0x0444), QChar(0x0445), QChar(0x0446), QChar(0x0447),  // E0-E7
-        QChar(0x0448), QChar(0x0449), QChar(0x044A), QChar(0x044B), QChar(0x044C), QChar(0x044D), QChar(0x044E), QChar(0x044F),  // E8-EF
-        QChar(0x0401), QChar(0x0451), QChar(0x0404), QChar(0x0454), QChar(0x0407), QChar(0x0457), QChar(0x040E), QChar(0x045E),  // F0=F7
-        QChar(0x00B0), QChar(0x2219), QChar(0x00B7), QChar(0x221A), QChar(0x2116), QChar(0x00A4), QChar(0x25A0), QChar(0x00A0)}))},// F8-FF
-    {QStringLiteral("CP874"),
-    qMakePair(tr("ISO 8859-3 (South European)", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x20AC), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0x2026), QChar(0xFFFD), QChar(0xFFFD),  // 80-87
-        QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD),  // 88-8F
-        QChar(0xFFFD), QChar(0x2018), QChar(0x2019), QChar(0x201C), QChar(0x201D), QChar(0x2022), QChar(0x2013), QChar(0x2014),  // 90-97
-        QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD),  // 98-9F
-        QChar(0x00A0), QChar(0x0E01), QChar(0x0E02), QChar(0x0E03), QChar(0x0E04), QChar(0x0E05), QChar(0x0E06), QChar(0x0E07),  // A0-A7
-        QChar(0x0E08), QChar(0x0E09), QChar(0x0E0A), QChar(0x0E0B), QChar(0x0E0C), QChar(0x0E0D), QChar(0x0E0E), QChar(0x0E0F),  // A8-AF
-        QChar(0x0E10), QChar(0x0E11), QChar(0x0E12), QChar(0x0E13), QChar(0x0E14), QChar(0x0E15), QChar(0x0E16), QChar(0x0E17),  // B0-B7
-        QChar(0x0E18), QChar(0x0E19), QChar(0x0E1A), QChar(0x0E1B), QChar(0x0E1C), QChar(0x0E1D), QChar(0x0E1E), QChar(0x0E1F),  // B8-BF
-        QChar(0x0E20), QChar(0x0E21), QChar(0x0E22), QChar(0x0E23), QChar(0x0E24), QChar(0x0E25), QChar(0x0E26), QChar(0x0E27),  // C0-C7
-        QChar(0x0E28), QChar(0x0E29), QChar(0x0E2A), QChar(0x0E2B), QChar(0x0E2C), QChar(0x0E2D), QChar(0x0E2E), QChar(0x0E2F),  // C8-CF
-        QChar(0x0E30), QChar(0x0E31), QChar(0x0E32), QChar(0x0E33), QChar(0x0E34), QChar(0x0E35), QChar(0x0E36), QChar(0x0E37),  // D0-D7
-        QChar(0x0E38), QChar(0x0E39), QChar(0x0E3A), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0x0E3F),  // D8-DF
-        QChar(0x0E40), QChar(0x0E41), QChar(0x0E42), QChar(0x0E43), QChar(0x0E44), QChar(0x0E45), QChar(0x0E46), QChar(0x0E47),  // E0-E7
-        QChar(0x0E48), QChar(0x0E49), QChar(0x0E4A), QChar(0x0E4B), QChar(0x0E4C), QChar(0x0E4D), QChar(0x0E4E), QChar(0x0E4F),  // E8-EF
-        QChar(0x0E50), QChar(0x0E51), QChar(0x0E52), QChar(0x0E53), QChar(0x0E54), QChar(0x0E55), QChar(0x0E56), QChar(0x0E57),  // F0=F7
-        QChar(0x0E58), QChar(0x0E59), QChar(0x0E5A), QChar(0x0E5B), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD)}))},// F8-FF
-    {QStringLiteral("KOI8-R"),
-    qMakePair(tr("KOI8-R (Cyrillic)", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x2500), QChar(0x2502), QChar(0x250C), QChar(0x2510), QChar(0x2514), QChar(0x2518), QChar(0x251C), QChar(0x2524),  // 80-87
-        QChar(0x252C), QChar(0x2534), QChar(0x253C), QChar(0x2580), QChar(0x2584), QChar(0x2588), QChar(0x258C), QChar(0x2590),  // 88-8F
-        QChar(0x2591), QChar(0x2592), QChar(0x2593), QChar(0x2320), QChar(0x25A0), QChar(0x2219), QChar(0x221A), QChar(0x2248),  // 90-97
-        QChar(0x2264), QChar(0x2265), QChar(0x00A0), QChar(0x2321), QChar(0x00B0), QChar(0x00B2), QChar(0x00B7), QChar(0x00F7),  // 98-9F
-        QChar(0x2550), QChar(0x2551), QChar(0x2552), QChar(0x0451), QChar(0x2553), QChar(0x2554), QChar(0x2555), QChar(0x2556),  // A0-A7
-        QChar(0x2557), QChar(0x2558), QChar(0x2559), QChar(0x255A), QChar(0x255B), QChar(0x255C), QChar(0x255D), QChar(0x255E),  // A8-AF
-        QChar(0x255F), QChar(0x2560), QChar(0x2561), QChar(0x0401), QChar(0x2562), QChar(0x2563), QChar(0x2564), QChar(0x2565),  // B0-B7
-        QChar(0x2566), QChar(0x2567), QChar(0x2568), QChar(0x2569), QChar(0x256A), QChar(0x256B), QChar(0x256C), QChar(0x00A9),  // B8-BF
-        QChar(0x044E), QChar(0x0430), QChar(0x0431), QChar(0x0446), QChar(0x0434), QChar(0x0435), QChar(0x0444), QChar(0x0433),  // C0-C7
-        QChar(0x0445), QChar(0x0438), QChar(0x0439), QChar(0x043A), QChar(0x043B), QChar(0x043C), QChar(0x043D), QChar(0x043E),  // C8-CF
-        QChar(0x043F), QChar(0x044F), QChar(0x0440), QChar(0x0441), QChar(0x0442), QChar(0x0443), QChar(0x0436), QChar(0x0432),  // D0-D7
-        QChar(0x044C), QChar(0x044B), QChar(0x0437), QChar(0x0448), QChar(0x044D), QChar(0x0449), QChar(0x0447), QChar(0x044A),  // D8-DF
-        QChar(0x042E), QChar(0x0410), QChar(0x0411), QChar(0x0426), QChar(0x0414), QChar(0x0415), QChar(0x0424), QChar(0x0413),  // E0-E7
-        QChar(0x0425), QChar(0x0418), QChar(0x0419), QChar(0x041A), QChar(0x041B), QChar(0x041C), QChar(0x041D), QChar(0x041E),  // E8-EF
-        QChar(0x041F), QChar(0x042F), QChar(0x0420), QChar(0x0421), QChar(0x0422), QChar(0x0423), QChar(0x0416), QChar(0x0412),  // F0=F7
-        QChar(0x042C), QChar(0x042B), QChar(0x0417), QChar(0x0428), QChar(0x042D), QChar(0x0429), QChar(0x0427), QChar(0x042A)}))},// F8-FF
-    {QStringLiteral("KOI8-U"),
-    qMakePair(tr("KOI8-U (Cyrillic/Ukrainian)", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x2500), QChar(0x2502), QChar(0x250C), QChar(0x2510), QChar(0x2514), QChar(0x2518), QChar(0x251C), QChar(0x2524),  // 80-87
-        QChar(0x252C), QChar(0x2534), QChar(0x253C), QChar(0x2580), QChar(0x2584), QChar(0x2588), QChar(0x258C), QChar(0x2590),  // 88-8F
-        QChar(0x2591), QChar(0x2592), QChar(0x2593), QChar(0x2320), QChar(0x25A0), QChar(0x2219), QChar(0x221A), QChar(0x2248),  // 90-97
-        QChar(0x2264), QChar(0x2265), QChar(0x00A0), QChar(0x2321), QChar(0x00B0), QChar(0x00B2), QChar(0x00B7), QChar(0x00F7),  // 98-9F
-        QChar(0x2550), QChar(0x2551), QChar(0x2552), QChar(0x0451), QChar(0x0454), QChar(0x2554), QChar(0x0456), QChar(0x0457),  // A0-A7
-        QChar(0x2557), QChar(0x2558), QChar(0x2559), QChar(0x255A), QChar(0x255B), QChar(0x0491), QChar(0x255D), QChar(0x255E),  // A8-AF
-        QChar(0x255F), QChar(0x2560), QChar(0x2561), QChar(0x0401), QChar(0x0404), QChar(0x2563), QChar(0x0406), QChar(0x0407),  // B0-B7
-        QChar(0x2566), QChar(0x2567), QChar(0x2568), QChar(0x2569), QChar(0x256A), QChar(0x0490), QChar(0x256C), QChar(0x00A9),  // B8-BF
-        QChar(0x044E), QChar(0x0430), QChar(0x0431), QChar(0x0446), QChar(0x0434), QChar(0x0435), QChar(0x0444), QChar(0x0433),  // C0-C7
-        QChar(0x0445), QChar(0x0438), QChar(0x0439), QChar(0x043A), QChar(0x043B), QChar(0x043C), QChar(0x043D), QChar(0x043E),  // C8-CF
-        QChar(0x043F), QChar(0x044F), QChar(0x0440), QChar(0x0441), QChar(0x0442), QChar(0x0443), QChar(0x0436), QChar(0x0432),  // D0-D7
-        QChar(0x044C), QChar(0x044B), QChar(0x0437), QChar(0x0448), QChar(0x044D), QChar(0x0449), QChar(0x0447), QChar(0x044A),  // D8-DF
-        QChar(0x042E), QChar(0x0410), QChar(0x0411), QChar(0x0426), QChar(0x0414), QChar(0x0415), QChar(0x0424), QChar(0x0413),  // E0-E7
-        QChar(0x0425), QChar(0x0418), QChar(0x0419), QChar(0x041A), QChar(0x041B), QChar(0x041C), QChar(0x041D), QChar(0x041E),  // E8-EF
-        QChar(0x041F), QChar(0x042F), QChar(0x0420), QChar(0x0421), QChar(0x0422), QChar(0x0423), QChar(0x0416), QChar(0x0412),  // F0=F7
-        QChar(0x042C), QChar(0x042B), QChar(0x0417), QChar(0x0428), QChar(0x042D), QChar(0x0429), QChar(0x0427), QChar(0x042A)}))},// F8-FF
-    {QStringLiteral("MACINTOSH"),
-    qMakePair(tr("MACINTOSH", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x00C4), QChar(0x00C5), QChar(0x00C7), QChar(0x00C9), QChar(0x00D1), QChar(0x00D6), QChar(0x00DC), QChar(0x00E1),  // 80-87
-        QChar(0x00E0), QChar(0x00E2), QChar(0x00E4), QChar(0x00E3), QChar(0x00E5), QChar(0x00E7), QChar(0x00E9), QChar(0x00E8),  // 88-8F
-        QChar(0x00EA), QChar(0x00EB), QChar(0x00ED), QChar(0x00EC), QChar(0x00EE), QChar(0x00EF), QChar(0x00F1), QChar(0x00F3),  // 90-97
-        QChar(0x00F2), QChar(0x00F4), QChar(0x00F6), QChar(0x00F5), QChar(0x00FA), QChar(0x00F9), QChar(0x00FB), QChar(0x00FC),  // 98-9F
-        QChar(0x2020), QChar(0x00B0), QChar(0x00A2), QChar(0x00A3), QChar(0x00A7), QChar(0x2022), QChar(0x00B6), QChar(0x00DF),  // A0-A7
-        QChar(0x00AE), QChar(0x00A9), QChar(0x2122), QChar(0x00B4), QChar(0x00A8), QChar(0x2260), QChar(0x00C6), QChar(0x00D8),  // A8-AF
-        QChar(0x221E), QChar(0x00B1), QChar(0x2264), QChar(0x2265), QChar(0x00A5), QChar(0x00B5), QChar(0x2202), QChar(0x2211),  // B0-B7
-        QChar(0x220F), QChar(0x03C0), QChar(0x222B), QChar(0x00AA), QChar(0x00BA), QChar(0x03A9), QChar(0x00E6), QChar(0x00F8),  // B8-BF
-        QChar(0x00BF), QChar(0x00A1), QChar(0x00AC), QChar(0x221A), QChar(0x0192), QChar(0x2248), QChar(0x2206), QChar(0x00AB),  // C0-C7
-        QChar(0x00BB), QChar(0x2026), QChar(0x00A0), QChar(0x00C0), QChar(0x00C3), QChar(0x00D5), QChar(0x0152), QChar(0x0153),  // C8-CF
-        QChar(0x2013), QChar(0x2014), QChar(0x201C), QChar(0x201D), QChar(0x2018), QChar(0x2019), QChar(0x00F7), QChar(0x25CA),  // D0-D7
-        QChar(0x00FF), QChar(0x0178), QChar(0x2044), QChar(0x20AC), QChar(0x2039), QChar(0x203A), QChar(0xFB01), QChar(0xFB02),  // D8-DF
-        QChar(0x2021), QChar(0x00B7), QChar(0x201A), QChar(0x201E), QChar(0x2030), QChar(0x00C2), QChar(0x00CA), QChar(0x00C1),  // E0-E7
-        QChar(0x00CB), QChar(0x00C8), QChar(0x00CD), QChar(0x00CE), QChar(0x00CF), QChar(0x00CC), QChar(0x00D3), QChar(0x00D4),  // E8-EF
-        QChar(0xF8FF), QChar(0x00D2), QChar(0x00DA), QChar(0x00DB), QChar(0x00D9), QChar(0x0131), QChar(0x02C6), QChar(0x02DC),  // F0=F7
-        QChar(0x00AF), QChar(0x02D8), QChar(0x02D9), QChar(0x02DA), QChar(0x00B8), QChar(0x02DD), QChar(0x02DB), QChar(0x02C7)}))},// F8-FF
-    {QStringLiteral("WINDOWS-1250"),
-    qMakePair(tr("WINDOWS-1250 (Central European)", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x20AC), QChar(0xFFFD), QChar(0x201A), QChar(0xFFFD), QChar(0x201E), QChar(0x2026), QChar(0x2020), QChar(0x2021),  // 80-87
-        QChar(0xFFFD), QChar(0x2030), QChar(0x0160), QChar(0x2039), QChar(0x015A), QChar(0x0164), QChar(0x017D), QChar(0x0179),  // 88-8F
-        QChar(0xFFFD), QChar(0x2018), QChar(0x2019), QChar(0x201C), QChar(0x201D), QChar(0x2022), QChar(0x2013), QChar(0x2014),  // 90-97
-        QChar(0xFFFD), QChar(0x2122), QChar(0x0161), QChar(0x203A), QChar(0x015B), QChar(0x0165), QChar(0x017E), QChar(0x017A),  // 98-9F
-        QChar(0x00A0), QChar(0x02C7), QChar(0x02D8), QChar(0x0141), QChar(0x00A4), QChar(0x0104), QChar(0x00A6), QChar(0x00A7),  // A0-A7
-        QChar(0x00A8), QChar(0x00A9), QChar(0x015E), QChar(0x00AB), QChar(0x00AC), QChar(0x00AD), QChar(0x00AE), QChar(0x017B),  // A8-AF
-        QChar(0x00B0), QChar(0x00B1), QChar(0x02DB), QChar(0x0142), QChar(0x00B4), QChar(0x00B5), QChar(0x00B6), QChar(0x00B7),  // B0-B7
-        QChar(0x00B8), QChar(0x0105), QChar(0x015F), QChar(0x00BB), QChar(0x013D), QChar(0x02DD), QChar(0x013E), QChar(0x017C),  // B8-BF
-        QChar(0x0154), QChar(0x00C1), QChar(0x00C2), QChar(0x0102), QChar(0x00C4), QChar(0x0139), QChar(0x0106), QChar(0x00C7),  // C0-C7
-        QChar(0x010C), QChar(0x00C9), QChar(0x0118), QChar(0x00CB), QChar(0x011A), QChar(0x00CD), QChar(0x00CE), QChar(0x010E),  // C8-CF
-        QChar(0x0110), QChar(0x0143), QChar(0x0147), QChar(0x00D3), QChar(0x00D4), QChar(0x0150), QChar(0x00D6), QChar(0x00D7),  // D0-D7
-        QChar(0x0158), QChar(0x016E), QChar(0x00DA), QChar(0x0170), QChar(0x00DC), QChar(0x00DD), QChar(0x0162), QChar(0x00DF),  // D8-DF
-        QChar(0x0155), QChar(0x00E1), QChar(0x00E2), QChar(0x0103), QChar(0x00E4), QChar(0x013A), QChar(0x0107), QChar(0x00E7),  // E0-E7
-        QChar(0x010D), QChar(0x00E9), QChar(0x0119), QChar(0x00EB), QChar(0x011B), QChar(0x00ED), QChar(0x00EE), QChar(0x010F),  // E8-EF
-        QChar(0x0111), QChar(0x0144), QChar(0x0148), QChar(0x00F3), QChar(0x00F4), QChar(0x0151), QChar(0x00F6), QChar(0x00F7),  // F0=F7
-        QChar(0x0159), QChar(0x016F), QChar(0x00FA), QChar(0x0171), QChar(0x00FC), QChar(0x00FD), QChar(0x0163), QChar(0x02D9)}))},// F8-FF
-    {QStringLiteral("WINDOWS-1251"),
-    qMakePair(tr("WINDOWS-1251 (Cyrillic)", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x0402), QChar(0x0403), QChar(0x201A), QChar(0x0453), QChar(0x201E), QChar(0x2026), QChar(0x2020), QChar(0x2021),  // 80-87
-        QChar(0x20AC), QChar(0x2030), QChar(0x0409), QChar(0x2039), QChar(0x040A), QChar(0x040C), QChar(0x040B), QChar(0x040F),  // 88-8F
-        QChar(0x0452), QChar(0x2018), QChar(0x2019), QChar(0x201C), QChar(0x201D), QChar(0x2022), QChar(0x2013), QChar(0x2014),  // 90-97
-        QChar(0xFFFD), QChar(0x2122), QChar(0x0459), QChar(0x203A), QChar(0x045A), QChar(0x045C), QChar(0x045B), QChar(0x045F),  // 98-9F
-        QChar(0x00A0), QChar(0x040E), QChar(0x045E), QChar(0x0408), QChar(0x00A4), QChar(0x0490), QChar(0x00A6), QChar(0x00A7),  // A0-A7
-        QChar(0x0401), QChar(0x00A9), QChar(0x0404), QChar(0x00AB), QChar(0x00AC), QChar(0x00AD), QChar(0x00AE), QChar(0x0407),  // A8-AF
-        QChar(0x00B0), QChar(0x00B1), QChar(0x0406), QChar(0x0456), QChar(0x0491), QChar(0x00B5), QChar(0x00B6), QChar(0x00B7),  // B0-B7
-        QChar(0x0451), QChar(0x2116), QChar(0x0454), QChar(0x00BB), QChar(0x0458), QChar(0x0405), QChar(0x0455), QChar(0x0457),  // B8-BF
-        QChar(0x0410), QChar(0x0411), QChar(0x0412), QChar(0x0413), QChar(0x0414), QChar(0x0415), QChar(0x0416), QChar(0x0417),  // C0-C7
-        QChar(0x0418), QChar(0x0419), QChar(0x041A), QChar(0x041B), QChar(0x041C), QChar(0x041D), QChar(0x041E), QChar(0x041F),  // C8-CF
-        QChar(0x0420), QChar(0x0421), QChar(0x0422), QChar(0x0423), QChar(0x0424), QChar(0x0425), QChar(0x0426), QChar(0x0427),  // D0-D7
-        QChar(0x0428), QChar(0x0429), QChar(0x042A), QChar(0x042B), QChar(0x042C), QChar(0x042D), QChar(0x042E), QChar(0x042F),  // D8-DF
-        QChar(0x0430), QChar(0x0431), QChar(0x0432), QChar(0x0433), QChar(0x0434), QChar(0x0435), QChar(0x0436), QChar(0x0437),  // E0-E7
-        QChar(0x0438), QChar(0x0439), QChar(0x043A), QChar(0x043B), QChar(0x043C), QChar(0x043D), QChar(0x043E), QChar(0x043F),  // E8-EF
-        QChar(0x0440), QChar(0x0441), QChar(0x0442), QChar(0x0443), QChar(0x0444), QChar(0x0445), QChar(0x0446), QChar(0x0447),  // F0=F7
-        QChar(0x0448), QChar(0x0449), QChar(0x044A), QChar(0x044B), QChar(0x044C), QChar(0x044D), QChar(0x044E), QChar(0x044F)}))},// F8-FF
-    {QStringLiteral("WINDOWS-1252"),
-    qMakePair(tr("WINDOWS-1252 (Western)", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x20AC), QChar(0xFFFD), QChar(0x201A), QChar(0x0192), QChar(0x201E), QChar(0x2026), QChar(0x2020), QChar(0x2021),  // 80-87
-        QChar(0x02C6), QChar(0x2030), QChar(0x0160), QChar(0x2039), QChar(0x0152), QChar(0xFFFD), QChar(0x017D), QChar(0xFFFD),  // 88-8F
-        QChar(0xFFFD), QChar(0x2018), QChar(0x2019), QChar(0x201C), QChar(0x201D), QChar(0x2022), QChar(0x2013), QChar(0x2014),  // 90-97
-        QChar(0x02DC), QChar(0x2122), QChar(0x0161), QChar(0x203A), QChar(0x0153), QChar(0xFFFD), QChar(0x017E), QChar(0x0178),  // 98-9F
-        QChar(0x00A0), QChar(0x00A1), QChar(0x00A2), QChar(0x00A3), QChar(0x00A4), QChar(0x00A5), QChar(0x00A6), QChar(0x00A7),  // A0-A7
-        QChar(0x00A8), QChar(0x00A9), QChar(0x00AA), QChar(0x00AB), QChar(0x00AC), QChar(0x00AD), QChar(0x00AE), QChar(0x00AF),  // A8-AF
-        QChar(0x00B0), QChar(0x00B1), QChar(0x00B2), QChar(0x00B3), QChar(0x00B4), QChar(0x00B5), QChar(0x00B6), QChar(0x00B7),  // B0-B7
-        QChar(0x00B8), QChar(0x00B9), QChar(0x00BA), QChar(0x00BB), QChar(0x00BC), QChar(0x00BD), QChar(0x00BE), QChar(0x00BF),  // B8-BF
-        QChar(0x00C0), QChar(0x00C1), QChar(0x00C2), QChar(0x00C3), QChar(0x00C4), QChar(0x00C5), QChar(0x00C6), QChar(0x00C7),  // C0-C7
-        QChar(0x00C8), QChar(0x00C9), QChar(0x00CA), QChar(0x00CB), QChar(0x00CC), QChar(0x00CD), QChar(0x00CE), QChar(0x00CF),  // C8-CF
-        QChar(0x00D0), QChar(0x00D1), QChar(0x00D2), QChar(0x00D3), QChar(0x00D4), QChar(0x00D5), QChar(0x00D6), QChar(0x00D7),  // D0-D7
-        QChar(0x00D8), QChar(0x00D9), QChar(0x00DA), QChar(0x00DB), QChar(0x00DC), QChar(0x00DD), QChar(0x00DE), QChar(0x00DF),  // D8-DF
-        QChar(0x00E0), QChar(0x00E1), QChar(0x00E2), QChar(0x00E3), QChar(0x00E4), QChar(0x00E5), QChar(0x00E6), QChar(0x00E7),  // E0-E7
-        QChar(0x00E8), QChar(0x00E9), QChar(0x00EA), QChar(0x00EB), QChar(0x00EC), QChar(0x00ED), QChar(0x00EE), QChar(0x00EF),  // E8-EF
-        QChar(0x00F0), QChar(0x00F1), QChar(0x00F2), QChar(0x00F3), QChar(0x00F4), QChar(0x00F5), QChar(0x00F6), QChar(0x00F7),  // F0=F7
-        QChar(0x00F8), QChar(0x00F9), QChar(0x00FA), QChar(0x00FB), QChar(0x00FC), QChar(0x00FD), QChar(0x00FE), QChar(0x00FF)}))},// F8-FF
-    {QStringLiteral("WINDOWS-1253"),
-    qMakePair(tr("WINDOWS-1253 (Greek)", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x20AC), QChar(0xFFFD), QChar(0x201A), QChar(0x0192), QChar(0x201E), QChar(0x2026), QChar(0x2020), QChar(0x2021),  // 80-87
-        QChar(0xFFFD), QChar(0x2030), QChar(0xFFFD), QChar(0x2039), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD),  // 88-8F
-        QChar(0xFFFD), QChar(0x2018), QChar(0x2019), QChar(0x201C), QChar(0x201D), QChar(0x2022), QChar(0x2013), QChar(0x2014),  // 90-97
-        QChar(0xFFFD), QChar(0x2122), QChar(0xFFFD), QChar(0x203A), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD),  // 98-9F
-        QChar(0x00A0), QChar(0x0385), QChar(0x0386), QChar(0x00A3), QChar(0x00A4), QChar(0x00A5), QChar(0x00A6), QChar(0x00A7),  // A0-A7
-        QChar(0x00A8), QChar(0x00A9), QChar(0xFFFD), QChar(0x00AB), QChar(0x00AC), QChar(0x00AD), QChar(0x00AE), QChar(0x2015),  // A8-AF
-        QChar(0x00B0), QChar(0x00B1), QChar(0x00B2), QChar(0x00B3), QChar(0x0384), QChar(0x00B5), QChar(0x00B6), QChar(0x00B7),  // B0-B7
-        QChar(0x0388), QChar(0x0389), QChar(0x038A), QChar(0x00BB), QChar(0x038C), QChar(0x00BD), QChar(0x038E), QChar(0x038F),  // B8-BF
-        QChar(0x0390), QChar(0x0391), QChar(0x0392), QChar(0x0393), QChar(0x0394), QChar(0x0395), QChar(0x0396), QChar(0x0397),  // C0-C7
-        QChar(0x0398), QChar(0x0399), QChar(0x039A), QChar(0x039B), QChar(0x039C), QChar(0x039D), QChar(0x039E), QChar(0x039F),  // C8-CF
-        QChar(0x03A0), QChar(0x03A1), QChar(0xFFFD), QChar(0x03A3), QChar(0x03A4), QChar(0x03A5), QChar(0x03A6), QChar(0x03A7),  // D0-D7
-        QChar(0x03A8), QChar(0x03A9), QChar(0x03AA), QChar(0x03AB), QChar(0x03AC), QChar(0x03AD), QChar(0x03AE), QChar(0x03AF),  // D8-DF
-        QChar(0x03B0), QChar(0x03B1), QChar(0x03B2), QChar(0x03B3), QChar(0x03B4), QChar(0x03B5), QChar(0x03B6), QChar(0x03B7),  // E0-E7
-        QChar(0x03B8), QChar(0x03B9), QChar(0x03BA), QChar(0x03BB), QChar(0x03BC), QChar(0x03BD), QChar(0x03BE), QChar(0x03BF),  // E8-EF
-        QChar(0x03C0), QChar(0x03C1), QChar(0x03C2), QChar(0x03C3), QChar(0x03C4), QChar(0x03C5), QChar(0x03C6), QChar(0x03C7),  // F0=F7
-        QChar(0x03C8), QChar(0x03C9), QChar(0x03CA), QChar(0x03CB), QChar(0x03CC), QChar(0x03CD), QChar(0x03CE), QChar(0xFFFD)}))},// F8-FF
-    {QStringLiteral("WINDOWS-1254"),
-    qMakePair(tr("WINDOWS-1254 (Turkish)", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x20AC), QChar(0xFFFD), QChar(0x201A), QChar(0x0192), QChar(0x201E), QChar(0x2026), QChar(0x2020), QChar(0x2021),  // 80-87
-        QChar(0x02C6), QChar(0x2030), QChar(0x0160), QChar(0x2039), QChar(0x0152), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD),  // 88-8F
-        QChar(0xFFFD), QChar(0x2018), QChar(0x2019), QChar(0x201C), QChar(0x201D), QChar(0x2022), QChar(0x2013), QChar(0x2014),  // 90-97
-        QChar(0x02DC), QChar(0x2122), QChar(0x0161), QChar(0x203A), QChar(0x0153), QChar(0xFFFD), QChar(0xFFFD), QChar(0x0178),  // 98-9F
-        QChar(0x00A0), QChar(0x00A1), QChar(0x00A2), QChar(0x00A3), QChar(0x00A4), QChar(0x00A5), QChar(0x00A6), QChar(0x00A7),  // A0-A7
-        QChar(0x00A8), QChar(0x00A9), QChar(0x00AA), QChar(0x00AB), QChar(0x00AC), QChar(0x00AD), QChar(0x00AE), QChar(0x00AF),  // A8-AF
-        QChar(0x00B0), QChar(0x00B1), QChar(0x00B2), QChar(0x00B3), QChar(0x00B4), QChar(0x00B5), QChar(0x00B6), QChar(0x00B7),  // B0-B7
-        QChar(0x00B8), QChar(0x00B9), QChar(0x00BA), QChar(0x00BB), QChar(0x00BC), QChar(0x00BD), QChar(0x00BE), QChar(0x00BF),  // B8-BF
-        QChar(0x00C0), QChar(0x00C1), QChar(0x00C2), QChar(0x00C3), QChar(0x00C4), QChar(0x00C5), QChar(0x00C6), QChar(0x00C7),  // C0-C7
-        QChar(0x00C8), QChar(0x00C9), QChar(0x00CA), QChar(0x00CB), QChar(0x00CC), QChar(0x00CD), QChar(0x00CE), QChar(0x00CF),  // C8-CF
-        QChar(0x011E), QChar(0x00D1), QChar(0x00D2), QChar(0x00D3), QChar(0x00D4), QChar(0x00D5), QChar(0x00D6), QChar(0x00D7),  // D0-D7
-        QChar(0x00D8), QChar(0x00D9), QChar(0x00DA), QChar(0x00DB), QChar(0x00DC), QChar(0x0130), QChar(0x015E), QChar(0x00DF),  // D8-DF
-        QChar(0x00E0), QChar(0x00E1), QChar(0x00E2), QChar(0x00E3), QChar(0x00E4), QChar(0x00E5), QChar(0x00E6), QChar(0x00E7),  // E0-E7
-        QChar(0x00E8), QChar(0x00E9), QChar(0x00EA), QChar(0x00EB), QChar(0x00EC), QChar(0x00ED), QChar(0x00EE), QChar(0x00EF),  // E8-EF
-        QChar(0x011F), QChar(0x00F1), QChar(0x00F2), QChar(0x00F3), QChar(0x00F4), QChar(0x00F5), QChar(0x00F6), QChar(0x00F7),  // F0=F7
-        QChar(0x00F8), QChar(0x00F9), QChar(0x00FA), QChar(0x00FB), QChar(0x00FC), QChar(0x0131), QChar(0x015F), QChar(0x00FF)}))},// F8-FF
-    {QStringLiteral("WINDOWS-1255"),
-    qMakePair(tr("WINDOWS-1255 (Hebrew)", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x20AC), QChar(0xFFFD), QChar(0x201A), QChar(0x0192), QChar(0x201E), QChar(0x2026), QChar(0x2020), QChar(0x2021),  // 80-87
-        QChar(0x02C6), QChar(0x2030), QChar(0xFFFD), QChar(0x2039), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD),  // 88-8F
-        QChar(0xFFFD), QChar(0x2018), QChar(0x2019), QChar(0x201C), QChar(0x201D), QChar(0x2022), QChar(0x2013), QChar(0x2014),  // 90-97
-        QChar(0x02DC), QChar(0x2122), QChar(0xFFFD), QChar(0x203A), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD),  // 98-9F
-        QChar(0x00A0), QChar(0x00A1), QChar(0x00A2), QChar(0x00A3), QChar(0x20AA), QChar(0x00A5), QChar(0x00A6), QChar(0x00A7),  // A0-A7
-        QChar(0x00A8), QChar(0x00A9), QChar(0x00D7), QChar(0x00AB), QChar(0x00AC), QChar(0x00AD), QChar(0x00AE), QChar(0x00AF),  // A8-AF
-        QChar(0x00B0), QChar(0x00B1), QChar(0x00B2), QChar(0x00B3), QChar(0x00B4), QChar(0x00B5), QChar(0x00B6), QChar(0x00B7),  // B0-B7
-        QChar(0x00B8), QChar(0x00B9), QChar(0x00F7), QChar(0x00BB), QChar(0x00BC), QChar(0x00BD), QChar(0x00BE), QChar(0x00BF),  // B8-BF
-        QChar(0x05B0), QChar(0x05B1), QChar(0x05B2), QChar(0x05B3), QChar(0x05B4), QChar(0x05B5), QChar(0x05B6), QChar(0x05B7),  // C0-C7
-        QChar(0x05B8), QChar(0x05B9), QChar(0xFFFD), QChar(0x05BB), QChar(0x05BC), QChar(0x05BD), QChar(0x05BE), QChar(0x05BF),  // C8-CF
-        QChar(0x05C0), QChar(0x05C1), QChar(0x05C2), QChar(0x05C3), QChar(0x05F0), QChar(0x05F1), QChar(0x05F2), QChar(0x05F3),  // D0-D7
-        QChar(0x05F4), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD),  // D8-DF
-        QChar(0x05D0), QChar(0x05D1), QChar(0x05D2), QChar(0x05D3), QChar(0x05D4), QChar(0x05D5), QChar(0x05D6), QChar(0x05D7),  // E0-E7
-        QChar(0x05D8), QChar(0x05D9), QChar(0x05DA), QChar(0x05DB), QChar(0x05DC), QChar(0x05DD), QChar(0x05DE), QChar(0x05DF),  // E8-EF
-        QChar(0x05E0), QChar(0x05E1), QChar(0x05E2), QChar(0x05E3), QChar(0x05E4), QChar(0x05E5), QChar(0x05E6), QChar(0x05E7),  // F0=F7
-        QChar(0x05E8), QChar(0x05E9), QChar(0x05EA), QChar(0xFFFD), QChar(0xFFFD), QChar(0x200E), QChar(0x200F), QChar(0xFFFD)}))},// F8-FF
-    {QStringLiteral("WINDOWS-1256"),
-    qMakePair(tr("WINDOWS-1256 (Arabic)", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x20AC), QChar(0x067E), QChar(0x201A), QChar(0x0192), QChar(0x201E), QChar(0x2026), QChar(0x2020), QChar(0x2021),  // 80-87
-        QChar(0x02C6), QChar(0x2030), QChar(0x0679), QChar(0x2039), QChar(0x0152), QChar(0x0686), QChar(0x0698), QChar(0x0688),  // 88-8F
-        QChar(0x06AF), QChar(0x2018), QChar(0x2019), QChar(0x201C), QChar(0x201D), QChar(0x2022), QChar(0x2013), QChar(0x2014),  // 90-97
-        QChar(0x06A9), QChar(0x2122), QChar(0x0691), QChar(0x203A), QChar(0x0153), QChar(0x200C), QChar(0x200D), QChar(0x06BA),  // 98-9F
-        QChar(0x00A0), QChar(0x060C), QChar(0x00A2), QChar(0x00A3), QChar(0x00A4), QChar(0x00A5), QChar(0x00A6), QChar(0x00A7),  // A0-A7
-        QChar(0x00A8), QChar(0x00A9), QChar(0x06BE), QChar(0x00AB), QChar(0x00AC), QChar(0x00AD), QChar(0x00AE), QChar(0x00AF),  // A8-AF
-        QChar(0x00B0), QChar(0x00B1), QChar(0x00B2), QChar(0x00B3), QChar(0x00B4), QChar(0x00B5), QChar(0x00B6), QChar(0x00B7),  // B0-B7
-        QChar(0x00B8), QChar(0x00B9), QChar(0x061B), QChar(0x00BB), QChar(0x00BC), QChar(0x00BD), QChar(0x00BE), QChar(0x061F),  // B8-BF
-        QChar(0x06C1), QChar(0x0621), QChar(0x0622), QChar(0x0623), QChar(0x0624), QChar(0x0625), QChar(0x0626), QChar(0x0627),  // C0-C7
-        QChar(0x0628), QChar(0x0629), QChar(0x062A), QChar(0x062B), QChar(0x062C), QChar(0x062D), QChar(0x062E), QChar(0x062F),  // C8-CF
-        QChar(0x0630), QChar(0x0631), QChar(0x0632), QChar(0x0633), QChar(0x0634), QChar(0x0635), QChar(0x0636), QChar(0x00D7),  // D0-D7
-        QChar(0x0637), QChar(0x0638), QChar(0x0639), QChar(0x063A), QChar(0x0640), QChar(0x0641), QChar(0x0642), QChar(0x0643),  // D8-DF
-        QChar(0x00E0), QChar(0x0644), QChar(0x00E2), QChar(0x0645), QChar(0x0646), QChar(0x0647), QChar(0x0648), QChar(0x00E7),  // E0-E7
-        QChar(0x00E8), QChar(0x00E9), QChar(0x00EA), QChar(0x00EB), QChar(0x0649), QChar(0x064A), QChar(0x00EE), QChar(0x00EF),  // E8-EF
-        QChar(0x064B), QChar(0x064C), QChar(0x064D), QChar(0x064E), QChar(0x00F4), QChar(0x064F), QChar(0x0650), QChar(0x00F7),  // F0=F7
-        QChar(0x0651), QChar(0x00F9), QChar(0x0652), QChar(0x00FB), QChar(0x00FC), QChar(0x200E), QChar(0x200F), QChar(0x06D2)}))},// F8-FF
-    {QStringLiteral("WINDOWS-1257"),
-    qMakePair(tr("WINDOWS-1257 (Baltic)", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x20AC), QChar(0xFFFD), QChar(0x201A), QChar(0xFFFD), QChar(0x201E), QChar(0x2026), QChar(0x2020), QChar(0x2021),  // 80-87
-        QChar(0xFFFD), QChar(0x2030), QChar(0xFFFD), QChar(0x2039), QChar(0xFFFD), QChar(0x00A8), QChar(0x02C7), QChar(0x00B8),  // 88-8F
-        QChar(0xFFFD), QChar(0x2018), QChar(0x2019), QChar(0x201C), QChar(0x201D), QChar(0x2022), QChar(0x2013), QChar(0x2014),  // 90-97
-        QChar(0xFFFD), QChar(0x2122), QChar(0xFFFD), QChar(0x203A), QChar(0xFFFD), QChar(0x00AF), QChar(0x02DB), QChar(0xFFFD),  // 98-9F
-        QChar(0x00A0), QChar(0xFFFD), QChar(0x00A2), QChar(0x00A3), QChar(0x00A4), QChar(0xFFFD), QChar(0x00A6), QChar(0x00A7),  // A0-A7
-        QChar(0x00D8), QChar(0x00A9), QChar(0x0156), QChar(0x00AB), QChar(0x00AC), QChar(0x00AD), QChar(0x00AE), QChar(0x00C6),  // A8-AF
-        QChar(0x00B0), QChar(0x00B1), QChar(0x00B2), QChar(0x00B3), QChar(0x00B4), QChar(0x00B5), QChar(0x00B6), QChar(0x00B7),  // B0-B7
-        QChar(0x00F8), QChar(0x00B9), QChar(0x0157), QChar(0x00BB), QChar(0x00BC), QChar(0x00BD), QChar(0x00BE), QChar(0x00E6),  // B8-BF
-        QChar(0x0104), QChar(0x012E), QChar(0x0100), QChar(0x0106), QChar(0x00C4), QChar(0x00C5), QChar(0x0118), QChar(0x0112),  // C0-C7
-        QChar(0x010C), QChar(0x00C9), QChar(0x0179), QChar(0x0116), QChar(0x0122), QChar(0x0136), QChar(0x012A), QChar(0x013B),  // C8-CF
-        QChar(0x0160), QChar(0x0143), QChar(0x0145), QChar(0x00D3), QChar(0x014C), QChar(0x00D5), QChar(0x00D6), QChar(0x00D7),  // D0-D7
-        QChar(0x0172), QChar(0x0141), QChar(0x015A), QChar(0x016A), QChar(0x00DC), QChar(0x017B), QChar(0x017D), QChar(0x00DF),  // D8-DF
-        QChar(0x0105), QChar(0x012F), QChar(0x0101), QChar(0x0107), QChar(0x00E4), QChar(0x00E5), QChar(0x0119), QChar(0x0113),  // E0-E7
-        QChar(0x010D), QChar(0x00E9), QChar(0x017A), QChar(0x0117), QChar(0x0123), QChar(0x0137), QChar(0x012B), QChar(0x013C),  // E8-EF
-        QChar(0x0161), QChar(0x0144), QChar(0x0146), QChar(0x00F3), QChar(0x014D), QChar(0x00F5), QChar(0x00F6), QChar(0x00F7),  // F0=F7
-        QChar(0x0173), QChar(0x0142), QChar(0x015B), QChar(0x016B), QChar(0x00FC), QChar(0x017C), QChar(0x017E), QChar(0x02D9)}))},// F8-FF
-    {QStringLiteral("WINDOWS-1258"),
-    qMakePair(tr("WINDOWS-1258 (Vietnamese)", "Keep the English translation intact, so if a user accidentally changes to a language they don't understand, they can change back e.g. ISO 8859-2 (Центральная Европа/Central European)"), QVector<QChar>(
-        //      x0/x8          x1/x9          x2/xA          x3/xB          x4/xC          x5/xD          x6/xE          x7/xF
-       {QChar(0x20AC), QChar(0xFFFD), QChar(0x201A), QChar(0x0192), QChar(0x201E), QChar(0x2026), QChar(0x2020), QChar(0x2021),  // 80-87
-        QChar(0x02C6), QChar(0x2030), QChar(0xFFFD), QChar(0x2039), QChar(0x0152), QChar(0xFFFD), QChar(0xFFFD), QChar(0xFFFD),  // 88-8F
-        QChar(0xFFFD), QChar(0x2018), QChar(0x2019), QChar(0x201C), QChar(0x201D), QChar(0x2022), QChar(0x2013), QChar(0x2014),  // 90-97
-        QChar(0x02DC), QChar(0x2122), QChar(0xFFFD), QChar(0x203A), QChar(0x0153), QChar(0xFFFD), QChar(0xFFFD), QChar(0x0178),  // 98-9F
-        QChar(0x00A0), QChar(0x00A1), QChar(0x00A2), QChar(0x00A3), QChar(0x00A4), QChar(0x00A5), QChar(0x00A6), QChar(0x00A7),  // A0-A7
-        QChar(0x00A8), QChar(0x00A9), QChar(0x00AA), QChar(0x00AB), QChar(0x00AC), QChar(0x00AD), QChar(0x00AE), QChar(0x00AF),  // A8-AF
-        QChar(0x00B0), QChar(0x00B1), QChar(0x00B2), QChar(0x00B3), QChar(0x00B4), QChar(0x00B5), QChar(0x00B6), QChar(0x00B7),  // B0-B7
-        QChar(0x00B8), QChar(0x00B9), QChar(0x00BA), QChar(0x00BB), QChar(0x00BC), QChar(0x00BD), QChar(0x00BE), QChar(0x00BF),  // B8-BF
-        QChar(0x00C0), QChar(0x00C1), QChar(0x00C2), QChar(0x0102), QChar(0x00C4), QChar(0x00C5), QChar(0x00C6), QChar(0x00C7),  // C0-C7
-        QChar(0x00C8), QChar(0x00C9), QChar(0x00CA), QChar(0x00CB), QChar(0x0300), QChar(0x00CD), QChar(0x00CE), QChar(0x00CF),  // C8-CF
-        QChar(0x0110), QChar(0x00D1), QChar(0x0309), QChar(0x00D3), QChar(0x00D4), QChar(0x01A0), QChar(0x00D6), QChar(0x00D7),  // D0-D7
-        QChar(0x00D8), QChar(0x00D9), QChar(0x00DA), QChar(0x00DB), QChar(0x00DC), QChar(0x01AF), QChar(0x0303), QChar(0x00DF),  // D8-DF
-        QChar(0x00E0), QChar(0x00E1), QChar(0x00E2), QChar(0x0103), QChar(0x00E4), QChar(0x00E5), QChar(0x00E6), QChar(0x00E7),  // E0-E7
-        QChar(0x00E8), QChar(0x00E9), QChar(0x00EA), QChar(0x00EB), QChar(0x0301), QChar(0x00ED), QChar(0x00EE), QChar(0x00EF),  // E8-EF
-        QChar(0x0111), QChar(0x00F1), QChar(0x0323), QChar(0x00F3), QChar(0x00F4), QChar(0x01A1), QChar(0x00F6), QChar(0x00F7),  // F0=F7
-        QChar(0x00F8), QChar(0x00F9), QChar(0x00FA), QChar(0x00FB), QChar(0x00FC), QChar(0x01B0), QChar(0x20AB), QChar(0x00FF)}))}// F8-FF
-};
-// clang-format on
-
-// a map of supported MXP elements and attributes
-const QMap<QString, QVector<QString>> TBuffer::mSupportedMxpElements = {
-    {QStringLiteral("send"), {"href", "hint", "prompt"}},
-    {QStringLiteral("br"), {}},
-    {QStringLiteral("a"), {"href", "hint"}}
-};
-
-// Default constructor:
-TChar::TChar()
-: mFgColor(Qt::white)
-, mBgColor(Qt::black)
-, mFlags(None)
-, mIsSelected(false)
-, mLinkIndex(0)
-{
-}
-
-TChar::TChar(const QColor& fg, const QColor& bg, const TChar::AttributeFlags flags, const int linkIndex)
-: mFgColor(fg)
-, mBgColor(bg)
+TChar::TChar(const QColor& foreground, const QColor& background, const TChar::AttributeFlags flags, const int linkIndex)
+: mFgColor(foreground)
+, mBgColor(background)
 , mFlags(flags)
-, mIsSelected(false)
 , mLinkIndex(linkIndex)
 {
 }
 
-TChar::TChar(Host* pH)
-: mFlags(None)
-, mIsSelected(false)
-, mLinkIndex(0)
+TChar::TChar(TConsole* pC)
+: mFgColor(pC ? pC->mFormatCurrent.foreground() : QColorConstants::White)
+, mBgColor(pC ? pC->mFormatCurrent.background() : QColorConstants::Black)
+, mFlags(pC ? pC->mFormatCurrent.allDisplayAttributes() : AttributeFlag::None)
 {
-    if (pH) {
-        mFgColor = pH->mFgColor;
-        mBgColor = pH->mBgColor;
-    } else {
-        mFgColor = Qt::white;
-        mBgColor = Qt::black;
-    }
 }
 
 // Note: this operator compares ALL aspects of 'this' against 'other' which may
@@ -688,7 +70,8 @@ bool TChar::operator==(const TChar& other)
     return true;
 }
 
-// Copy constructor:
+// Copy constructor - because it is resetting the mIsSelected flag it is NOT a
+// default copy constructor:
 TChar::TChar(const TChar& copy)
 : mFgColor(copy.mFgColor)
 , mBgColor(copy.mBgColor)
@@ -698,32 +81,44 @@ TChar::TChar(const TChar& copy)
 {
 }
 
-const QString timeStampFormat = QStringLiteral("hh:mm:ss.zzz ");
-const QString blankTimeStamp  = QStringLiteral("------------ ");
+quint8 TChar::alternateFont() const
+{
+    // As this is the most likely case check it first:
+    if (!(mFlags & AltFontMask)) {
+        return 0;
+    }
 
-TBuffer::TBuffer(Host* pH)
-: mLinkID(0)
-, mLinesLimit(10000)
-, mBatchDeleteSize(1000)
-, mWrapAt(99999999)
-, mWrapIndent(0)
-, mCursorY(0)
-, mMXP(false)
-, mMXP_MODE(MXP_MODE_OPEN)
-, mMXP_DEFAULT(MXP_MODE_OPEN)
-, mAssemblingToken(false)
-, openT(0)
-, closeT(0)
-, mMXP_LINK_MODE(false)
-, mIgnoreTag(false)
-, mParsingVar(false)
-, mOpenMainQuote()
-, mMXP_SEND_NO_REF_MODE(false)
-, mEchoingText(false)
-, mGotESC(false)
-, mGotCSI(false)
-, mGotOSC(false)
-, mIsDefaultColor(true)
+    if (mFlags & AltFont9) {
+        return 9;
+    }
+    if (mFlags & AltFont8) {
+        return 8;
+    }
+    if (mFlags & AltFont7) {
+        return 7;
+    }
+    if (mFlags & AltFont6) {
+        return 6;
+    }
+    if (mFlags & AltFont5) {
+        return 5;
+    }
+    if (mFlags & AltFont4) {
+        return 4;
+    }
+    if (mFlags & AltFont3) {
+        return 3;
+    }
+    if (mFlags & AltFont2) {
+        return 2;
+    }
+    return 1;
+}
+
+// Store for text and attributes (such as character color) to be drawn on screen
+// Contents are rendered by a TTextEdit
+TBuffer::TBuffer(Host* pH, TConsole* pConsole)
+: mpConsole(pConsole)
 , mBlack(pH->mBlack)
 , mLightBlack(pH->mLightBlack)
 , mRed(pH->mRed)
@@ -740,55 +135,62 @@ TBuffer::TBuffer(Host* pH)
 , mMagenta(pH->mMagenta)
 , mLightWhite(pH->mLightWhite)
 , mWhite(pH->mWhite)
-, mpHost(pH)
 , mForeGroundColor(pH->mFgColor)
 , mForeGroundColorLight(pH->mFgColor)
 , mBackGroundColor(pH->mBgColor)
-, mBold(false)
-, mItalics(false)
-, mOverline(false)
-, mReverse(false)
-, mStrikeOut(false)
-, mUnderline(false)
-, mItalicBeforeBlink(false)
-, lastLoggedFromLine(0)
-, lastloggedToLine(0)
-, mEncoding()
-, mMainIncomingCodec(nullptr)
+, mpHost(pH)
 {
     clear();
-
-    TMxpElement _element;
-    _element.name = "SEND";
-    _element.href = "";
-    _element.hint = "";
-    mMXP_Elements["SEND"] = _element;
-
-    TMxpElement _aURL;
-    _aURL.name = "A";
-    _aURL.href = "";
-    _aURL.hint = "";
-    mMXP_Elements["A"] = _aURL;
 
 #ifdef QT_DEBUG
     // Validate the encoding tables in case there has been an edit which breaks
     // things:
-    for (auto table : csmEncodingTable) {
-        Q_ASSERT_X(table.second.size() == 128, "TBuffer", "Mis-sized encoding look-up table.");
+    for (auto table : csmEncodingTable.getEncodings()) {
+        Q_ASSERT_X(table.size() == 128, "TBuffer", "Mis-sized encoding look-up table.");
     }
 #endif
 }
 
-void TBuffer::setBufferSize(int s, int batch)
+// user-defined literal to represent megabytes
+auto operator""_MB(unsigned long long const x)
+        -> long
+{ return 1024L*1024L*x; }
+
+void TBuffer::setBufferSize(int requestedLinesLimit, int batch)
 {
-    if (s < 100) {
-        s = 100;
+    if (requestedLinesLimit < 100) {
+        requestedLinesLimit = 100;
     }
-    if (batch >= s) {
-        batch = s / 10;
+    if (batch >= requestedLinesLimit) {
+        batch = requestedLinesLimit / 10;
     }
-    mLinesLimit = s;
+    // clip the maximum to something reasonable that the machine can handle
+    auto max = getMaxBufferSize();
+    if (requestedLinesLimit > max) {
+        qWarning().nospace() << "setBufferSize(): " << requestedLinesLimit <<
+                "lines for buffer requested but your computer can only handle " << max << ", clipping it";
+        mLinesLimit = max;
+    } else {
+        mLinesLimit = requestedLinesLimit;
+    }
+
     mBatchDeleteSize = batch;
+}
+
+// naive calculation to get a reasonable limit for a maximum buffer size
+int TBuffer::getMaxBufferSize()
+{
+    const int64_t physicalMemoryTotal = mudlet::self()->getPhysicalMemoryTotal();
+    // Mudlet is 32bit mainly on Windows, see where the practical limit for a process 2GB:
+    // https://docs.microsoft.com/en-us/windows/win32/memory/memory-limits-for-windows-releases#memory-and-address-space-limits
+    // 64bit: set to 80% of what is available to us, swap not included
+    const int64_t maxProcessMemoryBytes = (QSysInfo::WordSize == 32) ? 1600_MB : (physicalMemoryTotal * 0.80);
+    auto maxLines = (maxProcessMemoryBytes / TCHAR_IN_BYTES) / mpHost->mWrapAt;
+    // now we've calculated how many lines can we fit in 80% of memory, ignoring memory use for other things like triggers/aliases, Lua scripts, etc
+    // so shave that down by 20%
+    maxLines = (maxLines / 100) * 80;
+
+    return maxLines;
 }
 
 void TBuffer::updateColors()
@@ -845,17 +247,14 @@ int TBuffer::getLastLineNumber()
     }
 }
 
-void TBuffer::addLink(bool trigMode, const QString& text, QStringList& command, QStringList& hint, TChar format)
+void TBuffer::addLink(bool trigMode, const QString& text, QStringList& command, QStringList& hint, TChar format, QVector<int> luaReference)
 {
-    if (++mLinkID > scmMaxLinks) {
-        mLinkID = 1;
-    }
-    mLinkStore[mLinkID] = command;
-    mHintStore[mLinkID] = hint;
+    const int id = mLinkStore.addLinks(command, hint, mpHost, luaReference);
+
     if (!trigMode) {
-        append(text, 0, text.length(), format.mFgColor, format.mBgColor, format.mFlags, mLinkID);
+        append(text, 0, text.length(), format.mFgColor, format.mBgColor, format.mFlags, id);
     } else {
-        appendLine(text, 0, text.length(), format.mFgColor, format.mBgColor, format.mFlags, mLinkID);
+        appendLine(text, 0, text.length(), format.mFgColor, format.mBgColor, format.mFlags, id);
     }
 }
 
@@ -940,15 +339,15 @@ void TBuffer::translateToPlainText(std::string& incoming, const bool isFromServe
 {
     // What can appear in a CSI Parameter String (Ps) byte or at least for it
     // to be something we can handle:
-    const QByteArray cParameter("0123456789;:");
+    const QByteArray cParameter = QByteArrayLiteral("0123456789;:");
     // What can appear in the initial position of a CSI Parameter String (Ps) byte:
-    const QByteArray cParameterInitial("0123456789;:<=>?");
+    const QByteArray cParameterInitial = QByteArrayLiteral("0123456789;:<=>?");
     // What can appear in a CSI Intermediate byte (includes a quote character in
     // the middle of the text here which has to be escaped with a backslash):
-    const QByteArray cIntermediate(" !\"#$%&'()*+,-./");
+    const QByteArray cIntermediate = QByteArrayLiteral(" !\"#$%&'()*+,-./");
     // What can appear in a CSI final byte position - (includes a backslash
     // which has to be doubled to include it in here):
-    const QByteArray cFinal("@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
+    const QByteArray cFinal = QByteArrayLiteral("@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
 
     // As well as enabling the prepending of left-over bytes from last packet
     // from the MUD server this may help in high frequency interactions to
@@ -963,7 +362,7 @@ void TBuffer::translateToPlainText(std::string& incoming, const bool isFromServe
     }
 
     // Check this each packet
-    QString usedEncoding = mpHost->mTelnet.getEncoding();
+    const QByteArray usedEncoding = mpHost->mTelnet.getEncoding();
     if (mEncoding != usedEncoding) {
         encodingChanged(usedEncoding);
         // Will have to dump any stored bytes as they will be in the old
@@ -989,20 +388,50 @@ void TBuffer::translateToPlainText(std::string& incoming, const bool isFromServe
         localBuffer = incoming;
     }
 
-    const QVector<QChar> encodingLookupTable = csmEncodingTable.value(mEncoding).second;
-    // If the encoding is "ASCII", "ISO 8859-1", "UTF-8", "GBK", "GB18030" or "Big5"
-    // (which are not in the table) encodingLookupTable will be empty otherwise
-    // the 128 values in the returned table will be used for all the text data
-    // that gets through the following ANSI code and other out-of-band data
-    // processing - doing this mean that a (fast) lookup in the QVector can be
-    // done as opposed to a a repeated switch(...) and branch to one of a series
-    // of decoding methods each with another up to 128 value switch()
+    // Fixup table for our own, substitute QTextCodecs:
+    QByteArray encodingTableToUse{mEncoding};
+    if (mEncoding == "M_CP437") {
+        encodingTableToUse = "CP437";
+    } else if (mEncoding == "M_CP667") {
+        encodingTableToUse = "CP667";
+    } else if (mEncoding == "M_CP737") {
+        encodingTableToUse = "CP737";
+    } else if (mEncoding == "M_CP869") {
+        encodingTableToUse = "CP869";
+    } else if (mEncoding == "M_MEDIEVIA") {
+        encodingTableToUse = "MEDIEVIA";
+    }
+
+    const QVector<QChar> encodingLookupTable = csmEncodingTable.getLookupTable(encodingTableToUse);
+    // If the encoding is "ASCII", "ISO 8859-1", "UTF-8", "GBK", "GB18030",
+    // "BIG5", "BIG5-HKSCS" or "EUC-KR" (which are not in the table)
+    // encodingLookupTable will be empty otherwise the 128 values in the
+    // returned table will be used for all the text data that gets through the
+    // following ANSI code and other out-of-band data processing - doing this
+    // means that a (fast) lookup in the QVector can be done as opposed to a
+    // repeated switch(...) and branch to one of a series of decoding methods
+    // each with another up to 128 value switch()
 
     size_t localBufferLength = localBuffer.length();
     size_t localBufferPosition = 0;
     if (!localBufferLength) {
         return;
     }
+
+    // If we are resolving/interpolating an MXP entity, the interpolated text
+    // ends at localBuffer[endOfMXPEntity - 1]. This variable used to avoid an
+    // (infinite) recursion like <!EN E "foobar&E;>&E;
+    // Recursively interpolating a predefined entity like <!EN E "foobar&frac12;>&E;
+    // will work though.
+    size_t endOfMXPEntity = 0;
+
+    // A similar index which points behind the name of a literal entity name like
+    // &unknown; which does not exist and will be printed literal, w/o
+    // any MXP interpretation. Again, this avoid endless recursion trying to
+    // resolve an unsolvable entity. We need the hassle in both cases, as the
+    // the resolved values may be in a character encoding that must be decoded by
+    // Mudlet.
+    size_t endOfLiteralEntity = 0;
 
     while (true) {
         if (localBufferPosition >= localBufferLength) {
@@ -1015,7 +444,7 @@ void TBuffer::translateToPlainText(std::string& incoming, const bool isFromServe
                 // The terminator for an OSC is the String Terminator but that
                 // is the ESC character followed by (the single character)
                 // '\\' so must not respond to an ESC here - though the code
-                // arrangement should avoid looping around this loop whilst
+                // arrangement should avoid looping around this loop while
                 // seeking this character pair anyhow...
                 mGotESC = true;
                 ++localBufferPosition;
@@ -1040,7 +469,7 @@ void TBuffer::translateToPlainText(std::string& incoming, const bool isFromServe
             // specifications..
             // After the first character the remaining characters of the
             // parameter string will be in the range "0-9:;" only
-            size_t spanStart = localBufferPosition;
+            size_t const spanStart = localBufferPosition;
             size_t spanEnd = spanStart;
             while (spanEnd < localBufferLength
                    && ((((spanStart < spanEnd) && cParameterInitial.indexOf(localBuffer[spanEnd]) >= 0))
@@ -1064,7 +493,7 @@ void TBuffer::translateToPlainText(std::string& incoming, const bool isFromServe
                 continue;
             }
 
-            if (spanEnd >= localBufferLength || cParameter.indexOf(localBuffer[spanEnd]) >=0) {
+            if (spanEnd >= localBufferLength || cParameter.indexOf(localBuffer[spanEnd]) >= 0) {
                 // We have gone to the end of the buffer OR the last character
                 // in the buffer is still within a CSI sequence - therefore we
                 // have got a split between data packets and are not in a
@@ -1121,54 +550,75 @@ void TBuffer::translateToPlainText(std::string& incoming, const bool isFromServe
                     if (!mpHost->mFORCE_MXP_NEGOTIATION_OFF && mpHost->mServerMXPenabled && isFromServer) {
                         mGotCSI = false;
 
-                        bool isOk = false;
-                        QString code = QString(localBuffer.substr(localBufferPosition, spanEnd - spanStart).c_str());
-                        int modeCode = code.toInt(&isOk);
-                        if (isOk) {
-                            // we really do not handle these well...
-                            // MXP line modes - comments are from http://www.zuggsoft.com/zmud/mxp.htm#MXP%20Line%20Tags
-                            mMXP = true; // some servers don't negotiate, they assume!
-
-                            switch (modeCode) {
-                            case 0: // open line - only MXP commands in the "open" category are allowed.  When a newline is received from the MUD, the mode reverts back to the Default mode.  OPEN MODE starts as the Default mode until changes with one of the "lock mode" tags listed below.
-                                mMXP_MODE = MXP_MODE_OPEN;
-                                break;
-                            case 1: // secure line (until next newline) all tags and commands in MXP are allowed within the line.  When a newline is received from the MUD, the mode reverts back to the Default mode.
-                                mMXP_MODE = MXP_MODE_SECURE;
-                                break;
-                            case 2: // locked line (until next newline) no MXP or HTML commands are allowed in the line.  The line is not parsed for any tags at all.  This is useful for "verbatim" text output from the MUD.  When a newline is received from the MUD, the mode reverts back to the Default mode.
-                                mMXP_MODE = MXP_MODE_LOCKED;
-                                break;
-                            case 3: //  reset (MXP 0.4 or later) - close all open tags.  Set mode to Open.  Set text color and properties to default.
-                                closeT = 0;
-                                openT = 0;
-                                mAssemblingToken = false;
-                                mMXP_MODE = mMXP_DEFAULT;
-                                currentToken.clear();
-                                mParsingVar = false;
-                                break;
-                            case 4: // temp secure mode (MXP 0.4 or later) - set secure mode for the next tag only.  Must be immediately followed by a < character to start a tag.  Remember to set secure mode when closing the tag also.
-                                mMXP_MODE = MXP_MODE_TEMP_SECURE;
-                                break;
-                            case 5: // lock open mode (MXP 0.4 or later) - set open mode.  Mode remains in effect until changed.  OPEN mode becomes the new default mode.
-                                mMXP_DEFAULT = mMXP_MODE = MXP_MODE_OPEN;
-                                break;
-                            case 6: // lock secure mode (MXP 0.4 or later) - set secure mode.  Mode remains in effect until changed.  Secure mode becomes the new default mode.
-                                mMXP_DEFAULT = mMXP_MODE = MXP_MODE_SECURE;
-                                break;
-                            case 7: // lock locked mode (MXP 0.4 or later) - set locked mode.  Mode remains in effect until changed.  Locked mode becomes the new default mode.
-                                mMXP_DEFAULT = mMXP_MODE = MXP_MODE_LOCKED;
-                                break;
-                            default:
-                                qDebug().noquote().nospace() << "TBuffer::translateToPlainText(...) INFO - Unhandled MXP control sequence CSI " << code << " z received, Mudlet will ignore it.";
-                            }
-                        } else {
-                            // isOk is false here as toInt(...) failed
-                            qDebug().noquote().nospace() << "TBuffer::translateToPlainText(...) INFO - Non-numeric MXP control sequence CSI " << code << " z received, Mudlet will ignore it.";
-                        }
+                        const QString code = QString(localBuffer.substr(localBufferPosition, spanEnd - spanStart).c_str());
+                        mpHost->mMxpProcessor.setMode(code);
                     }
                     // end of if (!mpHost->mFORCE_MXP_NEGOTIATION_OFF)
                     // We have manually disabled MXP negotiation
+                    break;
+
+                case static_cast<quint8>('C'): {
+                    // A workaround for the ONE cursor movement command we CAN
+                    // emulate - the CUF Cursor forward one:
+                    // Needed for mud.durismud.com see forum message topic:
+                    // https://forums.mudlet.org/viewtopic.php?f=9&t=22887
+                    const int dataLength = spanEnd - spanStart;
+                    const QByteArray temp = QByteArray::fromRawData(localBuffer.substr(localBufferPosition, dataLength).c_str(), dataLength);
+                    bool isOk = false;
+                    const int spacesNeeded = temp.toInt(&isOk);
+                    if (isOk && spacesNeeded > 0) {
+                        const TChar::AttributeFlags attributeFlags =
+                                ((mIsDefaultColor ? mBold || mpHost->mMxpClient.bold() : false) ? TChar::Bold : TChar::None)
+                                | (mItalics || mpHost->mMxpClient.italic() ? TChar::Italic : TChar::None)
+                                | (mOverline ? TChar::Overline : TChar::None)
+                                | (mReverse ? TChar::Reverse : TChar::None)
+                                | (mStrikeOut || mpHost->mMxpClient.strikeOut() ? TChar::StrikeOut : TChar::None)
+                                | (mUnderline || mpHost->mMxpClient.underline() ? TChar::Underline : TChar::None)
+                                | (mFastBlink ? TChar::FastBlink : (mBlink ? TChar::Blink :TChar::None))
+                                | (TChar::alternateFontFlag(mAltFont))
+                                | (mConcealed ? TChar::Concealed : TChar::None);
+
+                        // Note: we are using the background color for the
+                        // foreground color as well so that we are transparent:
+                        const TChar c(mBackGroundColor, mBackGroundColor, attributeFlags);
+                        for (int spaceCount = 0; spaceCount < spacesNeeded; ++spaceCount) {
+                            mMudLine.append(QChar::Space);
+                            mMudBuffer.push_back(c);
+                        }
+                        // For debugging:
+//                        qDebug().noquote().nospace() << "TBuffer::translateToPlainText(...) INFO - CUF (cursor forward) sequence of form CSI" << temp << "C received, converting into " << spacesNeeded << " spaces.";
+                    } else {
+                        qDebug().noquote().nospace() << "TBuffer::translateToPlainText(...) INFO - Unhandled sequence of form CSI..." << temp << "C received, that is supposed to be a CUF (cursor forward) sequence but doesn't make sense, Mudlet will ignore it.";
+                    }
+
+                }
+                    break;
+
+                case static_cast<quint8>('J'): {
+                    /*
+                     * Also seen in output from mud.durismud.com see 'C' case above:
+                     * Is ED 'Erase Display' command and has three variants:
+                     * * 0 (or omitted): clear from cursor to end of screen
+                     *   - which is a NOP for us!
+                     * * 1: clear from cursor to beginning of screen
+                     *   - which is a NWIH for us!
+                     * * 2: clear entire screen and delete all lines saved in
+                     *   scrollback buffer - which is again a NWIH for us...!
+                     */
+                    const int dataLength = spanEnd - spanStart;
+                    const QByteArray temp = QByteArray::fromRawData(localBuffer.substr(localBufferPosition, dataLength).c_str(), dataLength);
+                    bool isOk = false;
+                    const int argValue = temp.toInt(&isOk);
+                    if (isOk) {
+                        if (argValue >= 0 && argValue < 3) {
+                            qDebug().noquote().nospace() << "TBuffer::translateToPlainText(...) INFO - ED (erase in display) sequence of form CSI" << temp << "J received,\nrejecting as incompatible with Mudlet.";
+                        } else {
+                            qDebug().noquote().nospace() << "TBuffer::translateToPlainText(...) INFO - Invalid ED (erase in display) sequence of form CSI" << temp << "J received,\nwhich Mudlet will ignore.";
+                        }
+                    } else {
+                        qDebug().noquote().nospace() << "TBuffer::translateToPlainText(...) INFO - Unhandled sequence of form CSI..." << temp << "J received, that is supposed to\nbe a ED (erase in display) sequence but it doesn't make sense, Mudlet will ignore it.";
+                    }
+                }
                     break;
 
                 default: // Unhandled other (valid) CSI final byte sequences will end up here
@@ -1199,7 +649,7 @@ void TBuffer::translateToPlainText(std::string& incoming, const bool isFromServe
             // of String (SOS) or String Terminator (ST) and the latter is ESC
             // followed by '\\' (a single \ BTW) in the 7-bit code case (the
             // former is encoded as ESC followed by 'X'):
-            size_t spanStart = localBufferPosition;
+            size_t const spanStart = localBufferPosition;
             size_t spanEnd = spanStart;
             // It is safe to look at spanEnd-1 even at the starting position
             // because we already know that the localBuffer extends backwards
@@ -1229,395 +679,97 @@ void TBuffer::translateToPlainText(std::string& incoming, const bool isFromServe
 
         // We are outside of a CSI or OSC sequence if we get to here:
 
-        if (mMXP && mpHost->mServerMXPenabled && (mMXP_MODE != MXP_MODE_LOCKED)) {
+        if (localBufferPosition >= endOfLiteralEntity && mpHost->mMxpProcessor.isEnabled()) {
+            if (mpHost->mServerMXPenabled) {
+                if (mpHost->mMxpProcessor.mode() != MXP_MODE_LOCKED) {
+                    // The comparison signals to the processor, if custom entities may be resolved
+                    // (countermeasure against infinite recursion)
+                    TMxpProcessingResult const result =
+                            mpHost->mMxpProcessor.processMxpInput(ch, localBufferPosition >= endOfMXPEntity);
 
-            // ignore < and > inside of parameter strings
-            if (openT == 1) {
-                if (ch == '\'' || ch == '\"') {
-                    if (!mParsingVar) {
-                        mOpenMainQuote = ch;
-                        mParsingVar = true;
-                    } else {
-                        if (ch == mOpenMainQuote) {
-                            mParsingVar = false;
-                        }
-                    }
-                }
-            }
-
-            if (ch == '<') {
-                if (!mParsingVar) {
-                    ++openT;
-                    if (!currentToken.empty()) {
-                        currentToken += ch;
-                    }
-                    mAssemblingToken = true;
-                    ++localBufferPosition;
-                    continue;
-                }
-            }
-
-            if (ch == '>') {
-                if (!mParsingVar) {
-                    ++closeT;
-                }
-
-                // sanity check
-                if (closeT > openT) {
-                    closeT = 0;
-                    openT = 0;
-                    mAssemblingToken = false;
-                    currentToken.clear();
-                    mParsingVar = false;
-                }
-
-                if ((openT > 0) && (closeT == openT)) {
-                    mAssemblingToken = false;
-                    // If we were in temp secure mode, then we switch back to default after the next tag
-                    if (mMXP_MODE == MXP_MODE_TEMP_SECURE) {
-                       mMXP_MODE = mMXP_DEFAULT;
-                    }
-                    std::string::size_type _pfs = currentToken.find_first_of(' ');
-                    QString _tn;
-                    if (_pfs == std::string::npos) {
-                        _tn = currentToken.c_str();
-                    } else {
-                        _tn = currentToken.substr(0, _pfs).c_str();
-                    }
-                    _tn = _tn.toUpper();
-                    if (_tn == "VERSION") {
-                        QString payload = QStringLiteral("\n\x1b[1z<VERSION MXP=1.0 CLIENT=Mudlet VERSION=%1%2>\n").arg(APP_VERSION, APP_BUILD);
-                        mpHost->mTelnet.sendData(payload);
-                    } else if (_tn == QLatin1String("SUPPORT")) {
-                        auto response = processSupportsRequest(currentToken.c_str());
-                        QString payload = QStringLiteral("\n\x1b[1z<SUPPORTS %1>\n").arg(response);
-                        mpHost->mTelnet.sendData(payload);
-                    }
-                    if (_tn == "BR") {
-                        // a <BR> is a newline, but doesn't reset the MXP mode
+                    switch (result) {
+                    case HANDLER_NEXT_CHAR:
+                        localBufferPosition++;
+                        continue;
+                    case HANDLER_COMMIT_LINE: // BR tag or &newline;
                         ch = '\n';
-                        openT = 0;
-                        closeT = 0;
-                        currentToken.clear();
-                        goto COMMIT_LINE; // jump ahead of the part that resets MXP mode on newline
-                    }
-                    if (_tn.startsWith("!EL")) {
-                        QString _tp = currentToken.substr(currentToken.find_first_of(' ')).c_str();
-                        _tn = _tp.section(' ', 1, 1).toUpper();
-                        _tp = _tp.section(' ', 2).toUpper();
-                        if ((_tp.indexOf("<SEND") != -1)) {
-                            QString _t2 = _tp;
-                            int pRef = _t2.indexOf("HREF=");
-                            bool _got_ref = false;
-                            // wenn kein href angegeben ist, dann gilt das 1. parameter als href
-                            if (pRef == -1) {
-                                pRef = _t2.indexOf("<SEND ") + 1;
+                        goto COMMIT_LINE;
+                    case HANDLER_INSERT_ENTITY_CUST:
+                        // custom entity value set with <!EN>, recurse except for other custom entities
+                        [[fallthrough]];
+                    case HANDLER_INSERT_ENTITY_LIT: {
+                        // Unknown entity name like &unknown; push back into buffer for codeset interpretation,
+                        // but no MXP parsing.
+
+                        // We replace the already processed text with the entity value into the buffer and restart
+                        // processing it for charset encoding but with limited MXP handling
+                        size_t valueLength = mpHost->mMxpProcessor.getEntityValue().length();
+                        localBuffer.replace(0, localBufferPosition + 1, mpHost->mMxpProcessor.getEntityValue().toLatin1());
+
+                        if (result == HANDLER_INSERT_ENTITY_LIT) {
+                            if (localBufferPosition < endOfMXPEntity) {
+                                // This is a special case, our unknown entity might actually be a custom one
+                                // inside a custom one which we refused to resolve to avoid an endless recursion.
+                                // So we carefully adjust the end marker s.t. custom entities are not reenabled
+                                // too early
+                                endOfMXPEntity -= localBufferPosition + 1 - valueLength;
+                                endOfLiteralEntity = valueLength;
                             } else {
-                                _got_ref = true;
+                                endOfMXPEntity = valueLength;
                             }
-
-                            if (pRef == -1) {
-                                return;
-                            }
-                            pRef += 5;
-
-                            QChar _quote_type = _t2[pRef];
-                            int pRef2;
-                            if (_quote_type != '&') {
-                                pRef2 = _t2.indexOf(_quote_type, pRef + 1); //' ', pRef );
-                            } else {
-                                pRef2 = _t2.indexOf(' ', pRef + 1);
-                            }
-                            QString _ref = _t2.mid(pRef, pRef2 - pRef);
-
-                            // gegencheck, ob es keine andere variable ist
-
-                            if (_ref.startsWith('\'')) {
-                                int pRef3 = _t2.indexOf('\'', _t2.indexOf('\'', pRef) + 1);
-                                int pRef4 = _t2.indexOf('=');
-                                if (((pRef4 == -1) || (pRef4 != 0 && pRef4 > pRef3)) || (_got_ref)) {
-                                    _ref = _t2.mid(pRef, pRef2 - pRef);
-                                }
-                            } else if (_ref.startsWith('\"')) {
-                                int pRef3 = _t2.indexOf('\"', _t2.indexOf('\"', pRef) + 1);
-                                int pRef4 = _t2.indexOf('=');
-                                if (((pRef4 == -1) || (pRef4 != 0 && pRef4 > pRef3)) || (_got_ref)) {
-                                    _ref = _t2.mid(pRef, pRef2 - pRef);
-                                }
-                            } else if (_ref.startsWith('&')) {
-                                _ref = _t2.mid(pRef, _t2.indexOf(' ', pRef + 1) - pRef);
-                            } else {
-                                _ref = "";
-                            }
-                            _ref = _ref.replace(';', "");
-                            _ref = _ref.replace("&quot", "");
-                            _ref = _ref.replace("&amp", "&");
-                            _ref = _ref.replace('\'', ""); //NEU
-                            _ref = _ref.replace('\"', ""); //NEU
-                            _ref = _ref.replace("&#34", R"(")");
-
-                            pRef = _t2.indexOf("HINT=");
-                            QString _hint;
-                            if (pRef != -1) {
-                                pRef += 5;
-                                int pRef2 = _t2.indexOf(' ', pRef);
-                                _hint = _t2.mid(pRef, pRef2 - pRef);
-                                if (_hint.startsWith('\'') || pRef2 < 0) {
-                                    pRef2 = _t2.indexOf('\'', _t2.indexOf('\'', pRef) + 1);
-                                    _hint = _t2.mid(pRef, pRef2 - pRef);
-                                } else if (_hint.startsWith('\"') || pRef2 < 0) {
-                                    pRef2 = _t2.indexOf('\"', _t2.indexOf('\"', pRef) + 1);
-                                    _hint = _t2.mid(pRef, pRef2 - pRef);
-                                }
-                                _hint = _hint.replace(';', "");
-                                _hint = _hint.replace("&quot", "");
-                                _hint = _hint.replace("&amp", "&");
-                                _hint = _hint.replace('\'', ""); //NEU
-                                _hint = _hint.replace('\"', ""); //NEU
-                                _hint = _hint.replace("&#34", R"(")");
-                            }
-                            TMxpElement _element;
-                            _element.name = _tn;
-                            _element.href = _ref;
-                            _element.hint = _hint;
-                            mMXP_Elements[_tn] = _element;
+                            endOfLiteralEntity = valueLength;
+                        } else {
+                            // HANDLER_INSERT_ENTITY_CUST
+                            endOfMXPEntity = valueLength;
+                            endOfLiteralEntity = 0;
                         }
-                        openT = 0;
-                        closeT = 0;
-                        currentToken.clear();
-                        ++localBufferPosition;
+
+                        // Now restart the loop to parse the newly inserted text
+                        localBufferLength = localBuffer.length();
+                        localBufferPosition = 0;
                         continue;
                     }
+                    case HANDLER_INSERT_ENTITY_SYS: {
+                        // System entities are literal QString / UTF values which we just 'print'
+                        // There is no further MXP or Codeset evaluation
 
+                        const TChar::AttributeFlags attributeFlags =
+                                ((mIsDefaultColor ? mBold || mpHost->mMxpClient.bold() : false) ? TChar::Bold : TChar::None)
+                                | (mItalics || mpHost->mMxpClient.italic() ? TChar::Italic : TChar::None)
+                                | (mOverline ? TChar::Overline : TChar::None)
+                                | (mReverse ? TChar::Reverse : TChar::None)
+                                | (mStrikeOut || mpHost->mMxpClient.strikeOut() ? TChar::StrikeOut : TChar::None)
+                                | (mUnderline || mpHost->mMxpClient.underline() ? TChar::Underline : TChar::None);
 
-                    if (mMXP_LINK_MODE) {
-                        if (_tn.indexOf('/') != -1) {
-                            mMXP_LINK_MODE = false;
+                        TChar c((!mIsDefaultColor && mBold) ? mForeGroundColorLight : mForeGroundColor, mBackGroundColor, attributeFlags);
+
+                        size_t valueLength = mpHost->mMxpProcessor.getEntityValue().length();
+                        mMudLine.append(mpHost->mMxpProcessor.getEntityValue());
+                        // We also need to set the color attributes for the special character
+                        while (valueLength--) {
+                            mMudBuffer.push_back(c);
                         }
+                        // We already handled the input, go to the next character
+                        localBufferPosition++;
+                        continue;
                     }
-
-                    if (mMXP_SEND_NO_REF_MODE) {
-                        if (_tn.indexOf('/') != -1) {
-                            mMXP_SEND_NO_REF_MODE = false;
-                            if (mLinkStore[mLinkID].front() == "send([[]])") {
-                                QString _t_ref = "send([[";
-                                _t_ref.append(mAssembleRef.c_str());
-                                _t_ref.append("]])");
-                                QStringList _t_ref_list;
-                                _t_ref_list << _t_ref;
-                                mLinkStore[mLinkID] = _t_ref_list;
-                            } else {
-                                mLinkStore[mLinkID].replaceInStrings("&text;", mAssembleRef.c_str());
-                            }
-                            mAssembleRef.clear();
-                        }
-                    } else if (mMXP_Elements.contains(_tn)) {
-                        QString _tp;
-                        std::string::size_type _fs = currentToken.find_first_of(' ');
-                        if (_fs != std::string::npos) {
-                            _tp = currentToken.substr(_fs).c_str();
-                        }
-                        QString _t1 = _tp.toUpper();
-                        const TMxpElement& _element =  mMXP_Elements[_tn];
-                        QString _t2 = _element.href;
-                        QString _t3 = _element.hint;
-                        bool _userTag = true;
-                        if (_t2.size() < 1) {
-                            _userTag = false;
-                        }
-                        QRegularExpression _rex;
-                        QStringList _rl1, _rl2;
-                        int _ki1 = _tp.indexOf('\'');
-                        int _ki2 = _tp.indexOf('\"');
-                        int _ki3 = _tp.indexOf('=');
-                        // is the first parameter to send given in the form
-                        // send "what" hint="bla" or send href="what" hint="bla"
-
-                        // handle the first case without a variable assignment
-                        if ((_ki3 == -1)                                           // no = whatsoever
-                            || ((_ki3 != -1) && ((_ki2 < _ki3) || (_ki1 < _ki3)))) // first parameter is given without =
-                        {
-                            if ((_ki1 < _ki2 && _ki1 != -1) || (_ki2 == -1 && _ki1 != -1)) {
-                                if (_ki1 < _ki3 || _ki3 == -1) {
-                                    _rl1 << "HREF";
-                                    int _cki1 = _tp.indexOf('\'', _ki1 + 1);
-                                    if (_cki1 > -1) {
-                                        _rl2 << _tp.mid(_ki1 + 1, _cki1 - (_ki1 + 1));
-                                    }
-                                }
-                            } else if ((_ki2 < _ki1 && _ki2 != -1) || (_ki1 == -1 && _ki2 != -1)) {
-                                if (_ki2 < _ki3 || _ki3 == -1) {
-                                    _rl1 << "HREF";
-                                    int _cki2 = _tp.indexOf('\"', _ki2 + 1);
-                                    if (_cki2 > -1) {
-                                        _rl2 << _tp.mid(_ki2 + 1, _cki2 - (_ki2 + 1));
-                                    }
-                                }
-                            }
-                        }
-                        // parse parameters in the form var="val" or var='val' where val can be given in the form "foo'b'ar" or 'foo"b"ar'
-                        if (_tp.contains(QStringLiteral(R"(=')"))) {
-                            _rex = QRegularExpression(QStringLiteral(R"(\b(\w+)=\'([^\']*) ?)"));
-                        } else {
-                            _rex = QRegularExpression(QStringLiteral(R"(\b(\w+)=\"([^\"]*) ?)"));
-                        }
-
-                        int _rpos = 0;
-                        QRegularExpressionMatch match = _rex.match(_tp, _rpos);
-                        while ((_rpos = match.capturedStart()) != -1) {
-                            _rl1 << match.captured(1).toUpper();
-                            _rl2 << match.captured(2);
-                            _rpos += match.capturedLength();
-
-                            match = _rex.match(_tp, _rpos);
-                        }
-
-                        if ((_rl1.size() == _rl2.size()) && (!_rl1.empty())) {
-                            for (int i = 0; i < _rl1.size(); i++) {
-                                QString _var = _rl1[i];
-                                _var.prepend('&');
-                                if (_userTag || _t2.indexOf(_var) != -1) {
-                                    _t2 = _t2.replace(_var, _rl2[i]);
-                                    _t3 = _t3.replace(_var, _rl2[i]);
-                                } else {
-                                    if (_rl1[i] == QStringLiteral("HREF")) {
-                                        _t2 = _rl2[i];
-                                    }
-                                    if (_rl1[i] == QStringLiteral("HINT")) {
-                                        _t3 = _rl2[i];
-                                    }
-                                }
-                            }
-                        }
-
-                        // handle print to prompt feature PROMPT
-                        bool _send_to_command_line = false;
-                        if (_t1.endsWith("PROMPT")) {
-                            _send_to_command_line = true;
-                        }
-
-
-                        mMXP_LINK_MODE = true;
-                        if (_t2.size() < 1 || _t2.contains("&text;")) {
-                            mMXP_SEND_NO_REF_MODE = true;
-                        }
-                        mLinkID++;
-                        if (mLinkID > scmMaxLinks) {
-                            mLinkID = 1;
-                        }
-                        QStringList _tl = _t2.split('|');
-                        for (int i = 0, total = _tl.size(); i < total; ++i) {
-                            _tl[i].replace("|", "");
-                            if (_element.name == "A") {
-                                _tl[i] = "openUrl([[" + _tl[i] + "]])";
-                            }
-                            else if (!_send_to_command_line) {
-                                _tl[i] = "send([[" + _tl[i] + "]])";
-                            } else {
-                                _tl[i] = "printCmdLine([[" + _tl[i] + "]])";
-                            }
-                        }
-
-                        mLinkStore[mLinkID] = _tl;
-
-                        _t3 = _t3.replace("&quot;", R"(")");
-                        _t3 = _t3.replace("&amp;", "&");
-                        _t3 = _t3.replace("&apos;", "'");
-                        _t3 = _t3.replace("&#34;", R"(")");
-
-                        QStringList _tl2 = _t3.split('|');
-                        _tl2.replaceInStrings("|", "");
-                        if (_tl2.size() >= _tl.size() + 1) {
-                            _tl2.pop_front();
-                        }
-                        mHintStore[mLinkID] = _tl2;
+                    default:
+                        //HANDLER_FALL_THROUGH -> do nothing
+                        assert(localBuffer[localBufferPosition] == ch);
                     }
-                    openT = 0;
-                    closeT = 0;
-                    currentToken.clear();
-                }
-                ++localBufferPosition;
-                continue;
-            }
-
-            if (mAssemblingToken) {
-                if (ch == '\n') {
-                    closeT = 0;
-                    openT = 0;
-                    mAssemblingToken = false;
-                    currentToken.clear();
-                    mParsingVar = false;
                 } else {
-                    currentToken += ch;
-                    ++localBufferPosition;
-                    continue;
+                    mpHost->mMxpProcessor.processRawInput(ch);
                 }
             }
 
-            if (ch == '&' || mIgnoreTag) {
-                if ((localBufferPosition + 4 < localBufferLength) && (mSkip.empty())) {
-                    if (localBuffer.substr(localBufferPosition, 4) == "&gt;") {
-                        localBufferPosition += 3;
-                        ch = '>';
-                        mIgnoreTag = false;
-                    } else if (localBuffer.substr(localBufferPosition, 4) == "&lt;") {
-                        localBufferPosition += 3;
-                        ch = '<';
-                        mIgnoreTag = false;
-                    } else if (localBuffer.substr(localBufferPosition, 5) == "&amp;") {
-                        mIgnoreTag = false;
-                        localBufferPosition += 4;
-                        ch = '&';
-                    } else if (localBuffer.substr(localBufferPosition, 6) == "&quot;") {
-                        localBufferPosition += 5;
-                        mIgnoreTag = false;
-                        mSkip.clear();
-                        ch = '"';
-                    }
-                }
-                // if the content is split across package borders
-                else if (mSkip == "&gt" && ch == ';') {
-                    mIgnoreTag = false;
-                    mSkip.clear();
-                    ch = '>';
-                } else if (mSkip == "&lt" && ch == ';') {
-                    mIgnoreTag = false;
-                    mSkip.clear();
-                    ch = '<';
-                } else if (mSkip == "&amp" && ch == ';') {
-                    mIgnoreTag = false;
-                    mSkip.clear();
-                    ch = '&';
-                } else if (mSkip == "&quot" && ch == ';' ) {
-                    mIgnoreTag = false;
-                    mSkip.clear();
-                    ch = '"';
-                } else {
-                    mIgnoreTag = true;
-                    mSkip += ch;
-                    // sanity check
-                    if (mSkip.size() > 7) {
-                        mIgnoreTag = false;
-                        mSkip.clear();
-                    }
-                    ++localBufferPosition;
-                    continue;
-                }
+            if (CHAR_IS_COMMIT_CHAR(ch)) {
+                // after a newline (but not a <br>) return to default mode
+                mpHost->mMxpProcessor.resetToDefaultMode();
             }
-        }
-
-
-        if (mMXP_SEND_NO_REF_MODE) {
-            mAssembleRef += ch;
-        }
-
-        if (mMXP && ((ch == '\n') || (ch == '\xff') || (ch == '\r'))) {
-            // after a newline (but not a <br>) return to default mode
-            mMXP_MODE = mMXP_DEFAULT;
         }
 
 COMMIT_LINE:
-        if ((ch == '\n') || (ch == '\xff') || (ch == '\r')) {
+        if (CHAR_IS_COMMIT_CHAR(ch)) {
             // DE: MUD Zeilen werden immer am Zeilenanfang geschrieben
             // EN: MUD lines are always written at the beginning of the line
 
@@ -1627,13 +779,39 @@ COMMIT_LINE:
             // line there should not be any changes to text before a line feed
             // which sort of seems to be implied by the current value of ch:
 
+            // Qt struggles to report blank lines on Windows to screen readers, this is a workaround
+            // https://bugreports.qt.io/browse/QTBUG-105035
+            if (Q_UNLIKELY(mMudLine.isEmpty())) {
+                if (mpHost->mBlankLineBehaviour == Host::BlankLineBehaviour::Hide) {
+                    localBufferPosition++;
+                    continue;
+                } else if (mpHost->mBlankLineBehaviour == Host::BlankLineBehaviour::ReplaceWithSpace) {
+                    const TChar::AttributeFlags attributeFlags =
+                            ((mIsDefaultColor ? mBold || mpHost->mMxpClient.bold(): false) ? TChar::Bold : TChar::None)
+                            | (mItalics || mpHost->mMxpClient.italic() ? TChar::Italic : TChar::None)
+                            | (mOverline ? TChar::Overline : TChar::None)
+                            | (mReverse ? TChar::Reverse : TChar::None)
+                            | (mStrikeOut || mpHost->mMxpClient.strikeOut() ? TChar::StrikeOut : TChar::None)
+                            | (mUnderline || mpHost->mMxpClient.underline() ? TChar::Underline : TChar::None)
+                            | (mFastBlink ? TChar::FastBlink : (mBlink ? TChar::Blink :TChar::None))
+                            | (TChar::alternateFontFlag(mAltFont))
+                            | (mConcealed ? TChar::Concealed : TChar::None);
+
+                    // Note: we are using the background color for the
+                    // foreground color as well so that we are transparent:
+                    const TChar c(mBackGroundColor, mBackGroundColor, attributeFlags);
+                    mMudLine.append(QChar::Space);
+                    mMudBuffer.push_back(c);
+                }
+            }
+
             if (static_cast<size_t>(mMudLine.size()) != mMudBuffer.size()) {
                 qWarning() << "TBuffer::translateToPlainText(...) WARNING: mismatch in new text "
                               "data character and attribute data items!";
             }
 
             if (!lineBuffer.back().isEmpty()) {
-                if (mMudLine.size() > 0) {
+                if (!mMudLine.isEmpty()) {
                     lineBuffer << mMudLine;
                 } else {
                     if (ch == '\r') {
@@ -1643,15 +821,14 @@ COMMIT_LINE:
                     lineBuffer << QString();
                 }
                 buffer.push_back(mMudBuffer);
-                dirty << true;
-                timeBuffer << QTime::currentTime().toString(timeStampFormat);
+                timeBuffer << QTime::currentTime().toString(csmTimeStampFormat);
                 if (ch == '\xff') {
                     promptBuffer.append(true);
                 } else {
                     promptBuffer.append(false);
                 }
             } else {
-                if (mMudLine.size() > 0) {
+                if (!mMudLine.isEmpty()) {
                     lineBuffer.back().append(mMudLine);
                 } else {
                     if (ch == '\r') {
@@ -1661,8 +838,7 @@ COMMIT_LINE:
                     lineBuffer.back().append(QString());
                 }
                 buffer.back() = mMudBuffer;
-                dirty.back() = true;
-                timeBuffer.back() = QTime::currentTime().toString(timeStampFormat);
+                timeBuffer.back() = QTime::currentTime().toString(csmTimeStampFormat);
                 if (ch == '\xff') {
                     promptBuffer.back() = true;
                 } else {
@@ -1672,7 +848,7 @@ COMMIT_LINE:
 
             mMudLine.clear();
             mMudBuffer.clear();
-            int line = lineBuffer.size() - 1;
+            const int line = lineBuffer.size() - 1;
             mpHost->mpConsole->runTriggers(line);
             // Only use of TBuffer::wrap(), breaks up new text
             // NOTE: it MAY have been clobbered by the trigger engine!
@@ -1680,13 +856,18 @@ COMMIT_LINE:
 
             // Start a new, but empty line in the various buffers
             ++localBufferPosition;
-            std::deque<TChar> newLine;
+            std::deque<TChar> const newLine;
             buffer.push_back(newLine);
             lineBuffer.push_back(QString());
             timeBuffer.push_back(QString());
             promptBuffer << false;
-            dirty << true;
             if (static_cast<int>(buffer.size()) > mLinesLimit) {
+                // Whilst we also include a call to TConsole::handleLinesOverflowEvent(...)
+                // in all other methods where the following is used (because
+                // both need to monitor the number of lines of text in the
+                // buffer) the event that the former may be required to
+                // generate is NOT used for the TMainConsole case whereas this
+                // (translateToPlainText(...)) method is ONLY for that one:
                 shrinkBuffer();
             }
             continue;
@@ -1704,27 +885,33 @@ COMMIT_LINE:
             } else {
                 mMudLine.append(encodingLookupTable.at(index - 128));
             }
-        } else if (mEncoding == QLatin1String("ISO 8859-1")) {
+        } else if (mEncoding == "ISO 8859-1") {
             mMudLine.append(QString(QChar::fromLatin1(ch)));
-        } else if (mEncoding == QLatin1String("GBK")) {
+        } else if (mEncoding == "GBK") {
             if (!processGBSequence(localBuffer, isFromServer, false, localBufferLength, localBufferPosition, isTwoTCharsNeeded)) {
                 // We have run out of bytes and we have stored the unprocessed
                 // ones but we need to bail out NOW!
                 return;
             }
-        } else if (mEncoding == QLatin1String("GB18030")) {
+        } else if (mEncoding == "GB18030") {
             if (!processGBSequence(localBuffer, isFromServer, true, localBufferLength, localBufferPosition, isTwoTCharsNeeded)) {
                 // We have run out of bytes and we have stored the unprocessed
                 // ones but we need to bail out NOW!
                 return;
             }
-        } else if (mEncoding == QLatin1String("Big5")) {
+        } else if (mEncoding == "EUC-KR") {
+            if (!processEUC_KRSequence(localBuffer, isFromServer, localBufferLength, localBufferPosition, isTwoTCharsNeeded)) {
+                // We have run out of bytes and we have stored the unprocessed
+                // ones but we need to bail out NOW!
+                return;
+            }
+        } else if (mEncoding == "BIG5" || mEncoding == "BIG5-HKSCS") {
             if (!processBig5Sequence(localBuffer, isFromServer, localBufferLength, localBufferPosition, isTwoTCharsNeeded)) {
                 // We have run out of bytes and we have stored the unprocessed
                 // ones but we need to bail out NOW!
                 return;
             }
-        } else if (mEncoding == QLatin1String("UTF-8")) {
+        } else if (mEncoding == "UTF-8") {
             if (!processUtf8Sequence(localBuffer, isFromServer, localBufferLength, localBufferPosition, isTwoTCharsNeeded)) {
                 // We have run out of bytes and we have stored the unprocessed
                 // ones but we need to bail out NOW!
@@ -1746,18 +933,29 @@ COMMIT_LINE:
         }
 
         const TChar::AttributeFlags attributeFlags =
-                ((mIsDefaultColor ? mBold : false) ? TChar::Bold : TChar::None)
-                | (mItalics ? TChar::Italic : TChar::None)
+                ((mIsDefaultColor ? mBold || mpHost->mMxpClient.bold() : false) ? TChar::Bold : TChar::None)
+                | (mItalics || mpHost->mMxpClient.italic() ? TChar::Italic : TChar::None)
                 | (mOverline ? TChar::Overline : TChar::None)
                 | (mReverse ? TChar::Reverse : TChar::None)
-                | (mStrikeOut ? TChar::StrikeOut : TChar::None)
-                | (mUnderline ? TChar::Underline : TChar::None);
+                | (mStrikeOut || mpHost->mMxpClient.strikeOut() ? TChar::StrikeOut : TChar::None)
+                | (mUnderline || mpHost->mMxpClient.underline() ? TChar::Underline : TChar::None)
+                | (mFastBlink ? TChar::FastBlink : (mBlink ? TChar::Blink :TChar::None))
+                | (TChar::alternateFontFlag(mAltFont))
+                | (mConcealed ? TChar::Concealed : TChar::None);
 
         TChar c((!mIsDefaultColor && mBold) ? mForeGroundColorLight : mForeGroundColor, mBackGroundColor, attributeFlags);
 
-        if (mMXP_LINK_MODE) {
-            c.mLinkIndex = mLinkID;
+        if (mpHost->mMxpClient.isInLinkMode()) {
+            c.mLinkIndex = mLinkStore.getCurrentLinkID();
             c.mFlags |= TChar::Underline;
+        }
+
+        if (mpHost->mMxpClient.hasFgColor()) {
+            c.mFgColor = mpHost->mMxpClient.getFgColor();
+        }
+
+        if (mpHost->mMxpClient.hasBgColor()) {
+            c.mBgColor = mpHost->mMxpClient.getBgColor();
         }
 
         if (isTwoTCharsNeeded) {
@@ -1848,68 +1046,22 @@ void TBuffer::decodeSGR38(const QStringList& parameters, bool isColonSeparated)
 
         } else if (tag < 232) {
             // because color 1-15 behave like normal ANSI colors
-            tag -= 16;
+           tag -= 16;
             // 6x6x6 RGB color space
-            quint8 r = tag / 36;
-            quint8 g = (tag - (r * 36)) / 6;
-            quint8 b = (tag - (r * 36)) - (g * 6);
-            // Did use 42 as a factor but that isn't right
-            // as it yields:
-            // 0:0; 1:42; 2:84; 3:126; 4:168; 5:210
-            // 6 x 42 DOES equal 252 BUT IT IS OUT OF RANGE
-            // Instead we use 51:
-            // 0:0; 1:51; 2:102; 3:153; 4:204: 5:255
-            mForeGroundColor = QColor(r * 51, g * 51, b * 51);
+            quint8 const r = tag / 36;
+            quint8 const g = (tag - (r * 36)) / 6;
+            quint8 const b = (tag - (r * 36)) - (g * 6);
+            // Adjusted from previously linear gradient for the blocks.
+            // To match the common terminal palettes, the values are
+            // scaled as follows:
+            // 0: 0, 1: 95, 2:135, 3:175, 4:215, 5:255
+            mForeGroundColor = QColor(r == 0 ? 0 : (r - 1) * 40 + 95,
+                                      g == 0 ? 0 : (g - 1) * 40 + 95,
+                                      b == 0 ? 0 : (b - 1) * 40 + 95);
             mForeGroundColorLight = mForeGroundColor;
 
         } else {
-            // black + 23 tone grayscale from dark to light
-            // gray. Similar to RGB case the multiplier was
-            // a bit off we had been using 10 but:
-            // 23 x 10 = 230
-            // whereas 23 should map to 255, this requires
-            // a non-integer multiplier, instead of
-            // multiplying and rounding we, for speed, can
-            // use a look-up table:
-            int value = 0;
-            // clang-format off
-            switch (tag) {
-                case 232:   value =   0; break; //   0.000
-                case 233:   value =  11; break; //  11.087
-                case 234:   value =  22; break; //  22.174
-                case 235:   value =  33; break; //  33.261
-                case 236:   value =  44; break; //  44.348
-                case 237:   value =  55; break; //  55.435
-                case 238:   value =  67; break; //  66.522
-                case 239:   value =  78; break; //  77.609
-                case 240:   value =  89; break; //  88.696
-                case 241:   value = 100; break; //  99.783
-                case 242:   value = 111; break; // 110.870
-                case 243:   value = 122; break; // 121.957
-                case 244:   value = 133; break; // 133.043
-                case 245:   value = 144; break; // 144.130
-                case 246:   value = 155; break; // 155.217
-                case 247:   value = 166; break; // 166.304
-                case 248:   value = 177; break; // 177.391
-                case 249:   value = 188; break; // 188.478
-                case 250:   value = 200; break; // 199.565
-                case 251:   value = 211; break; // 210.652
-                case 252:   value = 222; break; // 221.739
-                case 253:   value = 233; break; // 232.826
-                case 254:   value = 244; break; // 243.913
-                case 255:   value = 255; break; // 255.000
-                default:
-                    value = 192;
-#if defined(DEBUG_SGR_PROCESSING)
-                    if (isColonSeparated) {
-                        qDebug().noquote().nospace() << "TBuffer::decodeSGR38(...) ERROR - unexpected color index parameter element (the third part) in a SGR...;38:5:" << parameters.at(2) << ";..m sequence treating it as 192!";
-                    } else {
-                        qDebug().noquote().nospace() << "TBuffer::decodeSGR38(...) ERROR - unexpected color index parameter element (the third part) in a SGR...;38;5;" << parameters.at(2) << ";..m sequence treating it as 192!";
-                    }
-#endif
-            }
-
-             // clang-format on
+            const int value = (tag - 232) * 10 + 8;
             mForeGroundColor = QColor(value, value, value);
             mForeGroundColorLight = mForeGroundColor;
         }
@@ -1967,9 +1119,9 @@ void TBuffer::decodeSGR38(const QStringList& parameters, bool isColonSeparated)
 
 #if defined(DEBUG_SGR_PROCESSING)
         if (isColonSeparated) {
-            qDebug().noquote().nospace() << "TBuffer::decodeSGR38(...) WARNING - unexpect SGR code: SGR...;38:" << parameters.at(1) << ":...;...m ignoring sequence!";
+            qDebug().noquote().nospace() << "TBuffer::decodeSGR38(...) WARNING - unexpected SGR code: SGR...;38:" << parameters.at(1) << ":...;...m ignoring sequence!";
         } else {
-            qDebug().noquote().nospace() << "TBuffer::decodeSGR38(...) WARNING - unexpect SGR code: SGR...;38;" << parameters.at(1) << ";...m ignoring sequence!";
+            qDebug().noquote().nospace() << "TBuffer::decodeSGR38(...) WARNING - unexpected SGR code: SGR...;38;" << parameters.at(1) << ";...m ignoring sequence!";
         }
 #endif
 
@@ -2060,64 +1212,19 @@ void TBuffer::decodeSGR48(const QStringList& parameters, bool isColonSeparated)
             // because color 1-15 behave like normal ANSI colors
             tag -= 16;
             // 6x6x6 RGB color space
-            quint8 r = tag / 36;
-            quint8 g = (tag - (r * 36)) / 6;
-            quint8 b = (tag - (r * 36)) - (g * 6);
-            // Did use 42 as a factor but that isn't right
-            // as it yields:
-            // 0:0; 1:42; 2:84; 3:126; 4:168; 5:210
-            // 6 x 42 DOES equal 252 BUT IT IS OUT OF RANGE
-            // Instead we use 51:
-            // 0:0; 1:51; 2:102; 3:153; 4:204: 5:255
-            mBackGroundColor = QColor(r * 51, g * 51, b * 51);
+            quint8 const r = tag / 36;
+            quint8 const g = (tag - (r * 36)) / 6;
+            quint8 const b = (tag - (r * 36)) - (g * 6);
+            // Adjusted from previously linear gradient for the blocks.
+            // To match the common terminal palettes, the values are
+            // scaled as follows:
+            // 0: 0, 1: 95, 2:135, 3:175, 4:215, 5:255
+            mBackGroundColor = QColor(r == 0 ? 0 : (r - 1) * 40 + 95,
+                                      g == 0 ? 0 : (g - 1) * 40 + 95,
+                                      b == 0 ? 0 : (b - 1) * 40 + 95);
 
         } else {
-            // black + 23 tone grayscale from dark to light
-            // gray. Similar to RGB case the multiplier was
-            // a bit off we had been using 10 but:
-            // 23 x 10 = 230
-            // whereas 23 should map to 255, this requires
-            // a non-integer multiplier, instead of
-            // multiplying and rounding we, for speed, can
-            // use a look-up table:
-            int value = 0;
-            // clang-format off
-            switch (tag) {
-                case 232:   value =   0; break; //   0.000
-                case 233:   value =  11; break; //  11.087
-                case 234:   value =  22; break; //  22.174
-                case 235:   value =  33; break; //  33.261
-                case 236:   value =  44; break; //  44.348
-                case 237:   value =  55; break; //  55.435
-                case 238:   value =  67; break; //  66.522
-                case 239:   value =  78; break; //  77.609
-                case 240:   value =  89; break; //  88.696
-                case 241:   value = 100; break; //  99.783
-                case 242:   value = 111; break; // 110.870
-                case 243:   value = 122; break; // 121.957
-                case 244:   value = 133; break; // 133.043
-                case 245:   value = 144; break; // 144.130
-                case 246:   value = 155; break; // 155.217
-                case 247:   value = 166; break; // 166.304
-                case 248:   value = 177; break; // 177.391
-                case 249:   value = 188; break; // 188.478
-                case 250:   value = 200; break; // 199.565
-                case 251:   value = 211; break; // 210.652
-                case 252:   value = 222; break; // 221.739
-                case 253:   value = 233; break; // 232.826
-                case 254:   value = 244; break; // 243.913
-                case 255:   value = 255; break; // 255.000
-                default:
-                    value = 64;
-#if defined(DEBUG_SGR_PROCESSING)
-                    if (isColonSeparated) {
-                        qDebug().noquote().nospace() << "TBuffer::decodeSGR48(...) ERROR - unexpected color index parameter element (the third part) in a SGR...;48:5:" << parameters.at(2) << ";..m sequence treating it as 64!";
-                    } else {
-                        qDebug().noquote().nospace() << "TBuffer::decodeSGR48(...) ERROR - unexpected color index parameter element (the third part) in a SGR...;48;5;" << parameters.at(2) << ";..m sequence treating it as 64!";
-                    }
-#endif
-            }
-             // clang-format on
+            const int value = (tag - 232) * 10 + 8;
             mBackGroundColor = QColor(value, value, value);
         }
 
@@ -2176,9 +1283,9 @@ void TBuffer::decodeSGR48(const QStringList& parameters, bool isColonSeparated)
 
 #if defined(DEBUG_SGR_PROCESSING)
         if (isColonSeparated) {
-            qDebug().noquote().nospace() << "TBuffer::decodeSGR48(...) WARNING - unexpect SGR code: SGR...;48:" << parameters.at(1) << ":...;...m ignoring sequence!";
+            qDebug().noquote().nospace() << "TBuffer::decodeSGR48(...) WARNING - unexpected SGR code: SGR...;48:" << parameters.at(1) << ":...;...m ignoring sequence!";
         } else {
-            qDebug().noquote().nospace() << "TBuffer::decodeSGR48(...) WARNING - unexpect SGR code: SGR...;48;" << parameters.at(1) << ";...m ignoring sequence!";
+            qDebug().noquote().nospace() << "TBuffer::decodeSGR48(...) WARNING - unexpected SGR code: SGR...;48;" << parameters.at(1) << ";...m ignoring sequence!";
         }
 #endif
     }
@@ -2193,17 +1300,17 @@ void TBuffer::decodeSGR(const QString& sequence)
         return;
     }
 
-    bool haveColorSpaceId = pHost->getHaveColorSpaceId();
+    const bool haveColorSpaceId = pHost->getHaveColorSpaceId();
 
-    QStringList parameterStrings = sequence.split(QChar(';'));
+    const QStringList parameterStrings = sequence.split(QChar(';'));
     for (int paraIndex = 0, total = parameterStrings.count(); paraIndex < total; ++paraIndex) {
-        QString allParameterElements = parameterStrings.at(paraIndex);
+        const QString allParameterElements = parameterStrings.at(paraIndex);
         if (allParameterElements.contains(QLatin1String(":"))) {
             /******************************************************************
              * Parameter string with colon separated Parameter (sub) elements *
              ******************************************************************/
             // We have colon separated parameter elements, so we must have at least 2 members
-            QStringList parameterElements(allParameterElements.split(QChar(':')));
+            const QStringList parameterElements(allParameterElements.split(QChar(':')));
             if (parameterElements.at(0) == QLatin1String("38")) {
                 if (parameterElements.count() >= 2) {
                     decodeSGR38(parameterElements, true);
@@ -2225,7 +1332,7 @@ void TBuffer::decodeSGR(const QString& sequence)
                     madeElements << parameterStrings.at(paraIndex); // "38"
                     madeElements << parameterStrings.at(paraIndex + 1); // "2" or "5" hopefully
                     bool isOk = false;
-                    int sgr38_type = madeElements.at(1).toInt(&isOk);
+                    const int sgr38_type = madeElements.at(1).toInt(&isOk);
                     if (madeElements.at(1).isEmpty() || !isOk || sgr38_type == 0) {
                         // Oh dear that parameter is empty or equivalent to zero
                         // so we cannot do anything more
@@ -2322,7 +1429,7 @@ void TBuffer::decodeSGR(const QString& sequence)
                     madeElements << parameterStrings.at(paraIndex);
                     madeElements << parameterStrings.at(paraIndex + 1);
                     bool isOk = false;
-                    int sgr48_type = madeElements.at(1).toInt(&isOk);
+                    const int sgr48_type = madeElements.at(1).toInt(&isOk);
                     if (madeElements.at(1).isEmpty() || !isOk || sgr48_type == 0) {
                         // Oh dear that parameter is empty or equivalent to zero
                         // so we cannot do anything more
@@ -2401,7 +1508,7 @@ void TBuffer::decodeSGR(const QString& sequence)
             } else if (parameterElements.at(0) == QLatin1String("4")) {
                 // New way of controlling underline
                 bool isOk = false;
-                int value = parameterElements.at(1).toInt(&isOk);
+                const int value = parameterElements.at(1).toInt(&isOk);
                 if (!isOk) {
                     // missing value
                     qDebug().noquote().nospace() << "TBuffer::decodeSGR(\"" << sequence << "\") ERROR - failed to detect underline parameter element (the second part) in a SGR...;4:?;..m sequence assuming it is a zero!";
@@ -2427,7 +1534,7 @@ void TBuffer::decodeSGR(const QString& sequence)
             } else if (parameterElements.at(0) == QLatin1String("3")) {
                 // New way of controlling italics
                 bool isOk = false;
-                int value = parameterElements.at(1).toInt(&isOk);
+                const int value = parameterElements.at(1).toInt(&isOk);
                 if (!isOk) {
                     // missing value
                     qDebug().noquote().nospace() << "TBuffer::decodeSGR(\"" << sequence << "\") ERROR - failed to detect italic parameter element (the second part) in a SGR...;3:?;../m sequence assuming it is a zero!";
@@ -2477,6 +1584,10 @@ void TBuffer::decodeSGR(const QString& sequence)
                     mReverse = false;
                     mStrikeOut = false;
                     mUnderline = false;
+                    mBlink = false;
+                    mFastBlink = false;
+                    mConcealed = false;
+                    mAltFont = 0;
                     break;
                 case 1:
                     mBold = true;
@@ -2490,14 +1601,14 @@ void TBuffer::decodeSGR(const QString& sequence)
                 case 3:
                     // There is a proposal by the "VTE" terminal
                     // emulator to use a (sub)parameter entry to
-                    // destinguish between italics and slanted text by
+                    // distinguish between italics and slanted text by
                     // using ESC[...;3:1;...m and ESC[...;3:2;...m
                     // respectively - that is handled above in the colon
                     // sub-string separated part:
                     mItalics = true;
                     break;
                 case 4:
-                    // There is a implimention by some terminal
+                    // There is a implementation by some terminal
                     // emulators ("Kitty" and "VTE") to use a
                     // (sub)parameter entry of 3 for a wavy underline
                     // {presumably 2 would be a double underline and 1
@@ -2506,28 +1617,54 @@ void TBuffer::decodeSGR(const QString& sequence)
                     // sub-string separated part:
                     mUnderline = true;
                     break;
-                 case 5:
-                     if (mItalics) {
-                         mItalicBeforeBlink = true;
-                     }
-                     mItalics = true;
-                     break; //slow-blinking, represented as italics instead
-                 case 6:
-                     if (mItalics) {
-                         mItalicBeforeBlink = true;
-                     }
-                     mItalics = true;
-                     break; //fast blinking, represented as italics instead
+                case 5:
+                    mBlink = true;
+                    mFastBlink = false;
+                    break; //slow-blinking, display as italics instead for the moment
+                case 6:
+                    mBlink = false;
+                    mFastBlink = true;
+                    break; //fast blinking, display as italics instead for the moment
                 case 7:
                     mReverse = true;
                     break;
-                // case 8: // Concealed characters (set foreground to be the same as background?)
-                //    break;
+                case 8: // Concealed characters (set foreground to be the same as background?)
+                    mConcealed = true;
+                    break;
                 case 9:
                     mStrikeOut = true;
                     break;
-                // case 10:
-                //    break; //default font
+                case 10: //default font
+                    mAltFont = 0;
+                    break;
+                case 11: // 11 to 19 are alternate fonts, what and where those
+                         // are set is not so well specified
+                    mAltFont = 1;
+                    break;
+                case 12:
+                    mAltFont = 2;
+                    break;
+                case 13:
+                    mAltFont = 3;
+                    break;
+                case 14:
+                    mAltFont = 4;
+                    break;
+                case 15:
+                    mAltFont = 5;
+                    break;
+                case 16:
+                    mAltFont = 6;
+                    break;
+                case 17:
+                    mAltFont = 7;
+                    break;
+                case 18:
+                    mAltFont = 8;
+                    break;
+                case 19:
+                    mAltFont = 9;
+                    break;
                 // case 21: // Double underline according to specs
                 //    break;
                 case 22:
@@ -2539,17 +1676,16 @@ void TBuffer::decodeSGR(const QString& sequence)
                 case 24:
                     mUnderline = false;
                     break;
-                 case 25:
-                     if (!mItalicBeforeBlink) {
-                         mItalics = false;
-                     }
-                     mItalicBeforeBlink = false;
+                case 25:
+                    mBlink = false;
+                    mFastBlink = false;
                     break; // blink off
                 case 27:
                     mReverse = false;
                     break;
-                // case 28: // Revealed characters (undoes the effect of "8")
-                //    break;
+                case 28: // Revealed characters (undoes the effect of "8")
+                    mConcealed = false;
+                    break;
                 case 29:
                     mStrikeOut = false;
                     break;
@@ -2608,7 +1744,7 @@ void TBuffer::decodeSGR(const QString& sequence)
                     madeElements << parameterStrings.at(paraIndex);
                     madeElements << parameterStrings.at(paraIndex + 1);
                     bool isOk = false;
-                    int sgr38_type = madeElements.at(1).toInt(&isOk);
+                    const int sgr38_type = madeElements.at(1).toInt(&isOk);
                     if (madeElements.at(1).isEmpty() || !isOk || sgr38_type == 0) {
                         // Oh dear that parameter is empty or equivalent to zero
                         // so we cannot do anything more
@@ -2727,7 +1863,7 @@ void TBuffer::decodeSGR(const QString& sequence)
                     madeElements << parameterStrings.at(paraIndex);
                     madeElements << parameterStrings.at(paraIndex + 1);
                     bool isOk = false;
-                    int sgr48_type = madeElements.at(1).toInt(&isOk);
+                    const int sgr48_type = madeElements.at(1).toInt(&isOk);
                     if (madeElements.at(1).isEmpty() || !isOk || sgr48_type == 0) {
                         // Oh dear that parameter is empty or equivalent to zero
                         // so we cannot do anything more
@@ -2910,12 +2046,12 @@ void TBuffer::decodeOSC(const QString& sequence)
         return;
     }
 
-    bool serverMayRedefineDefaultColors = pHost->getMayRedefineColors();
+    const bool serverMayRedefineDefaultColors = pHost->getMayRedefineColors();
 #if defined(DEBUG_OSC_PROCESSING)
     qDebug().nospace().noquote() << "    Consider the OSC sequence: \"" << sequence << "\"";
 #endif
-    unsigned short ch = sequence.at(0).unicode();
-    switch (ch) {
+    unsigned short const character = sequence.at(0).unicode();
+    switch (character) {
     case static_cast<quint8>('P'):
         if (serverMayRedefineDefaultColors) {
             if (sequence.size() == 8) {
@@ -2924,14 +2060,14 @@ void TBuffer::decodeOSC(const QString& sequence)
                 // Uses mid(...) rather than at(...) because we want the return to
                 // be a (single character) QString and not a QChar so we can use
                 // QString::toUInt(...):
-                quint8 colorNumber = sequence.midRef(1,1).toUInt(&isOk, 16);
+                quint8 const colorNumber = sequence.mid(1, 1).toUInt(&isOk, 16);
                 quint8 rr = 0;
                 if (isOk) {
-                    rr = sequence.midRef(2, 2).toUInt(&isOk, 16);
+                    rr = sequence.mid(2, 2).toUInt(&isOk, 16);
                 }
                 quint8 gg = 0;
                 if (isOk) {
-                    gg = sequence.midRef(4, 2).toUInt(&isOk, 16);
+                    gg = sequence.mid(4, 2).toUInt(&isOk, 16);
                 }
                 quint8 bb = 0;
                 if (isOk) {
@@ -2995,8 +2131,8 @@ void TBuffer::decodeOSC(const QString& sequence)
                         // This will refresh the "main" console as it is only this
                         // class instance associated with that one that is to be
                         // changed by this method:
-                        if (mudlet::self()->mConsoleMap.contains(pHost)) {
-                            mudlet::self()->mConsoleMap[pHost]->changeColors();
+                        if (pHost->mpConsole) {
+                            pHost->mpConsole->changeColors();
                         }
                         // Also need to update the Lua sub-system's "color_table"
                         pHost->updateAnsi16ColorsInTable();
@@ -3033,7 +2169,7 @@ void TBuffer::resetColors()
     }
 
     // These should match the corresponding settings in
-    // dlgProfilePreferences::resetColors() :
+    // dlgProfilePreferences::slot_resetColors() :
     pHost->mBlack = Qt::black;
     pHost->mLightBlack = Qt::darkGray;
     pHost->mRed = Qt::darkRed;
@@ -3054,8 +2190,8 @@ void TBuffer::resetColors()
     // This will refresh the "main" console as it is only this class instance
     // associated with that one that will call this method from the
     // decodeOSC(...) method:
-    if (mudlet::self()->mConsoleMap.contains(pHost)) {
-        mudlet::self()->mConsoleMap[pHost]->changeColors();
+    if (pHost->mpConsole) {
+        pHost->mpConsole->changeColors();
     }
 
     // Also need to update the Lua sub-system's "color_table"
@@ -3065,7 +2201,7 @@ void TBuffer::resetColors()
 void TBuffer::append(const QString& text, int sub_start, int sub_end, TChar format, int linkID)
 {
     // CHECK: What about other Unicode line breaks, e.g. soft-hyphen:
-    const QString lineBreaks = QStringLiteral(",.- ");
+    const QString lineBreaks = qsl(",.- ");
 
     if (static_cast<int>(buffer.size()) > mLinesLimit) {
         shrinkBuffer();
@@ -3075,37 +2211,41 @@ void TBuffer::append(const QString& text, int sub_start, int sub_end, TChar form
         // buffer is completely empty
         std::deque<TChar> newLine;
         // The ternary operator is used here to set/reset only the TChar::Echo bit in the flags:
-        TChar c(format.mFgColor,
+        const TChar c(format.mFgColor,
                 format.mBgColor,
                 (mEchoingText ? (TChar::Echo | (format.mFlags & TChar::TestMask))
                  : (format.mFlags & TChar::TestMask)));
         newLine.push_back(c);
         buffer.push_back(newLine);
         lineBuffer.push_back(QString());
-        timeBuffer << QTime::currentTime().toString(timeStampFormat);
+        timeBuffer << QTime::currentTime().toString(csmTimeStampFormat);
         promptBuffer << false;
-        dirty << true;
         last = 0;
     }
-    bool firstChar = (lineBuffer.back().size() == 0);
-    int length = text.size();
-    if (length < 1) {
+    if (text.isEmpty()) {
         return;
     }
+    bool firstChar = (lineBuffer.back().isEmpty());
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    const int length = std::min(text.size(), MAX_CHARACTERS_PER_ECHO);
+#else
+    // Qt 6 changed the return type of QLIST<T>::size() to qsizetype which is
+    // not directly comparable to a const int& without a cast:
+    const int length = std::min(static_cast<int>(text.size()), MAX_CHARACTERS_PER_ECHO);
+#endif
     if (sub_end >= length) {
         sub_end = text.size() - 1;
     }
 
     for (int i = sub_start; i < length; ++i) {
-        //FIXME <=substart+sub_end muss nachsehen, ob wirklich noch teilbereiche gebraucht werden
+        //FIXME <=substart+sub_end must check whether sub-ranges are still needed
         if (text.at(i) == QChar::LineFeed) {
             log(size() - 1, size() - 1);
-            std::deque<TChar> newLine;
+            std::deque<TChar> const newLine;
             buffer.push_back(newLine);
             lineBuffer.push_back(QString());
-            timeBuffer << blankTimeStamp;
+            timeBuffer << csmBlankTimeStamp;
             promptBuffer << false;
-            dirty << true;
             firstChar = true;
             continue;
         }
@@ -3116,17 +2256,18 @@ void TBuffer::append(const QString& text, int sub_start, int sub_end, TChar form
         if (lineBuffer.back().size() >= mWrapAt) {
             for (int i = lineBuffer.back().size() - 1; i >= 0; --i) {
                 if (lineBreaks.indexOf(lineBuffer.back().at(i)) > -1) {
-                    QString tmp = lineBuffer.back().mid(0, i + 1);
-                    QString lineRest = lineBuffer.back().mid(i + 1);
+                    const int linebreakPos = (i != 0) ? i + 1 : lineBuffer.back().size();
+                    const QString tmp = lineBuffer.back().mid(0, linebreakPos);
+                    const QString lineRest = lineBuffer.back().mid(linebreakPos);
                     lineBuffer.back() = tmp;
                     std::deque<TChar> newLine;
 
-                    int k = lineRest.size();
-                    if (k > 0) {
-                        while (k > 0) {
+                    int restOfLine = lineRest.size();
+                    if (restOfLine > 0) {
+                        while (restOfLine > 0) {
                             newLine.push_front(buffer.back().back());
                             buffer.back().pop_back();
-                            k--;
+                            restOfLine--;
                         }
                     }
 
@@ -3136,9 +2277,8 @@ void TBuffer::append(const QString& text, int sub_start, int sub_end, TChar form
                     } else {
                         lineBuffer.append(QString());
                     }
-                    timeBuffer << blankTimeStamp;
+                    timeBuffer << csmBlankTimeStamp;
                     promptBuffer << false;
-                    dirty << true;
                     log(size() - 2, size() - 2);
                     // Was absent causing loss of all but last line of wrapped
                     // long lines of user input and some other console displayed
@@ -3148,23 +2288,32 @@ void TBuffer::append(const QString& text, int sub_start, int sub_end, TChar form
             }
         }
         lineBuffer.back().append(text.at(i));
-        TChar c(format.mFgColor,
+        const TChar c(format.mFgColor,
                 format.mBgColor,
                 (mEchoingText ? (TChar::Echo | (format.mFlags & TChar::TestMask))
                  : (format.mFlags & TChar::TestMask)),
                 linkID);
         buffer.back().push_back(c);
         if (firstChar) {
-            timeBuffer.back() = QTime::currentTime().toString(timeStampFormat);
+            timeBuffer.back() = QTime::currentTime().toString(csmTimeStampFormat);
             firstChar = false;
         }
+    }
+
+    // Whilst shrinkBuffer() is used when the buffer exceeds a user defined
+    // limit to prevent it growing beyond a "reasonable" size we also
+    // want to check - for TConsoles that have been set to be "non-scrollable"
+    // - that the content has not exceeded the number of lines that can be
+    // shown in the upper pane and to raise an event if it has
+    if (!mpConsole.isNull()) {
+        mpConsole->handleLinesOverflowEvent(lineBuffer.size());
     }
 }
 
 void TBuffer::append(const QString& text, int sub_start, int sub_end, const QColor& fgColor, const QColor& bgColor, TChar::AttributeFlags flags, int linkID)
 {
     // CHECK: What about other Unicode line breaks, e.g. soft-hyphen:
-    const QString lineBreaks = QStringLiteral(",.- ");
+    const QString lineBreaks = qsl(",.- ");
 
     if (static_cast<int>(buffer.size()) > mLinesLimit) {
         shrinkBuffer();
@@ -3172,20 +2321,23 @@ void TBuffer::append(const QString& text, int sub_start, int sub_end, const QCol
     int last = buffer.size() - 1;
     if (last < 0) {
         std::deque<TChar> newLine;
-        TChar c(fgColor, bgColor, (mEchoingText ? (TChar::Echo | flags) : flags));
+        const TChar c(fgColor, bgColor, (mEchoingText ? (TChar::Echo | flags) : flags));
         newLine.push_back(c);
         buffer.push_back(newLine);
         lineBuffer.push_back(QString());
-        timeBuffer << QTime::currentTime().toString(timeStampFormat);
+        timeBuffer << QTime::currentTime().toString(csmTimeStampFormat);
         promptBuffer << false;
-        dirty << true;
         last = 0;
     }
-    bool firstChar = (lineBuffer.back().size() == 0);
-    int length = text.size();
-    if (length < 1) {
+    if (text.isEmpty()) {
         return;
     }
+    bool firstChar = (lineBuffer.back().isEmpty());
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    const int length = std::min(text.size(), MAX_CHARACTERS_PER_ECHO);
+#else
+    const int length = std::min(static_cast<int>(text.size()), MAX_CHARACTERS_PER_ECHO);
+#endif
     if (sub_end >= length) {
         sub_end = text.size() - 1;
     }
@@ -3193,12 +2345,11 @@ void TBuffer::append(const QString& text, int sub_start, int sub_end, const QCol
     for (int i = sub_start; i < length; ++i) {
         if (text.at(i) == '\n') {
             log(size() - 1, size() - 1);
-            std::deque<TChar> newLine;
+            std::deque<TChar> const newLine;
             buffer.push_back(newLine);
             lineBuffer.push_back(QString());
-            timeBuffer << blankTimeStamp;
+            timeBuffer << csmBlankTimeStamp;
             promptBuffer << false;
-            dirty << true;
             firstChar = true;
             continue;
         }
@@ -3208,18 +2359,20 @@ void TBuffer::append(const QString& text, int sub_start, int sub_end, const QCol
         // multiplied by mWrap:
         if (lineBuffer.back().size() >= mWrapAt) {
             for (int i = lineBuffer.back().size() - 1; i >= 0; --i) {
-                if (lineBreaks.indexOf(lineBuffer.back().at(i)) > -1) {
-                    QString tmp = lineBuffer.back().mid(0, i + 1);
-                    QString lineRest = lineBuffer.back().mid(i + 1);
+                // insert linebreak either at linebreaking character location or at last character of line
+                if (lineBreaks.indexOf(lineBuffer.back().at(i)) > -1 || i == 0) {
+                    const int linebreakPos = (i != 0) ? i + 1 : lineBuffer.back().size();
+                    const QString tmp = lineBuffer.back().mid(0, linebreakPos);
+                    const QString lineRest = lineBuffer.back().mid(linebreakPos);
                     lineBuffer.back() = tmp;
                     std::deque<TChar> newLine;
 
-                    int k = lineRest.size();
-                    if (k > 0) {
-                        while (k > 0) {
+                    int restOfLine = lineRest.size();
+                    if (restOfLine > 0) {
+                        while (restOfLine > 0) {
                             newLine.push_front(buffer.back().back());
                             buffer.back().pop_back();
-                            k--;
+                            restOfLine--;
                         }
                     }
 
@@ -3229,9 +2382,8 @@ void TBuffer::append(const QString& text, int sub_start, int sub_end, const QCol
                     } else {
                         lineBuffer.append(QString());
                     }
-                    timeBuffer << blankTimeStamp;
+                    timeBuffer << csmBlankTimeStamp;
                     promptBuffer << false;
-                    dirty << true;
                     log(size() - 2, size() - 2);
                     // Was absent causing loss of all but last line of wrapped
                     // long lines of user input and some other console displayed
@@ -3241,12 +2393,17 @@ void TBuffer::append(const QString& text, int sub_start, int sub_end, const QCol
             }
         }
         lineBuffer.back().append(text.at(i));
-        TChar c(fgColor, bgColor, (mEchoingText ? (TChar::Echo | flags) : flags), linkID);
+        const TChar c(fgColor, bgColor, (mEchoingText ? (TChar::Echo | flags) : flags), linkID);
         buffer.back().push_back(c);
         if (firstChar) {
-            timeBuffer.back() = QTime::currentTime().toString(timeStampFormat);
+            timeBuffer.back() = QTime::currentTime().toString(csmTimeStampFormat);
             firstChar = false;
         }
+    }
+    // Check - for "non-scrollable" TConsoles that the content has not exceeded
+    // the number of lines that can be shown and raise an event if it has:
+    if (!mpConsole.isNull()) {
+        mpConsole->handleLinesOverflowEvent(lineBuffer.size());
     }
 }
 
@@ -3264,21 +2421,24 @@ void TBuffer::appendLine(const QString& text, const int sub_start, const int sub
     if (Q_UNLIKELY(lastLine < 0)) {
         // There are NO lines in the buffer - so initialize with a new empty line
         std::deque<TChar> newLine;
-        TChar c(fgColor, bgColor, (mEchoingText ? (TChar::Echo | flags) : flags));
+        const TChar c(fgColor, bgColor, (mEchoingText ? (TChar::Echo | flags) : flags));
         newLine.push_back(c);
         buffer.push_back(newLine);
         lineBuffer.push_back(QString());
-        timeBuffer << QTime::currentTime().toString(timeStampFormat);
+        timeBuffer << QTime::currentTime().toString(csmTimeStampFormat);
         promptBuffer << false;
-        dirty << true;
         lastLine = 0;
     }
 
-    bool firstChar = (lineBuffer.back().size() == 0);
-    int length = text.size();
-    if (length < 1) {
+    if (text.isEmpty()) {
         return;
     }
+    bool firstChar = (lineBuffer.back().isEmpty());
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    const int length = std::min(text.size(), MAX_CHARACTERS_PER_ECHO);
+#else
+    const int length = std::min(static_cast<int>(text.size()), MAX_CHARACTERS_PER_ECHO);
+#endif
     int lineEndPos = sub_end;
     if (lineEndPos >= length) {
         lineEndPos = text.size() - 1;
@@ -3286,35 +2446,40 @@ void TBuffer::appendLine(const QString& text, const int sub_start, const int sub
 
     for (int i = sub_start; i <= (sub_start + lineEndPos); i++) {
         lineBuffer.back().append(text.at(i));
-        TChar c(fgColor, bgColor, (mEchoingText ? (TChar::Echo | flags) : flags), linkID);
+        const TChar c(fgColor, bgColor, (mEchoingText ? (TChar::Echo | flags) : flags), linkID);
         buffer.back().push_back(c);
         if (firstChar) {
-            timeBuffer.back() = QTime::currentTime().toString(timeStampFormat);
+            timeBuffer.back() = QTime::currentTime().toString(csmTimeStampFormat);
             firstChar = false;
         }
+    }
+    // Check - for "non-scrollable" TConsoles that the content has not exceeded
+    // the number of lines that can be shown and raise an event if it has:
+    if (!mpConsole.isNull()) {
+        mpConsole->handleLinesOverflowEvent(lineBuffer.size());
     }
 }
 
 // This was called "insert" but that is commonly used for built in methods and
 // it makes it harder to pick out usages of this specific method:
-bool TBuffer::insertInLine(QPoint& P, const QString& text, TChar& format)
+bool TBuffer::insertInLine(QPoint& P, const QString& text, const TChar& format)
 {
     if (text.isEmpty()) {
         return false;
     }
-    int x = P.x();
-    int y = P.y();
+    const int x = P.x();
+    const int y = P.y();
     if ((y >= 0) && (y < static_cast<int>(buffer.size()))) {
         if (x < 0) {
             return false;
         }
         if (x >= static_cast<int>(buffer.at(y).size())) {
-            TChar c;
+            TChar c(mpConsole);
             expandLine(y, x - buffer.at(y).size(), c);
         }
         for (int i = 0, total = text.size(); i < total; ++i) {
             lineBuffer[y].insert(x + i, text.at(i));
-            TChar c = format;
+            const TChar c = format;
             auto it = buffer[y].begin();
             buffer[y].insert(it + x + i, c);
         }
@@ -3326,25 +2491,36 @@ bool TBuffer::insertInLine(QPoint& P, const QString& text, TChar& format)
 
 // This is very poorly designed as P2 is used to determine the last character to
 // copy BUT no consideration is given to P2.y() != p1.y() i.e. a copy of more
-// than a single line - and it copys a single QChar at a time....
+// than a single line - and it copies a single QChar at a time....
 TBuffer TBuffer::copy(QPoint& P1, QPoint& P2)
 {
     TBuffer slice(mpHost);
     slice.clear();
-    int y = P1.y();
+    const int y = P1.y();
     int x = P1.x();
     if (y < 0 || y >= static_cast<int>(buffer.size())) {
         return slice;
     }
 
-    if ((x < 0) || (x >= static_cast<int>(buffer.at(y).size())) || (P2.x() < 0) || (P2.x() > static_cast<int>(buffer.at(y).size()))) {
-        x = 0;
+    // Ensure x starts within the valid range, and adjust P2.x() if it's out of bounds
+    if (x < 0 || x >= static_cast<int>(buffer.at(y).size())) {
+        x = 0; // Reset x to start of line if out of bounds
     }
+    int P2x_corrected = std::min(P2.x(), static_cast<int>(buffer.at(y).size()) - 1); // Correct P2.x() to prevent out-of-bounds
 
-    for (int total = P2.x(); x < total; ++x) {
-        // This is rather inefficient as s is only ever one QChar long
-        QString s(lineBuffer.at(y).at(x));
-        slice.append(s, 0, 1, buffer.at(y).at(x).mFgColor, buffer.at(y).at(x).mBgColor, buffer.at(y).at(x).mFlags);
+    int oldLinkId{}, id{};
+    for (; x <= P2x_corrected; ++x) {
+        const int linkId = buffer.at(y).at(x).linkIndex();
+        if (linkId && (linkId != oldLinkId)) {
+            id = slice.mLinkStore.addLinks(mLinkStore.getLinksConst(linkId), mLinkStore.getHintsConst(linkId), mpHost);
+            oldLinkId = linkId;
+        }
+
+        if (!linkId) {
+            id = 0;
+        }
+        const QString s(lineBuffer.at(y).at(x));
+        slice.append(s, 0, 1, buffer.at(y).at(x).mFgColor, buffer.at(y).at(x).mBgColor, buffer.at(y).at(x).mFlags, id);
     }
     return slice;
 }
@@ -3353,18 +2529,18 @@ TBuffer TBuffer::copy(QPoint& P1, QPoint& P2)
 TBuffer TBuffer::cut(QPoint& P1, QPoint& P2)
 {
     TBuffer slice = copy(P1, P2);
-    TChar format;
+    TChar format(mpConsole);
     replaceInLine(P1, P2, QString(), format);
     return slice;
 }
 
 // This only copies the first line of chunk's contents:
-void TBuffer::paste(QPoint& P, TBuffer chunk)
+void TBuffer::paste(QPoint& P, const TBuffer& chunk)
 {
-    bool needAppend = false;
+    const bool needAppend = false;
     bool hasAppended = false;
     int y = P.y();
-    int x = P.x();
+    const int x = P.x();
     if (chunk.buffer.empty()) {
         return;
     }
@@ -3384,18 +2560,18 @@ void TBuffer::paste(QPoint& P, TBuffer chunk)
         // This is rather inefficient as s is only ever one QChar long
         QPoint P_current(cx, y);
         if ((y < getLastLineNumber()) && (!needAppend)) {
-            TChar& format = chunk.buffer.at(0).at(cx);
-            QString s = QString(chunk.lineBuffer.at(0).at(cx));
+            const TChar& format = chunk.buffer.at(0).at(cx);
+            const QString s = QString(chunk.lineBuffer.at(0).at(cx));
             insertInLine(P_current, s, format);
         } else {
             hasAppended = true;
-            QString s(chunk.lineBuffer.at(0).at(cx));
+            const QString s(chunk.lineBuffer.at(0).at(cx));
             append(s, 0, 1, chunk.buffer.at(0).at(cx).mFgColor, chunk.buffer.at(0).at(cx).mBgColor, chunk.buffer.at(0).at(cx).mFlags);
         }
     }
 
     if (hasAppended && y != -1) {
-        TChar format;
+        TChar format(mpConsole);
         wrapLine(y, mWrapAt, mWrapIndent, format);
     }
 }
@@ -3406,9 +2582,18 @@ void TBuffer::appendBuffer(const TBuffer& chunk)
     if (chunk.buffer.empty()) {
         return;
     }
+    int oldLinkId{}, id{};
     for (int cx = 0, total = static_cast<int>(chunk.buffer.at(0).size()); cx < total; ++cx) {
-        QString s(chunk.lineBuffer.at(0).at(cx));
-        append(s, 0, 1, chunk.buffer.at(0).at(cx).mFgColor, chunk.buffer.at(0).at(cx).mBgColor, chunk.buffer.at(0).at(cx).mFlags);
+        const int linkId = chunk.buffer.at(0).at(cx).linkIndex();
+        if (linkId && (oldLinkId != linkId)) {
+            id = mLinkStore.addLinks(chunk.mLinkStore.getLinksConst(linkId), chunk.mLinkStore.getHintsConst(linkId), mpHost);
+            oldLinkId = linkId;
+        }
+        if (!linkId) {
+            id = 0;
+        }
+        const QString s(chunk.lineBuffer.at(0).at(cx));
+        append(s, 0, 1, chunk.buffer.at(0).at(cx).mFgColor, chunk.buffer.at(0).at(cx).mBgColor, chunk.buffer.at(0).at(cx).mFlags, id);
     }
 
     append(QString(QChar::LineFeed), 0, 1, Qt::black, Qt::black, TChar::None);
@@ -3416,11 +2601,11 @@ void TBuffer::appendBuffer(const TBuffer& chunk)
 
 int TBuffer::calculateWrapPosition(int lineNumber, int begin, int end)
 {
-    const QString lineBreaks = QStringLiteral("- \n");
+    const QString lineBreaks = qsl("- \n");
     if (lineBuffer.size() < lineNumber) {
         return 0;
     }
-    int lineSize = static_cast<int>(lineBuffer[lineNumber].size()) - 1;
+    const int lineSize = static_cast<int>(lineBuffer[lineNumber].size()) - 1;
     if (lineSize < end) {
         end = lineSize;
     }
@@ -3430,14 +2615,15 @@ int TBuffer::calculateWrapPosition(int lineNumber, int begin, int end)
             return i;
         }
     }
-    return 0;
+
+    return lineSize;
 }
 
 inline int TBuffer::skipSpacesAtBeginOfLine(const int row, const int column)
 {
     int offset = 0;
     int position = column;
-    int endOfLinePosition = lineBuffer.at(row).size();
+    const int endOfLinePosition = lineBuffer.at(row).size();
     while (position < endOfLinePosition) {
         if (buffer.at(row).at(position).mFlags & TChar::Echo) {
             break;
@@ -3462,15 +2648,15 @@ inline int TBuffer::wrap(int startLine)
     QStringList timeList;
     QList<bool> promptList;
     int lineCount = 0;
+    const TChar pSpace(mpConsole);
     for (int i = startLine, total = static_cast<int>(buffer.size()); i < total; ++i) {
-        bool isPrompt = promptBuffer[i];
+        const bool isPrompt = promptBuffer[i];
         std::deque<TChar> newLine;
         QString lineText = "";
-        QString time = timeBuffer[i];
+        const QString time = timeBuffer[i];
         int indent = 0;
         if (static_cast<int>(buffer[i].size()) >= mWrapAt) {
             for (int i3 = 0; i3 < mWrapIndent; ++i3) {
-                TChar pSpace;
                 newLine.push_back(pSpace);
                 lineText.append(" ");
             }
@@ -3478,10 +2664,10 @@ inline int TBuffer::wrap(int startLine)
         }
         int lastSpace = 0;
         int wrapPos = 0;
-        int length = buffer[i].size();
+        const int length = buffer[i].size();
         if (length == 0) {
             tempList.append(QString());
-            std::deque<TChar> emptyLine;
+            std::deque<TChar> const emptyLine;
             queue.push(emptyLine);
             timeList.append(time);
         }
@@ -3492,7 +2678,7 @@ inline int TBuffer::wrap(int startLine)
             } else {
                 lastSpace = 0;
             }
-            int wrapPosition = (lastSpace) ? lastSpace : (mWrapAt - indent);
+            const int wrapPosition = (lastSpace) ? lastSpace : (mWrapAt - indent);
             for (int i3 = 0; i3 < wrapPosition; ++i3) {
                 if (lastSpace > 0) {
                     if (i2 > lastSpace) {
@@ -3512,7 +2698,7 @@ inline int TBuffer::wrap(int startLine)
             }
             if (newLine.empty()) {
                 tempList.append(QString());
-                std::deque<TChar> emptyLine;
+                std::deque<TChar> const emptyLine;
                 queue.push(emptyLine);
                 timeList.append(QString());
                 promptList.append(false);
@@ -3534,10 +2720,9 @@ inline int TBuffer::wrap(int startLine)
         lineBuffer.pop_back();
         timeBuffer.pop_back();
         promptBuffer.pop_back();
-        dirty.pop_back();
     }
 
-    int insertedLines = queue.size() - 1;
+    const int insertedLines = queue.size() - 1;
     while (!queue.empty()) {
         buffer.push_back(queue.front());
         queue.pop();
@@ -3552,15 +2737,19 @@ inline int TBuffer::wrap(int startLine)
             timeBuffer.append(timeList[i]);
             promptBuffer.push_back(promptList[i]);
         }
-        dirty.push_back(true);
     }
 
     log(startLine, startLine + tempList.size());
     return insertedLines > 0 ? insertedLines : 0;
 }
 
+// This only works on the Main Console for a profile
 void TBuffer::log(int fromLine, int toLine)
 {
+    if (mpHost.isNull()) {
+        return;
+    }
+
     TBuffer* pB = &mpHost->mpConsole->buffer;
     if (pB != this || !mpHost->mpConsole->mLogToLogFile) {
         return;
@@ -3589,13 +2778,13 @@ void TBuffer::log(int fromLine, int toLine)
             // This only handles a single line of logged text at a time:
             linesToLog << bufferToHtml(mpHost->mIsLoggingTimestamps, i);
         } else {
-            linesToLog << ((mpHost->mIsLoggingTimestamps && !timeBuffer.at(i).isEmpty()) ? timeBuffer.at(i).left(timeStampFormat.length()) : QString()) % lineBuffer.at(i) % QChar::LineFeed;
+            linesToLog << ((mpHost->mIsLoggingTimestamps && !timeBuffer.at(i).isEmpty()) ? timeBuffer.at(i).left(csmTimeStampFormat.length()) : QString()) % lineBuffer.at(i) % QChar::LineFeed;
         }
     }
 
     // record the last log call into a temporary buffer - we'll actually log
     // on the next iteration after duplication detection has run
-    lastTextToLog = std::move(linesToLog.join(QString()));
+    lastTextToLog = linesToLog.join(QString());
     lastLoggedFromLine = fromLine;
     lastloggedToLine = toLine;
 }
@@ -3605,6 +2794,17 @@ void TBuffer::logRemainingOutput()
 {
     mpHost->mpConsole->mLogStream << lastTextToLog;
     mpHost->mpConsole->mLogStream.flush();
+}
+
+// logs a string directly to the log file
+void TBuffer::appendLog(const QString &text)
+{
+    TBuffer* pB = &mpHost->mpConsole->buffer;
+    if (pB != this || !mpHost->mpConsole->mLogToLogFile) {
+        return;
+    }
+
+    mpHost->mpConsole->mLogStream << text;
 }
 
 // returns how many new lines have been inserted by the wrapping action
@@ -3630,7 +2830,7 @@ int TBuffer::wrapLine(int startLine, int screenWidth, int indentSize, TChar& for
         int indent = 0;
         if (static_cast<int>(buffer[line].size()) >= screenWidth) {
             for (int prependSpaces = 0; prependSpaces < indentSize; ++prependSpaces) {
-                TChar pSpace = format;
+                const TChar pSpace = format;
                 newLine.push_back(pSpace);
                 lineText.append(QChar::Space);
             }
@@ -3662,7 +2862,7 @@ int TBuffer::wrapLine(int startLine, int screenWidth, int indentSize, TChar& for
 
                     if (newLine.empty()) {
                         tempList.append(QString());
-                        std::deque<TChar> emptyLine;
+                        std::deque<TChar> const emptyLine;
                         queue.push(emptyLine);
                     } else {
                         queue.push(newLine);
@@ -3692,13 +2892,12 @@ int TBuffer::wrapLine(int startLine, int screenWidth, int indentSize, TChar& for
 
     buffer.erase(buffer.begin() + startLine);
     lineBuffer.removeAt(startLine);
-    QString time = timeBuffer.at(startLine);
+    const QString time = timeBuffer.at(startLine);
     timeBuffer.removeAt(startLine);
-    bool isPrompt = promptBuffer.at(startLine);
+    const bool isPrompt = promptBuffer.at(startLine);
     promptBuffer.removeAt(startLine);
-    dirty.removeAt(startLine);
 
-    int insertedLines = queue.size() - 1;
+    const int insertedLines = queue.size() - 1;
     int i = 0;
     while (!queue.empty()) {
         buffer.insert(buffer.begin() + startLine + i, queue.front());
@@ -3710,7 +2909,6 @@ int TBuffer::wrapLine(int startLine, int screenWidth, int indentSize, TChar& for
         lineBuffer.insert(startLine + i, tempList[i]);
         timeBuffer.insert(startLine + i, time);
         promptBuffer.insert(startLine + i, isPrompt);
-        dirty.insert(startLine + i, true);
     }
     log(startLine, startLine + tempList.size() - 1);
     return insertedLines > 0 ? insertedLines : 0;
@@ -3718,8 +2916,8 @@ int TBuffer::wrapLine(int startLine, int screenWidth, int indentSize, TChar& for
 
 bool TBuffer::moveCursor(QPoint& where)
 {
-    int x = where.x();
-    int y = where.y();
+    const int x = where.x();
+    const int y = where.y();
     if (y < 0) {
         return false;
     }
@@ -3728,7 +2926,7 @@ bool TBuffer::moveCursor(QPoint& where)
     }
 
     if (static_cast<int>(buffer[y].size()) - 1 > x) {
-        TChar c;
+        TChar c(mpConsole);
         // CHECKME: should "buffer[cookedY].size() - 1" be bracketed - which would change the -1 to +1 in the following:
         expandLine(y, x - buffer[y].size() - 1, c);
     }
@@ -3737,14 +2935,14 @@ bool TBuffer::moveCursor(QPoint& where)
 
 // Needed, at least, as a filler for missing lines past end of the lineBuffer
 // requested by lua function getLines(...):
-QString badLineError = QStringLiteral("ERROR: invalid line number");
+QString badLineError = qsl("ERROR: invalid line number");
 
-QString& TBuffer::line(int n)
+QString& TBuffer::line(int lineNumber)
 {
-    if ((n >= lineBuffer.size()) || (n < 0)) {
+    if ((lineNumber < 0) || (lineNumber >= lineBuffer.size())) {
         return badLineError;
     }
-    return lineBuffer[n];
+    return lineBuffer[lineNumber];
 }
 
 int TBuffer::find(int line, const QString& what, int pos = 0)
@@ -3779,7 +2977,7 @@ QStringList TBuffer::split(int line, const QRegularExpression& splitter)
 
 void TBuffer::expandLine(int y, int count, TChar& pC)
 {
-    int size = buffer[y].size() - 1;
+    const int size = buffer[y].size() - 1;
     for (int i = size, total = size + count; i < total; ++i) {
         buffer[y].push_back(pC);
         lineBuffer[y].append(QChar::Space);
@@ -3788,10 +2986,10 @@ void TBuffer::expandLine(int y, int count, TChar& pC)
 
 bool TBuffer::replaceInLine(QPoint& P_begin, QPoint& P_end, const QString& with, TChar& format)
 {
-    int x1 = P_begin.x();
-    int x2 = P_end.x();
-    int y1 = P_begin.y();
-    int y2 = P_end.y();
+    const int x1 = P_begin.x();
+    const int x2 = P_end.x();
+    const int y1 = P_begin.y();
+    const int y2 = P_end.y();
     if ((y1 >= static_cast<int>(buffer.size())) || (y2 >= static_cast<int>(buffer.size()))) {
         return false;
     }
@@ -3842,12 +3040,11 @@ void TBuffer::clear()
             break;
         }
     }
-    std::deque<TChar> newLine;
+    std::deque<TChar> const newLine;
     buffer.push_back(newLine);
     lineBuffer << QString();
     timeBuffer << QString();
     promptBuffer.push_back(false);
-    dirty.push_back(true);
 }
 
 bool TBuffer::deleteLine(int y)
@@ -3861,22 +3058,35 @@ void TBuffer::shrinkBuffer()
         lineBuffer.pop_front();
         promptBuffer.pop_front();
         timeBuffer.pop_front();
-        dirty.pop_front();
         buffer.pop_front();
         mCursorY--;
+    }
+    // We need to adjust the search result line as some lines have now gone
+    // away:
+    mpConsole->mCurrentSearchResult = qMax(0, mpConsole->mCurrentSearchResult - mBatchDeleteSize);
+
+    if (mpConsole->getType() & (TConsole::MainConsole|TConsole::UserWindow|TConsole::SubConsole|TConsole::Buffer)) {
+        // Signal to lua subsystem that indexes into the Console will need adjusting
+        TEvent bufferShrinkEvent{};
+        bufferShrinkEvent.mArgumentList.append(QLatin1String("sysBufferShrinkEvent"));
+        bufferShrinkEvent.mArgumentTypeList.append(ARGUMENT_TYPE_STRING);
+        bufferShrinkEvent.mArgumentList.append(mpConsole->mConsoleName);
+        bufferShrinkEvent.mArgumentTypeList.append(ARGUMENT_TYPE_STRING);
+        bufferShrinkEvent.mArgumentList.append(QString::number(mBatchDeleteSize));
+        bufferShrinkEvent.mArgumentTypeList.append(ARGUMENT_TYPE_NUMBER);
+        mpHost->raiseEvent(bufferShrinkEvent);
     }
 }
 
 bool TBuffer::deleteLines(int from, int to)
 {
     if ((from >= 0) && (from < static_cast<int>(buffer.size())) && (from <= to) && (to >= 0) && (to < static_cast<int>(buffer.size()))) {
-        int delta = to - from + 1;
+        const int delta = to - from + 1;
 
         for (int i = from, total = from + delta; i < total; ++i) {
             lineBuffer.removeAt(i);
             timeBuffer.removeAt(i);
             promptBuffer.removeAt(i);
-            dirty.removeAt(i);
         }
 
         buffer.erase(buffer.begin() + from, buffer.begin() + to + 1);
@@ -3886,13 +3096,12 @@ bool TBuffer::deleteLines(int from, int to)
     }
 }
 
-bool TBuffer::applyLink(const QPoint& P_begin, const QPoint& P_end, const QStringList& linkFunction, const QStringList& linkHint)
+bool TBuffer::applyLink(const QPoint& P_begin, const QPoint& P_end, const QStringList& linkFunction, const QStringList& linkHint, QVector<int> luaReference)
 {
-    int x1 = P_begin.x();
-    int x2 = P_end.x();
-    int y1 = P_begin.y();
-    int y2 = P_end.y();
-    bool incLinkID = false;
+    const int x1 = P_begin.x();
+    const int x2 = P_end.x();
+    const int y1 = P_begin.y();
+    const int y2 = P_end.y();
     int linkID = 0;
 
     // clang-format off
@@ -3919,15 +3128,8 @@ bool TBuffer::applyLink(const QPoint& P_begin, const QPoint& P_end, const QStrin
                         return true;
                     }
                 }
-                if (!incLinkID) {
-                    incLinkID = true;
-                    mLinkID++;
-                    linkID = mLinkID;
-                    if (mLinkID > scmMaxLinks) {
-                        mLinkID = 1;
-                    }
-                    mLinkStore[mLinkID] = linkFunction;
-                    mHintStore[mLinkID] = linkHint;
+                if (linkID == 0) {
+                    linkID = mLinkStore.addLinks(linkFunction, linkHint, mpHost, luaReference);
                 }
                 buffer.at(y).at(x++).mLinkIndex = linkID;
             }
@@ -3943,10 +3145,10 @@ bool TBuffer::applyLink(const QPoint& P_begin, const QPoint& P_end, const QStrin
 // Can set multiple attributes to given state
 bool TBuffer::applyAttribute(const QPoint& P_begin, const QPoint& P_end, const TChar::AttributeFlags attributes, const bool state)
 {
-    int x1 = P_begin.x();
-    int x2 = P_end.x();
-    int y1 = P_begin.y();
-    int y2 = P_end.y();
+    const int x1 = P_begin.x();
+    const int x2 = P_end.x();
+    const int y1 = P_begin.y();
+    const int y2 = P_end.y();
 
     // clang-format off
     if ((x1 >= 0)
@@ -3985,10 +3187,10 @@ bool TBuffer::applyAttribute(const QPoint& P_begin, const QPoint& P_end, const T
 
 bool TBuffer::applyFgColor(const QPoint& P_begin, const QPoint& P_end, const QColor& newColor)
 {
-    int x1 = P_begin.x();
-    int x2 = P_end.x();
-    int y1 = P_begin.y();
-    int y2 = P_end.y();
+    const int x1 = P_begin.x();
+    const int x2 = P_end.x();
+    const int y1 = P_begin.y();
+    const int y2 = P_end.y();
 
     // clang-format off
     if ((x1 >= 0)
@@ -4027,10 +3229,10 @@ bool TBuffer::applyFgColor(const QPoint& P_begin, const QPoint& P_end, const QCo
 
 bool TBuffer::applyBgColor(const QPoint& P_begin, const QPoint& P_end, const QColor& newColor)
 {
-    int x1 = P_begin.x();
-    int x2 = P_end.x();
-    int y1 = P_begin.y();
-    int y2 = P_end.y();
+    const int x1 = P_begin.x();
+    const int x2 = P_end.x();
+    const int y1 = P_begin.y();
+    const int y2 = P_end.y();
 
     // clang-format off
     if ((x1 >= 0)
@@ -4062,9 +3264,8 @@ bool TBuffer::applyBgColor(const QPoint& P_begin, const QPoint& P_end, const QCo
             }
         }
         return true;
-    } else {
-        return false;
     }
+    return false;
 }
 
 QStringList TBuffer::getEndLines(int n)
@@ -4125,11 +3326,11 @@ QString TBuffer::bufferToHtml(const bool showTimeStamp /*= false*/, const int ro
     // we will NOT need a closing "</span>"
     if (showTimeStamp && !timeBuffer.at(row).isEmpty()) {
         // TODO: formatting according to TTextEdit.cpp: if( i2 < timeOffset ) - needs updating if we allow the colours to be user set:
-        s.append(QStringLiteral("<span style=\"color: rgb(200,150,0); background: rgb(22,22,22); \">%1").arg(timeBuffer.at(row).left(timeStampFormat.length())));
+        s.append(qsl("<span style=\"color: rgb(200,150,0); background: rgb(22,22,22); \">%1").arg(timeBuffer.at(row).left(csmTimeStampFormat.length())));
         // Set the current idea of what the formatting is so we can spot if it
         // changes:
-        currentFgColor = QColor(200,150,0);
-        currentBgColor = QColor(22,22,22);
+        currentFgColor = QColor(200, 150, 0);
+        currentBgColor = QColor(22, 22, 22);
         currentFlags = TChar::None;
         // We are no longer before the first span - so we need to flag that
         // there will be one to close:
@@ -4147,7 +3348,7 @@ QString TBuffer::bufferToHtml(const bool showTimeStamp /*= false*/, const int ro
         }
 
         // Pad out with spaces to the right so a partial first line lines up
-        s.append(QStringLiteral("<span>%1").arg(QString(spacePadding, QChar::Space)));
+        s.append(qsl("<span>%1").arg(QString(spacePadding, QChar::Space)));
     }
 
     for (auto cookedPos = static_cast<unsigned long>(pos); pos < lastPos; ++cookedPos, ++pos) {
@@ -4169,25 +3370,25 @@ QString TBuffer::bufferToHtml(const bool showTimeStamp /*= false*/, const int ro
             // clang-format off
             if (currentFlags & TChar::Reverse) {
                 // Swap the fore and background colours:
-                s.append(QStringLiteral("<span style=\"color: rgb(%1,%2,%3); background: rgb(%4,%5,%6); %7%8%9\">")
+                s.append(qsl("<span style=\"color: rgb(%1,%2,%3); background: rgb(%4,%5,%6); %7%8%9\">")
                          .arg(QString::number(currentBgColor.red()), QString::number(currentBgColor.green()), QString::number(currentBgColor.blue()), // args 1 to 3
                               QString::number(currentFgColor.red()), QString::number(currentFgColor.green()), QString::number(currentFgColor.blue()), // args 4 to 6
                               currentFlags & TChar::Bold ? QLatin1String(" font-weight: bold;") : QString(), // arg 7
                               currentFlags & TChar::Italic ? QLatin1String(" font-style: italic;") : QString(), // arg 8
                               currentFlags & (TChar::Underline | TChar::StrikeOut | TChar::Overline ) // remainder is arg 9
-                              ? QStringLiteral(" text-decoration:%1%2%3")
+                              ? qsl(" text-decoration:%1%2%3")
                                 .arg(currentFlags & TChar::Underline ? QLatin1String(" underline") : QString(),
                                      currentFlags & TChar::StrikeOut ? QLatin1String(" line-through") : QString(),
                                      currentFlags & TChar::Overline ? QLatin1String(" overline") : QString())
                               : QString()));
             } else {
-                s.append(QStringLiteral("<span style=\"color: rgb(%1,%2,%3); background: rgb(%4,%5,%6); %7%8%9\">")
+                s.append(qsl("<span style=\"color: rgb(%1,%2,%3); background: rgb(%4,%5,%6); %7%8%9\">")
                          .arg(QString::number(currentFgColor.red()), QString::number(currentFgColor.green()), QString::number(currentFgColor.blue()), // args 1 to 3
                               QString::number(currentBgColor.red()), QString::number(currentBgColor.green()), QString::number(currentBgColor.blue()), // args 4 to 6
                               currentFlags & TChar::Bold ? QLatin1String(" font-weight: bold;") : QString(), // arg 7
                               currentFlags & TChar::Italic ? QLatin1String(" font-style: italic;") : QString(), // arg 8
                               currentFlags & (TChar::Underline | TChar::StrikeOut | TChar::Overline ) // remainder is arg 9
-                              ? QStringLiteral(" text-decoration:%1%2%3")
+                              ? qsl(" text-decoration:%1%2%3")
                                 .arg(currentFlags & TChar::Underline ? QLatin1String(" underline") : QString(),
                                      currentFlags & TChar::StrikeOut ? QLatin1String(" line-through") : QString(),
                                      currentFlags & TChar::Overline ? QLatin1String(" overline") : QString())
@@ -4227,32 +3428,6 @@ QString TBuffer::bufferToHtml(const bool showTimeStamp /*= false*/, const int ro
     return s;
 }
 
-const QList<QString> TBuffer::getFriendlyEncodingNames() {
-    QList<QString> encodings;
-    for (auto pair: csmEncodingTable) {
-        encodings << pair.first;
-    }
-
-    return encodings;
-}
-
-// returns the computer encoding name given a human-friendly one
-const QString& TBuffer::getComputerEncoding(const QString& encoding) {
-    QMapIterator<QString, QPair<QString, QVector<QChar>>> iterator(csmEncodingTable);
-    while (iterator.hasNext()) {
-        iterator.next();
-        // check the friendly name (stored as the map value pair's first item)
-        // against the input - if found, return the map key which is the computer
-        // encoding name
-        if (iterator.value().first == encoding) {
-            return iterator.key();
-        }
-    }
-
-    // return the original encoding if none is found
-    return encoding;
-}
-
 bool TBuffer::processUtf8Sequence(const std::string& bufferData, const bool isFromServer, const size_t len, size_t& pos, bool& isNonBMPCharacter)
 {
     // In Utf-8 mode we have to process the data more than one byte at a
@@ -4288,7 +3463,7 @@ bool TBuffer::processUtf8Sequence(const std::string& bufferData, const bool isFr
             // locally generated material from Lua feedTriggers(...)
             if (isFromServer) {
 #if defined(DEBUG_UTF8_PROCESSING)
-                qDebug() << "TBuffer::processUtf8Sequence(...) Insufficent bytes in buffer to complate UTF-8 sequence, need:" << utf8SequenceLength
+                qDebug() << "TBuffer::processUtf8Sequence(...) Insufficient bytes in buffer to complete UTF-8 sequence, need:" << utf8SequenceLength
                          << " but we currently only have: " << bufferData.substr(pos).length() << " bytes (which we will store for next call to this method)...";
 #endif
                 mIncompleteSequenceBytes = bufferData.substr(pos);
@@ -4302,6 +3477,7 @@ bool TBuffer::processUtf8Sequence(const std::string& bufferData, const bool isFr
         bool isToUseByteOrderMark = false; // When BOM seen in stream it transcodes as zero characters
         switch (utf8SequenceLength) {
         case 4:
+            // Check the 4th byte is a valid continuation byte (2 MS-Bits are 10)
             if ((bufferData.at(pos + 3) & 0xC0) != 0x80) {
 #if defined(DEBUG_UTF8_PROCESSING)
                 qDebug() << "TBuffer::processUtf8Sequence(...) 4th byte in UTF-8 sequence is invalid!";
@@ -4333,13 +3509,14 @@ bool TBuffer::processUtf8Sequence(const std::string& bufferData, const bool isFr
         // Fall-through
             [[fallthrough]];
         case 3:
+            // Check the 3rd byte is a valid continuation byte (2 MS-Bits are 10)
             if ((bufferData.at(pos + 2) & 0xC0) != 0x80) {
 #if defined(DEBUG_UTF8_PROCESSING)
                 qDebug() << "TBuffer::processUtf8Sequence(...) 3rd byte in UTF-8 sequence is invalid!";
 #endif
                 isValid = false;
                 isToUseReplacementMark = true;
-            } else if ((bufferData.at(pos) & 0x0F) == 0x0D) {
+            } else if ((bufferData.at(pos) & 0x0F) == 0x0D && (bufferData.at(pos + 1) & 0x20) == 0x20) {
 // For 3 byte values the bits are distributed:
 //  Byte 1    Byte 2    Byte 3
 // 1110ABCD  10DEFGHI  10JKLMNO   A is MSB
@@ -4366,8 +3543,15 @@ bool TBuffer::processUtf8Sequence(const std::string& bufferData, const bool isFr
     * followed by a low surrogate). The majority of UTF-16 encoder and decoder
     * implementations translate between encodings as though this were the case
     * and Windows allows such sequences in filenames."
+    *
+    * So test for and, considering the LS Nibble of first byte:
+    * * accept if LS Nibble of first byte is             less than 0xD
+    * * accept if LS Nibble of first byte is greater than/equal to 0xE
+    * * otherwise (if LS Nibble of first byte IS 0xD)
+    *   * accept if 6 LS Bits of second byte is 0x1F of or less
+    * Conversely this can be stated as:
+    * * reject if LS Nibble of first byte is 0xD AND 6th MS Bit of second byte is set
     */
-// So test for and reject if LSN of first byte is 0xD!
 #if defined(DEBUG_UTF8_PROCESSING)
                 qDebug() << "TBuffer::processUtf8Sequence(...) 3 byte UTF-8 sequence is a High or Low UTF-16 Surrogate and is not valid in UTF-8!";
 #endif
@@ -4376,8 +3560,10 @@ bool TBuffer::processUtf8Sequence(const std::string& bufferData, const bool isFr
             } else if (   (static_cast<quint8>(bufferData.at(pos + 2)) == 0xBF)
                        && (static_cast<quint8>(bufferData.at(pos + 1)) == 0xBB)
                        && (static_cast<quint8>(bufferData.at(pos    )) == 0xEF)) {
-// Got caught out by this one - it is the UTF-8 BOM and
-// needs to be ignored as it transcodes to NO codepoints!
+
+                // Got caught out by this one - it is the UTF-8 BOM (or
+                // Zero-Width No-Break Space) and needs to be detected specially
+                // as Qt's codec ignores it and transcodes it to NO codepoints!
 #if defined(DEBUG_UTF8_PROCESSING)
                 qDebug() << "TBuffer::processUtf8Sequence(...) UTF-8 BOM sequence seen and handled!";
 #endif
@@ -4388,6 +3574,7 @@ bool TBuffer::processUtf8Sequence(const std::string& bufferData, const bool isFr
         // Fall-through
             [[fallthrough]];
         case 2:
+            // Check the 2nd byte is a valid continuation byte (2 MS-Bits are 10)
             if ((static_cast<quint8>(bufferData.at(pos + 1)) & 0xC0) != 0x80) {
 #if defined(DEBUG_UTF8_PROCESSING)
                 qDebug() << "TBuffer::processUtf8Sequence(...) 2nd byte in UTF-8 sequence is invalid!";
@@ -4424,7 +3611,7 @@ bool TBuffer::processUtf8Sequence(const std::string& bufferData, const bool isFr
 
         // Will be one (BMP codepoint) or two (non-BMP codepoints) QChar(s)
         if (isValid) {
-            QString codePoint = QString(bufferData.substr(pos, utf8SequenceLength).c_str());
+            const QString codePoint = QString(bufferData.substr(pos, utf8SequenceLength).c_str());
             switch (codePoint.size()) {
             default:
                 Q_UNREACHABLE(); // This can't happen, unless we got start or length wrong in std::string::substr()
@@ -4456,9 +3643,9 @@ bool TBuffer::processUtf8Sequence(const std::string& bufferData, const bool isFr
 #if defined(DEBUG_UTF8_PROCESSING)
             QString debugMsg;
             for (size_t i = 0; i < utf8SequenceLength; ++i) {
-                debugMsg.append(QStringLiteral("<%1>").arg(static_cast<quint8>(bufferData.at(pos + i)), 2, 16, QChar('0')));
+                debugMsg.append(qsl("<%1>").arg(static_cast<quint8>(bufferData.at(pos + i)), 2, 16, QChar('0')));
             }
-            qDebug().nospace() << "    Sequence bytes are: " << debugMsg.toLatin1().constData();
+            qDebug().nospace() << "    Sequence bytes are: " << debugMsg;
 #endif
             if (isToUseReplacementMark) {
                 mMudLine.append(QChar::ReplacementCharacter);
@@ -4485,7 +3672,7 @@ bool TBuffer::processGBSequence(const std::string& bufferData, const bool isFrom
 // mapping, instead we use one TChar per QChar - and that has to be
 // tweaked for non-BMP characters that use TWO QChars per codepoint.
 // GB2312 is the predecessor to both and - according to Wikipedia (EN) covers
-// over 99% of the characters of contempory usage.
+// over 99% of the characters of contemporary usage.
 // GBK is a sub-set of GB18030 so can be processed in the same method
 // Assume we are at the first byte of a single (ASCII), pair (GBK/GB18030)
 // or four byte (GB18030) sequence
@@ -4524,7 +3711,7 @@ bool TBuffer::processGBSequence(const std::string& bufferData, const bool isFrom
         // As we are not in GB18030 mode treat it as if it is a 2 byte sequence
         gbSequenceLength = 2;
         if ((pos + gbSequenceLength - 1) < len) {
-            // We have enough bytes to look at the second one - lets see which
+            // We have enough bytes to look at the second one - let's see which
             // range it is in:
             // clang-format off
             if        (  (static_cast<quint8>(bufferData.at(pos    )) >= 0x81) && (static_cast<quint8>(bufferData.at(pos    )) <= 0xA0)
@@ -4656,8 +3843,8 @@ bool TBuffer::processGBSequence(const std::string& bufferData, const bool isFrom
             // Not enough bytes to process yet - so store what we have and return
             if (isFromServer) {
 #if defined(DEBUG_GB_PROCESSING)
-                qDebug().nospace() << "TBuffer::processGBSequence(...) Insufficent bytes in buffer to "
-                                      "complate GB2312/GBK sequence, need at least: "
+                qDebug().nospace() << "TBuffer::processGBSequence(...) Insufficient bytes in buffer to "
+                                      "complete GB2312/GBK sequence, need at least: "
                                    << gbSequenceLength << " but we currently only have: " << bufferData.substr(pos).length() << " bytes (which we will store for next call to this method)...";
 #endif
                 mIncompleteSequenceBytes = bufferData.substr(pos);
@@ -4674,7 +3861,7 @@ bool TBuffer::processGBSequence(const std::string& bufferData, const bool isFrom
 
         gbSequenceLength = 2;
         if ((pos + gbSequenceLength - 1) < len) {
-            // We have enough bytes to look at the second one - lets see which
+            // We have enough bytes to look at the second one - let's see which
             // range it is in:
             // clang-format off
             if (  (static_cast<quint8>(bufferData.at(pos    )) >= 0x81) && (static_cast<quint8>(bufferData.at(pos    )) <= 0xFE)
@@ -4688,8 +3875,8 @@ bool TBuffer::processGBSequence(const std::string& bufferData, const bool isFrom
                     // Not enough bytes to process yet - so store what we have and return
                     if (isFromServer) {
 #if defined(DEBUG_GB_PROCESSING)
-                        qDebug().nospace() << "TBuffer::processGBSequence(...) Insufficent bytes in buffer to "
-                                              "complate GB18030 sequence, need at least: "
+                        qDebug().nospace() << "TBuffer::processGBSequence(...) Insufficient bytes in buffer to "
+                                              "complete GB18030 sequence, need at least: "
                                            << gbSequenceLength << " but we currently only have: " << bufferData.substr(pos).length() << " bytes (which we will store for next call to this method)...";
 #endif
                         mIncompleteSequenceBytes = bufferData.substr(pos);
@@ -4841,7 +4028,7 @@ bool TBuffer::processGBSequence(const std::string& bufferData, const bool isFrom
             // we only have one - so store what we have and return
             if (isFromServer) {
 #if defined(DEBUG_GB_PROCESSING)
-                qDebug().nospace() << "TBuffer::processGBSequence(...) Insufficent bytes in buffer to complate GB18030 sequence, need at least:"
+                qDebug().nospace() << "TBuffer::processGBSequence(...) Insufficient bytes in buffer to complete GB18030 sequence, need at least:"
                                    << gbSequenceLength << " but we currently only have: " << bufferData.substr(pos).length()
                                    << " bytes (which we will store for next call to this method)...";
 #endif
@@ -4899,9 +4086,9 @@ bool TBuffer::processGBSequence(const std::string& bufferData, const bool isFrom
 #if defined(DEBUG_GB_PROCESSING)
         QString debugMsg;
         for (size_t i = 0; i < gbSequenceLength; ++i) {
-            debugMsg.append(QStringLiteral("<%1>").arg(static_cast<quint8>(bufferData.at(pos + i)), 2, 16, QChar('0')));
+            debugMsg.append(qsl("<%1>").arg(static_cast<quint8>(bufferData.at(pos + i)), 2, 16, QChar('0')));
         }
-        qDebug().nospace() << "    Sequence bytes are: " << debugMsg.toLatin1().constData();
+        qDebug().nospace() << "    Sequence bytes are: " << debugMsg;
 #endif
         if (isToUseReplacementMark) {
             mMudLine.append(QChar::ReplacementCharacter);
@@ -4949,7 +4136,7 @@ bool TBuffer::processBig5Sequence(const std::string& bufferData, const bool isFr
             // Not enough bytes to process yet - so store what we have and return
             if (isFromServer) {
 #if defined(DEBUG_BIG5_PROCESSING)
-                qDebug().nospace() << "TBuffer::processBig5Sequence(...) Insufficent bytes in buffer to "
+                qDebug().nospace() << "TBuffer::processBig5Sequence(...) Insufficient bytes in buffer to "
                                       "complete Big5 sequence, need at least: "
                                    << big5SequenceLength << " but we currently only have: " << bufferData.substr(pos).length() << " bytes (which we will store for next call to this method)...";
 #endif
@@ -5024,9 +4211,9 @@ bool TBuffer::processBig5Sequence(const std::string& bufferData, const bool isFr
 #if defined(DEBUG_BIG5_PROCESSING)
         QString debugMsg;
         for (size_t i = 0; i < big5SequenceLength; ++i) {
-            debugMsg.append(QStringLiteral("<%1>").arg(static_cast<quint8>(bufferData.at(pos + i)), 2, 16, QChar('0')));
+            debugMsg.append(qsl("<%1>").arg(static_cast<quint8>(bufferData.at(pos + i)), 2, 16, QChar('0')));
         }
-        qDebug().nospace() << "    Invalid.  Sequence bytes are: " << debugMsg.toLatin1().constData();
+        qDebug().nospace() << "    Invalid.  Sequence bytes are: " << debugMsg;
 #endif
         if (isToUseReplacementMark) {
             mMudLine.append(QChar::ReplacementCharacter);
@@ -5040,12 +4227,137 @@ bool TBuffer::processBig5Sequence(const std::string& bufferData, const bool isFr
     return true;
 }
 
-void TBuffer::encodingChanged(const QString& newEncoding)
+bool TBuffer::processEUC_KRSequence(const std::string& bufferData, const bool isFromServer, const size_t len, size_t& pos, bool& isNonBmpCharacter)
+{
+#if defined(DEBUG_EUC_KR_PROCESSING)
+    std::string dataIdentity;
+#endif
+
+    // The encoding standard are taken from https://en.wikipedia.org/wiki/Extended_Unix_Code
+    size_t eucSequenceLength = 1;
+    bool isValid = true;
+    bool isToUseReplacementMark = false;
+    // Only set this if we are adding more than one code-point to
+    // mCurrentLineCharacters:
+    isNonBmpCharacter = false;
+    if (static_cast<quint8>(bufferData.at(pos)) < 0x7F) {
+        // Is ASCII - single byte character, straight forward for a "first" byte case
+        mMudLine.append(bufferData.at(pos));
+        // As there is already a unit increment at the bottom of caller's loop
+        // there is no need to tweak pos in THIS case
+
+        return true;
+    } else if (static_cast<quint8>(bufferData.at(pos)) < 0xA1 || static_cast<quint8>(bufferData.at(pos)) == 0xFF) {
+        // Invalid as first byte
+        isValid = false;
+        isToUseReplacementMark = true;
+#if defined(DEBUG_EUC_KR_PROCESSING)
+        qDebug().nospace() << "TBuffer::processEUC_KRSequence(...) 1-byte sequence as EUC-KR rejected!";
+#endif
+    } else {
+        // We have two bytes
+        eucSequenceLength = 2;
+        if ((pos + eucSequenceLength - 1) >= len) {
+            // Not enough bytes to process yet - so store what we have and return
+            if (isFromServer) {
+#if defined(DEBUG_EUC_KR_PROCESSING)
+                    qDebug().nospace() << "TBuffer::processEUC_KRSequence(...) Insufficient bytes in buffer to "
+                                          "complete EUC-KR sequence, need at least: "
+                                       << eucSequenceLength << " but we currently only have: " << bufferData.substr(pos).length() << " bytes (which we will store for next call to this method)...";
+#endif
+                    mIncompleteSequenceBytes = bufferData.substr(pos);
+            }
+            return false; // Bail out
+        } else {
+            // check if second byte range is valid
+            auto val2 = static_cast<quint8>(bufferData.at(pos + 1));
+            if (val2 < 0xA1 || val2 == 0xFF) {
+                    // second byte range is invalid
+                    isValid = false;
+                    isToUseReplacementMark = true;
+            }
+        }
+
+    }
+
+    // At this point we know how many bytes to consume, and whether they are in
+    // the right ranges of individual values to be valid
+
+    if (isValid) {
+        // Try and convert two byte sequence to Unicode using Qts own
+        // decoder - and check number of codepoints returned
+
+        QString codePoint;
+        if (mMainIncomingCodec) {
+            // Third argument is 0 to indicate we do NOT wish to store the state:
+            codePoint = mMainIncomingCodec->toUnicode(bufferData.substr(pos, eucSequenceLength).c_str(), static_cast<int>(eucSequenceLength),
+                                                      nullptr);
+            switch (codePoint.size()) {
+            default:
+                    Q_UNREACHABLE(); // This can't happen, unless we got start or length wrong in std::string::substr()
+                    qWarning().nospace() << "TBuffer::processEUC_KRSequence(...) " << eucSequenceLength << "-byte EUC-KR sequence accepted, and it encoded to "
+                                         << codePoint.size() << " QChars which does not make sense!!!";
+                    isValid = false;
+                    isToUseReplacementMark = true;
+                    break;
+            case 2:
+                    // Fall-through
+                    [[fallthrough]];
+            case 1:
+                    // If Qt's decoder found bad characters, update status flags to reflect that.
+                    if (codePoint.contains(QChar::ReplacementCharacter)) {
+                        isValid = false;
+                        isToUseReplacementMark = true;
+                        break;
+                    }
+#if defined(DEBUG_EUC_KR_PROCESSING)
+                    qDebug().nospace() << "TBuffer::processEUC_KRSequence(...) " << eucSequenceLength << "-byte EUC-KR sequence accepted, it is " << codePoint.size()
+                                       << " QChar(s) long [" << codePoint << "] and is in the " << dataIdentity.c_str() << " range";
+#endif
+                    mMudLine.append(codePoint);
+                    break;
+            case 0:
+                    qWarning().nospace() << "TBuffer::processEUC_KRSequence(...) " << eucSequenceLength << "-byte EUC-KR"
+                                         << "sequence accepted, but it did not encode to ANY QChar(s)!!!";
+                    isValid = false;
+                    isToUseReplacementMark = true;
+            }
+        } else {
+            // Unable to decode it - no Qt decoder...!
+#if defined(DEBUG_EUC_KR_PROCESSING)
+            qDebug().nospace() << "No Qt decoder found...";
+#endif
+            isValid = false;
+            isToUseReplacementMark = true;
+        }
+    }
+
+    if (!isValid) {
+#if defined(DEBUG_EUC_KR_PROCESSING)
+        QString debugMsg;
+        for (size_t i = 0; i < eucSequenceLength; ++i) {
+            debugMsg.append(qsl("<%1>").arg(static_cast<quint8>(bufferData.at(pos + i)), 2, 16, QChar('0')));
+        }
+        qDebug().nospace() << "    Invalid.  Sequence bytes are: " << debugMsg;
+#endif
+        if (isToUseReplacementMark) {
+            mMudLine.append(QChar::ReplacementCharacter);
+        }
+    }
+
+    // As there is already a unit increment at the bottom of loop
+    // add one less than the sequence length:
+    pos += eucSequenceLength - 1;
+
+    return true;
+}
+
+void TBuffer::encodingChanged(const QByteArray& newEncoding)
 {
     if (mEncoding != newEncoding) {
         mEncoding = newEncoding;
-        if (mEncoding == QLatin1String("GBK") || mEncoding == QLatin1String("GB18030") || mEncoding == QLatin1String("Big5")) {
-            mMainIncomingCodec = QTextCodec::codecForName(mEncoding.toLatin1().constData());
+        if (mEncoding == "GBK" || mEncoding == "GB18030" || mEncoding == "BIG5" || mEncoding == "BIG5-HKSCS" || mEncoding == "EUC-KR") {
+            mMainIncomingCodec = QTextCodec::codecForName(mEncoding);
             if (!mMainIncomingCodec) {
                 qCritical().nospace() << "encodingChanged(" << newEncoding << ") ERROR: This encoding cannot be handled as a required codec was not found in the system!";
             } else {
@@ -5057,74 +4369,6 @@ void TBuffer::encodingChanged(const QString& newEncoding)
             mMainIncomingCodec = nullptr;
         }
     }
-}
-
-QString TBuffer::processSupportsRequest(const QString& elements)
-{
-    // strip initial SUPPORT and tokenize all of the requested elements
-    auto elementsList = elements.trimmed().remove(0, 7).split(QStringLiteral(" "), QString::SkipEmptyParts);
-    QStringList result;
-
-    auto reportEntireElement = [](auto element, auto& result) {
-        result.append("+" + element);
-
-        for (const auto& attribute : mSupportedMxpElements.value(element)) {
-            result.append("+" + element + QStringLiteral(".") + attribute);
-        }
-
-        return result;
-    };
-
-    auto reportAllElements = [reportEntireElement](auto& result) {
-        auto elementsIterator = mSupportedMxpElements.constBegin();
-        while (elementsIterator != mSupportedMxpElements.constEnd()) {
-            result = reportEntireElement(elementsIterator.key(), result);
-            ++elementsIterator;
-        }
-
-        return result;
-    };
-
-    // empty <SUPPORT> - report all known elements
-    if (elementsList.isEmpty()) {
-        result = reportAllElements(result);
-    } else {
-        // otherwise it's <SUPPORT element1 element2 element3>
-        for (auto& element : elementsList) {
-            // prune any enclosing quotes
-            if (element.startsWith(QChar('"'))) {
-                element = element.remove(0, 1);
-            }
-            if (element.endsWith(QChar('"'))) {
-                element.chop(1);
-            }
-
-            if (!element.contains(QChar('.'))) {
-                if (mSupportedMxpElements.contains(element)) {
-                    result = reportEntireElement(element, result);
-                } else {
-                    result.append("-" + element);
-                }
-            } else {
-                auto elementName = element.section(QChar('.'), 0, 0);
-                auto attributeName = element.section(QChar('.'), 1, 1);
-
-                if (!mSupportedMxpElements.contains(elementName)) {
-                    result.append("-" + element);
-                } else if (attributeName == QLatin1String("*")) {
-                    result = reportEntireElement(elementName, result);
-                } else {
-                    if (mSupportedMxpElements.value(elementName).contains(attributeName)) {
-                        result.append("+" + element + "." + attributeName);
-                    } else {
-                        result.append("-" + element + "." + attributeName);
-                    }
-                }
-            }
-        }
-    }
-
-    return result.join(QLatin1String(" "));
 }
 
 // Count the graphemes in a QString - returning its length in terms of those:
@@ -5142,4 +4386,18 @@ int TBuffer::lengthInGraphemes(const QString& text)
         pos = graphemeFinder.toNextBoundary();
     }
     return count;
+}
+
+const QList<QByteArray> TBuffer::getEncodingNames()
+{
+     return csmEncodingTable.getEncodingNames();
+}
+
+void TBuffer::clearSearchHighlights()
+{
+    for (auto& line : buffer) {
+        for (auto& character : line) {
+            character.mFlags &= ~TChar::AttributeFlag::Found;
+        }
+    }
 }

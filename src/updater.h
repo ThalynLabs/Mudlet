@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2017 by Vadim Peretokin - vperetokin@gmail.com          *
+ *   Copyright (C) 2017-2020 by Vadim Peretokin - vperetokin@gmail.com     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -25,11 +25,9 @@
 #if defined (INCLUDE_UPDATER)
 #include "dblsqd/feed.h"
 #include "dblsqd/update_dialog.h"
+#include "sparkleupdater.h"
 #endif
 
-#ifdef Q_OS_MACOS
-#include "../3rdparty/sparkle-glue/AutoUpdater.h"
-#endif
 
 #include "pre_guard.h"
 #include <QObject>
@@ -41,7 +39,7 @@ class Updater : public QObject
 
 public:
     Q_DISABLE_COPY(Updater)
-    explicit Updater(QObject* parent = nullptr, QSettings* settings = nullptr);
+    explicit Updater(QObject* parent = nullptr, QSettings* settings = nullptr, bool testVersion = false);
     virtual ~Updater();
     void checkUpdatesOnStart();
     void manuallyCheckUpdates();
@@ -56,6 +54,7 @@ private:
     QPushButton* mpInstallOrRestart;
     bool mUpdateInstalled;
     QSettings* settings;
+    std::unique_ptr<QTimer> mDailyCheck;
 
 #if defined(Q_OS_LINUX)
     void setupOnLinux();
@@ -63,6 +62,7 @@ private:
 #elif defined(Q_OS_WIN32)
     void setupOnWindows();
     void prepareSetupOnWindows(const QString& fileName);
+    bool is64BitCompatible() const;
 #elif defined(Q_OS_MACOS)
     void setupOnMacOS();
 #endif
@@ -71,11 +71,12 @@ private:
     void recordUpdatedVersion() const;
     QString getPreviousVersion() const;
     void finishSetup();
+    void showDialogManually() const;
 
 #if defined(Q_OS_LINUX)
     QString unzippedBinaryName;
 #elif defined(Q_OS_MACOS)
-    AutoUpdater* msparkleUpdater;
+    SparkleUpdater* msparkleUpdater;
 #endif
 
 
@@ -86,10 +87,10 @@ signals:
     void signal_automaticUpdatesChanged(const bool);
 
 public slots:
-    void installOrRestartClicked(QAbstractButton* button, const QString& filePath);
+    void slot_installOrRestartClicked(QAbstractButton* button, const QString& filePath);
 #if defined(Q_OS_LINUX)
     // might want to make these private
-    void updateBinaryOnLinux();
+    void slot_updateLinuxBinary();
 #endif
 };
 
