@@ -41,6 +41,7 @@
 #include "TFlipButton.h"
 #include "TForkedProcess.h"
 #include "TLabel.h"
+#include "TMap.h"
 #include "TMapLabel.h"
 #include "TMedia.h"
 #include "TRoomDB.h"
@@ -55,13 +56,12 @@
 #include "mapInfoContributorManager.h"
 #include "mudlet.h"
 #if defined(INCLUDE_3DMAPPER)
-#include "glwidget.h"
+#include "glwidget_integration.h"
 #endif
 
 #include <limits>
 #include <math.h>
 
-#include "pre_guard.h"
 #include <QtConcurrent>
 #include <QCollator>
 #include <QCoreApplication>
@@ -75,7 +75,6 @@
 #ifdef QT_TEXTTOSPEECH_LIB
 #include <QTextToSpeech>
 #endif // QT_TEXTTOSPEECH_LIB
-#include "post_guard.h"
 
 #ifdef QT_TEXTTOSPEECH_LIB
 QPointer<QTextToSpeech> speechUnit;
@@ -85,12 +84,7 @@ bool bSpeechQueueing;
 int speechState = QTextToSpeech::State::Ready;
 QString speechCurrent;
 
-// BackendError was renamed to Error in Qt6
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-static const QTextToSpeech::State TEXT_TO_SPEECH_ERROR_STATE = QTextToSpeech::State::BackendError;
-#else
 static const QTextToSpeech::State TEXT_TO_SPEECH_ERROR_STATE = QTextToSpeech::State::Error;
-#endif
 
 // No documentation available in wiki - internal function
 void TLuaInterpreter::ttsBuild()
@@ -517,7 +511,7 @@ int TLuaInterpreter::ttsSetVoiceByName(lua_State* L)
     const QString nextVoice = getVerifiedString(L, __func__, 1, "voice");
 
     QVector<QVoice> const speechVoices = speechUnit->availableVoices();
-    for (auto voice : speechVoices) {
+    for (const auto& voice : speechVoices) {
         if (voice.name() == nextVoice) {
             speechUnit->setVoice(voice);
             lua_pushboolean(L, true);

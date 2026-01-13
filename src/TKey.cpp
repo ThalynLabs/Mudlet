@@ -36,8 +36,8 @@ TKey::TKey(TKey* parent, Host* pHost)
 
 TKey::TKey(QString name, Host* pHost)
 : Tree<TKey>( nullptr )
-, mName(name)
 , mpHost(pHost)
+, mName(name)
 {
 }
 
@@ -200,4 +200,38 @@ void TKey::execute()
     }
 
     mpHost->mLuaInterpreter.call(mFuncName, mName);
+}
+
+QString TKey::packageName(TKey* pKey)
+{
+    if (!pKey) {
+        return QString();
+    }
+
+    if (!pKey->mPackageName.isEmpty()) {
+        return !mpHost->mModuleInfo.contains(pKey->mPackageName) ? pKey->mPackageName : QString();
+    }
+
+    if (pKey->getParent()) {
+        return packageName(pKey->getParent());
+    }
+
+    return QString();
+}
+
+QString TKey::moduleName(TKey* pKey)
+{
+    if (!pKey) {
+        return QString();
+    }
+
+    if (!pKey->mPackageName.isEmpty()) {
+        return mpHost->mModuleInfo.contains(pKey->mPackageName) ? pKey->mPackageName : QString();
+    }
+
+    if (pKey->getParent()) {
+        return moduleName(pKey->getParent());
+    }
+
+    return QString();
 }

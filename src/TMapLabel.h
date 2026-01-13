@@ -24,13 +24,11 @@
  ***************************************************************************/
 
 
-#include "pre_guard.h"
 #include <QtGlobal>
 #include <QColor>
 #include <QPixmap>
 #include <QSizeF>
 #include <QVector3D>
-#include "post_guard.h"
 
 
 class TMapLabel
@@ -42,8 +40,9 @@ public:
     QSizeF size;
     QSizeF clickSize;
     QString text;
-    QColor fgColor  = QColorConstants::Black;
-    QColor bgColor  = QColorConstants::Black;
+    QColor fgColor = QColorConstants::Black;
+    QColor bgColor = QColorConstants::Black;
+    QColor outlineColor = QColorConstants::Black;
     QPixmap pix;
     bool highlight = false;
     bool showOnTop = false;

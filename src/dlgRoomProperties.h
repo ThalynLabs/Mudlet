@@ -3,7 +3,8 @@
 
 /***************************************************************************
  *   Copyright (C) 2021 by Piotr Wilczynski - delwing@gmail.com            *
- *   Copyright (C) 2022-2023 by Stephen Lyons - slysven@virginmedia.com    *
+ *   Copyright (C) 2022-2023, 2025 by Stephen Lyons                        *
+ *                                               - slysven@virginmedia.com *
  *   Copyright (C) 2022 by Lecker Kebap - Leris@mudlet.org                 *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -22,12 +23,12 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "Host.h"
-
-#include "pre_guard.h"
 #include "ui_room_properties.h"
-#include "post_guard.h"
 
+#include <QListWidget>
+
+class Host;
+class TRoom;
 
 class dlgRoomProperties : public QDialog, public Ui::room_properties
 {
@@ -52,7 +53,7 @@ signals:
         bool changeSymbol, QString newSymbol,
         bool changeSymbolColor, QColor newSymbolColor,
         bool changeWeight, int newWeight,
-        bool changeLockStatus, bool newLockStatus,
+        bool changeLockStatus, std::optional<bool> newLockStatus,
         QSet<TRoom*> mpRooms);
 
 private:
@@ -76,6 +77,7 @@ private:
     QColor mRoomColor;
     int mRoomColorNumber = -1;
     bool mChangeRoomColor = false;
+    bool mSymbolColorWasChanged = false;
     QString multipleValuesPlaceholder = tr("(Multiple values...)");
 
 private slots:

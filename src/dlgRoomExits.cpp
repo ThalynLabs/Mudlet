@@ -3,6 +3,7 @@
  *   Copyright (C) 2013-2016, 2021 by Stephen Lyons                        *
  *                                               - slysven@virginmedia.com *
  *   Copyright (C) 2014 by Ahmed Charles - acharles@outlook.com            *
+ *   Copyright (C) 2025 by Lecker Kebap - Leris@mudlet.org                 *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -31,9 +32,7 @@
 #include "utils.h"
 
 
-#include "pre_guard.h"
 #include <QAction>
-#include "post_guard.h"
 
 // A template for tooltip HTML formatting so that we do not have
 // 30 copies of the same QString in the read-only segment of the code:
@@ -102,6 +101,8 @@ QWidget* RoomIdLineEditDelegate::createEditor(QWidget* parent, const QStyleOptio
     mpEditor = new QLineEdit(parent);
     mpEditor->setFrame(false);
     mpEditor->setPlaceholderText(mpDlgRoomExits->mSpecialExitRoomIdPlaceholder);
+    // Hide anything in the original QLineEdit that this sits on top of:
+    mpEditor->setAutoFillBackground(true);
     if (mpDlgRoomExits) {
         if (!mpHost) {
             mpHost = mpDlgRoomExits->getHost();
@@ -283,10 +284,9 @@ dlgRoomExits::dlgRoomExits(Host* pH, const int roomNumber, QWidget* pW)
 
 dlgRoomExits::~dlgRoomExits()
 {
-    delete mpAction_otherAreaExit;
-    delete mpAction_inAreaExit;
-    delete mpAction_invalidExit;
-    delete mpAction_noExit;
+    // QActions are children of this dialog (created with 'this' as parent),
+    // so Qt's parent-child system handles their deletion automatically.
+    // Manual deletion here would cause double-delete crashes.
 }
 
 void dlgRoomExits::slot_endEditSpecialExits()
@@ -463,7 +463,6 @@ void dlgRoomExits::slot_addSpecialExit()
     pI->setText(ExitsTreeWidget::colIndex_command, mSpecialExitCommandPlaceholder); //Exit command
     pI->setTextAlignment(ExitsTreeWidget::colIndex_command, Qt::AlignLeft);
 
-// >>>>>>> development
     specialExits->addTopLevelItem(pI);
 
     setIconAndToolTipsOnSpecialExit(pI, true);
@@ -481,6 +480,9 @@ void dlgRoomExits::save()
 
     for (int i = 0; i < specialExits->topLevelItemCount(); ++i) {
         QTreeWidgetItem* pI = specialExits->topLevelItem(i);
+        if (!pI) {
+            continue;
+        }
         const int value = pI->text(ExitsTreeWidget::colIndex_exitRoomId).toInt();
         const int weight = pI->text(ExitsTreeWidget::colIndex_exitWeight).toInt();
         int door = 0;
@@ -511,7 +513,7 @@ void dlgRoomExits::save()
     }
 
     // Clean up after any deleted specialExits originally present but not now so
-    for (auto value : originalExitCmds) {
+    for (const auto& value : originalExitCmds) {
         pR->customLinesArrow.remove(value);
         pR->customLinesColor.remove(value);
         pR->customLinesStyle.remove(value);
@@ -1002,10 +1004,8 @@ void dlgRoomExits::setIconAndToolTipsOnSpecialExit(QTreeWidgetItem* pSpecialExit
 
 void dlgRoomExits::setActionOnExit(QLineEdit* pExitLineEdit, QAction* pWantedAction) const
 {
-    auto pActions = pExitLineEdit->actions();
     bool found = false;
-    for (int index = 0, total = pActions.count(); index < total; ++index) {
-        auto pAction = pActions[index];
+    for (auto pAction : pExitLineEdit->actions()) {
         if (pAction && mAllExitActionsSet.contains(pAction)) {
             // This is one of the set we are looking for.
             if (pAction != pWantedAction) {
@@ -1028,9 +1028,7 @@ void dlgRoomExits::setActionOnExit(QLineEdit* pExitLineEdit, QAction* pWantedAct
 // icon on the ExitRoomID - this is actually only used for the special exits:
 QAction* dlgRoomExits::getActionOnExit(QLineEdit* pExitLineEdit) const
 {
-    auto pActions = pExitLineEdit->actions();
-    for (int index = 0, total = pActions.count(); index < total; ++index) {
-        auto pAction = pActions[index];
+    for (auto pAction : pExitLineEdit->actions()) {
         if (pAction && mAllExitActionsSet.contains(pAction)) {
             // This is one of the four we are looking for.
             return pAction;
@@ -1661,6 +1659,32 @@ void dlgRoomExits::init()
     connect(se,                    &QLineEdit::textEdited,                         this, &dlgRoomExits::slot_se_textEdited);
     connect(in,                    &QLineEdit::textEdited,                         this, &dlgRoomExits::slot_in_textEdited);
     connect(out,                   &QLineEdit::textEdited,                         this, &dlgRoomExits::slot_out_textEdited);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+    connect(stub_nw,               &QCheckBox::checkStateChanged,                  this, &dlgRoomExits::slot_stub_nw_stateChanged);
+    connect(stub_n,                &QCheckBox::checkStateChanged,                  this, &dlgRoomExits::slot_stub_n_stateChanged);
+    connect(stub_ne,               &QCheckBox::checkStateChanged,                  this, &dlgRoomExits::slot_stub_ne_stateChanged);
+    connect(stub_up,               &QCheckBox::checkStateChanged,                  this, &dlgRoomExits::slot_stub_up_stateChanged);
+    connect(stub_w,                &QCheckBox::checkStateChanged,                  this, &dlgRoomExits::slot_stub_w_stateChanged);
+    connect(stub_e,                &QCheckBox::checkStateChanged,                  this, &dlgRoomExits::slot_stub_e_stateChanged);
+    connect(stub_down,             &QCheckBox::checkStateChanged,                  this, &dlgRoomExits::slot_stub_down_stateChanged);
+    connect(stub_sw,               &QCheckBox::checkStateChanged,                  this, &dlgRoomExits::slot_stub_sw_stateChanged);
+    connect(stub_s,                &QCheckBox::checkStateChanged,                  this, &dlgRoomExits::slot_stub_s_stateChanged);
+    connect(stub_se,               &QCheckBox::checkStateChanged,                  this, &dlgRoomExits::slot_stub_se_stateChanged);
+    connect(stub_in,               &QCheckBox::checkStateChanged,                  this, &dlgRoomExits::slot_stub_in_stateChanged);
+    connect(stub_out,              &QCheckBox::checkStateChanged,                  this, &dlgRoomExits::slot_stub_out_stateChanged);
+    connect(noroute_nw,            &QCheckBox::checkStateChanged,                  this, &dlgRoomExits::slot_checkModified);
+    connect(noroute_n,             &QCheckBox::checkStateChanged,                  this, &dlgRoomExits::slot_checkModified);
+    connect(noroute_ne,            &QCheckBox::checkStateChanged,                  this, &dlgRoomExits::slot_checkModified);
+    connect(noroute_up,            &QCheckBox::checkStateChanged,                  this, &dlgRoomExits::slot_checkModified);
+    connect(noroute_w,             &QCheckBox::checkStateChanged,                  this, &dlgRoomExits::slot_checkModified);
+    connect(noroute_e,             &QCheckBox::checkStateChanged,                  this, &dlgRoomExits::slot_checkModified);
+    connect(noroute_down,          &QCheckBox::checkStateChanged,                  this, &dlgRoomExits::slot_checkModified);
+    connect(noroute_sw,            &QCheckBox::checkStateChanged,                  this, &dlgRoomExits::slot_checkModified);
+    connect(noroute_s,             &QCheckBox::checkStateChanged,                  this, &dlgRoomExits::slot_checkModified);
+    connect(noroute_se,            &QCheckBox::checkStateChanged,                  this, &dlgRoomExits::slot_checkModified);
+    connect(noroute_in,            &QCheckBox::checkStateChanged,                  this, &dlgRoomExits::slot_checkModified);
+    connect(noroute_out,           &QCheckBox::checkStateChanged,                  this, &dlgRoomExits::slot_checkModified);
+#else
     connect(stub_nw,               &QCheckBox::stateChanged,                       this, &dlgRoomExits::slot_stub_nw_stateChanged);
     connect(stub_n,                &QCheckBox::stateChanged,                       this, &dlgRoomExits::slot_stub_n_stateChanged);
     connect(stub_ne,               &QCheckBox::stateChanged,                       this, &dlgRoomExits::slot_stub_ne_stateChanged);
@@ -1685,6 +1709,7 @@ void dlgRoomExits::init()
     connect(noroute_se,            &QCheckBox::stateChanged,                       this, &dlgRoomExits::slot_checkModified);
     connect(noroute_in,            &QCheckBox::stateChanged,                       this, &dlgRoomExits::slot_checkModified);
     connect(noroute_out,           &QCheckBox::stateChanged,                       this, &dlgRoomExits::slot_checkModified);
+#endif
     connect(weight_nw,             qOverload<int>(&QSpinBox::valueChanged),        this, &dlgRoomExits::slot_checkModified);
     connect(weight_n,              qOverload<int>(&QSpinBox::valueChanged),        this, &dlgRoomExits::slot_checkModified);
     connect(weight_ne,             qOverload<int>(&QSpinBox::valueChanged),        this, &dlgRoomExits::slot_checkModified);
@@ -1697,8 +1722,6 @@ void dlgRoomExits::init()
     connect(weight_se,             qOverload<int>(&QSpinBox::valueChanged),        this, &dlgRoomExits::slot_checkModified);
     connect(weight_in,             qOverload<int>(&QSpinBox::valueChanged),        this, &dlgRoomExits::slot_checkModified);
     connect(weight_out,            qOverload<int>(&QSpinBox::valueChanged),        this, &dlgRoomExits::slot_checkModified);
-#if (QT_VERSION) >= (QT_VERSION_CHECK(5, 15, 0))
-// The qOverload<int>(&QButtonGroup::buttonClicked) was deprecated in Qt 5.15 and replaced by QButtonGroup::idClicked
     connect(doortype_nw,           &QButtonGroup::idClicked,                       this, &dlgRoomExits::slot_checkModified);
     connect(doortype_n,            &QButtonGroup::idClicked,                       this, &dlgRoomExits::slot_checkModified);
     connect(doortype_ne,           &QButtonGroup::idClicked,                       this, &dlgRoomExits::slot_checkModified);
@@ -1712,21 +1735,6 @@ void dlgRoomExits::init()
     connect(doortype_in,           &QButtonGroup::idClicked,                       this, &dlgRoomExits::slot_checkModified);
     connect(doortype_down,         &QButtonGroup::idClicked,                       this, &dlgRoomExits::slot_checkModified);
     connect(doortype_out,          &QButtonGroup::idClicked,                       this, &dlgRoomExits::slot_checkModified);
-#else
-    connect(doortype_nw,           qOverload<int>(&QButtonGroup::buttonClicked),   this, &dlgRoomExits::slot_checkModified);
-    connect(doortype_n,            qOverload<int>(&QButtonGroup::buttonClicked),   this, &dlgRoomExits::slot_checkModified);
-    connect(doortype_ne,           qOverload<int>(&QButtonGroup::buttonClicked),   this, &dlgRoomExits::slot_checkModified);
-    connect(doortype_up,           qOverload<int>(&QButtonGroup::buttonClicked),   this, &dlgRoomExits::slot_checkModified);
-    connect(doortype_w,            qOverload<int>(&QButtonGroup::buttonClicked),   this, &dlgRoomExits::slot_checkModified);
-    connect(doortype_e,            qOverload<int>(&QButtonGroup::buttonClicked),   this, &dlgRoomExits::slot_checkModified);
-    connect(doortype_down,         qOverload<int>(&QButtonGroup::buttonClicked),   this, &dlgRoomExits::slot_checkModified);
-    connect(doortype_sw,           qOverload<int>(&QButtonGroup::buttonClicked),   this, &dlgRoomExits::slot_checkModified);
-    connect(doortype_s,            qOverload<int>(&QButtonGroup::buttonClicked),   this, &dlgRoomExits::slot_checkModified);
-    connect(doortype_se,           qOverload<int>(&QButtonGroup::buttonClicked),   this, &dlgRoomExits::slot_checkModified);
-    connect(doortype_in,           qOverload<int>(&QButtonGroup::buttonClicked),   this, &dlgRoomExits::slot_checkModified);
-    connect(doortype_down,         qOverload<int>(&QButtonGroup::buttonClicked),   this, &dlgRoomExits::slot_checkModified);
-    connect(doortype_out,          qOverload<int>(&QButtonGroup::buttonClicked),   this, &dlgRoomExits::slot_checkModified);
-#endif
     // clang-format on
 }
 
@@ -1953,6 +1961,9 @@ void dlgRoomExits::slot_checkModified()
         int currentCount = 0;
         for (int i = 0; i < specialExits->topLevelItemCount(); i++) {
             QTreeWidgetItem* pI = specialExits->topLevelItem(i);
+            if (!pI) {
+                continue;
+            }
 /*            qDebug("dlgRoomExits::slot_checkModified() considering specialExit (item %i, pass 1) to:%i, command:%s",
  *                   i,
  *                   pI->text(ExitsTreeWidget::colIndex_exitRoomId).toInt(),
@@ -1975,6 +1986,9 @@ void dlgRoomExits::slot_checkModified()
                 // set isModified...
                 for (int i = 0; i < specialExits->topLevelItemCount(); i++) {
                     QTreeWidgetItem* pI = specialExits->topLevelItem(i);
+                    if (!pI) {
+                        continue;
+                    }
 /*                    qDebug("dlgRoomExits::slot_checkModified() considering specialExit (item %i, pass 2) to:%i, command:%s",
  *                           i,
  *                           pI->text(ExitsTreeWidget::colIndex_exitRoomId).toInt(),

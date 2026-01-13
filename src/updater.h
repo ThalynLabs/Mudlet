@@ -29,9 +29,7 @@
 #endif
 
 
-#include "pre_guard.h"
 #include <QObject>
-#include "post_guard.h"
 
 class Updater : public QObject
 {
@@ -44,13 +42,14 @@ public:
     void checkUpdatesOnStart();
     void manuallyCheckUpdates();
     void showChangelog() const;
+    void showFullChangelog() const;
     void setAutomaticUpdates(bool state);
     bool updateAutomatically() const;
     bool shouldShowChangelog();
 
 private:
     dblsqd::Feed* feed;
-    dblsqd::UpdateDialog* updateDialog;
+    dblsqd::UpdateDialog* updateDialog{nullptr};
     QPushButton* mpInstallOrRestart;
     bool mUpdateInstalled;
     QSettings* settings;
@@ -59,7 +58,7 @@ private:
 #if defined(Q_OS_LINUX)
     void setupOnLinux();
     void untarOnLinux(const QString& fileName);
-#elif defined(Q_OS_WIN32)
+#elif defined(Q_OS_WINDOWS)
     void setupOnWindows();
     void prepareSetupOnWindows(const QString& fileName);
     bool is64BitCompatible() const;
@@ -75,6 +74,8 @@ private:
 
 #if defined(Q_OS_LINUX)
     QString unzippedBinaryName;
+#elif defined(Q_OS_WINDOWS)
+    QString mDownloadedInstallerPath;
 #elif defined(Q_OS_MACOS)
     SparkleUpdater* msparkleUpdater;
 #endif

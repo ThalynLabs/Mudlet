@@ -2,6 +2,7 @@
  *   Copyright (C) 2011 by Chris Mitchell                                  *
  *   Copyright (C) 2021 by Manuel Wegmann - wegmann.manuel@yahoo.com       *
  *   Copyright (C) 2021-2022 by Stephen Lyons - slysven@virginmedia.com    *
+ *   Copyright (C) 2025 by Lecker Kebap - Leris@mudlet.org                 *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -24,10 +25,8 @@
 
 #include "mudlet.h"
 
-#include "pre_guard.h"
 #include <QFileDialog>
 #include <QMessageBox>
-#include "post_guard.h"
 
 
 dlgModuleManager::dlgModuleManager(QWidget* parent, Host* pHost)
@@ -84,14 +83,14 @@ void dlgModuleManager::layoutModules()
         it2.next();
         QStringList pModules = it2.value();
         pModules.sort();
-        for (int i = 0; i < pModules.size(); i++) {
+        for (const QString& pModule : pModules) {
             const int row = moduleTable->rowCount();
             moduleTable->insertRow(row);
             auto masterModule = new QTableWidgetItem();
             auto itemEntry = new QTableWidgetItem();
             auto itemLocation = new QTableWidgetItem();
             auto itemPriority = new QTableWidgetItem();
-            QStringList moduleInfo = mpHost->mInstalledModules[pModules[i]];
+            QStringList moduleInfo = mpHost->mInstalledModules[pModule];
 
             if (moduleInfo.at(1).toInt()) {
                 masterModule->setCheckState(Qt::Checked);
@@ -107,7 +106,7 @@ void dlgModuleManager::layoutModules()
             // checkbox more central in the column
             masterModule->setTextAlignment(Qt::AlignCenter);
 
-            const QString moduleName = pModules[i];
+            const QString moduleName = pModule;
             itemEntry->setText(moduleName);
             itemEntry->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
             itemLocation->setText(moduleInfo[0]);
@@ -146,7 +145,7 @@ void dlgModuleManager::slot_installModule()
         return;
     }
 
-    mpHost->installPackage(fileName, 1);
+    mpHost->installPackage(fileName, enums::PackageModuleType::ModuleFromUI);
     for (int i = moduleTable->rowCount() - 1; i >= 0; --i) {
         moduleTable->removeRow(i);
     }
@@ -163,7 +162,7 @@ void dlgModuleManager::slot_uninstallModule()
     const int cRow = moduleTable->currentRow();
     QTableWidgetItem* pI = moduleTable->item(cRow, 0);
     if (pI) {
-        mpHost->uninstallPackage(pI->text(), 1);
+        mpHost->uninstallPackage(pI->text(), enums::PackageModuleType::ModuleFromUI);
     }
     for (int i = moduleTable->rowCount() - 1; i >= 0; --i) {
         moduleTable->removeRow(i);
@@ -239,6 +238,9 @@ void dlgModuleManager::slot_helpModule()
         if (!mudlet::self()->openWebPage(mpHost->moduleHelp.value(pI->text()).value(QLatin1String("helpURL")))) {
             //failed first open, try for a module related path
             QTableWidgetItem* item = moduleTable->item(cRow, 3);
+            if (!item) {
+                return;
+            }
             const QString itemPath = item->text();
             QStringList path = itemPath.split(QDir::separator());
             path.pop_back();
@@ -250,4 +252,12 @@ void dlgModuleManager::slot_helpModule()
             }
         }
     }
+}
+
+void dlgModuleManager::closeEvent(QCloseEvent* event)
+{
+    if (mpHost) {
+        emit moduleManagerClosing(mpHost->getName());
+    }
+    QDialog::closeEvent(event);
 }

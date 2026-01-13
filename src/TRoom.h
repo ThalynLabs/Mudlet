@@ -24,17 +24,13 @@
  ***************************************************************************/
 
 
-#include "TMap.h"
-
-#include "pre_guard.h"
-#include <QApplication>
+#include <QCoreApplication>
 #include <QColor>
 #include <QDebug>
 #include <QHash>
 #include <QMap>
 #include <QSet>
 #include <QVector3D>
-#include "post_guard.h"
 
 class XMLimport;
 class XMLexport;
@@ -228,7 +224,7 @@ inline QDebug operator<<(QDebug debug, const TRoom* room)
         return debug << "TRoom(0x0) ";
     }
     QDebugStateSaver saver(debug);
-    Q_UNUSED(saver);
+    Q_UNUSED(saver)
 
     debug.nospace() << "TRoom(" << room->getId() << ")";
     debug.nospace() << ", name=" << room->name;

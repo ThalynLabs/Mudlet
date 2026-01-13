@@ -29,9 +29,7 @@
 #include "TRoomDB.h"
 #include "dlgMapper.h"
 
-#include "pre_guard.h"
 #include <QtEvents>
-#include "post_guard.h"
 
 #include <QPainter>
 #ifdef Q_OS_MACOS
@@ -50,7 +48,12 @@ GLWidget::GLWidget(TMap* pMap, Host* pHost, QWidget *parent)
 , mpMap(pMap)
 , mpHost(pHost)
 {
+    if (mpHost->mBgColor_2.alpha() < 255) {
+    setAttribute(Qt::WA_OpaquePaintEvent, false);
+    setAttribute(Qt::WA_AlwaysStackOnTop);
+    } else {
     setAttribute(Qt::WA_OpaquePaintEvent);
+    }
 }
 
 QSize GLWidget::minimumSizeHint() const
@@ -223,7 +226,7 @@ void GLWidget::slot_setCameraPositionZ(int angle)
 
 void GLWidget::initializeGL()
 {
-    const QColor color(QColorConstants::Black);
+    const QColor color(mpHost->mBgColor_2);
     glClearColor(color.redF(), color.greenF(), color.blueF(), color.alphaF());
     xRot = 1;
     yRot = 5;
@@ -251,6 +254,9 @@ void GLWidget::setViewCenter(int areaId, int xPos, int yPos, int zPos)
 
 void GLWidget::paintGL()
 {
+    // Start frame timing
+    mFrameTimer.start();
+
     if (!mpMap) {
         return;
     }
@@ -323,7 +329,8 @@ void GLWidget::paintGL()
     glClearDepth(1.0);
     glDepthFunc(GL_LESS);
 
-    glClearColor(0.0, 0.0, 0.0, 1.0);
+    const QColor color(mpHost->mBgColor_2);
+    glClearColor(color.redF(), color.greenF(), color.blueF(), color.alphaF());
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
     GLfloat diffuseLight[] = {0.507, 0.507, 0.507, 1.0};
@@ -2029,6 +2036,11 @@ void GLWidget::paintGL()
         zPlane += 1.0;
     }
     glFlush();
+
+    // End frame timing and store result
+    // Display instant frame time
+    qint64 frameTime = mFrameTimer.elapsed();
+    qDebug() << "[Legacy GLWidget] Frame time:" << frameTime << "ms";
 }
 
 void GLWidget::resizeGL(int w, int h)
@@ -2047,11 +2059,7 @@ void GLWidget::mousePressEvent(QMouseEvent* event)
         return;
     }
     if (event->buttons() & Qt::LeftButton) {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        auto eventPos = event->pos();
-#else
         auto eventPos = event->position().toPoint();
-#endif
         const int x = eventPos.x();
         const int y = height() - eventPos.y(); // the opengl origin is at bottom left
         GLuint buff[16] = {0};
@@ -2129,11 +2137,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent* event)
         return;
     }
     if (mPanMode) {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        auto eventPos = event->localPos();
-#else
         auto eventPos = event->position();
-#endif
         auto x = static_cast<float>(eventPos.x());
         auto y = static_cast<float>(height()) - static_cast<float>(eventPos.y()); // the opengl origin is at bottom left
         if ((mPanXStart - x) > 1.0f) {

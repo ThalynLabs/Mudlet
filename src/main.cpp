@@ -1,6 +1,6 @@
 /***************************************************************************
  *   Copyright (C) 2008-2013 by Heiko Koehn - KoehnHeiko@googlemail.com    *
- *   Copyright (C) 2013-2014, 2016-2021, 2023, 2024 by Stephen Lyons       *
+ *   Copyright (C) 2013-2014, 2016-2021, 2023-2026 by Stephen Lyons        *
  *                                            - slysven@virginmedia.com    *
  *   Copyright (C) 2014-2017 by Ahmed Charles - acharles@outlook.com       *
  *   Copyright (C) 2022 by Thiago Jung Bauermann - bauermann@kolabnow.com  *
@@ -25,13 +25,12 @@
 #include "HostManager.h"
 #include "mudlet.h"
 #include "MudletInstanceCoordinator.h"
-#include "pre_guard.h"
 #include <chrono>
 #include <QCommandLineParser>
 #include <QDir>
-#if defined(Q_OS_WIN32) && !defined(INCLUDE_UPDATER)
+#if defined(Q_OS_WINDOWS) && !defined(INCLUDE_UPDATER)
 #include <QMessageBox>
-#endif // defined(Q_OS_WIN32) && !defined(INCLUDE_UPDATER)
+#endif // defined(Q_OS_WINDOWS) && !defined(INCLUDE_UPDATER)
 #include <QCommandLineOption>
 #include <QPainter>
 #include <QPointer>
@@ -40,43 +39,29 @@
 #include <QSplashScreen>
 #include <QStringList>
 #include <QTranslator>
-#include "post_guard.h"
 #include "AltFocusMenuBarDisable.h"
 #include "TAccessibleConsole.h"
 #include "TAccessibleTextEdit.h"
-#include "Announcer.h"
 #include "FileOpenHandler.h"
+#include "SentryWrapper.h"
+
+#if defined(Q_OS_WINDOWS) && defined(INCLUDE_UPDATER)
+#include <windows.h>
+#include <QThread>
+#endif
 
 using namespace std::chrono_literals;
 
+extern void qInitResources_mudlet();
+extern void qInitResources_qm();
+extern void qInitResources_additional_splash_screens();
+extern void qInitResources_mudlet_fonts_common();
+extern void qInitResources_mudlet_fonts_posix();
+void        initializeQRCResources();
 
-#if defined(_MSC_VER) && defined(_DEBUG)
-// Enable leak detection for MSVC debug builds. _DEBUG is MSVC specific and
-// leak detection does not work when it is not defined.
-#include <Windows.h>
-#include <pcre.h>
-#endif // _MSC_VER && _DEBUG
-
-#if defined(Q_OS_WIN32)
+#if defined(Q_OS_WINDOWS) && defined(INCLUDE_UPDATER)
 bool runUpdate();
 #endif
-
-#if defined(_DEBUG) && defined(_MSC_VER)
-// Enable leak detection for MSVC debug builds.
-
-#define PCRE_CLIENT_TYPE (_CLIENT_BLOCK | ((('P' << 8) | 'C') << 16))
-
-static void* pcre_malloc_dbg(size_t size)
-{
-    return ::_malloc_dbg(size, PCRE_CLIENT_TYPE, __FILE__, __LINE__);
-}
-
-static void pcre_free_dbg(void* ptr)
-{
-    return ::_free_dbg(ptr, PCRE_CLIENT_TYPE);
-}
-
-#endif // _DEBUG && _MSC_VER
 
 #if defined(INCLUDE_FONTS)
 void copyFont(const QString& externalPathName, const QString& resourcePathName, const QString& fileName)
@@ -87,7 +72,7 @@ void copyFont(const QString& externalPathName, const QString& resourcePathName, 
     }
 }
 
-#if defined(Q_OS_LINUX)
+#if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
 void removeOldNoteColorEmojiFonts()
 {
     // PLACEMARKER: previous Noto Color Emoji font versions removal
@@ -103,15 +88,19 @@ void removeOldNoteColorEmojiFonts()
     // When adding a later version, append the path and version comment of the
     // replaced one comment to this area:
     // Tag: "v2018-04-24-pistol-update"
-    oldNotoFontDirectories << qsl("%1/notocoloremoji-unhinted-2018-04-24-pistol-update").arg(mudlet::getMudletPath(mudlet::mainFontsPath));
+    oldNotoFontDirectories << qsl("%1/notocoloremoji-unhinted-2018-04-24-pistol-update").arg(mudlet::getMudletPath(enums::mainFontsPath));
     // Release: "v2019-11-19-unicode12"
-    oldNotoFontDirectories << qsl("%1/noto-color-emoji-2019-11-19-unicode12").arg(mudlet::getMudletPath(mudlet::mainFontsPath));
+    oldNotoFontDirectories << qsl("%1/noto-color-emoji-2019-11-19-unicode12").arg(mudlet::getMudletPath(enums::mainFontsPath));
     // Release: "Noto Emoji v2.0238"
-    oldNotoFontDirectories << qsl("%1/noto-color-emoji-2021-07-15-v2.028").arg(mudlet::getMudletPath(mudlet::mainFontsPath));
+    oldNotoFontDirectories << qsl("%1/noto-color-emoji-2021-07-15-v2.028").arg(mudlet::getMudletPath(enums::mainFontsPath));
     // Release: "Unicode 14.0"
-    oldNotoFontDirectories << qsl("%1/noto-color-emoji-2021-11-01-v2.034").arg(mudlet::getMudletPath(mudlet::mainFontsPath));
+    oldNotoFontDirectories << qsl("%1/noto-color-emoji-2021-11-01-v2.034").arg(mudlet::getMudletPath(enums::mainFontsPath));
     // Release: "Unicode 15.0"
-    oldNotoFontDirectories << qsl("%1/noto-color-emoji-2022-09-16-v2.038").arg(mudlet::getMudletPath(mudlet::mainFontsPath));
+    oldNotoFontDirectories << qsl("%1/noto-color-emoji-2022-09-16-v2.038").arg(mudlet::getMudletPath(enums::mainFontsPath));
+    // Release: "Unicode 15.1, take 3"
+    oldNotoFontDirectories << qsl("%1/noto-color-emoji-2023-11-30-v2.042").arg(mudlet::getMudletPath(enums::mainFontsPath));
+    // Release: "Unicode 16.0"
+    oldNotoFontDirectories << qsl("%1/noto-color-emoji-2024-10-03-v2.047").arg(mudlet::getMudletPath(enums::mainFontsPath));
 
     QListIterator<QString> itOldNotoFontDirectory(oldNotoFontDirectories);
     while (itOldNotoFontDirectory.hasNext()) {
@@ -140,7 +129,7 @@ QTranslator* loadTranslationsForCommandLine()
     }
     // We only need the Mudlet translations for the Command Line texts, no need
     // for any Qt ones:
-    QTranslator* pMudletTranslator = new QTranslator;
+    QTranslator* pMudletTranslator = new QTranslator(qApp);
     // If we allow the translations to be outside of the resource file inside
     // the application executable then this will have to be revised to handle
     // it:
@@ -152,47 +141,66 @@ QTranslator* loadTranslationsForCommandLine()
     return pMudletTranslator;
 }
 
+#ifdef Q_OS_WINDOWS
+void msys2QtMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg)
+{
+    Q_UNUSED(context)
+    switch (type) {
+    case QtDebugMsg:
+    case QtInfoMsg:
+        std::cout << msg.toUtf8().constData() << std::endl;
+        break;
+    case QtWarningMsg:
+    case QtCriticalMsg:
+    case QtFatalMsg:
+        std::cerr << msg.toUtf8().constData() << std::endl;
+    }
+}
+#endif
+
 int main(int argc, char* argv[])
 {
-    // print stdout to console if Mudlet is started in a console in Windows
-    // credit to https://stackoverflow.com/a/41701133 for the workaround
-#ifdef Q_OS_WIN32
-    if (AttachConsole(ATTACH_PARENT_PROCESS)) {
-        freopen("CONOUT$", "w", stdout);
-        freopen("CONOUT$", "w", stderr);
+    initializeQRCResources();
+
+#ifdef Q_OS_WINDOWS
+    // Handle Squirrel installer commands - must exit quickly for install/update/uninstall
+    // https://github.com/clowd/Clowd.Squirrel/blob/master/docs/using/custom-squirrel-events-non-cs.md
+    for (int i = 1; i < argc; ++i) {
+        const QString arg = QString::fromLocal8Bit(argv[i]);
+        if (arg.startsWith(qsl("--squirrel-")) && arg != qsl("--squirrel-firstrun")) {
+            // Use argv[0] directly since QCoreApplication isn't instantiated yet
+            const QFileInfo appInfo(QString::fromLocal8Bit(argv[0]));
+            const QString updateExe = QDir(appInfo.absolutePath()).filePath(qsl("../Update.exe"));
+            const QString exeName = appInfo.fileName();
+
+            if (arg.startsWith(qsl("--squirrel-install")) || arg.startsWith(qsl("--squirrel-updated"))) {
+                QProcess::execute(updateExe, {qsl("--createShortcut"), exeName, qsl("--shortcut-locations"), qsl("StartMenu")});
+            } else if (arg.startsWith(qsl("--squirrel-uninstall"))) {
+                QProcess::execute(updateExe, {qsl("--removeShortcut"), exeName});
+            }
+            return 0;
+        }
     }
 #endif
-#if defined(_MSC_VER) && defined(_DEBUG)
-    // Enable leak detection for MSVC debug builds.
-    {
-        // Check for a debugger and prompt if one is not attached.
-        while (!IsDebuggerPresent()
-               && IDYES == MessageBox(0,
-                                      "You are starting debug mudlet without a debugger attached. If you wish to attach one and verify that it worked, click yes. To continue without a debugger, "
-                                      "click no.",
-                                      "Mudlet Debug",
-                                      MB_ICONINFORMATION | MB_YESNO | MB_DEFBUTTON2)) {
-            ;
+
+    #ifdef WITH_SENTRY
+        initSentry();
+        auto sentryClose = qScopeGuard([] { sentry_close(); });
+    #endif
+
+#ifdef Q_OS_WINDOWS
+    if (AttachConsole(ATTACH_PARENT_PROCESS)) {
+        if (qgetenv("MSYSTEM").isNull()) {
+            // print stdout to console if Mudlet is started in a console in Windows
+            // credit to https://stackoverflow.com/a/41701133 for the workaround
+            freopen("CONOUT$", "w", stdout);
+            freopen("CONOUT$", "w", stderr);
+        } else {
+            // simply print qt logs into stdout and stderr if it's MSYS2
+            qInstallMessageHandler(msys2QtMessageHandler);
         }
-
-        // _CRTDBG_ALLOC_MEM_DF: Enable heap debugging.
-        // _CRTDBG_LEAK_CHECK_DF: Check for leaks at program exit.
-        _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-
-        // Create a log file for writing leaks.
-        HANDLE hLogFile = CreateFile("stderr.txt", GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-        _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
-        _CrtSetReportFile(_CRT_WARN, hLogFile);
-
-        // Set this to break on the allocation number shown in the debug output above.
-        // _crtBreakAlloc = 0;
-
-        pcre_malloc = pcre_malloc_dbg;
-        pcre_free = pcre_free_dbg;
-        pcre_stack_malloc = pcre_malloc_dbg;
-        pcre_stack_free = pcre_free_dbg;
     }
-#endif // _MSC_VER && _DEBUG
+#endif
 
 #if defined(Q_OS_MACOS)
     // Workaround for horrible mac rendering issues once the mapper widget
@@ -213,19 +221,7 @@ int main(int argc, char* argv[])
     QAccessible::installFactory(TAccessibleConsole::consoleFactory);
     QAccessible::installFactory(TAccessibleTextEdit::textEditFactory);
 
-#if defined(Q_OS_LINUX)
-    QAccessible::installFactory(Announcer::accessibleFactory);
-#endif
-
-#if defined(Q_OS_MACOS) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    // Apple Color Emoji Fallback
-    QFont defaultFont;
-    defaultFont.setFamily(defaultFont.defaultFamily());
-    QFont::insertSubstitution(defaultFont.family(), qsl("Apple Color Emoji"));
-    app->setFont(defaultFont);
-#endif
-
-#if defined(Q_OS_WIN32) && defined(INCLUDE_UPDATER)
+#if defined(Q_OS_WINDOWS) && defined(INCLUDE_UPDATER)
     auto abortLaunch = runUpdate();
     if (abortLaunch) {
         return 0;
@@ -238,7 +234,9 @@ int main(int argc, char* argv[])
     app->setOrganizationName(qsl("Mudlet"));
 
     QFile gitShaFile(":/app-build.txt");
-    gitShaFile.open(QIODevice::ReadOnly | QIODevice::Text);
+    if (!gitShaFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "main: failed to open app-build.txt for reading:" << gitShaFile.errorString();
+    }
     const QString appBuild = QString::fromUtf8(gitShaFile.readAll()).trimmed();
 
     const bool releaseVersion = appBuild.isEmpty();
@@ -279,6 +277,9 @@ int main(int argc, char* argv[])
     const QCommandLineOption showSplashscreen(QStringList() << qsl("s") << qsl("splashscreen"), qsl("Show the splash screen when starting"));
     parser.addOption(showSplashscreen);
 
+    const QCommandLineOption startFullscreen(QStringList() << qsl("f") << qsl("fullscreen"), qsl("Start Mudlet in fullscreen mode"));
+    parser.addOption(startFullscreen);
+
     const QCommandLineOption mirrorToStdout(QStringList() << qsl("m") << qsl("mirror"), qsl("Mirror output of all consoles to STDOUT"));
     parser.addOption(mirrorToStdout);
 
@@ -293,6 +294,9 @@ int main(int argc, char* argv[])
 
     const QCommandLineOption steamMode(QStringList() << qsl("steammode"), qsl("Adjusts Mudlet settings to match Steam's requirements."));
     parser.addOption(steamMode);
+
+    const QCommandLineOption runUndoTests(QStringList() << qsl("run-undo-tests"), qsl("Run internal undo/redo tests (requires 'Mudlet self-test' profile) and exit."));
+    parser.addOption(runUndoTests);
 
     parser.addPositionalArgument("package", "Path to .mpackage file");
 
@@ -328,6 +332,7 @@ int main(int argc, char* argv[])
                                                                   "                                    repeated."));
         texts << appendLF.arg(QCoreApplication::translate("main", "       -o, --only=<predefined>      make Mudlet only show the specific\n"
                                                                   "                                    predefined game, may be repeated."));
+        texts << appendLF.arg(QCoreApplication::translate("main", "       -f, --fullscreen             start Mudlet in fullscreen mode."));
         texts << appendLF.arg(QCoreApplication::translate("main", "       --steammode                  adjusts Mudlet settings to match\n"
                                                                   "                                    Steam's requirements."));
         texts << appendLF.arg(QCoreApplication::translate("main", "There are other inherited options that arise from the Qt Libraries which are\n"
@@ -393,7 +398,7 @@ int main(int argc, char* argv[])
         texts << appendLF.arg(QCoreApplication::translate("main", "Qt libraries %1 (compilation) %2 (runtime)",
              "%1 and %2 are version numbers").arg(QLatin1String(QT_VERSION_STR), qVersion()));
         // PLACEMARKER: Date-stamp needing annual update
-        texts << appendLF.arg(QCoreApplication::translate("main", "Copyright © 2008-2024  Mudlet developers"));
+        texts << appendLF.arg(QCoreApplication::translate("main", "Copyright © 2008-2026  Mudlet developers"));
         texts << appendLF.arg(QCoreApplication::translate("main", "Licence GPLv2+: GNU GPL version 2 or later - http://gnu.org/licenses/gpl.html"));
         texts << appendLF.arg(QCoreApplication::translate("main", "This is free software: you are free to change and redistribute it.\n"
                                                                   "There is NO WARRANTY, to the extent permitted by law."));
@@ -425,9 +430,8 @@ int main(int argc, char* argv[])
             const bool successful = instanceCoordinator->installPackagesRemotely();
             if (successful) {
                 return 0;
-            } else {
-                return 1;
             }
+            return 1;
         }
     }
 
@@ -442,14 +446,16 @@ int main(int argc, char* argv[])
 
     // Needed for Qt6 on Windows (at least) - and does not work in mudlet class c'tor
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
-#if defined(Q_OS_WIN32)
+#if defined(Q_OS_WINDOWS)
     if (qEnvironmentVariableIsEmpty("QT_MEDIA_BACKEND")) {
         // This variable is not set - and later versions of Qt 6.x need it for
-        // sound to work:
-        if (qputenv("QT_MEDIA_BACKEND", QByteArray("windows"))) {
-            qDebug().noquote() << "main(...) INFO - setting QT_MEDIA_BACKEND enviromental variable to: \"windows\".";
+        // sound to work - the alternative to "ffmpeg" is "windows" but that
+        // is a less capable backend (it doesn't support ".ogg" or ".opus"
+        // audio files):
+        if (qputenv("QT_MEDIA_BACKEND", QByteArray("ffmpeg"))) {
+            qDebug().noquote() << "main(...) INFO - setting QT_MEDIA_BACKEND enviromental variable to: \"ffmpeg\".";
         } else {
-            qWarning().noquote() << "main(...) WARNING - failed to set QT_MEDIA_BACKEND enviromental variable to: \"windows\", sound may not work.";
+            qWarning().noquote() << "main(...) WARNING - failed to set QT_MEDIA_BACKEND enviromental variable to: \"ffmpeg\", sound may not work.";
         }
     } else {
         qDebug().noquote().nospace() << "main(...) INFO - QT_MEDIA_BACKEND enviromental variable is set to: \"" << qgetenv("QT_MEDIA_BACKEND") << "\".";
@@ -458,22 +464,16 @@ int main(int argc, char* argv[])
 #endif
 
     QStringList cliProfiles = parser.values(profileToOpen);
-    qDebug() << "Got CLI profiles:" << cliProfiles;
-    
+
     if (cliProfiles.isEmpty()) {
-        qDebug() << "No CLI profiles specified, checking environment variable";
         const QString envProfiles = QString::fromLocal8Bit(qgetenv("MUDLET_PROFILES"));
-        qDebug() << "Environment MUDLET_PROFILES value:" << envProfiles;
         if (!envProfiles.isEmpty()) {
-            qDebug() << "Found environment profiles, splitting on ':'";
             // : is not an allowed character in a profile name, so we can use it to split the list
             cliProfiles = envProfiles.split(':');
-            qDebug() << "Final profile list from environment:" << cliProfiles;
         }
     }
 
     const QStringList onlyProfiles = parser.values(onlyPredefinedProfileToShow);
-    
     const bool showSplash = parser.isSet(showSplashscreen);
     QImage splashImage = mudlet::getSplashScreen(releaseVersion, publicTestVersion);
 
@@ -484,7 +484,8 @@ int main(int argc, char* argv[])
 
         bool isWithinSpace = false;
         while (!isWithinSpace) {
-            const QFont font("Bitstream Vera Serif", fontSize, QFont::Bold | QFont::Serif | QFont::PreferMatch | QFont::PreferAntialias);
+            QFont font(qsl("Bitstream Vera Serif"), fontSize, 75);
+            font.setStyleHint(QFont::Serif, QFont::StyleStrategy(QFont::PreferMatch | QFont::PreferAntialias));
             QTextLayout versionTextLayout(sourceVersionText, font, painter.device());
             versionTextLayout.beginLayout();
             // Start work in this text item
@@ -518,8 +519,9 @@ int main(int argc, char* argv[])
 
         // Repeat for other text, but we know it will fit at given size
         // PLACEMARKER: Date-stamp needing annual update
-        const QString sourceCopyrightText = qsl("©️ Mudlet makers 2008-2024");
-        const QFont font(qsl("Bitstream Vera Serif"), 16, QFont::Bold | QFont::Serif | QFont::PreferMatch | QFont::PreferAntialias);
+        const QString sourceCopyrightText = qsl("©️ Mudlet makers 2008-2026");
+        QFont font(qsl("Bitstream Vera Serif"), 16, 75);
+        font.setStyleHint(QFont::Serif, QFont::StyleStrategy(QFont::PreferMatch | QFont::PreferAntialias));
         QTextLayout copyrightTextLayout(sourceCopyrightText, font, painter.device());
         copyrightTextLayout.beginLayout();
         QTextLine copyrightTextline = copyrightTextLayout.createLine();
@@ -532,21 +534,18 @@ int main(int argc, char* argv[])
         copyrightTextLayout.draw(&painter, QPointF(0, 0));
     }
     const QPixmap pixmap = QPixmap::fromImage(splashImage);
-#if (QT_VERSION) >= (QT_VERSION_CHECK(5, 15, 0))
     // Specifying the screen here seems to help to put the splash screen on the
     // same monitor that the main application window will be put upon on first
     // run, in some situations the two can otherwise get to be different which
     // is misleading unhelpful to a new user...!
     QSplashScreen splash(qApp->primaryScreen(), pixmap);
-#else
-    QSplashScreen splash(pixmap);
-#endif
+
     if (showSplash) {
         splash.show();
     }
     app->processEvents();
 
-    const QString homeDirectory = mudlet::getMudletPath(mudlet::mainPath);
+    const QString homeDirectory = mudlet::getMudletPath(enums::mainPath);
     const QDir dir;
     bool first_launch = false;
     if (!dir.exists(homeDirectory)) {
@@ -555,20 +554,20 @@ int main(int argc, char* argv[])
     }
 
 #if defined(INCLUDE_FONTS)
-    const QString bitstreamVeraFontDirectory(qsl("%1/ttf-bitstream-vera-1.10").arg(mudlet::getMudletPath(mudlet::mainFontsPath)));
+    const QString bitstreamVeraFontDirectory(qsl("%1/ttf-bitstream-vera-1.10").arg(mudlet::getMudletPath(enums::mainFontsPath)));
     if (!dir.exists(bitstreamVeraFontDirectory)) {
         dir.mkpath(bitstreamVeraFontDirectory);
     }
-    const QString ubuntuFontDirectory(qsl("%1/ubuntu-font-family-0.83").arg(mudlet::getMudletPath(mudlet::mainFontsPath)));
+    const QString ubuntuFontDirectory(qsl("%1/ubuntu-font-family-0.83").arg(mudlet::getMudletPath(enums::mainFontsPath)));
     if (!dir.exists(ubuntuFontDirectory)) {
         dir.mkpath(ubuntuFontDirectory);
     }
-#if defined(Q_OS_LINUX)
-    // Only needed/works on Linux to provide color emojis:
+#if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
+    // Only needed/works on GNU/Linux and FreeBSD to provide color emojis:
     removeOldNoteColorEmojiFonts();
     // PLACEMARKER: current Noto Color Emoji font directory specification:
-    // Release: "Unicode 15.1, take 3"
-    const QString notoFontDirectory{qsl("%1/noto-color-emoji-2023-11-30-v2.042").arg(mudlet::getMudletPath(mudlet::mainFontsPath))};
+    // Release: "Unicode 17.0 update mk1"
+    const QString notoFontDirectory{qsl("%1/noto-color-emoji-2025-09-15-v2.051").arg(mudlet::getMudletPath(enums::mainFontsPath))};
     if (!dir.exists(notoFontDirectory)) {
         dir.mkpath(notoFontDirectory);
     }
@@ -622,15 +621,15 @@ int main(int argc, char* argv[])
     copyFont(ubuntuFontDirectory, QLatin1String("fonts/ubuntu-font-family-0.83"), QLatin1String("UbuntuMono-R.ttf"));
     copyFont(ubuntuFontDirectory, QLatin1String("fonts/ubuntu-font-family-0.83"), QLatin1String("UbuntuMono-RI.ttf"));
 
-#if defined(Q_OS_LINUX)
+#if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
     // PLACEMARKER: current Noto Color Emoji font version file extraction
-    copyFont(notoFontDirectory, qsl("fonts/noto-color-emoji-2023-11-30-v2.042"), qsl("NotoColorEmoji.ttf"));
-    copyFont(notoFontDirectory, qsl("fonts/noto-color-emoji-2023-11-30-v2.042"), qsl("LICENSE"));
-#endif // defined(Q_OS_LINUX)
+    copyFont(notoFontDirectory, qsl("fonts/noto-color-emoji-2025-09-15-v2.051"), qsl("NotoColorEmoji.ttf"));
+    copyFont(notoFontDirectory, qsl("fonts/noto-color-emoji-2025-09-15-v2.051"), qsl("LICENSE"));
+#endif // defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
 #endif // defined(INCLUDE_FONTS)
 
     const QString homeLink = qsl("%1/mudlet-data").arg(QDir::homePath());
-#if defined(Q_OS_WIN32)
+#if defined(Q_OS_WINDOWS)
     /*
      * From Qt Documentation for:
      * bool QFile::link(const QString &linkName)
@@ -700,14 +699,57 @@ int main(int argc, char* argv[])
 
     mudlet::self()->smMirrorToStdOut = parser.isSet(mirrorToStdout);
     mudlet::smSteamMode = parser.isSet(steamMode);
+    const bool shouldRunUndoTests = parser.isSet(runUndoTests);
     if (!onlyProfiles.isEmpty()) {
         mudlet::self()->onlyShowProfiles(onlyProfiles);
     }
-    mudlet::self()->show();
 
-    QTimer::singleShot(0, qApp, [cliProfiles]() {
+    mudlet::self()->show();
+    if (parser.isSet(startFullscreen)) {
+        QTimer::singleShot(0, [=]() {
+            mudlet::self()->showFullScreen();
+        });
+    }
+
+    QTimer::singleShot(0, qApp, [cliProfiles, shouldRunUndoTests]() {
         // ensure Mudlet singleton is initialised before calling profile loading
         mudlet::self()->startAutoLogin(cliProfiles);
+
+        // If --run-undo-tests was specified, run tests after profile loads
+        if (shouldRunUndoTests) {
+            QTimer::singleShot(3000, qApp, []() {
+                // Find the first loaded host and run tests on its trigger editor
+                Host* firstHost = nullptr;
+                for (auto host : mudlet::self()->getHostManager()) {
+                    if (host) {
+                        firstHost = host.data();
+                        break;
+                    }
+                }
+
+                if (firstHost && firstHost->mpEditorDialog) {
+                    // Verify we're running in the test profile
+                    if (firstHost->getName() != qsl("Mudlet self-test")) {
+                        qDebug() << "ERROR: Undo/Redo tests can only be run in the 'Mudlet self-test' profile";
+                        qDebug() << "Current profile:" << firstHost->getName();
+                        QCoreApplication::exit(1);
+                        return;
+                    }
+
+                    qDebug() << "Running undo/redo tests via --run-undo-tests flag";
+                    firstHost->mpEditorDialog->slot_runUndoRedoTests();
+
+                    // Exit after tests complete
+                    QTimer::singleShot(1000, qApp, []() {
+                        qDebug() << "Tests complete, exiting...";
+                        QCoreApplication::exit(0);
+                    });
+                } else {
+                    qDebug() << "ERROR: No profile loaded or editor not available for undo tests";
+                    QCoreApplication::exit(1);
+                }
+            });
+        }
     });
 
 #if defined(INCLUDE_UPDATER)
@@ -734,31 +776,146 @@ int main(int argc, char* argv[])
     return app->exec();
 }
 
-#if defined(Q_OS_WIN32) && defined(INCLUDE_UPDATER)
-// small detour for Windows - check if there's an updated Mudlet
+#if defined(Q_OS_WINDOWS) && defined(INCLUDE_UPDATER)
+// Helper function to check if a file is accessible (not locked by another process)
+// Returns true if file can be accessed, false if locked
+static bool isFileAccessible(const QString& filePath)
+{
+    // Try opening file with exclusive write access
+    HANDLE hFile = CreateFileW(
+        reinterpret_cast<const wchar_t*>(filePath.utf16()),
+        GENERIC_WRITE,
+        0, // No sharing - exclusive access
+        nullptr,
+        OPEN_EXISTING,
+        FILE_ATTRIBUTE_NORMAL,
+        nullptr);
+
+    if (hFile == INVALID_HANDLE_VALUE) {
+        DWORD error = GetLastError();
+        if (error == ERROR_SHARING_VIOLATION || error == ERROR_LOCK_VIOLATION) {
+            qWarning() << "File is locked:" << filePath << "- error code:" << error;
+            return false; // File is locked
+        }
+        // File doesn't exist or other error - consider it accessible
+        return true;
+    }
+
+    CloseHandle(hFile);
+    return true;
+}
+
+// Helper function to try a file operation with retry logic
+// Returns true if operation succeeded, false if all retries failed
+static bool tryFileOperationWithRetry(const std::function<bool()>& operation, const QString& operationName, int maxAttempts = 3)
+{
+    const std::chrono::milliseconds retryDelays[] = {5000ms, 15000ms, 30000ms};
+
+    for (int attempt = 0; attempt < maxAttempts; ++attempt) {
+        if (attempt > 0) {
+            qWarning() << operationName << "- Attempt" << (attempt + 1) << "of" << maxAttempts
+                      << "after" << retryDelays[attempt - 1].count() << "ms delay";
+            QThread::msleep(retryDelays[attempt - 1].count());
+        }
+
+        if (operation()) {
+            if (attempt > 0) {
+                qWarning() << operationName << "- Succeeded on attempt" << (attempt + 1);
+            }
+            return true;
+        }
+
+        qWarning() << operationName << "- Failed on attempt" << (attempt + 1);
+    }
+
+    qWarning() << operationName << "- All" << maxAttempts << "attempts failed";
+    return false;
+}
+
+// Small detour for Windows - check if there's an updated Mudlet
 // available to install. If there is, quit and run it - Squirrel
-// will update Mudlet and then launch it once it's done
-// return true if we should abort the current launch since the updater got started
+// will update Mudlet and then launch it once it's done.
+//
+// Return true if we should abort the current launch since the updater got started
 bool runUpdate()
 {
-    QFileInfo updatedInstaller(qsl("%1/new-mudlet-setup.exe").arg(QCoreApplication::applicationDirPath()));
-    QFileInfo seenUpdatedInstaller(qsl("%1/new-mudlet-setup-seen.exe").arg(QCoreApplication::applicationDirPath()));
+    QFileInfo updatedInstaller(qsl("%1/new-mudlet-setup.exe").arg(QStandardPaths::writableLocation(QStandardPaths::TempLocation)));
+    // Keep the installer in temp directory - placing it in the app directory causes the Squirrel
+    // installer to delete itself while running, as it updates/replaces the application directory
+    QFileInfo seenUpdatedInstaller(qsl("%1/new-mudlet-setup-seen.exe").arg(QStandardPaths::writableLocation(QStandardPaths::TempLocation)));
     QDir updateDir;
+
     if (updatedInstaller.exists() && updatedInstaller.isFile() && updatedInstaller.isExecutable()) {
-        if (seenUpdatedInstaller.exists() && !updateDir.remove(seenUpdatedInstaller.absoluteFilePath())) {
-            qWarning() << "Couldn't delete previous installer: " << seenUpdatedInstaller;
+        // Verify the new installer is accessible before trying to move it
+        if (!isFileAccessible(updatedInstaller.absoluteFilePath())) {
+            qWarning() << "New installer exists but is locked, cannot proceed with update:" << updatedInstaller.absoluteFilePath();
+            qWarning() << "Update will be attempted on next Mudlet restart";
+            return false;
         }
 
-        if (!updateDir.rename(updatedInstaller.absoluteFilePath(), seenUpdatedInstaller.absoluteFilePath())) {
-            qWarning() << "Failed to prep installer: couldn't move" << updatedInstaller.absoluteFilePath() << "to" << seenUpdatedInstaller.absoluteFilePath();
+        // Try to remove old installer if it exists
+        if (seenUpdatedInstaller.exists()) {
+            bool removed = tryFileOperationWithRetry([&]() {
+                return isFileAccessible(seenUpdatedInstaller.absoluteFilePath()) &&
+                       updateDir.remove(seenUpdatedInstaller.absoluteFilePath());
+            }, qsl("Delete previous installer"));
+
+            if (!removed) {
+                qWarning() << "Couldn't delete previous installer after retries:" << seenUpdatedInstaller;
+                qWarning() << "Update aborted to prevent potential issues";
+                return false;
+            }
         }
 
+        // Try to move the installer with retry logic
+        bool moved = tryFileOperationWithRetry([&]() {
+            return isFileAccessible(updatedInstaller.absoluteFilePath()) &&
+                   updateDir.rename(updatedInstaller.absoluteFilePath(), seenUpdatedInstaller.absoluteFilePath());
+        }, qsl("Rename installer to mark as ready"));
+
+        if (!moved) {
+            qWarning() << "Failed to prep installer: couldn't move" << updatedInstaller.absoluteFilePath()
+                      << "to" << seenUpdatedInstaller.absoluteFilePath() << "after all retries";
+            qWarning() << "Update will be attempted on next Mudlet restart";
+            return false;
+        }
+
+        // Verify the installer is still accessible before launching
+        if (!isFileAccessible(seenUpdatedInstaller.absoluteFilePath())) {
+            qWarning() << "Installer was moved but is now locked, cannot launch:" << seenUpdatedInstaller.absoluteFilePath();
+            qWarning() << "Update will be attempted on next Mudlet restart";
+            return false;
+        }
+
+        qWarning() << "Launching installer:" << seenUpdatedInstaller.absoluteFilePath();
         QProcess::startDetached(seenUpdatedInstaller.absoluteFilePath(), QStringList());
         return true;
-    } else if (seenUpdatedInstaller.exists() && !updateDir.remove(seenUpdatedInstaller.absoluteFilePath())) {
+    } else if (seenUpdatedInstaller.exists()) {
         // no new updater and only the old one? Then we're restarting from an update: delete the old installer
-        qWarning() << "Couldn't delete old uninstaller: " << seenUpdatedInstaller;
+        if (!updateDir.remove(seenUpdatedInstaller.absoluteFilePath())) {
+            qWarning() << "Couldn't delete old installer:" << seenUpdatedInstaller;
+        } else {
+            qDebug() << "Successfully cleaned up old installer after update";
+        }
     }
     return false;
 }
+#endif // defined(Q_OS_WINDOWS) && defined(INCLUDE_UPDATER)
+
+// Force usage of Qt Resource Collections (QRC) used by Mudlet.
+// Ensures QRC symbols from the static library reach the executable.
+// without this, the linker might discard them and the QRC would not be accessible at runtime.
+void initializeQRCResources()
+{
+#ifdef INCLUDE_VARIABLE_SPLASH_SCREEN
+    qInitResources_additional_splash_screens();
 #endif
+#ifdef INCLUDE_FONTS
+    qInitResources_mudlet_fonts_common();
+#if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
+    qInitResources_mudlet_fonts_posix();
+#endif
+#endif
+    qInitResources_mudlet();
+    qInitResources_qm();
+}

@@ -1,6 +1,6 @@
 /***************************************************************************
  *   Copyright (C) 2008-2009 by Heiko Koehn - KoehnHeiko@googlemail.com    *
- *   Copyright (C) 2013-2014, 2017-2019, 2022, 2024 by Stephen Lyons       *
+ *   Copyright (C) 2013-2014, 2017-2019, 2022, 2024-2026 by Stephen Lyons  *
  *                                               - slysven@virginmedia.com *
  *   Copyright (C) 2014 by Ahmed Charles - acharles@outlook.com            *
  *                                                                         *
@@ -28,13 +28,11 @@
 
 #include "mudlet.h"
 
-#include "pre_guard.h"
 #include <QPainter>
 #include <QTextLayout>
 #include <QDebug>
-#include "post_guard.h"
 
-#if defined(Q_OS_WIN32)
+#if defined(Q_OS_WINDOWS)
 #include <wow64apiset.h>
 #endif
 
@@ -53,7 +51,8 @@ dlgAboutDialog::dlgAboutDialog(QWidget* parent)
 
         bool isWithinSpace = false;
         while (!isWithinSpace) {
-            QFont font(qsl("Bitstream Vera Serif"), fontSize, QFont::Bold | QFont::Serif | QFont::PreferMatch | QFont::PreferAntialias);
+            QFont font(qsl("Bitstream Vera Serif"), fontSize, 75);
+            font.setStyleHint(QFont::Serif, QFont::StyleStrategy(QFont::PreferMatch | QFont::PreferAntialias));
             QTextLayout versionTextLayout(sourceVersionText, font, painter.device());
             versionTextLayout.beginLayout();
             // Start work in this text item
@@ -87,8 +86,9 @@ dlgAboutDialog::dlgAboutDialog(QWidget* parent)
 
         // Repeat for other text, but we know it will fit at given size
         // PLACEMARKER: Date-stamp needing annual update
-        QString sourceCopyrightText = qsl("©️ Mudlet makers 2008-2024");
-        QFont font(qsl("Bitstream Vera Serif"), 16, QFont::Bold | QFont::Serif | QFont::PreferMatch | QFont::PreferAntialias);
+        QString sourceCopyrightText = qsl("©️ Mudlet makers 2008-2026");
+        QFont font(qsl("Bitstream Vera Serif"), 16, 75);
+        font.setStyleHint(QFont::Serif, QFont::StyleStrategy(QFont::PreferMatch | QFont::PreferAntialias));
         QTextLayout copyrightTextLayout(sourceCopyrightText, font, painter.device());
         copyrightTextLayout.beginLayout();
         QTextLine copyrightTextline = copyrightTextLayout.createLine();
@@ -851,9 +851,9 @@ void dlgAboutDialog::setThirdPartyTab(const QString& htmlHead) const
     QString luaSql_Sqlite3Header(tr("<h2><u>LuaSql-Sqlite3 - Database connectivity for the Lua programming language (Sqlite3 component).</u></h2>"
                                     "<h3>Copyright © 2003-2019, The Kepler Project</h3>"));
 
-    QString lrexlib_pcreHeader(tr("<h2><u>Lrexlib-pcre -  Regular expression library binding (PCRE flavour).</u></h2>"
-                                  "<h3>Copyright © Reuben Thomas 2000-2020<br>"
-                                  "Copyright © Shmuel Zeigerman 2004-2020 </h3>"));
+    QString lrexlib_pcre2Header(tr("<h2><u>Lrexlib-pcre2 -  Regular expression library binding (PCRE2 flavour).</u></h2>"
+                                   "<h3>Copyright © Reuben Thomas 2000-2020<br>"
+                                   "Copyright © Shmuel Zeigerman 2004-2020 </h3>"));
 
 #if defined(Q_OS_MACOS) || defined(DEBUG_SHOWALL)
     QString luaZipHeader(tr("<h2><u>LuaZip - Reading files inside zip files</u></h2>"
@@ -924,6 +924,12 @@ void dlgAboutDialog::setThirdPartyTab(const QString& htmlHead) const
                                     "<a href=\"https://gist.github.com/Egor-Skriptunoff/2458547aa3b9210a8b5f686ac08ecbf0\">Github GIST</a></h2>"
                                     "<h3>Copyright © 2019 Egor-Skriptunoff</h3>"));
 
+#if defined(WITH_SENTRY) || defined(DEBUG_SHOWALL)
+    QString SentryHeader(tr("<h2><u>Sentry Native - Crash reporting SDK</u></h2>"
+                            "<h3>Copyright © 2019 Sentry (https://sentry.io) and individual contributors.<br>"
+                            "All rights reserved.</h3>"));
+#endif
+
     // Now start to assemble the fragments above:
     QStringList license_3rdParty_texts;
     license_3rdParty_texts.append(qsl("<html>%1<body>%2<hr>")
@@ -944,7 +950,7 @@ void dlgAboutDialog::setThirdPartyTab(const QString& htmlHead) const
                                                luaYajlHeader,                  //  8 - lua_yajl header - translatable
                                                luaUTF8Header,                  //  9 - luautf8 header - translatable
                                                luaSql_Sqlite3Header,           // 10 - luaSql_Sqlite3 header - translatable
-                                               lrexlib_pcreHeader,             // 11 - lrexlib_pcre header - translatable
+                                               lrexlib_pcre2Header,            // 11 - lrexlib_pcre2 header - translatable
                                                MIT_Body));                     // 12 - six copies of the body MIT for all of the above - not translatable
 
 #if defined(Q_OS_MACOS) || defined(DEBUG_SHOWALL)
@@ -1024,6 +1030,20 @@ void dlgAboutDialog::setThirdPartyTab(const QString& htmlHead) const
                                   .arg(Utf8_filenamesHeader,                   // 41 - utf8_filename header - translatable
                                        MIT_Body));                             // 42 - utf8_filename body MIT - not translatable
 
+#if defined(WITH_SENTRY) || defined(DEBUG_SHOWALL)
+    license_3rdParty_texts.append(qsl("<hr>%1%2")
+                                  .arg(SentryHeader,                           // Sentry header - translatable
+                                       MIT_Body));                             // Sentry body MIT - not translatable
+#endif
+
+    QString swordModelHeader(tr("<h2><u>Sword 3D Model</u></h2>"
+                               "<h3>Model obtained from <a href=\"https://sketchfab.com/3d-models/sword-07463a2658e04d6ab8a42b5639a35d63\">Sketchfab</a><br>"
+                               "Author: <a href=\"https://sketchfab.com/minghau\">minghauLoh</a><br>"
+                               "Licensed under <a href=\"https://creativecommons.org/licenses/by/4.0/\">CC BY 4.0</a></h3>"));
+
+    license_3rdParty_texts.append(qsl("<hr>%43")
+                                  .arg(swordModelHeader));                      // 43 - sword model attribution - translatable
+
     license_3rdParty_texts.append(qsl("</body></html>"));
 
     textBrowser_license_3rdparty->setHtml(license_3rdParty_texts.join(QString()));
@@ -1101,7 +1121,7 @@ void dlgAboutDialog::setSupportersTab(const QString& htmlHead)
 
 QString dlgAboutDialog::createBuildInfo() const
 {
-#if defined(Q_OS_WIN32)
+#if defined(Q_OS_WINDOWS)
     // The build environment is for Windows one - which could be run
     // native on a 32-bit or 64-bit CPU or inside the WOW64 sub-system on a
     // 64-bit one:
