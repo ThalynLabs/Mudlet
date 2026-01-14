@@ -29,7 +29,6 @@
 #include "TDebug.h"
 #include "TDockWidget.h"
 #include "TEvent.h"
-#include "THyperlinkVisibilityManager.h"
 #include "TLabel.h"
 #include "TMap.h"
 #include "TRoomDB.h"
@@ -38,6 +37,8 @@
 #include "mudlet.h"
 #include "GifTracker.h"
 
+#include "pre_guard.h"
+#include <QAccessible>
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QMimeData>
@@ -47,14 +48,27 @@
 #include <QTextCodec>
 #include <QTextStream>
 #include <QPainter>
+#include "post_guard.h"
 
+
+namespace {
+#ifdef Q_OS_MACOS
+bool isToolbarA11yModeEnabled()
+{
+    return QAccessible::isActive() || qEnvironmentVariableIsSet("MUDLET_FORCE_ACCESSIBLE_TOOLBAR");
+}
+#else
+bool isToolbarA11yModeEnabled()
+{
+    return false;
+}
+#endif
+}
 
 TMainConsole::TMainConsole(Host* pH, QWidget* parent)
 : TConsole(pH, qsl("main"), TConsole::MainConsole, parent)
 , mClipboard(pH)
 {
-    setFont(pH->getAndClearTempDisplayFont());
-
     // During first use where mIsDebugConsole IS true mudlet::self() is null
     // then - but we rely on that flag to avoid having to also test for a
     // non-null mudlet::self() - the connect(...) will produce a debug
@@ -84,11 +98,9 @@ TMainConsole::~TMainConsole()
     if (mpHunspell_profile) {
         Hunspell_destroy(mpHunspell_profile);
         mpHunspell_profile = nullptr;
-        if (mudlet::self()) {
-            // Need to commit any changes to personal dictionary
-            qDebug() << "TCommandLine::~TConsole(...) INFO - Saving profile's own Hunspell dictionary...";
-            mudlet::self()->saveDictionary(mudlet::self()->getMudletPath(enums::profileDataItemPath, mProfileName, qsl("profile")), mWordSet_profile);
-        }
+        // Need to commit any changes to personal dictionary
+        qDebug() << "TCommandLine::~TConsole(...) INFO - Saving profile's own Hunspell dictionary...";
+        mudlet::self()->saveDictionary(mudlet::self()->getMudletPath(mudlet::profileDataItemPath, mProfileName, qsl("profile")), mWordSet_profile);
     }
 }
 
@@ -158,14 +170,11 @@ std::pair<bool, QString> TMainConsole::setCmdLineStyleSheet(const QString& name,
 
 void TMainConsole::toggleLogging(bool isMessageEnabled)
 {
-    const auto loggingPath = mudlet::getMudletPath(enums::profileDataItemPath, mpHost->getName(), qsl("autolog"));
+    const auto loggingPath = mudlet::getMudletPath(mudlet::profileDataItemPath, mpHost->getName(), qsl("autolog"));
     QFile file(loggingPath);
     const QDateTime logDateTime = QDateTime::currentDateTime();
     if (!mLogToLogFile) {
-        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            qWarning() << "TMainConsole: failed to open autolog file for writing:" << file.errorString();
-            return;
-        }
+        file.open(QIODevice::WriteOnly | QIODevice::Text);
         QTextStream out(&file);
         file.close();
 
@@ -173,7 +182,7 @@ void TMainConsole::toggleLogging(bool isMessageEnabled)
         QString logFileName;
         // If no log directory is set, default to Mudlet's replay and log files path
         if (mpHost->mLogDir == nullptr || mpHost->mLogDir.isEmpty()) {
-            directoryLogFile = mudlet::getMudletPath(enums::profileReplayAndLogFilesPath, mProfileName);
+            directoryLogFile = mudlet::getMudletPath(mudlet::profileReplayAndLogFilesPath, mProfileName);
         } else {
             directoryLogFile = mpHost->mLogDir;
         }
@@ -212,18 +221,18 @@ void TMainConsole::toggleLogging(bool isMessageEnabled)
         // WriteOnly = "The device is open for writing. Note that this mode
         // implies Truncate."
         if (mpHost->mIsCurrentLogFileInHtmlFormat) {
-            if (!mLogFile.open(QIODevice::ReadWrite)) {
-                qWarning() << "TMainConsole: failed to open log file for reading/writing:" << mLogFile.errorString();
-                return;
-            }
+            mLogFile.open(QIODevice::ReadWrite);
         } else {
-            if (!mLogFile.open(QIODevice::Append)) {
-                qWarning() << "TMainConsole: failed to open log file for appending:" << mLogFile.errorString();
-                return;
-            }
+            mLogFile.open(QIODevice::Append);
         }
         mLogStream.setDevice(&mLogFile);
-
+        // We have to set a codec here to convert the QString based QTextStream
+        // encoding (from UTF-16) to UTF-8 - by default a local 8-Bit one would
+        // be used, which is problematic on Windows for non-ASCII (or Latin1?)
+        // characters. The default in Qt6 is UTF-8:
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        out.setCodec(QTextCodec::codecForName("UTF-8"));
+#endif
         if (isMessageEnabled) {
             const QString message = qsl("%1\n").arg(tr("Logging has started. Log file is %1").arg(mLogFile.fileName()));
             printSystemMessage(message);
@@ -329,7 +338,16 @@ void TMainConsole::toggleLogging(bool isMessageEnabled)
                          .arg(logDateTime.toString(tr("'Log session starting at 'hh:mm:ss' on 'dddd', 'd' 'MMMM' 'yyyy'.")));
 
         }
-        logButton->setToolTip(utils::richText(tr("Stop logging game output to log file.")));
+        logButton->setText(tr("Toggle logging"));
+        if (isToolbarA11yModeEnabled()) {
+            logButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+            logButton->setToolTip(QString());
+        } else {
+            logButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
+            logButton->setToolTip(tr("Stop logging game output to a file"));
+        }
+        logButton->setAccessibleName(tr("Toggle logging"));
+        logButton->setAccessibleDescription(tr("Stop logging game output to a file"));
     } else {
         // Logging is being turned off
         buffer.logRemainingOutput();
@@ -345,7 +363,16 @@ void TMainConsole::toggleLogging(bool isMessageEnabled)
         }
         mLogFile.flush();
         mLogFile.close();
-        logButton->setToolTip(utils::richText(tr("Start logging game output to log file.")));
+        logButton->setText(tr("Toggle logging"));
+        if (isToolbarA11yModeEnabled()) {
+            logButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+            logButton->setToolTip(QString());
+        } else {
+            logButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
+            logButton->setToolTip(tr("Start logging game output to a file"));
+        }
+        logButton->setAccessibleName(tr("Toggle logging"));
+        logButton->setAccessibleDescription(tr("Start logging game output to a file"));
     }
 }
 
@@ -362,12 +389,13 @@ void TMainConsole::selectCurrentLine(std::string& buf)
     }
 }
 
-std::list<int> TMainConsole::getFgColor(QString& buf)
+std::list<int> TMainConsole::getFgColor(std::string& buf)
 {
-    if (buf.isEmpty() || buf == QLatin1String("main")) {
+    const QString key = buf.c_str();
+    if (key.isEmpty() || key == QLatin1String("main")) {
         return TConsole::getFgColor();
     }
-    auto pC = mSubConsoleMap.value(buf);
+    auto pC = mSubConsoleMap.value(key);
     if (pC) {
         return pC->getFgColor();
     }
@@ -375,12 +403,13 @@ std::list<int> TMainConsole::getFgColor(QString& buf)
     return {};
 }
 
-std::list<int> TMainConsole::getBgColor(QString& buf)
+std::list<int> TMainConsole::getBgColor(std::string& buf)
 {
-    if (buf.isEmpty() || buf == QLatin1String("main")) {
+    const QString key = buf.c_str();
+    if (key.isEmpty() || key == QLatin1String("main")) {
         return TConsole::getBgColor();
     }
-    auto pC = mSubConsoleMap.value(buf);
+    auto pC = mSubConsoleMap.value(key);
     if (pC) {
         return pC->getBgColor();
     }
@@ -402,19 +431,20 @@ QPair<quint8, TChar> TMainConsole::getTextAttributes(const QString& name) const
     return qMakePair(1, TChar());
 }
 
-void TMainConsole::luaWrapLine(QString& buf, int line)
+void TMainConsole::luaWrapLine(std::string& buf, int line)
 {
-    if (buf.isEmpty() || buf == QLatin1String("main")) {
+    const QString key = buf.c_str();
+    if (key.isEmpty() || key == QLatin1String("main")) {
         TConsole::luaWrapLine(line);
         return;
     }
-    auto pC = mSubConsoleMap.value(buf);
+    auto pC = mSubConsoleMap.value(key);
     if (pC) {
         pC->luaWrapLine(line);
     }
 }
 
-QString TMainConsole::getCurrentLine(const std::string& buf)
+QString TMainConsole::getCurrentLine(std::string& buf)
 {
     const QString key = buf.c_str();
     if (key.isEmpty() || key == QLatin1String("main")) {
@@ -516,8 +546,9 @@ TConsole* TMainConsole::createMiniConsole(const QString& windowname, const QStri
         pC->show();
 
         return pC;
+    } else {
+        return nullptr;
     }
-    return nullptr;
 }
 
 // This is a scrollBox overlaid on to the main console
@@ -606,90 +637,6 @@ std::pair<bool, QString> TMainConsole::deleteLabel(const QString& name)
 
     // Message is of the form needed for a Lua API function call run-time error
     return {false, qsl("label name '%1' not found").arg(name)};
-}
-
-std::pair<bool, QString> TMainConsole::deleteMiniConsole(const QString& name)
-{
-    if (name.isEmpty()) {
-        return {false, QLatin1String("a miniconsole cannot have an empty string as its name")};
-    }
-
-    auto pConsole = mSubConsoleMap.take(name);
-    if (pConsole) {
-        // Using deleteLater() rather than delete as it seems a safer option
-        // given that this item is likely to be linked to some events and
-        // suchlike:
-        pConsole->deleteLater();
-
-        // It remains to be seen if the miniconsole has "gone" as a result of the
-        // above by the time the Lua subsystem processes the following:
-        TEvent mudletEvent{};
-        mudletEvent.mArgumentList.append(QLatin1String("sysMiniConsoleDeleted"));
-        mudletEvent.mArgumentTypeList.append(ARGUMENT_TYPE_STRING);
-        mudletEvent.mArgumentList.append(name);
-        mudletEvent.mArgumentTypeList.append(ARGUMENT_TYPE_STRING);
-        mpHost->raiseEvent(mudletEvent);
-        return {true, QString()};
-    }
-
-    // Message is of the form needed for a Lua API function call run-time error
-    return {false, qsl("miniconsole name '%1' not found").arg(name)};
-}
-
-std::pair<bool, QString> TMainConsole::deleteCommandLine(const QString& name)
-{
-    if (name.isEmpty()) {
-        return {false, QLatin1String("a command line cannot have an empty string as its name")};
-    }
-
-    auto pCmdLine = mSubCommandLineMap.take(name);
-    if (pCmdLine) {
-        // Using deleteLater() rather than delete as it seems a safer option
-        // given that this item is likely to be linked to some events and
-        // suchlike:
-        pCmdLine->deleteLater();
-
-        // It remains to be seen if the command line has "gone" as a result of the
-        // above by the time the Lua subsystem processes the following:
-        TEvent mudletEvent{};
-        mudletEvent.mArgumentList.append(QLatin1String("sysCommandLineDeleted"));
-        mudletEvent.mArgumentTypeList.append(ARGUMENT_TYPE_STRING);
-        mudletEvent.mArgumentList.append(name);
-        mudletEvent.mArgumentTypeList.append(ARGUMENT_TYPE_STRING);
-        mpHost->raiseEvent(mudletEvent);
-        return {true, QString()};
-    }
-
-    // Message is of the form needed for a Lua API function call run-time error
-    return {false, qsl("command line name '%1' not found").arg(name)};
-}
-
-std::pair<bool, QString> TMainConsole::deleteScrollBox(const QString& name)
-{
-    if (name.isEmpty()) {
-        return {false, QLatin1String("a scrollbox cannot have an empty string as its name")};
-    }
-
-    auto pScrollBox = mScrollBoxMap.take(name);
-    if (pScrollBox) {
-        // Using deleteLater() rather than delete as it seems a safer option
-        // given that this item is likely to be linked to some events and
-        // suchlike:
-        pScrollBox->deleteLater();
-
-        // It remains to be seen if the scrollbox has "gone" as a result of the
-        // above by the time the Lua subsystem processes the following:
-        TEvent mudletEvent{};
-        mudletEvent.mArgumentList.append(QLatin1String("sysScrollBoxDeleted"));
-        mudletEvent.mArgumentTypeList.append(ARGUMENT_TYPE_STRING);
-        mudletEvent.mArgumentList.append(name);
-        mudletEvent.mArgumentTypeList.append(ARGUMENT_TYPE_STRING);
-        mpHost->raiseEvent(mudletEvent);
-        return {true, QString()};
-    }
-
-    // Message is of the form needed for a Lua API function call run-time error
-    return {false, qsl("scrollbox name '%1' not found").arg(name)};
 }
 
 std::pair<bool, QString> TMainConsole::setLabelToolTip(const QString& name, const QString& text, double duration)
@@ -805,7 +752,7 @@ std::pair<bool, QString> TMainConsole::createMapper(const QString& windowname, i
     // it gives a height and width to mpLeftToolBar, mpRightToolBar, and mpTopToolBar for
     // some reason. Those widgets size back down immediately after on their own (?!), however if
     // getMainWindowSize() is called right after map create, the sizes reported will be wrong
-#if defined(Q_OS_WINDOWS)
+#if defined(Q_OS_WIN32)
     mpLeftToolBar->setHidden(true);
     mpRightToolBar->setHidden(true);
     mpTopToolBar->setHidden(true);
@@ -853,8 +800,9 @@ bool TMainConsole::setBackgroundImage(const QString& name, const QString& path)
         const QPixmap bgPixmap(path);
         pL->setPixmap(bgPixmap);
         return true;
+    } else {
+        return false;
     }
-    return false;
 }
 
 // Does NOT act on the TMainConsole itself:
@@ -877,14 +825,14 @@ bool TMainConsole::setBackgroundColor(const QString& name, int r, int g, int b, 
             pC->mLowerPane->forceUpdate();
         }
         return true;
-    }
-    if (pL) {
+    } else if (pL) {
         QPalette mainPalette;
         mainPalette.setColor(QPalette::Window, QColor(r, g, b, alpha));
         pL->setPalette(mainPalette);
         return true;
+    } else {
+        return false;
     }
-    return false;
 }
 
 bool TMainConsole::raiseWindow(const QString& name)
@@ -967,12 +915,12 @@ bool TMainConsole::showWindow(const QString& name)
         pC->mLowerPane->updateScreenView();
         pC->mLowerPane->forceUpdate();
         return true;
-    }
-    if (pL) {
+    } else if (pL) {
         pL->show();
         return true;
+    } else {
+        return false;
     }
-    return false;
 }
 
 bool TMainConsole::hideWindow(const QString& name)
@@ -982,12 +930,12 @@ bool TMainConsole::hideWindow(const QString& name)
     if (pC) {
         pC->hide();
         return true;
-    }
-    if (pL) {
+    } else if (pL) {
         pL->hide();
         return true;
+    } else {
+        return false;
     }
-    return false;
 }
 
 bool TMainConsole::printWindow(const QString& name, const QString& text)
@@ -1000,8 +948,9 @@ bool TMainConsole::printWindow(const QString& name, const QString& text)
     } else if (pL) {
         pL->setText(text);
         return true;
+    } else {
+        return false;
     }
-    return false;
 }
 
 //getUserWindowSize for resizing in Geyser
@@ -1103,7 +1052,7 @@ void TMainConsole::setSystemSpellDictionary(const QString& newDict)
 
     mSpellDic = newDict;
 
-    const QString path = mudlet::getMudletPath(enums::hunspellDictionaryPath, mpHost->getSpellDic());
+    const QString path = mudlet::getMudletPath(mudlet::hunspellDictionaryPath, mpHost->getSpellDic());
     QString spell_aff = qsl("%1%2.aff").arg(path, newDict);
     QString spell_dic = qsl("%1%2.dic").arg(path, newDict);
 
@@ -1111,7 +1060,7 @@ void TMainConsole::setSystemSpellDictionary(const QString& newDict)
         Hunspell_destroy(mpHunspell_system);
     }
 
-#if defined(Q_OS_WINDOWS)
+#if defined(Q_OS_WIN32)
     // strip non-ASCII characters from the path because hunspell can't handle them
     // when compiled with MinGW 7.3.0
     mudlet::self()->sanitizeUtf8Path(spell_aff, qsl("%1.aff").arg(newDict));
@@ -1122,6 +1071,7 @@ void TMainConsole::setSystemSpellDictionary(const QString& newDict)
     if (mpHunspell_system) {
         mHunspellCodecName_system = QByteArray(Hunspell_get_dic_encoding(mpHunspell_system));
         qDebug().noquote().nospace() << "TMainConsole::setSystemSpellDictionary(\"" << newDict << "\") INFO - System Hunspell dictionary loaded for profile, it uses a \"" << Hunspell_get_dic_encoding(mpHunspell_system) << "\" encoding...";
+        mpHunspellCodec_system = QTextCodec::codecForName(mHunspellCodecName_system);
     }
 }
 
@@ -1136,7 +1086,7 @@ void TMainConsole::setProfileSpellDictionary()
             mpHunspell_profile = nullptr;
             // Need to commit any changes to personal dictionary
             qDebug() << "TMainConsole::setProfileSpellDictionary() INFO - Saving profile's own Hunspell dictionary...";
-            mudlet::self()->saveDictionary(mudlet::self()->getMudletPath(enums::profileDataItemPath, mProfileName, qsl("profile")), mWordSet_profile);
+            mudlet::self()->saveDictionary(mudlet::self()->getMudletPath(mudlet::profileDataItemPath, mProfileName, qsl("profile")), mWordSet_profile);
         }
         // Nothing else to do if not using the shared one
 
@@ -1165,15 +1115,16 @@ QSet<QString> TMainConsole::getWordSet() const
 
     if (!mUseSharedDictionary) {
         return mWordSet_profile;
+    } else {
+        return mudlet::self()->getWordSet();
     }
-    return mudlet::self()->getWordSet();
 }
 
 void TMainConsole::setProfileName(const QString& newName)
 {
     TConsole::setProfileName(newName);
 
-    for (const auto pC : std::as_const(mSubConsoleMap)) {
+    for (auto pC : mSubConsoleMap) {
         pC->setProfileName(newName);
     }
 }
@@ -1234,30 +1185,16 @@ void TMainConsole::printOnDisplay(std::string& incomingSocketData, const bool is
 {
     Q_ASSERT_X(mpLineEdit_networkLatency, "TMainConsole::printOnDisplay(...)", "mpLineEdit_networkLatency does not point to a valid QLineEdit");
     mProcessingTimer.restart();
-
-    // Notify visibility manager of incoming data (for output gap detection)
-    if (isFromServer) {
-        getHyperlinkVisibilityManager().onDataReceived();
-    }
-
     mTriggerEngineMode = true;
-    const int beforeTranslateLastLineNumber = buffer.getLastLineNumber();
-    const auto beforeTranslateLastLine = buffer.line(beforeTranslateLastLineNumber - 1);
     buffer.translateToPlainText(incomingSocketData, isFromServer);
     mTriggerEngineMode = false;
-
-    const int lastLineNumber = buffer.getLastLineNumber();
-    const bool bufferChanged = lastLineNumber != beforeTranslateLastLineNumber || buffer.line(lastLineNumber - 1) != beforeTranslateLastLine;
-    if (mAlertOnNewData && isFromServer && bufferChanged) {
-        QApplication::alert(mudlet::self(), 0);
-    }
 
     // dequeues MXP events and raise them through the LuaInterpreter
     // TODO: move this somewhere else more appropriate
     auto& mxpEventQueue = mpHost->mMxpClient.mMxpEvents;
     while (!mxpEventQueue.isEmpty()) {
         const auto& event = mxpEventQueue.dequeue();
-        mpHost->mLuaInterpreter.signalMXPEvent(event.name, event.attrs, event.actions, event.caption);
+        mpHost->mLuaInterpreter.signalMXPEvent(event.name, event.attrs, event.actions);
     }
 
     const double processT = mProcessingTimer.elapsed() / 1000.0;
@@ -1308,12 +1245,8 @@ void TMainConsole::runTriggers(int line)
 
 void TMainConsole::finalize()
 {
-    if (mUpperPane) {
-        mUpperPane->showNewLines();
-    }
-    if (mLowerPane) {
-        mLowerPane->showNewLines();
-    }
+    mUpperPane->showNewLines();
+    mLowerPane->showNewLines();
 }
 
 // TODO: It may be worth considering moving the (now) three following methods
@@ -1321,10 +1254,10 @@ void TMainConsole::finalize()
 bool TMainConsole::saveMap(const QString& location, int saveVersion)
 {
     const QString filename_map = location.isEmpty() ?
-        mudlet::getMudletPath(enums::profileDateTimeStampedMapPathFileName, mProfileName, QDateTime::currentDateTime().toString(qsl("yyyy-MM-dd#HH-mm-ss"))) :
+        mudlet::getMudletPath(mudlet::profileDateTimeStampedMapPathFileName, mProfileName, QDateTime::currentDateTime().toString(qsl("yyyy-MM-dd#HH-mm-ss"))) :
         location;
 
-    const QDir dir_map(mudlet::getMudletPath(enums::profileMapsPath, mProfileName));
+    const QDir dir_map(mudlet::getMudletPath(mudlet::profileMapsPath, mProfileName));
     if (!dir_map.exists() && !dir_map.mkpath(dir_map.path())) {
         return false;
     }
@@ -1347,9 +1280,6 @@ bool TMainConsole::saveMap(const QString& location, int saveVersion)
 
     if (saved) {
         mpHost->mpMap->resetUnsaved();
-        mpHost->mpMap->setSaveError(false);
-    } else {
-        mpHost->mpMap->setSaveError(true);
     }
 
     return saved;
@@ -1454,7 +1384,7 @@ bool TMainConsole::importMap(const QString& location, QString* errMsg)
     if (!fileInfo.filePath().isEmpty()) {
         if (fileInfo.isRelative()) {
             // Resolve the name relative to the profile home directory:
-            filePathNameString = QDir::cleanPath(mudlet::getMudletPath(enums::profileDataItemPath, mProfileName, fileInfo.filePath()));
+            filePathNameString = QDir::cleanPath(mudlet::getMudletPath(mudlet::profileDataItemPath, mProfileName, fileInfo.filePath()));
         } else {
             if (fileInfo.exists()) {
                 filePathNameString = fileInfo.canonicalFilePath(); // Cannot use canonical path if file doesn't exist!
@@ -1577,11 +1507,6 @@ void TMainConsole::showStatistics()
         subjects << tr("Channel102 events:");
         tables << QLatin1String("channel102");
     }
-    if (pHost->mTelnet.isMXPEnabled()) {
-        //: Heading for the system's statistics information displayed in the console
-        subjects << tr("MXP events:");
-        tables << QLatin1String("mxp");
-    }
     if (pHost->mTelnet.isMSSPEnabled()) {
         //: Heading for the system's statistics information displayed in the console
         subjects << tr("MSSP events:");
@@ -1642,15 +1567,6 @@ void TMainConsole::showStatistics()
 
 void TMainConsole::closeEvent(QCloseEvent* event)
 {
-    // Guard against duplicate close events during widget destruction.
-    // The first close comes from explicit close(), the second can come
-    // from Qt during widget deletion. Processing the event twice can
-    // cause crashes in TBuffer destruction.
-    if (mEnableClose) {
-        event->accept();
-        return;
-    }
-
     qDebug().nospace().noquote() << "TMainConsole::closeEvent(...) INFO - received by \"" << mpHost->getName() << "\".";
     TEvent conCloseEvent{};
     conCloseEvent.mArgumentList.append(qsl("sysExitEvent"));
@@ -1665,18 +1581,32 @@ void TMainConsole::closeEvent(QCloseEvent* event)
 
         if (mpHost->mpMap && mpHost->mpMap->mpRoomDB) {
             // There is a map loaded - but it *could* have no rooms at all!
-            if (!saveMap(QString())) {
-                qWarning() << "TMainConsole::closeEvent(...) WARNING - forced close map save failed";
+            const QDir dir_map;
+            const QString directory_map = mudlet::getMudletPath(mudlet::profileMapsPath, mProfileName);
+            const QString filename_map = mudlet::getMudletPath(mudlet::profileDateTimeStampedMapPathFileName, mProfileName, QDateTime::currentDateTime().toString("yyyy-MM-dd#HH-mm-ss"));
+            if (!dir_map.exists(directory_map)) {
+                dir_map.mkpath(directory_map);
+            }
+            QSaveFile file(filename_map);
+            if (file.open(QIODevice::WriteOnly)) {
+                QDataStream out(&file);
+                if (mudlet::scmRunTimeQtVersion >= QVersionNumber(5, 13, 0)) {
+                    out.setVersion(mudlet::scmQDataStreamFormat_5_12);
+                }
+                // FIXME: https://github.com/Mudlet/Mudlet/issues/6316 - unchecked return value - we are not handling a failure to save the map!
+                mpHost->mpMap->serialize(out);
+                if (!file.commit()) {
+                    qWarning() << "TMainConsole::closeEvent(...) WARNING - error saving map: " << file.errorString();
+                }
             }
         }
         mpHost->waitForProfileSave();
-        mEnableClose = true;
         event->accept();
         return;
     }
 
     if (!mEnableClose) {
-    ASK_PROFILE:
+    ASK:
         const int choice = QMessageBox::question(this, tr("Save profile?"), tr("Do you want to save the profile %1?").arg(mProfileName), QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
         if (choice == QMessageBox::Cancel) {
             event->ignore();
@@ -1695,25 +1625,29 @@ void TMainConsole::closeEvent(QCloseEvent* event)
                                       tr("Sorry, could not save your profile as \"%1\" - got the following error: \"%2\".")
                                               .arg(filename, error),
                                       QMessageBox::Retry);
-                goto ASK_PROFILE;
+                goto ASK;
             }
 
             if (mpHost->mpMap && mpHost->mpMap->mpRoomDB) {
                 // There is a map loaded - but it *could* have no rooms at all!
-            ASK_MAP:
-                if (!saveMap(QString())) {
-                    const int mapChoice = QMessageBox::warning(this,
-                                          tr("Could not save map"),
-                                          tr("Sorry, could not save the map. Would you like to retry or close without saving the map?"),
-                                          QMessageBox::Retry | QMessageBox::Ignore | QMessageBox::Cancel);
-                    if (mapChoice == QMessageBox::Retry) {
-                        goto ASK_MAP;
+                const QDir dir_map;
+                const QString directory_map = mudlet::getMudletPath(mudlet::profileMapsPath, mProfileName);
+                const QString filename_map = mudlet::getMudletPath(mudlet::profileDateTimeStampedMapPathFileName, mProfileName, QDateTime::currentDateTime().toString(qsl("yyyy-MM-dd#HH-mm-ss")));
+                if (!dir_map.exists(directory_map)) {
+                    dir_map.mkpath(directory_map);
+                }
+
+                QSaveFile file(filename_map);
+                if (file.open(QIODevice::WriteOnly)) {
+                    QDataStream out(&file);
+                    if (mudlet::scmRunTimeQtVersion >= QVersionNumber(5, 13, 0)) {
+                        out.setVersion(mudlet::scmQDataStreamFormat_5_12);
                     }
-                    if (mapChoice == QMessageBox::Cancel) {
-                        event->ignore();
-                        return;
+                    // FIXME: https://github.com/Mudlet/Mudlet/issues/6316 - unchecked return value - we are not handling a failure to save the map!
+                    mpHost->mpMap->serialize(out);
+                    if (!file.commit()) {
+                        qDebug() << "TConsole::closeEvent: error saving map: " << file.errorString();
                     }
-                    // QMessageBox::Ignore - continue without saving map
                 }
             }
 

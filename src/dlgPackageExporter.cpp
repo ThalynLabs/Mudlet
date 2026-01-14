@@ -586,7 +586,7 @@ void dlgPackageExporter::slot_updateLocationPlaceholder()
     ui->lineEdit_filePath->setPlaceholderText(path);
 }
 
-void dlgPackageExporter::checkToEnableExportButton()
+void dlgPackageExporter::checkToEnableExportButton() 
 {
     QStringList missingFields;
     if (ui->lineEdit_packageName->text().isEmpty()) {

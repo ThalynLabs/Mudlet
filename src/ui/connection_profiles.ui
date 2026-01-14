@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <ui version="4.0">
  <class>connection_profiles</class>
  <widget class="QDialog" name="connection_profiles">
@@ -24,6 +24,12 @@
   <property name="windowTitle">
    <string>Select a profile to connect with</string>
   </property>
+  <property name="accessibleName">
+   <string>Connection Profiles</string>
+  </property>
+  <property name="accessibleDescription">
+   <string>Select a profile to connect with or manage profiles</string>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="spacing">
     <number>0</number>
@@ -41,7 +47,7 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QWidget" name="widget_top" native="true">
+    <widget class="QWidget" name="widget" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
@@ -71,7 +77,7 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QWidget" name="widget_topLeft" native="true">
+       <widget class="QWidget" name="widget_5" native="true">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
           <horstretch>0</horstretch>
@@ -95,7 +101,7 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QListWidget" name="listWidget_profiles">
+          <widget class="QListWidget" name="profiles_tree_widget">
            <property name="minimumSize">
             <size>
              <width>365</width>
@@ -182,7 +188,7 @@
                <bool>true</bool>
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="pixmap">
                <pixmap resource="../mudlet.qrc">:/icons/dialog-warning.png</pixmap>
@@ -216,7 +222,7 @@
                <bool>true</bool>
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="pixmap">
                <pixmap resource="../mudlet.qrc">:/icons/dialog-error.png</pixmap>
@@ -250,7 +256,7 @@
                <bool>true</bool>
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="pixmap">
                <pixmap resource="../mudlet.qrc">:/icons/dialog-information.png</pixmap>
@@ -290,7 +296,7 @@
                <bool>true</bool>
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="scaledContents">
                <bool>true</bool>
@@ -363,6 +369,12 @@
                 <height>25</height>
                </size>
               </property>
+                            <property name="accessibleName">
+                             <string>Remove profile</string>
+                            </property>
+                            <property name="accessibleDescription">
+                             <string>Delete the selected profile from the list</string>
+                            </property>
               <property name="text">
                <string>Remove</string>
               </property>
@@ -382,6 +394,12 @@
                 <height>25</height>
                </size>
               </property>
+                            <property name="accessibleName">
+                             <string>Copy profile</string>
+                            </property>
+                            <property name="accessibleDescription">
+                             <string>Duplicate the selected profile and its settings</string>
+                            </property>
               <property name="text">
                <string>Copy</string>
               </property>
@@ -407,6 +425,12 @@
                 <height>25</height>
                </size>
               </property>
+                            <property name="accessibleName">
+                             <string>New profile</string>
+                            </property>
+                            <property name="accessibleDescription">
+                             <string>Create a new connection profile</string>
+                            </property>
               <property name="text">
                <string>New</string>
               </property>
@@ -419,7 +443,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QWidget" name="widget_topRight" native="true">
+       <widget class="QWidget" name="widget_2" native="true">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
           <horstretch>0</horstretch>
@@ -581,7 +605,7 @@
                 <string>The port that is used together with the server name to make the connection to the game server. If not specified a default of 23 for "Telnet" connections is used. Secure connections may require a different port number.</string>
                </property>
                <property name="text">
-                <string/>
+                <string />
                </property>
                <property name="maxLength">
                 <number>32767</number>
@@ -642,9 +666,6 @@
              </item>
              <item row="0" column="1">
               <widget class="QLineEdit" name="login_entry">
-               <property name="toolTip">
-                <string>The characters name</string>
-               </property>
                <property name="accessibleName">
                 <string>Character name</string>
                </property>
@@ -668,9 +689,6 @@
              </item>
              <item row="1" column="1">
               <widget class="QLineEdit" name="character_password_entry">
-               <property name="toolTip">
-                <string>Characters password. Note that the password isn't encrypted in storage</string>
-               </property>
                <property name="accessibleName">
                 <string>Password</string>
                </property>
@@ -693,7 +711,13 @@
               </widget>
              </item>
              <item row="2" column="1">
-              <widget class="WideComboBox" name="profile_history">
+                            <widget class="QComboBox" name="profile_history">
+                             <property name="accessibleName">
+                                <string>Profile history</string>
+                             </property>
+                             <property name="accessibleDescription">
+                                <string>Choose whether to load the newest or oldest saved profile</string>
+                             </property>
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                  <horstretch>0</horstretch>
@@ -723,9 +747,6 @@
                <property name="enabled">
                 <bool>false</bool>
                </property>
-               <property name="toolTip">
-                <string>Enable Discord integration (not supported by game)</string>
-               </property>
                <property name="accessibleName">
                 <string>Discord integration</string>
                </property>
@@ -733,7 +754,7 @@
                 <string>Allow this profile to use Mudlet's Discord "Rich Presence"  features</string>
                </property>
                <property name="text">
-                <string/>
+                <string />
                </property>
                <property name="icon">
                 <iconset resource="../mudlet.qrc">
@@ -755,9 +776,6 @@
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
-               </property>
-               <property name="toolTip">
-                <string>With this enabled, Mudlet will automatically start and connect on this profile when it is launched</string>
                </property>
                <property name="accessibleName">
                 <string>Auto-open profile</string>
@@ -837,7 +855,7 @@
                </font>
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="scaledContents">
                <bool>true</bool>
@@ -863,9 +881,6 @@
                 <width>16777215</width>
                 <height>16777215</height>
                </size>
-              </property>
-              <property name="toolTip">
-               <string>Game description or your notes</string>
               </property>
               <property name="accessibleName">
                <string>Game description or your notes</string>
@@ -923,6 +938,12 @@
           <height>16777215</height>
          </size>
         </property>
+        <property name="accessibleName">
+         <string>Dialog buttons</string>
+        </property>
+        <property name="accessibleDescription">
+         <string>Connect and other action buttons for profile selection</string>
+        </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
@@ -939,15 +960,8 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>WideComboBox</class>
-   <extends>QComboBox</extends>
-   <header>WideComboBox.h</header>
-  </customwidget>
- </customwidgets>
  <tabstops>
-  <tabstop>listWidget_profiles</tabstop>
+  <tabstop>profiles_tree_widget</tabstop>
   <tabstop>welcome_message</tabstop>
   <tabstop>profile_name_entry</tabstop>
   <tabstop>host_name_entry</tabstop>
@@ -966,7 +980,7 @@
   <tabstop>new_profile_button</tabstop>
  </tabstops>
  <resources>
-  <include location="../mudlet.qrc"/>
+  <include location="../mudlet.qrc" />
  </resources>
- <connections/>
+ <connections />
 </ui>
