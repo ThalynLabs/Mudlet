@@ -731,7 +731,9 @@ QString LuaInterface::getValue(TVar* var)
         if (firstVariable->getKeyType() == LUA_TSTRING) {
             lua_getglobal(mL, (firstVariable->getName()).toUtf8().constData());
         } else if (firstVariable->getKeyType() == LUA_TNUMBER) {
-            lua_rawgeti(mL, LUA_GLOBALSINDEX, firstVariable->getName().toInt());
+            lua_getglobal(mL, "_G");
+            lua_rawgeti(mL, -1, firstVariable->getName().toInt());
+            lua_remove(mL, -2);
         }
         if (lua_isnoneornil(mL, lua_gettop(mL))) {
             qDebug() << "LuaInterface::getValue: Couldn't put root value" << firstVariable->getName()
@@ -857,6 +859,8 @@ void LuaInterface::getVars(bool hide)
     varUnit->clear();
     varUnit->setBase(global);
     varUnit->addVariable(global);
-    iterateTable(mL, LUA_GLOBALSINDEX, global, hide);
+    lua_getglobal(mL, "_G");
+    iterateTable(mL, -1, global, hide);
+    lua_pop(mL, 1);
     // FIXME: possible to keep and report? qDebug()<<"took"<<t.elapsed()<<"to get variables in";
 }

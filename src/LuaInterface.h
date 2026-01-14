@@ -38,6 +38,12 @@ extern "C" {
 #endif
 }
 
+// Lua 5.1 compatibility: LUA_GLOBALSINDEX was removed but we still use it in various places
+// The value -10002 was the pseudo-index for globals in Lua 5.1
+#if !defined(LUA_GLOBALSINDEX)
+#define LUA_GLOBALSINDEX (-10002)
+#endif
+
 
 class Host;
 class TLuaInterpreter;
